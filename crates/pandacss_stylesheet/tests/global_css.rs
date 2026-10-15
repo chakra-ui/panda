@@ -881,3 +881,29 @@ fn global_css_style_after_a_layer_style_overrides_it() {
     }
     ");
 }
+
+#[test]
+fn token_expansion_preserves_longer_identifiers_and_uses_missing_token_fallbacks() {
+    let config = config(serde_json::json!({
+        "theme": { "tokens": { "colors": { "red": { "value": "#f00" } } } },
+        "globalCss": {
+            "body": {
+                "--value": "url(/a/mytoken(1).png) my-token(colors.red) xtoken(colors.red) 1token(colors.red) _token(colors.red) token(colors.red)",
+                "width": "token(sizes.ghost, 10px)"
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      body {
+        --value: url(/a/mytoken(1).png) my-token(colors.red) xtoken(colors.red) 1token(colors.red) _token(colors.red) var(--colors-red);
+        width: 10px;
+      }
+    }
+    ");
+}

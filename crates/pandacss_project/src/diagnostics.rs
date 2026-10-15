@@ -2,8 +2,9 @@ use pandacss_encoder::{ConditionMatcher, Encoder};
 use pandacss_extractor::{ExtractedCall, ExtractedJsx, LineIndex, MatchCategory, Span};
 use pandacss_literal::Literal;
 use pandacss_shared::{Diagnostic, diagnostic_codes};
-use pandacss_system::System;
-use pandacss_utility::Utility;
+use pandacss_system::{System, visit_call_style_strings, visit_jsx_style_strings};
+use pandacss_tokens::TokenDictionary;
+use pandacss_utility::{Utility, token_references};
 use rustc_hash::FxHashSet;
 
 use crate::ProjectConditionMatcher;
@@ -25,6 +26,10 @@ pub fn append_usage_diagnostics(
     }
 
     push_unknown_condition_diagnostics(calls, jsx, system.conditions(), line_index, out);
+
+    if let Some(tokens) = system.token_dictionary() {
+        push_unknown_token_reference_diagnostics(system, calls, jsx, &tokens, line_index, out);
+    }
 }
 
 fn push_usage_diagnostics(
@@ -277,6 +282,43 @@ fn invalid_color_opacity_modifier_diagnostic(
         format!(
             "Color value `{value}` has an invalid opacity modifier; expected a number (e.g. `40`) or an opacity token (e.g. `half`)"
         ),
+        span,
+        line_index,
+    )
+}
+
+fn push_unknown_token_reference_diagnostics(
+    system: &System,
+    calls: &[ExtractedCall],
+    jsx: &[ExtractedJsx],
+    tokens: &TokenDictionary,
+    line_index: &LineIndex<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    let mut seen = FxHashSet::default();
+    let mut collect = |span, text: &str| {
+        for (path, _) in token_references(text, tokens) {
+            if tokens.token(path).is_none() && seen.insert((span, path.to_owned())) {
+                out.push(unknown_token_reference_diagnostic(path, span, line_index));
+            }
+        }
+    };
+    for call in calls {
+        visit_call_style_strings(system, call, |_, text| collect(call.span, text));
+    }
+    for entry in jsx {
+        visit_jsx_style_strings(system, entry, |_, text| collect(entry.span, text));
+    }
+}
+
+fn unknown_token_reference_diagnostic(
+    path: &str,
+    span: Span,
+    line_index: &LineIndex<'_>,
+) -> Diagnostic {
+    located_warning(
+        diagnostic_codes::UNKNOWN_TOKEN_REFERENCE,
+        format!("Token `{path}` was not found. Check the path or add the token to your theme."),
         span,
         line_index,
     )

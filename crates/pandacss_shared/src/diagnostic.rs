@@ -55,6 +55,7 @@ pub mod codes {
     pub const TRANSFORM_CALLBACK_FAILED: &str = "transform_callback_failed";
     pub const TRANSFORM_HASHED_RECIPE_SKIPPED: &str = "transform_hashed_recipe_skipped";
     pub const UNKNOWN_CONDITION: &str = "unknown_condition";
+    pub const UNKNOWN_TOKEN_REFERENCE: &str = "unknown_token_reference";
 }
 
 /// UTF-8 byte offsets.

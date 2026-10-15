@@ -2,6 +2,7 @@
 //! resolution into CSS vars or raw token values.
 
 use std::borrow::Cow;
+use std::ops::Range;
 
 use pandacss_shared::{css_escape, find_matching_paren};
 use pandacss_tokens::{Token, TokenDictionary};
@@ -107,7 +108,7 @@ fn replace_token_functions<'t>(
     let mut out = String::with_capacity(value.len());
     let mut rest = value;
 
-    while let Some(start) = rest.find("token(") {
+    while let Some(start) = find_token_call(rest) {
         out.push_str(&rest[..start]);
 
         let after_open = &rest[start + "token(".len()..];
@@ -146,6 +147,86 @@ fn replace_token_functions<'t>(
 
     out.push_str(rest);
     out
+}
+
+#[must_use]
+pub fn token_references<'a>(
+    value: &'a str,
+    tokens: &TokenDictionary,
+) -> Vec<(&'a str, Range<usize>)> {
+    if !value.contains('{') && !value.contains("token(") {
+        return Vec::new();
+    }
+    let mut out = Vec::new();
+    collect_wrapped_references(value, tokens, &mut out);
+    collect_function_references(value, 0..value.len(), &mut out);
+    out.sort_by_key(|(_, range)| range.start);
+    out
+}
+
+fn collect_wrapped_references<'a>(
+    value: &'a str,
+    tokens: &TokenDictionary,
+    out: &mut Vec<(&'a str, Range<usize>)>,
+) {
+    let mut cursor = 0;
+    while let Some(open) = value[cursor..].find('{') {
+        let start = cursor + open + 1;
+        let Some(len) = value[start..].find('}') else {
+            return;
+        };
+        let end = start + len;
+        if let Some((path, range)) = reference_in(value, start..end)
+            && (tokens.token(path).is_some() || is_token_path_like(&value[start..end]))
+        {
+            out.push((path, range));
+        }
+        cursor = end + 1;
+    }
+}
+
+fn collect_function_references<'a>(
+    value: &'a str,
+    within: Range<usize>,
+    out: &mut Vec<(&'a str, Range<usize>)>,
+) {
+    let mut cursor = within.start;
+    while let Some(found) = find_token_call(&value[cursor..within.end]) {
+        let start = cursor + found + "token(".len();
+        let Some(len) = find_matching_paren(&value[start..within.end]) else {
+            return;
+        };
+        let end = start + len;
+        let (path, fallback) = split_token_args(&value[start..end]);
+        out.extend(reference_in(value, start..start + path.len()));
+        if let Some(fallback) = fallback {
+            collect_function_references(value, end - fallback.len()..end, out);
+        }
+        cursor = end + 1;
+    }
+}
+
+fn find_token_call(value: &str) -> Option<usize> {
+    value
+        .match_indices("token(")
+        .map(|(index, _)| index)
+        .find(|&index| {
+            !value[..index]
+                .bytes()
+                .next_back()
+                .is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-'))
+        })
+}
+
+fn reference_in(value: &str, range: Range<usize>) -> Option<(&str, Range<usize>)> {
+    let raw = &value[range.clone()];
+    let raw = split_top_level_slash(raw).map_or(raw, |(path, _)| path);
+    let path = raw.trim();
+    if path.is_empty() {
+        return None;
+    }
+    let start = range.start + (raw.len() - raw.trim_start().len());
+    Some((path, start..start + path.len()))
 }
 
 fn unresolved_wrapped_reference(path: &str) -> String {

@@ -304,14 +304,19 @@ describe('compiler.inspectFile() — token reference forms', () => {
     `)
     expect(result.tokenRefs.map(({ path, category, resolved }) => ({ path, category, resolved })))
       .toMatchInlineSnapshot(`
-      [
-        {
-          "path": "colors.red.500",
-          "category": "colors",
-          "resolved": true,
-        },
-      ]
-    `)
+        [
+          {
+            "path": "colors.red.500",
+            "category": "colors",
+            "resolved": true,
+          },
+          {
+            "path": "colors.red.500",
+            "category": "colors",
+            "resolved": true,
+          },
+        ]
+      `)
   })
 
   it('exposes token metadata on token() refs', () => {

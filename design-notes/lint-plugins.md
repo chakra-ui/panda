@@ -131,9 +131,38 @@ patterns less opaque for lint rules by adding typed projections for recipe varia
 
 ## File Inspection API
 
-`inspectFileSource` is the lint boundary. Compilation and inspection share file-local checks for unknown conditions,
-deprecated utilities, and invalid color opacity modifiers. Token category inference compares both utility keys and their
-mapped token values, so fixed values such as `flex: "1"` do not become token-backed by name alone.
+`inspectFileSource` is the lint boundary. `pandacss_system::source_styles` owns the semantic source-style traversal
+shared by inspection and token-reference diagnostics. It selects recipe style sections, factory style arguments and
+default props, transition slots, keyframe stops, and pattern inputs. Recipe selectors and other metadata are excluded;
+JSX props are filtered against utility metadata and recipe variant ownership. Pattern props use their declared types:
+`property` and `token` accept style references; text, enum, and boolean props do not. Undeclared props use the native
+CSS property and utility registries. Variant ownership checks borrow the compiled recipe sets rather than collecting a
+new set for each call or element. The factory argument indexes come from Oxc extraction, including member factories such
+as `styled.div`.
+
+Style paths borrow object keys and retain numeric array indexes in a small inline buffer. Owned path strings are
+created only for inspection; reference lookups create them after finding a token reference. Strings without `{` or
+`token(` skip reference scanning.
+
+Inspection joins those style paths to verbose extractor provenance. Embedded references become inspection records
+directly, rather than synthetic extractor `token()` calls. Reference offsets are precise when the decoded value occurs
+verbatim inside its source expression; escaped or folded values fall back to that expression's span. Builds use the same
+semantic traversal without collecting source provenance. Token summaries (`usages`) and explicit references
+(`tokenRefs`, including unresolved paths) remain separate projections.
+
+The missing-token policy concerns the requested path, even when a CSS fallback makes the declaration valid.
+`token(sizes.ghost, 10px)` therefore warns while still emitting `10px`. Build warnings use the enclosing call or JSX
+span and deduplicate a path within that owner. Lint references retain each occurrence and use the tighter provenance
+described above. Precise build positions would require additional extraction provenance on the build path and are
+deferred.
+
+Inspection also visits inline `keyframes()` stops and exposes pattern props as style entries, enabling style rules such
+as `prefer-token` on pattern inputs. Pattern usage counts come from calls and JSX component entries; prop names such as
+`gap` never become pattern names. These changes affect tooling reports, not which styles the compiler emits.
+
+Compilation and inspection also share file-local checks for unknown conditions, deprecated utilities, and invalid color
+opacity modifiers. Token category inference compares both utility keys and their mapped token values, so fixed values
+such as `flex: "1"` do not become token-backed by name alone.
 
 `prefer-token` visits the branches of serialized conditional values without treating the `kind` tag as a style value.
 

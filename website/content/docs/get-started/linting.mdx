@@ -22,9 +22,7 @@ The recommended config preloads your Panda project so rules can resolve tokens a
 ```ts filename="eslint.config.mjs"
 import panda from '@pandacss/eslint-plugin'
 
-export default [
-  await panda.configs.recommended({ configPath: './panda.config.ts' }),
-]
+export default [await panda.configs.recommended({ configPath: './panda.config.ts' })]
 ```
 
 `recommended` turns on the rules marked **default** in the table below. Add any other rule as a second config entry:
@@ -105,14 +103,25 @@ These catch code that silently produces no CSS, or the wrong CSS. The recommende
 
 #### no-invalid-token-paths
 
-A token reference that doesn't resolve is emitted as a literal CSS value, not an error.
+The rule reports token paths that are missing from your theme. It checks `token()` calls and the `{…}` and `token(…)`
+references inside style values, including shadows, borders, and `calc()`.
+
+A fallback doesn't suppress the report: `token(sizes.ghost, 10px)` emits valid CSS using `10px`, but still references a
+missing theme token. `panda cssgen` also warns once per missing path in each call or JSX element, at the start of that
+call or element. Lint reports each reference separately, with a tighter source location when available.
 
 ```tsx
-// ❌ 'red.1000' is not in the theme
-css({ color: 'red.1000' })
+// ❌ 'colors.ghost' and 'sizes.ghost' are not in the theme
+css({
+  boxShadow: '0 0 0 1px {colors.ghost}',
+  width: 'calc(token(sizes.ghost) + 2px)'
+})
 
 // ✅
-css({ color: 'red.500' })
+css({
+  boxShadow: '0 0 0 1px {colors.red.500}',
+  width: 'calc(token(sizes.4) + 2px)'
+})
 ```
 
 #### no-invalid-nesting

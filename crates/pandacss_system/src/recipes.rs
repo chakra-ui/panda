@@ -312,7 +312,7 @@ impl RecipeRegistry {
             .collect()
     }
 
-    fn variant_props(&self, recipe_name: &str) -> Option<&FxHashSet<Box<str>>> {
+    pub(crate) fn variant_props(&self, recipe_name: &str) -> Option<&FxHashSet<Box<str>>> {
         self.recipes
             .get(recipe_name)
             .map(|node| &node.variant_props)

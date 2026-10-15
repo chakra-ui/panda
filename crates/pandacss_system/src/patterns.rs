@@ -19,6 +19,7 @@ pub(crate) struct PatternRegistry {
 #[derive(Debug, Clone)]
 struct PatternEntry {
     base_name: String,
+    property_styles: Arc<FxHashMap<String, bool>>,
     default_values: Option<Arc<Literal>>,
     requires_transform: bool,
 }
@@ -38,6 +39,7 @@ impl PatternRegistry {
             let default_values = definition.default_values.clone().map(Arc::new);
             let entry = PatternEntry {
                 base_name: definition.name.clone(),
+                property_styles: Arc::new(definition.property_styles.clone()),
                 default_values,
                 requires_transform: definition.requires_transform,
             };
@@ -57,6 +59,10 @@ impl PatternRegistry {
             );
         }
         registry
+    }
+
+    pub(crate) fn property_styles(&self, name: &str) -> Option<&FxHashMap<String, bool>> {
+        self.find(name).map(|entry| entry.property_styles.as_ref())
     }
 
     #[doc(hidden)]

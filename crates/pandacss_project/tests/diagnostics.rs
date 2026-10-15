@@ -683,3 +683,123 @@ fn nested_property_leaves_the_selector_argument_open_when_nothing_sits_between()
     );
     assert_snapshot!(summary(&report.diagnostics), @"Warning nested_property `has` in `has.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `'&:has(…)'` instead. [34..64]");
 }
+
+#[test]
+fn unknown_token_references_in_style_values_warn_once_per_call() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "theme": {
+            "tokens": {
+                "colors": { "red": { "500": { "value": "#f00" } } },
+                "sizes": { "4": { "value": "1rem" } }
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "style.tsx",
+        indoc! {r"
+            import { css, cva, sva } from '@panda/css';
+            import { Box } from '@panda/jsx';
+            css({
+              boxShadow: '0 0 0 1px {colors.shadow}',
+              border: '1px solid token(colors.border, red)',
+              width: 'calc(token(sizes.width) + 2px)',
+              _hover: { color: '{colors.hover/50}' },
+              caretColor: { base: '{colors.base}', _hover: '{colors.shadow}' },
+              accentColor: ['{colors.array}'],
+            });
+            cva({ base: { color: '{colors.cvaBase}' }, variants: { tone: { x: { color: '{colors.cvaVariant}' } } } });
+            sva({ slots: ['root'], base: { root: { color: '{colors.slot}' } } });
+            const J = () => <Box boxShadow='0 0 0 1px {colors.jsx}' />;
+        "},
+    );
+
+    assert_snapshot!(summary(&report.diagnostics), @"
+    Warning unknown_token_reference Token `colors.shadow` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `colors.border` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `sizes.width` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `colors.hover` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `colors.base` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `colors.array` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `colors.cvaBase` was not found. Check the path or add the token to your theme. [367..472]
+    Warning unknown_token_reference Token `colors.cvaVariant` was not found. Check the path or add the token to your theme. [367..472]
+    Warning unknown_token_reference Token `colors.slot` was not found. Check the path or add the token to your theme. [474..542]
+    Warning unknown_token_reference Token `colors.jsx` was not found. Check the path or add the token to your theme. [560..602]
+    ");
+}
+
+#[test]
+fn resolved_token_references_and_non_references_do_not_warn() {
+    let mut project = create_project(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "red": { "500": { "value": "#f00" } } },
+                "sizes": { "4": { "value": "1rem" } }
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            css({
+              boxShadow: '0 0 0 1px {colors.red.500}',
+              outline: '1px solid token(colors.red.500, blue)',
+              width: 'calc(token(sizes.4) + 2px)',
+              color: '{colors.red.500/50}',
+              content: '"{ hello }"',
+              quotes: '"{" "}"',
+              backgroundImage: 'url(/img.v2.png)',
+              fill: 'var(--colors-red-500)',
+            });
+        "#},
+    );
+
+    assert!(
+        report.diagnostics.is_empty(),
+        "{}",
+        summary(&report.diagnostics)
+    );
+}
+
+#[test]
+fn missing_token_fallbacks_warn_once_per_owner_at_the_owner_location() {
+    let mut project = create_project(json!({
+        "theme": {"tokens": {"sizes": {"4": {"value": "1rem"}}}}
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+        import {css} from '@panda/css'
+        css({
+            width: 'token(sizes.ghost, 10px)',
+            _hover: {width: 'token(sizes.ghost, 20px)'},
+        })
+        css({width: 'token(sizes.ghost, 30px)'})
+    "},
+    );
+    let warnings: Vec<_> = report
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == diagnostic_codes::UNKNOWN_TOKEN_REFERENCE)
+        .collect();
+    assert_eq!(warnings.len(), 2);
+    assert!(
+        warnings
+            .iter()
+            .all(|warning| warning.message.contains("`sizes.ghost`"))
+    );
+    let lines: Vec<_> = warnings
+        .iter()
+        .map(|warning| {
+            warning
+                .location
+                .as_ref()
+                .expect("source location")
+                .start
+                .line
+        })
+        .collect();
+    assert_eq!(lines, [2, 6]);
+}

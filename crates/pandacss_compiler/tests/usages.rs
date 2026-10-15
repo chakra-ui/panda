@@ -947,7 +947,7 @@ fn collects_position_try_and_view_transition_styles_as_entries() {
     );
     assert_snapshot!(style_summary(&result), @"
     Unknown CssCall Safe marginTop -> None path=marginTop
-    Utility CssCall ReportOnly color -> None path=color
+    Utility CssCall Safe color -> None path=old.color
     ");
 }
 
@@ -995,4 +995,307 @@ fn inspection_and_compilation_share_file_local_condition_diagnostics() {
           line: 3
           column: 38
     "#);
+}
+
+#[test]
+fn inspection_locates_token_references_inside_style_values() {
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        import { Box } from '@panda/jsx'
+        const shadow = '0 0 0 1px {colors.fromVariable}'
+        css({
+          color: '{colors.red.500} {colors.missing/50}',
+          padding: `calc(token(spacing.gap) + 2px)`,
+          boxShadow: shadow,
+          _hover: { color: '1px solid token(colors.red.300, {colors.fallback})' },
+        })
+        const J = () => <Box color='{colors.jsx}' />
+    "};
+    let result = inspect_file_source(&system(), "a.tsx", source);
+
+    let refs = result
+        .token_refs
+        .iter()
+        .map(|reference| {
+            let at = &source[reference.span.start as usize..reference.span.end as usize];
+            format!("{} resolved={} at={at}", reference.path, reference.resolved)
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    assert_snapshot!(refs, @"
+    colors.red.500 resolved=true at=colors.red.500
+    colors.missing resolved=false at=colors.missing
+    spacing.gap resolved=false at=spacing.gap
+    colors.fromVariable resolved=false at=shadow
+    colors.red.300 resolved=true at=colors.red.300
+    colors.fallback resolved=false at=colors.fallback
+    colors.jsx resolved=false at=colors.jsx
+    ");
+}
+
+#[test]
+fn recipe_metadata_is_not_a_token_reference() {
+    let source = r#"
+        import { Box } from '@panda/jsx'
+        import { cva } from '@panda/css'
+        const J = () => <Box title="{colors.example}" data-example="token(colors.example)" />
+        cva({ className: '{colors.label}', base: { color: 'red.500' } })
+    "#;
+    let result = inspect_file_source(&system(), "a.tsx", source);
+    assert!(result.token_refs.is_empty(), "{:#?}", result.token_refs);
+}
+
+#[test]
+fn inspection_and_build_share_semantic_token_reference_boundaries() {
+    let mut project = pandacss_project::Project::new(system());
+    let system = system();
+    let cases: &[(&str, &[&str])] = &[
+        (
+            "css({color: '{colors.first}'}, {padding: ['token(spacing.second)', '{spacing.third}']})",
+            &["colors.first", "spacing.second", "spacing.third"],
+        ),
+        (
+            "css(flag ? {color: '{colors.yes}'} : {color: '{colors.no}'})",
+            &["colors.yes", "colors.no"],
+        ),
+        (
+            "css({_hover: flag ? {color: '{colors.hoverYes}'} : {color: '{colors.hoverNo}'}})",
+            &["colors.hoverYes", "colors.hoverNo"],
+        ),
+        (
+            "cva({className: '{colors.metadata}', base: {color: '{colors.base}'}, variants: {tone: {'{colors.selector}': {color: '{colors.variant}'}}}, defaultVariants: {tone: '{colors.default}'}, compoundVariants: [{tone: '{colors.compoundSelector}', css: {color: '{colors.compound}'}}]})",
+            &["colors.base", "colors.variant", "colors.compound"],
+        ),
+        (
+            "sva({slots: ['{colors.slotName}'], className: '{colors.className}', base: {root: {color: '{colors.slot}'}}})",
+            &["colors.slot"],
+        ),
+        (
+            "styled('div', {base: {color: '{colors.direct}'}}, {defaultProps: {title: '{colors.title}', color: '{colors.defaultProp}'}, data: '{colors.options}'})",
+            &["colors.direct", "colors.defaultProp"],
+        ),
+        (
+            "styled.div({color: '{colors.member}'}, {defaultProps: {title: '{colors.title}', color: '{colors.memberDefault}'}})",
+            &["colors.member", "colors.memberDefault"],
+        ),
+        (
+            "viewTransition({name: '{colors.name}', old: {color: '{colors.old}'}, new: {color: '{colors.new}'}})",
+            &["colors.old", "colors.new"],
+        ),
+        ("viewTransition('{colors.named}')", &[]),
+        ("positionTry('{colors.named}')", &[]),
+        ("positionTry({top: '{spacing.top}'})", &["spacing.top"]),
+        (
+            "keyframes({from: {color: '{colors.from}'}, to: {color: '{colors.to}'}})",
+            &["colors.from", "colors.to"],
+        ),
+        (
+            "const J = () => <Box title='{colors.title}' css={[{color: '{colors.cssProp}'}]} color={{base: '{colors.responsive}'}} />",
+            &["colors.cssProp", "colors.responsive"],
+        ),
+    ];
+    for (body, expected) in cases {
+        let source = format!(
+            "import {{css, cva, sva, viewTransition, positionTry, keyframes}} from '@panda/css';\nimport {{styled, Box}} from '@panda/jsx';\n{body}"
+        );
+        let inspection = inspect_file_source(&system, "a.tsx", &source);
+        let paths: Vec<_> = inspection
+            .token_refs
+            .iter()
+            .map(|reference| reference.path.as_str())
+            .collect();
+        assert_eq!(paths, *expected, "inspection: {body}");
+        let report = project.parse_file("a.tsx", &source);
+        let token_warnings: Vec<_> = report
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.code == "unknown_token_reference")
+            .collect();
+        assert_eq!(
+            token_warnings.len(),
+            expected.len(),
+            "build: {body}: {token_warnings:#?}"
+        );
+        for (warning, path) in token_warnings.iter().zip(*expected) {
+            assert!(
+                warning.message.contains(&format!("`{path}`")),
+                "{body}: {}",
+                warning.message
+            );
+        }
+    }
+}
+
+#[test]
+fn recipe_variant_values_are_not_style_token_references() {
+    let system = system_with(json!({
+        "jsxFramework": "react",
+        "theme": {
+            "tokens": {"colors": {"red": {"500": {"value": "#f00"}}}},
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "jsx": ["Button"],
+                    "variants": {"color": {"{colors.selector}": {"display": "block"}}}
+                }
+            }
+        },
+        "utilities": {"color": {"values": "colors"}, "backgroundColor": {"values": "colors"}}
+    }));
+    let source = indoc! {r"
+        import {button} from '@panda/recipes'
+        import {styled} from '@panda/jsx'
+        button({color: '{colors.selector}'})
+        styled('button', button, {defaultProps: {color: '{colors.selector}', backgroundColor: '{colors.default}'}})
+        const J = () => <Button color='{colors.selector}' backgroundColor='{colors.override}' css={{color: '{colors.nested}'}} />
+    "};
+    let inspection = inspect_file_source(&system, "a.tsx", source);
+    let paths: Vec<_> = inspection
+        .token_refs
+        .iter()
+        .map(|reference| reference.path.as_str())
+        .collect();
+    assert_eq!(
+        paths,
+        ["colors.default", "colors.override", "colors.nested"]
+    );
+    let mut project = pandacss_project::Project::new(system);
+    let report = project.parse_file("a.tsx", source);
+    let warnings: Vec<_> = report
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == "unknown_token_reference")
+        .collect();
+    assert_eq!(warnings.len(), 3, "{warnings:#?}");
+    assert!(
+        warnings
+            .iter()
+            .all(|warning| !warning.message.contains("colors.selector"))
+    );
+}
+
+#[test]
+fn escaped_and_folded_string_references_keep_reportable_source_spans() {
+    let source = indoc! {r"
+        import {css} from '@panda/css'
+        const suffix = 'missing'
+        css({color: '\u007bcolors.escaped}', padding: `{spacing.${suffix}}`})
+    "};
+    let result = inspect_file_source(&system(), "a.tsx", source);
+    let refs: Vec<_> = result
+        .token_refs
+        .iter()
+        .map(|reference| {
+            (
+                reference.path.as_str(),
+                &source[reference.span.start as usize..reference.span.end as usize],
+            )
+        })
+        .collect();
+    assert_eq!(
+        refs,
+        [
+            ("colors.escaped", "'\\u007bcolors.escaped}'"),
+            ("spacing.missing", "`{spacing.${suffix}}`"),
+        ]
+    );
+}
+
+#[test]
+fn pattern_references_only_scan_style_valued_props() {
+    let system = system_with(json!({
+        "jsxFramework": "react",
+        "theme": {"tokens": {"sizes": {"4": {"value": "1rem"}}}},
+        "patterns": {"stack": {"properties": {
+            "label": {"type": "string"},
+            "direction": {"type": "enum", "value": ["row", "column"]},
+            "space": {"type": "property", "value": "gap"},
+            "shade": {"type": "token", "value": "colors"}
+        }}}
+    }));
+    let source = indoc! {r"
+        import {stack} from '@panda/patterns'
+        import {Stack} from '@panda/jsx'
+        stack({label: '{user.name}', direction: 'token(application.mode)', space: '{spacing.fn}', shade: '{colors.fn}', gap: '{spacing.gap}'})
+        const J = () => <Stack label='{user.name}' direction='token(application.mode)' space='{spacing.jsx}' shade='{colors.jsx}' title='{user.title}' css={{color: '{colors.css}'}} />
+    "};
+    let result = inspect_file_source(&system, "a.tsx", source);
+    let paths: Vec<_> = result
+        .token_refs
+        .iter()
+        .map(|reference| reference.path.as_str())
+        .collect();
+    assert_eq!(
+        paths,
+        [
+            "spacing.fn",
+            "colors.fn",
+            "spacing.gap",
+            "spacing.jsx",
+            "colors.jsx",
+            "colors.css"
+        ]
+    );
+    let mut project = pandacss_project::Project::new(system);
+    let report = project.parse_file("a.tsx", source);
+    let warnings: Vec<_> = report
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == "unknown_token_reference")
+        .collect();
+    assert_eq!(warnings.len(), paths.len());
+    assert!(
+        warnings
+            .iter()
+            .all(|warning| !warning.message.contains("user.")
+                && !warning.message.contains("application.mode"))
+    );
+}
+
+#[test]
+fn lint_keeps_each_missing_token_reference_even_with_a_fallback() {
+    let source = indoc! {r"
+        import {css} from '@panda/css'
+        css({
+            width: 'token(sizes.ghost, 10px)',
+            _hover: {width: 'token(sizes.ghost, 20px)'},
+        })
+    "};
+    let result = inspect_file_source(&system(), "a.tsx", source);
+    assert_eq!(result.token_refs.len(), 2);
+    for reference in &result.token_refs {
+        assert!(!reference.resolved);
+        assert_eq!(
+            &source[reference.span.start as usize..reference.span.end as usize],
+            "sizes.ghost"
+        );
+    }
+    let warnings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == "unknown_token_reference")
+        .collect();
+    assert_eq!(warnings.len(), 1);
+}
+
+#[test]
+fn inspection_retains_reference_locations_through_indexed_style_paths() {
+    let source = indoc! {r"
+        import { css, cva, sva } from '@panda/css'
+        import { styled, Box } from '@panda/jsx'
+        css({padding: ['{spacing.first}', '{spacing.second}']})
+        cva({compoundVariants: [{tone: 'a', css: {color: '{colors.compound}'}}]})
+        sva({slots: ['root'], variants: {tone: {a: {root: {color: '{colors.slot}'}}}}})
+        styled.div({}, {defaultProps: {color: '{colors.default}'}})
+        const J = () => <Box css={[{color: '{colors.jsx}'}]} />
+    "};
+    let inspection = inspect_file_source(&system(), "a.tsx", source);
+    assert_eq!(inspection.token_refs.len(), 6);
+    for reference in inspection.token_refs {
+        assert_eq!(
+            &source[reference.span.start as usize..reference.span.end as usize],
+            reference.path
+        );
+    }
 }
