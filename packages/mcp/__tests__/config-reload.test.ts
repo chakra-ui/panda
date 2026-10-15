@@ -64,6 +64,24 @@ test('picks up edits to a preset swapped in with the same values', async () => {
   }, driver)
 })
 
+test('picks up an edit saved while a reload is running', async () => {
+  const reload = driver.reload.bind(driver)
+  driver.reload = async () => {
+    const diff = await reload()
+    driver.reload = reload
+    writeFileSync(join(dir, 'preset.ts'), preset('50'))
+    return diff
+  }
+
+  await withClient(async (client) => {
+    writeFileSync(join(dir, 'preset.ts'), preset('1000'))
+    await call(client, 'get_tokens', { category: 'zIndex' })
+
+    const after = await call(client, 'get_tokens', { category: 'zIndex' })
+    expect(JSON.parse(after.text).values['zIndex.devtools']).toBe('50')
+  }, driver)
+})
+
 test('accepts a token category added after the server started', async () => {
   await withClient(async (client) => {
     writeFileSync(

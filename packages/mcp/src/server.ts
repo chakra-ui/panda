@@ -196,9 +196,11 @@ function createConfigSync(driver: Driver) {
 
   return () =>
     (pending ??= (async () => {
-      if (stamp() === current) return
+      const next = stamp()
+      if (next === current) return
       await driver.reload()
-      current = stamp()
+      // Stamped before reloading so edits made during the reload trigger another one.
+      current = next
     })().finally(() => {
       pending = undefined
     }))
