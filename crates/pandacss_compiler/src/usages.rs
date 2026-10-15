@@ -1,6 +1,6 @@
 //! Position-carrying source inspection for tooling (reporting, lint, IDE).
 //! `inspect_file_source()` re-extracts a file and classifies each site (token,
-//! property, recipe, pattern, keyframe) using the engine's own token
+//! property, recipe, pattern, keyframe, composition) using the engine's own token
 //! dictionary, utilities, and keyframes.
 
 use pandacss_encoder::ConditionMatcher;
@@ -18,21 +18,29 @@ use crate::inspection::{
     StyleEntrySyntax, UsageKind, UsageSite, ValueSpanRef, call_view, component_entry, jsx_view,
     style_entry, token_ref_site, token_value_ref,
 };
+use pandacss_config::UserConfig;
 use pandacss_encoder::ConditionSet;
 use pandacss_extractor::{SourceRange, Span};
+use pandacss_stylesheet::{StyleReference, StyleReferences};
 use pandacss_system::System;
 
 struct Cx<'a> {
     utility: Option<&'a Utility>,
     tokens: Option<&'a TokenDictionary>,
     conditions: &'a ConditionSet,
-    keyframes: &'a rustc_hash::FxHashSet<String>,
+    /// The stylesheet's own answer to what a value references, so reports and emission agree.
+    references: Option<StyleReferences<'a>>,
 }
 
 /// Classifies every Panda usage in a file with its source range, plus
 /// file-local diagnostics. On-demand — not part of the build path.
 #[must_use]
-pub fn inspect_file_source(system: &System, path: &str, source: &str) -> FileInspectionResult {
+pub fn inspect_file_source(
+    system: &System,
+    config: &UserConfig,
+    path: &str,
+    source: &str,
+) -> FileInspectionResult {
     let mut result = extract_verbose(source, path, system.extractor_config());
     let line_index = LineIndex::new(source);
     pandacss_project::append_usage_diagnostics(
@@ -47,7 +55,9 @@ pub fn inspect_file_source(system: &System, path: &str, source: &str) -> FileIns
         utility: system.utility(),
         tokens: dict.as_deref(),
         conditions: system.conditions(),
-        keyframes: system.keyframes(),
+        references: system
+            .value_utility()
+            .map(|utility| StyleReferences::new(config, utility, dict.as_deref())),
     };
 
     let mut sites = Vec::new();
@@ -78,7 +88,7 @@ pub fn inspect_file_source(system: &System, path: &str, source: &str) -> FileIns
             MatchCategory::Pattern => sites.push(site(UsageKind::Pattern, &jsx.name, &range)),
             _ => {
                 if let Literal::Object(entries) = &jsx.data {
-                    walk_object(entries, &cx, &range, &mut sites);
+                    walk_jsx_style_props(entries, &cx, &range, &mut sites);
                     StyleEntryCollector {
                         cx: &cx,
                         span: jsx.span,
@@ -732,43 +742,20 @@ fn walk_prop(
                 .map_or(prop, |utility| utility.resolve_shorthand(prop));
             sites.push(site(UsageKind::Property, canonical, range));
 
-            // Each member is a value for this property in its own right, or its
-            // tokens and keyframes look unused and get pruned.
-            let members = parse_first_that_works_value(raw).unwrap_or_else(|| vec![raw.as_str()]);
-
-            // A `Literal::Token` already has its path via `token_refs`, so skip
-            // the category-relative heuristic to avoid duplicate sites.
-            if let Some(dict) = cx.tokens
-                && !matches!(value, Literal::Token { .. })
+            // A `Literal::Token` already reports its path through `token_refs`.
+            if !matches!(value, Literal::Token { .. })
+                && let Some(references) = &cx.references
             {
-                for member in &members {
-                    // Bare category-relative value on a known utility, e.g.
-                    // `color: 'red.300'` (optionally `red.300/40`).
-                    if let Some(utility) = cx.utility
-                        && let Some(category) = utility.token_category(prop)
-                    {
-                        let path = format!("{category}.{}", strip_modifier(member));
-                        if dict.token(&path).is_some() {
-                            sites.push(site(UsageKind::Token, &path, range));
+                // Each `firstThatWorks` member is a value in its own right.
+                let members =
+                    parse_first_that_works_value(raw).unwrap_or_else(|| vec![raw.as_str()]);
+                let mut seen = rustc_hash::FxHashSet::default();
+                for member in members {
+                    let member = serde_json::Value::String(member.to_owned());
+                    for reference in references.property(prop, &member) {
+                        if seen.insert(reference.clone()) {
+                            push_reference_site(reference, range, sites);
                         }
-                    }
-                    collect_token_refs(member, dict, &mut |path| {
-                        sites.push(site(UsageKind::Token, path, range));
-                    });
-                }
-            }
-
-            // Match each whitespace/comma-separated word against the keyframe
-            // set, catching shorthands (`spin 1s linear`) and lists (`spin, fade`).
-            if matches!(canonical, "animation" | "animationName") {
-                for word in members
-                    .iter()
-                    .flat_map(|member| member.split([' ', ',']))
-                    .map(str::trim)
-                    .filter(|word| !word.is_empty())
-                {
-                    if cx.keyframes.contains(word) {
-                        sites.push(site(UsageKind::Keyframe, word, range));
                     }
                 }
             }
@@ -794,55 +781,20 @@ fn walk_prop(
     }
 }
 
-/// Strips a trailing `/opacity` color modifier: `red.300/40` -> `red.300`.
-/// Safe on any candidate path since token paths never contain `/`.
-fn strip_modifier(value: &str) -> &str {
-    value
-        .split_once('/')
-        .map_or(value, |(base, _)| base.trim_end())
-}
-
-/// Emits every token path referenced inside a value string: `{colors.red.200}`
-/// curly refs, `token(...)` written inside a string (a bare `token(...)` call
-/// is resolved during extraction and captured via
-/// [`token_refs`](pandacss_extractor::TokenRef) instead), and a value that's
-/// itself a token path. Each candidate runs through [`strip_modifier`] first.
-fn collect_token_refs(raw: &str, dict: &TokenDictionary, emit: &mut impl FnMut(&str)) {
-    let mut embedded = false;
-
-    let mut rest = raw;
-    while let Some(open) = rest.find('{') {
-        let after = &rest[open + 1..];
-        let Some(close) = after.find('}') else { break };
-        let key = strip_modifier(after[..close].trim());
-        if dict.token(key).is_some() {
-            emit(key);
-        }
-        embedded = true;
-        rest = &after[close + 1..];
-    }
-
-    let mut rest = raw;
-    while let Some(open) = rest.find("token(") {
-        let after = &rest[open + "token(".len()..];
-        let end = after.find([',', ')']).unwrap_or(after.len());
-        let arg = after[..end].trim().trim_matches(['\'', '"']);
-        let key = strip_modifier(arg);
-        if dict.token(key).is_some() {
-            emit(key);
-        }
-        embedded = true;
-        rest = &after[end..];
-    }
-
-    // A whole-value token path, e.g. `'--ring': 'colors.red.400'`. Skip if the
-    // value already carried a `{…}`/`token(…)` reference handled above.
-    if !embedded {
-        let key = strip_modifier(raw.trim());
-        if !key.is_empty() && dict.token(key).is_some() {
-            emit(key);
-        }
-    }
+/// A token, keyframe, or composition the written value references. Utilities are
+/// already reported as the property site.
+fn push_reference_site(reference: StyleReference, range: &SourceRange, sites: &mut Vec<UsageSite>) {
+    let (kind, name) = match reference {
+        StyleReference::Token(path) => (UsageKind::Token, path),
+        StyleReference::Keyframe(name) => (UsageKind::Keyframe, name),
+        StyleReference::Composition(path) => (UsageKind::Composition, path),
+        StyleReference::Utility(_) => return,
+    };
+    sites.push(UsageSite {
+        kind,
+        name,
+        range: *range,
+    });
 }
 
 /// A key that nests a style object rather than naming a property: a

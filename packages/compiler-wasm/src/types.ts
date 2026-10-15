@@ -38,6 +38,8 @@ import type {
   ResolvedUtilityValue,
   SerializedHookFilter,
   SourceEntry,
+  SourceFileInput,
+  UsageRequirements,
   Spec,
   StaticPatternResult,
   TokenSuggestion,
@@ -128,6 +130,7 @@ export declare class WasmCompiler {
   stripLayerOrderStatements(css: string): string
   spec(): Spec
   sources(): SourceEntry[]
+  inspectUsageRequirements(files: SourceFileInput[]): UsageRequirements
   inspectFileSource(path: string, source: string): Omit<FileInspectionResult, 'path'>
   resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
   suggestTokens(prop: string, value: string): TokenSuggestion[]

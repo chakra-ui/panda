@@ -113,6 +113,25 @@ sequence. The shared declaration merger compares importance first, then that seq
 This works on CSS properties after utility transforms and replaces whole fallback runs together. It matches v1 config
 recipes.
 
+Unused-keyframe pruning follows animation values through token variables, aliases, conditional token values, and `var()`
+fallbacks. `visit_animation_names` owns that traversal in the stylesheet crate and guards against cycles. Variable names
+come from the token dictionary, so custom prefixes and hashing do not change dependency tracking.
+
+### Style references
+
+Pruning and usage reports share one walk. The emitter's usage collectors lower styles exactly as they are emitted
+(utility transforms, `firstThatWorks`, conditions, nested selectors, recipe groups) and push what they read into a
+`ReferenceSink`. Two sinks decide what to keep:
+
+- `UsageMarks` (pruning) follows animation tokens to keyframes and lowers compositions in place.
+- `StyleReferences` (reports, public) keeps direct references only: `Token`, `Keyframe`, `Composition`, `Utility`.
+  `dependencies()` then expands one asset: a token's value under every condition, a keyframe's steps, a composition's
+  styles.
+
+Source inspection (`pandacss_compiler::inspect_file_source`) asks `StyleReferences::property` what each written value
+references, and the analyze graph (`emitter/requirements.rs`) asks the same API for config places. Neither keeps its own
+token or keyframe heuristics, so a value means the same thing in source, in config, and in the CSS.
+
 Atomic styles (`css()`, `cva()`, style props) can't follow one object's key order, since their classes are shared across
 call sites. There a composition's class sits in `@layer compositions`, below direct property classes, so a direct
 property always wins.

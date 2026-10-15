@@ -3,6 +3,8 @@ import type { UsageReport } from './types'
 export interface TokenUse {
   name: string
   uses: number
+  /** Config places that use it, such as `globalCss` or `via colors.brand`. */
+  config?: string[]
 }
 
 export interface CategoryUsage {
@@ -44,7 +46,11 @@ export function summarizeTokenUsage(report: ReportShape): CategoryUsage[] {
       unused: category.unused,
       percent: category.percentUsed,
       tokens: [
-        ...(category.top ?? []).map((token) => ({ name: token.name, uses: token.uses })),
+        ...(category.top ?? []).map((token) => ({
+          name: token.name,
+          uses: token.uses,
+          ...(token.config ? { config: token.config } : {}),
+        })),
         ...unused.map((name) => ({ name, uses: 0 })),
       ],
     }

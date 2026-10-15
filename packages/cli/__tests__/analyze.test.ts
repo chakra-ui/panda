@@ -94,6 +94,7 @@ describe('cli analyze', () => {
         "files": [
           {
             "counts": {
+              "compositions": 0,
               "keyframes": 0,
               "patterns": 0,
               "recipes": 0,
@@ -109,6 +110,11 @@ describe('cli analyze', () => {
         "sourceCount": 1,
         "sourceUsages": 1,
         "summary": {
+          "compositions": {
+            "total": 0,
+            "unique": 0,
+            "used": 0,
+          },
           "keyframes": {
             "total": 0,
             "unique": 0,
@@ -145,6 +151,13 @@ describe('cli analyze', () => {
           },
         ],
         "views": {
+          "compositions": {
+            "items": [],
+            "percentUsed": 0,
+            "total": 0,
+            "unused": [],
+            "used": 0,
+          },
           "keyframes": {
             "items": [],
             "percentUsed": 0,
@@ -244,34 +257,37 @@ describe('cli analyze', () => {
       "analyze: scanned 1 files
 
       Summary
-      tokens      3 uses, 2 unique
-      recipes     0 uses, 0 unique
-      utilities   3 uses, 2 unique
-      patterns    1 uses, 1 unique
-      keyframes   1 uses, 1 unique
+      tokens         3 uses, 2 unique
+      recipes        0 uses, 0 unique
+      utilities      3 uses, 2 unique
+      patterns       1 uses, 1 unique
+      keyframes      1 uses, 1 unique
+      compositions   0 uses, 0 unique
 
       Tokens
       Category   Used            Top tokens    Raw values   Files
       colors     1/1 (100.00%)   red.500 (1)   0            1
-      spacing    1/2 (50.00%)    4 (2)         0            1
+      spacing    1/1 (100.00%)   4 (2)         0            1
 
-      No config recipes found
+      No config recipes used
 
       Utilities   2/4 used (50.00%)
-      Utility   Uses   Files
-      padding   2      1
-      color     1      1
-      Unused in scanned sources (2): colorPalette, margin
+      Utility   Uses   Used in
+      padding   2      1 file
+      color     1      1 file
+      Unused (2): colorPalette, margin
 
       Patterns   1/2 used (50.00%)
-      Pattern   Uses   Files
-      stack     1      1
-      Unused in scanned sources (1): hstack
+      Pattern   Uses   Used in
+      stack     1      1 file
+      Unused (1): hstack
 
       Keyframes   1/2 used (50.00%)
-      Keyframe   Uses   Files
-      spin       1      1
-      Unused in scanned sources (1): pulse"
+      Keyframe   Uses   Used in
+      spin       1      1 file
+      Unused (1): pulse
+
+      No compositions found"
     `)
 
     logs.length = 0
@@ -281,9 +297,9 @@ describe('cli analyze', () => {
       "analyze: scanned 1 files
 
       Keyframes   1/2 used (50.00%)
-      Keyframe   Uses   Files
-      spin       1      1
-      Unused in scanned sources (1): pulse"
+      Keyframe   Uses   Used in
+      spin       1      1 file
+      Unused (1): pulse"
     `)
   })
 
@@ -316,7 +332,7 @@ describe('cli analyze', () => {
 
     expect(logs.join('\n')).toMatchInlineSnapshot(`
       "analyze: scanned 1 files
-      Unused in scanned sources
+      Unused
 
       Tokens (1)
       colors.blue.500
@@ -332,7 +348,9 @@ describe('cli analyze', () => {
       stack
 
       Keyframes (1)
-      pulse"
+      pulse
+
+      Compositions (0)"
     `)
 
     logs.length = 0
@@ -397,29 +415,119 @@ describe('cli analyze', () => {
       "analyze: scanned 1 files
 
       Summary
-      tokens      1 uses, 1 unique
-      recipes     1 uses, 1 unique
-      utilities   1 uses, 1 unique
-      patterns    0 uses, 0 unique
-      keyframes   0 uses, 0 unique
+      tokens         2 uses, 1 unique
+      recipes        1 uses, 1 unique
+      utilities      2 uses, 1 unique
+      patterns       0 uses, 0 unique
+      keyframes      0 uses, 0 unique
+      compositions   0 uses, 0 unique
 
       Tokens
       Category   Used           Top tokens    Raw values   Files
-      colors     1/2 (50.00%)   red.500 (1)   0            1
+      colors     1/2 (50.00%)   red.500 (2)   0            1
 
       Recipes
-      Recipe   Variants       Top variants   Files   Used as
-      button   1/2 (50.00%)   size.sm (1)    1       jsx 100%, fn 0%
+      Recipe   Variants       Top variants   Used in   Used as
+      button   1/2 (50.00%)   size.sm (1)    1 file    jsx 100%, fn 0%
 
       Utilities   1/2 used (50.00%)
-      Utility   Uses   Files
-      color     1      1
-      Unused in scanned sources (1): colorPalette
+      Utility   Uses   Used in
+      color     2      1 file, recipes.button
+      Unused (1): colorPalette
 
       No patterns found
 
-      No keyframes found"
+      No keyframes found
+
+      No compositions found"
     `)
+  })
+
+  it('counts styles used from config, with the place that uses them, without adding source sites', async () => {
+    dir = createFixture(
+      `export default {
+        outdir: 'styled-system',
+        include: ['**/*.tsx'],
+        theme: {
+          tokens: { colors: { brand: { value: '#f00' } } },
+          keyframes: {
+            globalMotion: { to: { opacity: 0 } },
+            staticMotion: { to: { opacity: 0 } },
+            recipeMotion: { to: { opacity: 0 } },
+            unusedMotion: { to: { opacity: 0 } },
+          },
+          recipes: {
+            badge: { base: { animationName: 'recipeMotion' } },
+            unusedRecipe: { base: { animationName: 'unusedMotion' } },
+          },
+        },
+        utilities: {
+          color: { className: 'c', values: 'colors' },
+          animationName: { className: 'anim-name', values: 'keyframes' },
+        },
+        globalCss: { body: { color: 'brand', animationName: 'globalMotion' } },
+        staticCss: {
+          css: [{ properties: { animationName: ['staticMotion'] } }],
+          recipes: { badge: [{}] },
+        },
+      }`,
+      { source: false },
+    )
+
+    const logs: string[] = []
+    const result = await runAnalyze({ cwd: dir, scope: 'keyframes', unused: true }, { log: (line) => logs.push(line) })
+
+    expect(result.ok).toBe(true)
+    expect(logs).toEqual(['unusedMotion'])
+    expect(result.sourceCount).toBe(0)
+    expect(result.sourceUsages).toBe(0)
+    expect(result.summary.keyframes.used).toBe(3)
+    expect(result.usages).toEqual([])
+    expect(result.files).toEqual([])
+    expect(result.views?.keyframes.items).toMatchInlineSnapshot(`
+      [
+        {
+          "config": [
+            "globalCss",
+          ],
+          "files": 0,
+          "name": "globalMotion",
+          "uses": 1,
+        },
+        {
+          "config": [
+            "staticCss.recipes.badge",
+          ],
+          "files": 0,
+          "name": "recipeMotion",
+          "uses": 1,
+        },
+        {
+          "config": [
+            "staticCss.css",
+          ],
+          "files": 0,
+          "name": "staticMotion",
+          "uses": 1,
+        },
+      ]
+    `)
+
+    logs.length = 0
+    await runAnalyze({ cwd: dir, scope: 'keyframes', limit: 1 }, { log: (line) => logs.push(line) })
+    expect(logs.join('\n')).toMatchInlineSnapshot(`
+      "analyze: scanned 0 files
+
+      Keyframes   3/4 used (75.00%)
+      Keyframe       Uses   Used in
+      globalMotion   1      globalCss
+      Unused (1): unusedMotion"
+    `)
+
+    const all = await runAnalyze({ cwd: dir, logLevel: 'silent' })
+    expect(all.views?.tokens.unused).not.toContain('colors.brand')
+    expect(all.views?.utilities.unused).not.toContain('animationName')
+    expect(all.views?.recipes.unused).toEqual(['unusedRecipe'])
   })
 })
 

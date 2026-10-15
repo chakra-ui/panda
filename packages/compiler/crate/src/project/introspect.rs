@@ -3,6 +3,7 @@ use super::{
     SourceEntry,
 };
 
+use napi::Env;
 use napi_derive::napi;
 
 #[napi]
@@ -22,8 +23,52 @@ impl Compiler {
         path: String,
         source: String,
     ) -> napi::Result<serde_json::Value> {
-        let result = pandacss_compiler::inspect_file_source(self.inner.system(), &path, &source);
+        let result = pandacss_compiler::inspect_file_source(
+            self.inner.system(),
+            &self.user_config,
+            &path,
+            &source,
+        );
         serde_json::to_value(&result).map_err(|err| napi::Error::from_reason(err.to_string()))
+    }
+
+    /// Collect dependencies of styles selected by fresh sources and configuration.
+    ///
+    /// # Errors
+    /// Returns an error if the input or result cannot be serialized.
+    #[napi(js_name = inspectUsageRequirements)]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn inspect_usage_requirements(
+        &mut self,
+        env: Env,
+        files: serde_json::Value,
+    ) -> napi::Result<serde_json::Value> {
+        let files: Vec<pandacss_compiler::UsageSource> = serde_json::from_value(files)
+            .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+        let mut project = self.inner.fork_empty();
+        let cache = std::mem::take(&mut self.callbacks.transform_cache);
+        for file in files {
+            super::files::parse_project_source(
+                &mut project,
+                &mut self.callbacks,
+                &env,
+                &file.path,
+                &file.source,
+                None,
+            );
+        }
+        let result = super::css::with_project_stylesheet_transforms(
+            &mut project,
+            &self.user_config,
+            &mut self.callbacks,
+            &env,
+            pandacss_compiler::collect_usage_requirements,
+        );
+        self.callbacks.transform_cache = cache;
+        serde_json::to_value(result).map_err(|err| napi::Error::from_reason(err.to_string()))
     }
 
     /// Resolve selector and CSS metadata for one utility value.
