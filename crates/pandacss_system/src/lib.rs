@@ -10,6 +10,7 @@ mod error;
 mod inline_recipe_raw;
 mod patterns;
 mod recipes;
+mod source_styles;
 mod static_patterns;
 mod style_encoding;
 mod style_values;
@@ -23,6 +24,9 @@ pub use inline_recipe_raw::{
     resolve_inline_recipe_raw,
 };
 pub use recipes::{EncodedRecipes, EncodedRecipesCache};
+pub use source_styles::{
+    SourceStyleKind, visit_call_style_objects, visit_call_style_strings, visit_jsx_style_strings,
+};
 pub use style_values::{
     atom_value_summary, condition_style_key, is_empty_style_object, literal_entries,
     merge_style_entry, merge_style_props, resolved_atom_value, with_callback_target,

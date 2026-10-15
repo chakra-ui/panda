@@ -2,7 +2,7 @@ use pandacss_encoder::{ConditionMatcher, Encoder};
 use pandacss_extractor::{ExtractedCall, ExtractedJsx, LineIndex, MatchCategory, Span};
 use pandacss_literal::Literal;
 use pandacss_shared::{Diagnostic, diagnostic_codes};
-use pandacss_system::System;
+use pandacss_system::{System, visit_call_style_strings, visit_jsx_style_strings};
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, token_references};
 use rustc_hash::FxHashSet;
@@ -28,7 +28,7 @@ pub fn append_usage_diagnostics(
     push_unknown_condition_diagnostics(calls, jsx, system.conditions(), line_index, out);
 
     if let Some(tokens) = system.token_dictionary() {
-        push_unknown_token_reference_diagnostics(calls, jsx, &tokens, line_index, out);
+        push_unknown_token_reference_diagnostics(system, calls, jsx, &tokens, line_index, out);
     }
 }
 
@@ -288,46 +288,26 @@ fn invalid_color_opacity_modifier_diagnostic(
 }
 
 fn push_unknown_token_reference_diagnostics(
+    system: &System,
     calls: &[ExtractedCall],
     jsx: &[ExtractedJsx],
     tokens: &TokenDictionary,
     line_index: &LineIndex<'_>,
     out: &mut Vec<Diagnostic>,
 ) {
-    push_usage_diagnostics(
-        calls,
-        jsx,
-        line_index,
-        out,
-        |literal, seen| collect_unknown_token_references(literal, tokens, seen),
-        unknown_token_reference_diagnostic,
-    );
-}
-
-fn collect_unknown_token_references(
-    value: &Literal,
-    tokens: &TokenDictionary,
-    out: &mut Vec<String>,
-) {
-    match value {
-        Literal::String(text) => {
-            for (path, _) in token_references(text, tokens) {
-                if tokens.token(path).is_none() && !out.iter().any(|seen| seen == path) {
-                    out.push(path.to_owned());
-                }
+    let mut seen = FxHashSet::default();
+    let mut collect = |span, text: &str| {
+        for (path, _) in token_references(text, tokens) {
+            if tokens.token(path).is_none() && seen.insert((span, path.to_owned())) {
+                out.push(unknown_token_reference_diagnostic(path, span, line_index));
             }
         }
-        Literal::Object(entries) => {
-            for (_, child) in entries {
-                collect_unknown_token_references(child, tokens, out);
-            }
-        }
-        Literal::Array(items) | Literal::Conditional(items) => {
-            for item in items {
-                collect_unknown_token_references(item, tokens, out);
-            }
-        }
-        Literal::Token { .. } | Literal::Number(_) | Literal::Bool(_) | Literal::Null => {}
+    };
+    for call in calls {
+        visit_call_style_strings(system, call, |_, text| collect(call.span, text));
+    }
+    for entry in jsx {
+        visit_jsx_style_strings(system, entry, |_, text| collect(entry.span, text));
     }
 }
 

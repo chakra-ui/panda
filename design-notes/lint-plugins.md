@@ -131,8 +131,20 @@ patterns less opaque for lint rules by adding typed projections for recipe varia
 
 ## File Inspection API
 
-`inspectFileSource` is the lint boundary. Compilation and inspection share file-local checks for unknown conditions,
-deprecated utilities, and invalid color opacity modifiers. Token category inference compares both utility keys and their
+`inspectFileSource` is the lint boundary. `pandacss_system::source_styles` owns the semantic source-style traversal
+shared by inspection and token-reference diagnostics. It selects recipe style sections, factory style arguments and
+default props, transition slots, keyframe stops, and pattern inputs. Recipe selectors and other metadata are excluded;
+JSX props are filtered against utility metadata and recipe variant ownership. The factory argument indexes come from
+Oxc extraction, including member factories such as `styled.div`.
+
+Inspection joins those style paths to verbose extractor provenance. Embedded references become inspection records
+directly, rather than synthetic extractor `token()` calls. Reference offsets are precise when the decoded value occurs
+verbatim inside its source expression; escaped or folded values fall back to that expression's span. Builds use the same
+semantic traversal without collecting source provenance. Token summaries (`usages`) and explicit references (`tokenRefs`,
+including unresolved paths) remain separate projections.
+
+Compilation and inspection also share file-local checks for unknown conditions, deprecated utilities, and invalid color
+opacity modifiers. Token category inference compares both utility keys and their
 mapped token values, so fixed values such as `flex: "1"` do not become token-backed by name alone.
 
 `prefer-token` visits the branches of serialized conditional values without treating the `kind` tag as a style value.

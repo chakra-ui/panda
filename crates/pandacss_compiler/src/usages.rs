@@ -6,7 +6,7 @@
 use pandacss_encoder::ConditionMatcher;
 use pandacss_extractor::{
     ExtractedCall, ExtractedJsx, LineIndex, MatchCategory, StyleSourceOwnerKind, StyleSourceRef,
-    TokenRef, extract_verbose,
+    extract_verbose,
 };
 use pandacss_literal::Literal;
 use pandacss_shared::parse_first_that_works_value;
@@ -21,7 +21,10 @@ use crate::inspection::{
 };
 use pandacss_encoder::ConditionSet;
 use pandacss_extractor::{SourceRange, Span};
-use pandacss_system::System;
+use pandacss_system::{
+    SourceStyleKind, System, visit_call_style_objects, visit_call_style_strings,
+    visit_jsx_style_strings,
+};
 
 struct Cx<'a> {
     utility: Option<&'a Utility>,
@@ -83,14 +86,17 @@ pub fn inspect_file_source(system: &System, path: &str, source: &str) -> FileIns
         let range = line_index.locate_range(token_ref.span.start, token_ref.span.end);
         sites.push(site(UsageKind::Token, &token_ref.path, &range));
     }
-    let value_token_refs = cx.tokens.map_or_else(Vec::new, |dict| {
-        style_value_token_refs(&style_entries, source, dict)
-    });
     let token_refs = result
         .token_refs
         .iter()
-        .chain(&value_token_refs)
         .map(|token_ref| token_ref_site(token_ref, &line_index, cx.tokens))
+        .chain(style_value_token_refs(
+            system,
+            &result.calls,
+            &result.jsx,
+            source,
+            &source_refs,
+        ))
         .collect();
 
     FileInspectionResult {
@@ -175,10 +181,6 @@ struct InspectAccum<'a> {
 
 /// Classifies one extracted call and collects its usages + style entries:
 /// `css({...})`, the recipe factories, and recipe/pattern call sites.
-#[allow(
-    clippy::too_many_lines,
-    reason = "each MatchCategory arm is an independent style walk"
-)]
 fn collect_call_styles(
     call: &ExtractedCall,
     index: usize,
@@ -196,145 +198,45 @@ fn collect_call_styles(
         owner_index: u32::try_from(index).unwrap_or(u32::MAX),
     };
     match (call.category, call.name.as_str()) {
-        (MatchCategory::Css, "css") => {
-            // `css(a, b, …)` merges every arg, so inspect them all.
-            for index in 0..call.data.len() {
-                if let Some(entries) = call_object(call, index) {
-                    walk_object(entries, ctx.cx, &range, accum.sites);
-                    collector.collect(
-                        entries,
-                        StyleEntrySyntax::CssCall,
-                        &mut Vec::new(),
-                        accum.style_entries,
-                    );
-                }
-            }
-        }
-        // The recipe config is the first argument for both `cva` and `sva`.
-        (MatchCategory::Css, "cva") => {
-            collect_recipe(
-                call_object(call, 0),
-                false,
-                &RecipeWalkCtx {
-                    cx: ctx.cx,
-                    range: &range,
-                    collector: &collector,
-                },
-                accum,
-            );
-        }
-        (MatchCategory::Css, "sva") => {
-            collect_recipe(
-                call_object(call, 0),
-                true,
-                &RecipeWalkCtx {
-                    cx: ctx.cx,
-                    range: &range,
-                    collector: &collector,
-                },
-                accum,
-            );
-        }
-        (MatchCategory::Css, "positionTry") => match call.data.first().and_then(Option::as_ref) {
-            Some(Literal::String(name)) => {
-                accum.sites.push(site(UsageKind::PositionTry, name, &range));
-            }
-            Some(Literal::Object(entries)) => {
-                walk_object(entries, ctx.cx, &range, accum.sites);
-                collector.collect(
-                    entries,
-                    StyleEntrySyntax::CssCall,
-                    &mut Vec::new(),
-                    accum.style_entries,
-                );
-            }
-            _ => {}
-        },
-        (MatchCategory::Css, "viewTransition") => {
-            if let Some(Literal::String(name)) = call.data.first().and_then(Option::as_ref) {
-                accum
-                    .sites
-                    .push(site(UsageKind::ViewTransition, name, &range));
-            }
-            if let Some(entries) = call_object(call, 0) {
-                for (key, value) in entries {
-                    if !matches!(key.as_str(), "group" | "imagePair" | "old" | "new") {
-                        continue;
-                    }
-                    let Literal::Object(slot) = value else {
-                        continue;
-                    };
-                    walk_object(slot, ctx.cx, &range, accum.sites);
-                    collector.collect(
-                        slot,
-                        StyleEntrySyntax::CssCall,
-                        &mut Vec::new(),
-                        accum.style_entries,
-                    );
-                }
-            }
-        }
-        // `styled('div', config, options)` puts config at arg 1 and options at
-        // arg 2; `styled.div(config)` puts config at arg 0. A config with recipe
-        // keys is walked as a recipe, else flat.
-        (MatchCategory::Jsx, _) => {
-            if let Some(recipe) = call.jsx_recipe_ident.as_deref() {
-                accum.sites.push(site(UsageKind::Recipe, recipe, &range));
-            }
-            if let Some(config) = jsx_factory_config(call) {
-                if has_recipe_keys(config) {
-                    collect_recipe(
-                        Some(config),
-                        false,
-                        &RecipeWalkCtx {
-                            cx: ctx.cx,
-                            range: &range,
-                            collector: &collector,
-                        },
-                        accum,
-                    );
-                } else {
-                    walk_object(config, ctx.cx, &range, accum.sites);
-                    collector.collect(
-                        config,
-                        StyleEntrySyntax::CssCall,
-                        &mut Vec::new(),
-                        accum.style_entries,
-                    );
-                }
-            }
-            if let Some(default_props) = jsx_factory_default_props(call) {
-                walk_jsx_style_props(default_props, ctx.cx, &range, accum.sites);
-                collector.collect(
-                    default_props,
-                    StyleEntrySyntax::JsxProp,
-                    &mut vec!["defaultProps".to_owned()],
-                    accum.style_entries,
-                );
-            }
-        }
-        (MatchCategory::Recipe, _) => {
-            accum
-                .sites
-                .push(site(UsageKind::Recipe, &call.name, &range));
-        }
+        (MatchCategory::Recipe, _) => accum
+            .sites
+            .push(site(UsageKind::Recipe, &call.name, &range)),
         (MatchCategory::Pattern, _) => {
             accum
                 .sites
                 .push(site(UsageKind::Pattern, &call.name, &range));
-            for index in 0..call.data.len() {
-                if let Some(entries) = call_object(call, index) {
-                    collector.collect(
-                        entries,
-                        StyleEntrySyntax::PatternCall,
-                        &mut Vec::new(),
-                        accum.style_entries,
-                    );
-                }
+        }
+        (MatchCategory::Jsx, _) => {
+            if let Some(recipe) = call.jsx_recipe_ident.as_deref() {
+                accum.sites.push(site(UsageKind::Recipe, recipe, &range));
+            }
+        }
+        (MatchCategory::Css, "positionTry" | "viewTransition") => {
+            if let Some(Literal::String(name)) = call.data.first().and_then(Option::as_ref) {
+                let kind = if call.name == "positionTry" {
+                    UsageKind::PositionTry
+                } else {
+                    UsageKind::ViewTransition
+                };
+                accum.sites.push(site(kind, name, &range));
             }
         }
         _ => {}
     }
+    visit_call_style_objects(call, |kind, path, entries| {
+        let syntax = match kind {
+            SourceStyleKind::Css => StyleEntrySyntax::CssCall,
+            SourceStyleKind::Recipe => StyleEntrySyntax::RecipeCall,
+            SourceStyleKind::Jsx => StyleEntrySyntax::JsxProp,
+            SourceStyleKind::Pattern => StyleEntrySyntax::PatternCall,
+        };
+        if kind == SourceStyleKind::Jsx {
+            walk_jsx_style_props(entries, ctx.cx, &range, accum.sites);
+        } else if kind != SourceStyleKind::Pattern {
+            walk_object(entries, ctx.cx, &range, accum.sites);
+        }
+        collector.collect(entries, syntax, &mut path.to_vec(), accum.style_entries);
+    });
 }
 
 fn collect_jsx_styles(
@@ -375,146 +277,6 @@ fn collect_jsx_styles(
         &mut Vec::new(),
         accum.style_entries,
     );
-}
-
-/// The object literal at argument `index` of an extracted call, if present.
-fn call_object(call: &ExtractedCall, index: usize) -> Option<&[(String, Literal)]> {
-    match call.data.get(index) {
-        Some(Some(Literal::Object(entries))) => Some(entries),
-        _ => None,
-    }
-}
-
-fn object_field<'a>(entries: &'a [(String, Literal)], name: &str) -> Option<&'a Literal> {
-    entries
-        .iter()
-        .find(|(key, _)| key == name)
-        .map(|(_, value)| value)
-}
-
-fn jsx_factory_config(call: &ExtractedCall) -> Option<&[(String, Literal)]> {
-    call_object(call, 1).or_else(|| call_object(call, 0))
-}
-
-/// `defaultProps` off the factory options object, which the `JsxFactory`
-/// signature only ever puts at argument 2.
-fn jsx_factory_default_props(call: &ExtractedCall) -> Option<&[(String, Literal)]> {
-    match call_object(call, 2).and_then(|entries| object_field(entries, "defaultProps")) {
-        Some(Literal::Object(props)) => Some(props),
-        _ => None,
-    }
-}
-
-/// Whether a factory config carries recipe keys (`base`/`variants`/…) rather
-/// than being a flat style object.
-fn has_recipe_keys(config: &[(String, Literal)]) -> bool {
-    config.iter().any(|(key, _)| {
-        matches!(
-            key.as_str(),
-            "base" | "variants" | "defaultVariants" | "compoundVariants"
-        )
-    })
-}
-
-/// Shared context for walking a recipe config's style objects.
-struct RecipeWalkCtx<'a, 'source> {
-    cx: &'a Cx<'a>,
-    range: &'a SourceRange,
-    collector: &'a StyleEntryCollector<'a, 'source>,
-}
-
-/// Walks a recipe config and collects the style objects it holds: `base`,
-/// every `variants.<key>.<value>`, and each `compoundVariants[].css`. Slotted
-/// recipes (`sva`) nest a slot level inside each style object.
-fn collect_recipe(
-    config: Option<&[(String, Literal)]>,
-    slotted: bool,
-    walk: &RecipeWalkCtx<'_, '_>,
-    accum: &mut InspectAccum<'_>,
-) {
-    let Some(config) = config else { return };
-    for (key, value) in config {
-        match key.as_str() {
-            "base" => recipe_style(value, slotted, &["base".to_owned()], walk, accum),
-            "variants" => {
-                if let Literal::Object(variants) = value {
-                    for (variant, options) in variants {
-                        if let Literal::Object(options) = options {
-                            for (option, style) in options {
-                                recipe_style(
-                                    style,
-                                    slotted,
-                                    &["variants".to_owned(), variant.clone(), option.clone()],
-                                    walk,
-                                    accum,
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-            "compoundVariants" => {
-                if let Literal::Array(items) = value {
-                    for (index, item) in items.iter().enumerate() {
-                        if let Literal::Object(entries) = item
-                            && let Some((_, css)) = entries.iter().find(|(key, _)| key == "css")
-                        {
-                            recipe_style(
-                                css,
-                                slotted,
-                                &[
-                                    "compoundVariants".to_owned(),
-                                    index.to_string(),
-                                    "css".to_owned(),
-                                ],
-                                walk,
-                                accum,
-                            );
-                        }
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-}
-
-/// Collects one recipe style object at `base_path`. A slotted value is
-/// `{ slot: styleObject }`; otherwise it's the style object directly.
-fn recipe_style(
-    value: &Literal,
-    slotted: bool,
-    base_path: &[String],
-    walk: &RecipeWalkCtx<'_, '_>,
-    accum: &mut InspectAccum<'_>,
-) {
-    let Literal::Object(entries) = value else {
-        return;
-    };
-    if slotted {
-        for (slot, slot_value) in entries {
-            if let Literal::Object(style) = slot_value {
-                let mut path = base_path.to_vec();
-                path.push(slot.clone());
-                walk_object(style, walk.cx, walk.range, accum.sites);
-                walk.collector.collect(
-                    style,
-                    StyleEntrySyntax::RecipeCall,
-                    &mut path,
-                    accum.style_entries,
-                );
-            }
-        }
-    } else {
-        let mut path = base_path.to_vec();
-        walk_object(entries, walk.cx, walk.range, accum.sites);
-        walk.collector.collect(
-            entries,
-            StyleEntrySyntax::RecipeCall,
-            &mut path,
-            accum.style_entries,
-        );
-    }
 }
 
 struct StyleEntryCollector<'a, 'source> {
@@ -857,18 +619,30 @@ fn collect_token_refs(raw: &str, dict: &TokenDictionary, emit: &mut impl FnMut(&
 }
 
 fn style_value_token_refs(
-    style_entries: &[StyleEntryRef],
+    system: &System,
+    calls: &[ExtractedCall],
+    jsx: &[ExtractedJsx],
     source: &str,
-    dict: &TokenDictionary,
-) -> Vec<TokenRef> {
+    source_refs: &FxHashMap<SourceRefKey, &StyleSourceRef>,
+) -> Vec<crate::inspection::TokenRefSite> {
+    let Some(dict) = system.token_dictionary() else {
+        return Vec::new();
+    };
     let mut out = Vec::new();
-    for leaf in style_entries.iter().flat_map(|entry| &entry.value_spans) {
-        let start = leaf.span.start as usize;
-        let base = source
-            .get(start..leaf.span.end as usize)
-            .and_then(|literal| literal.find(leaf.value.as_str()))
-            .map(|offset| start + offset);
-        for (path, range) in token_references(&leaf.value, dict) {
+    let line_index = LineIndex::new(source);
+    let mut collect = |kind, index, owner_span, path: &[String], text: &str| {
+        let references = token_references(text, &dict);
+        if references.is_empty() {
+            return;
+        }
+        let leaf = source_refs
+            .get(&(kind, index, path.to_vec()))
+            .and_then(|source_ref| source_ref.value_span);
+        let base = leaf.and_then(|leaf| {
+            let literal = source.get(leaf.start as usize..leaf.end as usize)?;
+            Some(leaf.start as usize + literal.find(text)?)
+        });
+        for (reference, range) in references {
             let span = base
                 .and_then(|base| {
                     Some(Span {
@@ -876,15 +650,27 @@ fn style_value_token_refs(
                         end: u32::try_from(base + range.end).ok()?,
                     })
                 })
-                .unwrap_or(leaf.span);
-            out.push(TokenRef {
-                path: path.to_owned(),
+                .or(leaf)
+                .unwrap_or(owner_span);
+            out.push(crate::inspection::embedded_token_ref_site(
+                reference,
                 span,
-                needs_css_var: true,
-                is_var: false,
-                value: None,
-            });
+                &line_index,
+                &dict,
+            ));
         }
+    };
+    for (index, call) in calls.iter().enumerate() {
+        let index = u32::try_from(index).unwrap_or(u32::MAX);
+        visit_call_style_strings(system, call, |path, text| {
+            collect(StyleSourceOwnerKind::Call, index, call.span, path, text);
+        });
+    }
+    for (index, jsx) in jsx.iter().enumerate() {
+        let index = u32::try_from(index).unwrap_or(u32::MAX);
+        visit_jsx_style_strings(system, jsx, |path, text| {
+            collect(StyleSourceOwnerKind::Jsx, index, jsx.span, path, text);
+        });
     }
     out
 }

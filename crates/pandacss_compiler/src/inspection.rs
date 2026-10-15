@@ -262,24 +262,50 @@ pub(crate) fn token_ref_site(
     line_index: &LineIndex,
     tokens: Option<&TokenDictionary>,
 ) -> TokenRefSite {
-    let range = line_index.locate_range(token_ref.span.start, token_ref.span.end);
-    let category = token_ref
-        .path
+    reference_site(
+        &token_ref.path,
+        token_ref.span,
+        token_ref.needs_css_var,
+        token_ref.is_var,
+        line_index,
+        tokens,
+    )
+}
+
+pub(crate) fn embedded_token_ref_site(
+    path: &str,
+    span: Span,
+    line_index: &LineIndex,
+    tokens: &TokenDictionary,
+) -> TokenRefSite {
+    reference_site(path, span, true, false, line_index, Some(tokens))
+}
+
+fn reference_site(
+    path: &str,
+    span: Span,
+    needs_css_var: bool,
+    is_var: bool,
+    line_index: &LineIndex,
+    tokens: Option<&TokenDictionary>,
+) -> TokenRefSite {
+    let range = line_index.locate_range(span.start, span.end);
+    let category = path
         .split_once('.')
         .map(|(category, _)| category.to_owned());
     let token = tokens
         .and_then(|dict| {
-            dict.token(&token_ref.path)
+            dict.token(path)
                 .map(|token| dict.token_metadata(token, None))
         })
         .map(token_value_ref);
     TokenRefSite {
-        path: token_ref.path.clone(),
-        span: token_ref.span,
+        path: path.to_owned(),
+        span,
         range,
-        needs_css_var: token_ref.needs_css_var,
-        is_var: token_ref.is_var,
-        resolved: tokens.is_some_and(|dict| dict.token(&token_ref.path).is_some()),
+        needs_css_var,
+        is_var,
+        resolved: tokens.is_some_and(|dict| dict.token(path).is_some()),
         category,
         token,
     }

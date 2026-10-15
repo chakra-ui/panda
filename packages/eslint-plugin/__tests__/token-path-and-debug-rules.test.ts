@@ -38,6 +38,17 @@ ruleTester.run('no-invalid-token-paths', {
     {
       filename: 'app.tsx',
       code: [
+        "import { cva, sva, viewTransition } from '@panda/css'",
+        "import { styled } from '@panda/jsx'",
+        "cva({ className: '{colors.label}', defaultVariants: { tone: '{colors.selector}' }, base: { color: '{colors.red.500}' } })",
+        "sva({ slots: ['{colors.slotName}'], base: { root: { color: '{colors.red.500}' } } })",
+        "styled.div({ color: '{colors.red.500}' }, { defaultProps: { title: '{colors.title}' } })",
+        "viewTransition('{colors.name}')",
+      ].join('\n'),
+    },
+    {
+      filename: 'app.tsx',
+      code: [
         "import { css } from '@panda/css'",
         "import { token } from '@panda/tokens'",
         "css({ color: token('colors.red.500') })",
