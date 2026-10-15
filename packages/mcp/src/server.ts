@@ -182,7 +182,7 @@ export function createMcpServer(options: CreateMcpServerOptions) {
 
 /** Reloads the driver when the config file or any file it imports changed on disk since the last check. */
 function createConfigSync(driver: Driver) {
-  const stamp = () => {
+  const readConfigStamp = () => {
     const paths = driver.configPath ? [driver.configPath] : []
     for (const dep of driver.configDependencies ?? []) paths.push(driver.resolvePath(dep))
     for (const target of driver.designSystemWatchTargets?.() ?? []) {
@@ -191,19 +191,28 @@ function createConfigSync(driver: Driver) {
     return paths.map(fileStamp).join('|')
   }
 
-  let current = stamp()
+  let lastLoadedStamp = readConfigStamp()
   let pending: Promise<void> | undefined
 
-  return () =>
-    (pending ??= (async () => {
-      const next = stamp()
-      if (next === current) return
-      await driver.reload()
-      // Stamped before reloading so edits made during the reload trigger another one.
-      current = next
-    })().finally(() => {
+  async function reloadIfChanged() {
+    const nextStamp = readConfigStamp()
+    if (nextStamp === lastLoadedStamp) return
+
+    await driver.reload()
+
+    // Keep the pre-reload stamp so edits made during the reload are detected next time.
+    lastLoadedStamp = nextStamp
+  }
+
+  return function syncConfig() {
+    if (pending) return pending
+
+    pending = reloadIfChanged().finally(() => {
       pending = undefined
-    }))
+    })
+
+    return pending
+  }
 }
 
 function fileStamp(path: string) {
