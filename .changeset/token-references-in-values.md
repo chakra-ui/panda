@@ -4,4 +4,4 @@
 '@pandacss/compiler-shared': patch
 ---
 
-Report missing token references inside style values through `no-invalid-token-paths` and `panda cssgen`, with source locations, including references with CSS fallbacks. Recipe metadata and variant selectors are excluded, while style rules like `prefer-token` also check pattern props.
+Report missing tokens in style strings during linting and `panda cssgen`, including references with fallbacks. Check pattern style props with rules such as `prefer-token`.
