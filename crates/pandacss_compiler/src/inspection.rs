@@ -160,17 +160,6 @@ pub struct ValueSpanRef {
     pub span: Span,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub token: Option<TokenValueRef>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub references: Vec<ValueTokenRef>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ValueTokenRef {
-    pub path: String,
-    pub resolved: bool,
-    pub span: Span,
-    pub range: SourceRange,
 }
 
 #[derive(Debug, Clone, Serialize)]

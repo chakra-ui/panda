@@ -149,26 +149,22 @@ fn replace_token_functions<'t>(
     out
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TokenReference<'a> {
-    pub path: &'a str,
-    pub range: Range<usize>,
-    pub resolved: bool,
-}
-
 #[must_use]
-pub fn token_references<'a>(value: &'a str, tokens: &TokenDictionary) -> Vec<TokenReference<'a>> {
+pub fn token_references<'a>(
+    value: &'a str,
+    tokens: &TokenDictionary,
+) -> Vec<(&'a str, Range<usize>)> {
     let mut out = Vec::new();
     collect_wrapped_references(value, tokens, &mut out);
-    collect_function_references(value, 0..value.len(), tokens, &mut out);
-    out.sort_by_key(|reference| reference.range.start);
+    collect_function_references(value, 0..value.len(), &mut out);
+    out.sort_by_key(|(_, range)| range.start);
     out
 }
 
 fn collect_wrapped_references<'a>(
     value: &'a str,
     tokens: &TokenDictionary,
-    out: &mut Vec<TokenReference<'a>>,
+    out: &mut Vec<(&'a str, Range<usize>)>,
 ) {
     let mut cursor = 0;
     while let Some(open) = value[cursor..].find('{') {
@@ -177,10 +173,10 @@ fn collect_wrapped_references<'a>(
             return;
         };
         let end = start + len;
-        if let Some(reference) = reference_in(value, start..end, tokens)
-            && (reference.resolved || is_token_path_like(&value[start..end]))
+        if let Some((path, range)) = reference_in(value, start..end)
+            && (tokens.token(path).is_some() || is_token_path_like(&value[start..end]))
         {
-            out.push(reference);
+            out.push((path, range));
         }
         cursor = end + 1;
     }
@@ -189,8 +185,7 @@ fn collect_wrapped_references<'a>(
 fn collect_function_references<'a>(
     value: &'a str,
     within: Range<usize>,
-    tokens: &TokenDictionary,
-    out: &mut Vec<TokenReference<'a>>,
+    out: &mut Vec<(&'a str, Range<usize>)>,
 ) {
     let mut cursor = within.start;
     while let Some(found) = value[cursor..within.end].find("token(") {
@@ -200,21 +195,15 @@ fn collect_function_references<'a>(
         };
         let end = start + len;
         let (path, fallback) = split_token_args(&value[start..end]);
-        if let Some(reference) = reference_in(value, start..start + path.len(), tokens) {
-            out.push(reference);
-        }
+        out.extend(reference_in(value, start..start + path.len()));
         if let Some(fallback) = fallback {
-            collect_function_references(value, end - fallback.len()..end, tokens, out);
+            collect_function_references(value, end - fallback.len()..end, out);
         }
         cursor = end + 1;
     }
 }
 
-fn reference_in<'a>(
-    value: &'a str,
-    range: Range<usize>,
-    tokens: &TokenDictionary,
-) -> Option<TokenReference<'a>> {
+fn reference_in(value: &str, range: Range<usize>) -> Option<(&str, Range<usize>)> {
     let raw = &value[range.clone()];
     let raw = split_top_level_slash(raw).map_or(raw, |(path, _)| path);
     let path = raw.trim();
@@ -222,11 +211,7 @@ fn reference_in<'a>(
         return None;
     }
     let start = range.start + (raw.len() - raw.trim_start().len());
-    Some(TokenReference {
-        path,
-        range: start..start + path.len(),
-        resolved: tokens.token(path).is_some(),
-    })
+    Some((path, start..start + path.len()))
 }
 
 fn unresolved_wrapped_reference(path: &str) -> String {

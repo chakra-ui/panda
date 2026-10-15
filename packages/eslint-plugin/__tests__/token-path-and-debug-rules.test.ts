@@ -123,13 +123,7 @@ ruleTester.run('no-invalid-token-paths', {
     {
       filename: 'app.tsx',
       code: ["import { stack } from '@panda/patterns'", "stack({ gap: '{sizes.patternGap}' })"].join('\n'),
-      errors: [
-        {
-          message: 'Token `sizes.patternGap` was not found. Check the path or add the token to your theme.',
-          line: 2,
-          column: 1,
-        },
-      ],
+      errors: [{ ...notFound('sizes.patternGap'), line: 2, column: 16, endLine: 2, endColumn: 32 }],
     },
   ],
 })

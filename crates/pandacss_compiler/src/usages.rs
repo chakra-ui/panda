@@ -5,7 +5,8 @@
 
 use pandacss_encoder::ConditionMatcher;
 use pandacss_extractor::{
-    ExtractedCall, LineIndex, MatchCategory, StyleSourceOwnerKind, StyleSourceRef, extract_verbose,
+    ExtractedCall, ExtractedJsx, LineIndex, MatchCategory, StyleSourceOwnerKind, StyleSourceRef,
+    TokenRef, extract_verbose,
 };
 use pandacss_literal::Literal;
 use pandacss_shared::parse_first_that_works_value;
@@ -15,8 +16,8 @@ use rustc_hash::FxHashMap;
 
 use crate::inspection::{
     FileInspectionResult, StyleEntryInput, StyleEntryKind, StyleEntryOwner, StyleEntryRef,
-    StyleEntrySyntax, UsageKind, UsageSite, ValueSpanRef, ValueTokenRef, call_view,
-    component_entry, jsx_view, style_entry, token_ref_site, token_value_ref,
+    StyleEntrySyntax, UsageKind, UsageSite, ValueSpanRef, call_view, component_entry, jsx_view,
+    style_entry, token_ref_site, token_value_ref,
 };
 use pandacss_encoder::ConditionSet;
 use pandacss_extractor::{SourceRange, Span};
@@ -106,9 +107,13 @@ pub fn inspect_file_source(system: &System, path: &str, source: &str) -> FileIns
         let range = line_index.locate_range(token_ref.span.start, token_ref.span.end);
         sites.push(site(UsageKind::Token, &token_ref.path, &range));
     }
+    let value_token_refs = cx.tokens.map_or_else(Vec::new, |dict| {
+        style_value_token_refs(&result.calls, &result.jsx, source, &source_refs, dict)
+    });
     let token_refs = result
         .token_refs
         .iter()
+        .chain(&value_token_refs)
         .map(|token_ref| token_ref_site(token_ref, &line_index, cx.tokens))
         .collect();
 
@@ -644,14 +649,10 @@ impl StyleEntryCollector<'_, '_> {
                         .zip(token_category)
                         .and_then(|(dict, category)| dict.resolve_token_path(category, text))
                         .map(token_value_ref);
-                    let references = self.cx.tokens.map_or_else(Vec::new, |dict| {
-                        value_token_refs(self.line_index, span, text, dict)
-                    });
                     out.push(ValueSpanRef {
                         value: text.clone(),
                         span,
                         token,
-                        references,
                     });
                 }
             }
@@ -798,39 +799,6 @@ fn walk_prop(
     }
 }
 
-fn value_token_refs(
-    line_index: &LineIndex<'_>,
-    span: Span,
-    text: &str,
-    dict: &TokenDictionary,
-) -> Vec<ValueTokenRef> {
-    let start = span.start as usize;
-    let literal = line_index
-        .source()
-        .get(start..span.end as usize)
-        .unwrap_or_default();
-    let base = literal.find(text).map(|at| start + at);
-    token_references(text, dict)
-        .into_iter()
-        .map(|reference| {
-            let span = base
-                .and_then(|base| {
-                    Some(Span {
-                        start: u32::try_from(base + reference.range.start).ok()?,
-                        end: u32::try_from(base + reference.range.end).ok()?,
-                    })
-                })
-                .unwrap_or(span);
-            ValueTokenRef {
-                path: reference.path.to_owned(),
-                resolved: reference.resolved,
-                span,
-                range: line_index.locate_range(span.start, span.end),
-            }
-        })
-        .collect()
-}
-
 /// Strips a trailing `/opacity` color modifier: `red.300/40` -> `red.300`.
 /// Safe on any candidate path since token paths never contain `/`.
 fn strip_modifier(value: &str) -> &str {
@@ -845,39 +813,121 @@ fn strip_modifier(value: &str) -> &str {
 /// [`token_refs`](pandacss_extractor::TokenRef) instead), and a value that's
 /// itself a token path. Each candidate runs through [`strip_modifier`] first.
 fn collect_token_refs(raw: &str, dict: &TokenDictionary, emit: &mut impl FnMut(&str)) {
-    let mut embedded = false;
-
-    let mut rest = raw;
-    while let Some(open) = rest.find('{') {
-        let after = &rest[open + 1..];
-        let Some(close) = after.find('}') else { break };
-        let key = strip_modifier(after[..close].trim());
-        if dict.token(key).is_some() {
-            emit(key);
+    let references = token_references(raw, dict);
+    for (path, _) in &references {
+        if dict.token(path).is_some() {
+            emit(path);
         }
-        embedded = true;
-        rest = &after[close + 1..];
-    }
-
-    let mut rest = raw;
-    while let Some(open) = rest.find("token(") {
-        let after = &rest[open + "token(".len()..];
-        let end = after.find([',', ')']).unwrap_or(after.len());
-        let arg = after[..end].trim().trim_matches(['\'', '"']);
-        let key = strip_modifier(arg);
-        if dict.token(key).is_some() {
-            emit(key);
-        }
-        embedded = true;
-        rest = &after[end..];
     }
 
     // A whole-value token path, e.g. `'--ring': 'colors.red.400'`. Skip if the
     // value already carried a `{…}`/`token(…)` reference handled above.
-    if !embedded {
+    if references.is_empty() {
         let key = strip_modifier(raw.trim());
         if !key.is_empty() && dict.token(key).is_some() {
             emit(key);
+        }
+    }
+}
+
+fn style_value_token_refs(
+    calls: &[ExtractedCall],
+    jsx: &[ExtractedJsx],
+    source: &str,
+    source_refs: &FxHashMap<SourceRefKey, &StyleSourceRef>,
+    dict: &TokenDictionary,
+) -> Vec<TokenRef> {
+    let mut out = Vec::new();
+    let owners = calls
+        .iter()
+        .enumerate()
+        .flat_map(|(index, call)| {
+            call.data
+                .iter()
+                .flatten()
+                .map(move |data| (StyleSourceOwnerKind::Call, index, call.span, data))
+        })
+        .chain(
+            jsx.iter()
+                .enumerate()
+                .map(|(index, jsx)| (StyleSourceOwnerKind::Jsx, index, jsx.span, &jsx.data)),
+        );
+    for (kind, index, span, data) in owners {
+        ValueTokenRefs {
+            source,
+            source_refs,
+            dict,
+            owner: (kind, u32::try_from(index).unwrap_or(u32::MAX)),
+            owner_span: span,
+        }
+        .collect(data, &mut Vec::new(), &mut out);
+    }
+    out
+}
+
+struct ValueTokenRefs<'a> {
+    source: &'a str,
+    source_refs: &'a FxHashMap<SourceRefKey, &'a StyleSourceRef>,
+    dict: &'a TokenDictionary,
+    owner: (StyleSourceOwnerKind, u32),
+    owner_span: Span,
+}
+
+impl ValueTokenRefs<'_> {
+    fn collect(&self, value: &Literal, path: &mut Vec<String>, out: &mut Vec<TokenRef>) {
+        match value {
+            Literal::String(text) => {
+                let references = token_references(text, self.dict);
+                if references.is_empty() {
+                    return;
+                }
+                let leaf = self
+                    .source_refs
+                    .get(&(self.owner.0, self.owner.1, path.clone()))
+                    .and_then(|source_ref| source_ref.value_span);
+                let base = leaf.and_then(|leaf| {
+                    let literal = self.source.get(leaf.start as usize..leaf.end as usize)?;
+                    Some(leaf.start as usize + literal.find(text.as_str())?)
+                });
+                for (reference, range) in references {
+                    let span = base
+                        .and_then(|base| {
+                            Some(Span {
+                                start: u32::try_from(base + range.start).ok()?,
+                                end: u32::try_from(base + range.end).ok()?,
+                            })
+                        })
+                        .or(leaf)
+                        .unwrap_or(self.owner_span);
+                    out.push(TokenRef {
+                        path: reference.to_owned(),
+                        span,
+                        needs_css_var: true,
+                        is_var: false,
+                        value: None,
+                    });
+                }
+            }
+            Literal::Object(entries) => {
+                for (key, nested) in entries {
+                    path.push(key.clone());
+                    self.collect(nested, path, out);
+                    path.pop();
+                }
+            }
+            Literal::Array(items) => {
+                for (index, nested) in items.iter().enumerate() {
+                    path.push(index.to_string());
+                    self.collect(nested, path, out);
+                    path.pop();
+                }
+            }
+            Literal::Conditional(items) => {
+                for nested in items {
+                    self.collect(nested, path, out);
+                }
+            }
+            Literal::Token { .. } | Literal::Number(_) | Literal::Bool(_) | Literal::Null => {}
         }
     }
 }

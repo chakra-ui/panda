@@ -221,9 +221,9 @@ fn token_references_report_each_reference_with_its_source_range() {
         .map(|value| {
             let refs = pandacss_utility::token_references(value, &tokens)
                 .into_iter()
-                .map(|reference| {
-                    assert_eq!(&value[reference.range.clone()], reference.path);
-                    format!("{} resolved={}", reference.path, reference.resolved)
+                .map(|(path, range)| {
+                    assert_eq!(&value[range], path);
+                    format!("{path} resolved={}", tokens.token(path).is_some())
                 })
                 .collect::<Vec<_>>()
                 .join(", ");

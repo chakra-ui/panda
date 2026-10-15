@@ -1014,10 +1014,8 @@ fn inspection_locates_token_references_inside_style_values() {
     let result = inspect_file_source(&system(), "a.tsx", source);
 
     let refs = result
-        .style_entries
+        .token_refs
         .iter()
-        .flat_map(|entry| &entry.value_spans)
-        .flat_map(|leaf| &leaf.references)
         .map(|reference| {
             let at = &source[reference.span.start as usize..reference.span.end as usize];
             format!("{} resolved={} at={at}", reference.path, reference.resolved)

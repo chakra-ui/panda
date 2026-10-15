@@ -1,8 +1,9 @@
 import type { Diagnostic } from '@pandacss/compiler'
 import { FILE_START_LOC, type Inspect, type RuleContextWithReport, type RuleModuleLike, toEslintLoc } from './shared'
-import { unknownTokenReferenceCode } from './tokens'
 
 export const extractionDiagnosticsRuleName = 'extraction-diagnostics'
+
+const unknownTokenReferenceCode = 'unknown_token_reference'
 
 export interface ExtractionDiagnosticsRuleOptions {
   inspect: Inspect

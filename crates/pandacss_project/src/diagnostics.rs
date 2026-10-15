@@ -311,9 +311,9 @@ fn collect_unknown_token_references(
 ) {
     match value {
         Literal::String(text) => {
-            for reference in token_references(text, tokens) {
-                if !reference.resolved && !out.iter().any(|path| path == reference.path) {
-                    out.push(reference.path.to_owned());
+            for (path, _) in token_references(text, tokens) {
+                if tokens.token(path).is_none() && !out.iter().any(|seen| seen == path) {
+                    out.push(path.to_owned());
                 }
             }
         }

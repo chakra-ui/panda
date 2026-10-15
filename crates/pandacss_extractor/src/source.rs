@@ -29,11 +29,6 @@ impl<'a> LineIndex<'a> {
         }
     }
 
-    #[must_use]
-    pub fn source(&self) -> &'a str {
-        self.source
-    }
-
     /// Offsets past end clamp to the end (matches ts-morph behavior).
     #[must_use]
     pub fn locate(&self, byte_offset: u32) -> SourceLocation {

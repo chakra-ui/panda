@@ -25,8 +25,7 @@ mod type_data;
 pub use normalize::{ShorthandPolicy, StyleNormalizer};
 pub use runtime_class::runtime_class_name_for_atom;
 pub use token_ref::{
-    TokenReference, expand_token_references_to_values, expand_token_references_to_vars,
-    token_references,
+    expand_token_references_to_values, expand_token_references_to_vars, token_references,
 };
 
 use token_ref::{expand_token_references_to_vars_recording, is_plain_token_path_like};
