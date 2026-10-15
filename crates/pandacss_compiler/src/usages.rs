@@ -96,6 +96,7 @@ pub fn inspect_file_source(system: &System, path: &str, source: &str) -> FileIns
             &result.jsx,
             source,
             &source_refs,
+            &line_index,
         ))
         .collect();
 
@@ -624,12 +625,12 @@ fn style_value_token_refs(
     jsx: &[ExtractedJsx],
     source: &str,
     source_refs: &FxHashMap<SourceRefKey, &StyleSourceRef>,
+    line_index: &LineIndex<'_>,
 ) -> Vec<crate::inspection::TokenRefSite> {
     let Some(dict) = system.token_dictionary() else {
         return Vec::new();
     };
     let mut out = Vec::new();
-    let line_index = LineIndex::new(source);
     let mut collect = |kind, index, owner_span, path: &[String], text: &str| {
         let references = token_references(text, &dict);
         if references.is_empty() {
@@ -653,10 +654,7 @@ fn style_value_token_refs(
                 .or(leaf)
                 .unwrap_or(owner_span);
             out.push(crate::inspection::embedded_token_ref_site(
-                reference,
-                span,
-                &line_index,
-                &dict,
+                reference, span, line_index, &dict,
             ));
         }
     };

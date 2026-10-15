@@ -762,3 +762,44 @@ fn resolved_token_references_and_non_references_do_not_warn() {
         summary(&report.diagnostics)
     );
 }
+
+#[test]
+fn missing_token_fallbacks_warn_once_per_owner_at_the_owner_location() {
+    let mut project = create_project(json!({
+        "theme": {"tokens": {"sizes": {"4": {"value": "1rem"}}}}
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+        import {css} from '@panda/css'
+        css({
+            width: 'token(sizes.ghost, 10px)',
+            _hover: {width: 'token(sizes.ghost, 20px)'},
+        })
+        css({width: 'token(sizes.ghost, 30px)'})
+    "},
+    );
+    let warnings: Vec<_> = report
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == diagnostic_codes::UNKNOWN_TOKEN_REFERENCE)
+        .collect();
+    assert_eq!(warnings.len(), 2);
+    assert!(
+        warnings
+            .iter()
+            .all(|warning| warning.message.contains("`sizes.ghost`"))
+    );
+    let lines: Vec<_> = warnings
+        .iter()
+        .map(|warning| {
+            warning
+                .location
+                .as_ref()
+                .expect("source location")
+                .start
+                .line
+        })
+        .collect();
+    assert_eq!(lines, [2, 6]);
+}

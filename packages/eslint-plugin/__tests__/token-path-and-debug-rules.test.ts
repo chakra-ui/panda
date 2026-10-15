@@ -22,7 +22,7 @@ const ruleTester = await createPandaRuleTester(`export default {
   },
   patterns: {
     stack: {
-      properties: { gap: { type: 'property', value: 'gap' } },
+      properties: { gap: { type: 'property', value: 'gap' }, label: { type: 'string' }, space: { type: 'property', value: 'gap' } },
       transform: (props) => ({ display: 'flex', ...props }),
     },
   },
@@ -35,6 +35,15 @@ const notFound = (token: string) => ({ message: `Panda token "${token}" was not 
 
 ruleTester.run('no-invalid-token-paths', {
   valid: [
+    {
+      filename: 'app.tsx',
+      code: [
+        "import { stack } from '@panda/patterns'",
+        "import { Stack } from '@panda/jsx'",
+        "stack({ label: '{user.name}', gap: '{sizes.4}' })",
+        "const J = () => <Stack label='{user.name}' space='{sizes.4}' />",
+      ].join('\n'),
+    },
     {
       filename: 'app.tsx',
       code: [
@@ -69,6 +78,11 @@ ruleTester.run('no-invalid-token-paths', {
     },
   ],
   invalid: [
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ width: 'token(sizes.ghost, 10px)', _hover: { width: 'token(sizes.ghost, 20px)' } })"),
+      errors: [notFound('sizes.ghost'), notFound('sizes.ghost')],
+    },
     {
       filename: 'app.tsx',
       code: [

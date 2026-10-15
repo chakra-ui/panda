@@ -4,6 +4,8 @@ use pandacss_encoder::ConditionMatcher;
 use pandacss_extractor::{ExtractedCall, ExtractedJsx, MatchCategory};
 use pandacss_literal::Literal;
 use pandacss_shared::css_properties::is_css_property;
+use rustc_hash::{FxHashMap, FxHashSet};
+use smallvec::SmallVec;
 
 use crate::System;
 
@@ -205,15 +207,18 @@ pub fn visit_call_style_strings(
     let variants = call
         .jsx_recipe_ident
         .as_deref()
-        .map(|name| system.recipe_variant_props(name))
-        .unwrap_or_default();
+        .and_then(|name| system.recipes.variant_props(name));
+    let pattern_properties = system.patterns.property_styles(&call.name);
     visit_call_style_objects(call, |kind, path, style| {
         visit_object_strings(
             system,
-            kind,
+            StringStyleScope {
+                kind,
+                variants: variants.as_slice(),
+                pattern_properties,
+            },
             style,
             &mut path.to_vec(),
-            &variants,
             &mut visit,
         );
     });
@@ -228,43 +233,92 @@ pub fn visit_jsx_style_strings(
     let Some(style) = entries(&jsx.data) else {
         return;
     };
-    let variants = system.jsx_recipe_variant_props(&jsx.name);
-    let kind = if jsx.category == MatchCategory::Pattern {
+    let recipe_names = system.jsx_recipe_names(&jsx.name);
+    let variants: SmallVec<[&FxHashSet<Box<str>>; 2]> = recipe_names
+        .iter()
+        .filter_map(|name| system.recipes.variant_props(name))
+        .collect();
+    let kind = if jsx.kind == pandacss_extractor::JsxKind::Pattern {
         SourceStyleKind::Pattern
     } else {
         SourceStyleKind::Jsx
     };
-    visit_object_strings(system, kind, style, &mut Vec::new(), &variants, &mut visit);
+    visit_object_strings(
+        system,
+        StringStyleScope {
+            kind,
+            variants: &variants,
+            pattern_properties: system.patterns.property_styles(&jsx.name),
+        },
+        style,
+        &mut Vec::new(),
+        &mut visit,
+    );
 }
 
-fn visit_object_strings(
-    system: &System,
+#[derive(Clone, Copy)]
+struct StringStyleScope<'a> {
     kind: SourceStyleKind,
-    style: &Entries,
-    path: &mut Vec<String>,
-    variants: &rustc_hash::FxHashSet<&str>,
-    visit: &mut impl FnMut(&[String], &str),
-) {
-    for (key, value) in style {
-        if kind == SourceStyleKind::Jsx && variants.contains(key.as_str()) {
-            continue;
+    variants: &'a [&'a FxHashSet<Box<str>>],
+    pattern_properties: Option<&'a FxHashMap<String, bool>>,
+}
+
+impl StringStyleScope<'_> {
+    fn accepts_property(self, system: &System, key: &str) -> bool {
+        if !matches!(self.kind, SourceStyleKind::Jsx | SourceStyleKind::Pattern) {
+            return true;
         }
-        path.push(key.clone());
-        if matches!(kind, SourceStyleKind::Jsx | SourceStyleKind::Pattern)
-            && (key == "css" || key.ends_with("Css"))
+        if self.kind == SourceStyleKind::Pattern
+            && let Some(is_style) = self
+                .pattern_properties
+                .and_then(|properties| properties.get(key))
         {
-            visit_nested_style_strings(system, SourceStyleKind::Css, value, path, variants, visit);
-        } else if system.conditions().is_condition(key)
-            || (key.starts_with(['&', '@']) || key.contains('&'))
-        {
-            visit_nested_style_strings(system, kind, value, path, variants, visit);
-        } else if kind != SourceStyleKind::Jsx
-            || key.starts_with("--")
+            return *is_style;
+        }
+        key.starts_with("--")
             || is_css_property(key)
             || system
                 .utility()
                 .is_some_and(|utility| utility.is_known(key))
+    }
+}
+
+fn visit_object_strings(
+    system: &System,
+    scope: StringStyleScope<'_>,
+    style: &Entries,
+    path: &mut Vec<String>,
+    visit: &mut impl FnMut(&[String], &str),
+) {
+    for (key, value) in style {
+        if scope.kind == SourceStyleKind::Jsx
+            && scope
+                .variants
+                .iter()
+                .any(|variants| variants.contains(key.as_str()))
         {
+            continue;
+        }
+        path.push(key.clone());
+        if matches!(scope.kind, SourceStyleKind::Jsx | SourceStyleKind::Pattern)
+            && (key == "css" || key.ends_with("Css"))
+        {
+            visit_nested_style_strings(
+                system,
+                StringStyleScope {
+                    kind: SourceStyleKind::Css,
+                    ..scope
+                },
+                value,
+                path,
+                visit,
+            );
+        } else if system.conditions().is_condition(key)
+            || key.starts_with(['&', '@'])
+            || key.contains('&')
+        {
+            visit_nested_style_strings(system, scope, value, path, visit);
+        } else if scope.accepts_property(system, key) {
             visit_literal_strings(value, path, visit);
         }
         path.pop();
@@ -273,26 +327,25 @@ fn visit_object_strings(
 
 fn visit_nested_style_strings(
     system: &System,
-    kind: SourceStyleKind,
+    scope: StringStyleScope<'_>,
     value: &Literal,
     path: &mut Vec<String>,
-    variants: &rustc_hash::FxHashSet<&str>,
     visit: &mut impl FnMut(&[String], &str),
 ) {
     match value {
         Literal::Object(entries) => {
-            visit_object_strings(system, kind, entries, path, variants, visit);
+            visit_object_strings(system, scope, entries, path, visit);
         }
         Literal::Array(items) => {
             for (index, nested) in items.iter().enumerate() {
                 path.push(index.to_string());
-                visit_nested_style_strings(system, kind, nested, path, variants, visit);
+                visit_nested_style_strings(system, scope, nested, path, visit);
                 path.pop();
             }
         }
         Literal::Conditional(items) => {
             for nested in items {
-                visit_nested_style_strings(system, kind, nested, path, variants, visit);
+                visit_nested_style_strings(system, scope, nested, path, visit);
             }
         }
         _ => {}

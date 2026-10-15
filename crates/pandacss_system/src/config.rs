@@ -178,6 +178,7 @@ pub(crate) struct PatternDefinition {
     pub(crate) jsx_names: Vec<String>,
     pub(crate) jsx_regexes: Vec<Regex>,
     pub(crate) props: Vec<String>,
+    pub(crate) property_styles: FxHashMap<String, bool>,
     pub(crate) default_values: Option<Literal>,
     pub(crate) requires_transform: bool,
     strict: bool,
@@ -248,6 +249,16 @@ fn pattern_definitions_from_config(
                 jsx_names,
                 jsx_regexes: jsx_regexes(&config.jsx, &format!("patterns.{name}.jsx"))?,
                 props: config.properties.keys().cloned().collect(),
+                property_styles: config
+                    .properties
+                    .iter()
+                    .map(|(name, property)| {
+                        (
+                            name.clone(),
+                            matches!(property.r#type.as_deref(), Some("property" | "token")),
+                        )
+                    })
+                    .collect(),
                 default_values: config
                     .default_values
                     .as_ref()

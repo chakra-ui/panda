@@ -1201,3 +1201,80 @@ fn escaped_and_folded_string_references_keep_reportable_source_spans() {
         ]
     );
 }
+
+#[test]
+fn pattern_references_only_scan_style_valued_props() {
+    let system = system_with(json!({
+        "jsxFramework": "react",
+        "theme": {"tokens": {"sizes": {"4": {"value": "1rem"}}}},
+        "patterns": {"stack": {"properties": {
+            "label": {"type": "string"},
+            "direction": {"type": "enum", "value": ["row", "column"]},
+            "space": {"type": "property", "value": "gap"},
+            "shade": {"type": "token", "value": "colors"}
+        }}}
+    }));
+    let source = indoc! {r"
+        import {stack} from '@panda/patterns'
+        import {Stack} from '@panda/jsx'
+        stack({label: '{user.name}', direction: 'token(application.mode)', space: '{spacing.fn}', shade: '{colors.fn}', gap: '{spacing.gap}'})
+        const J = () => <Stack label='{user.name}' direction='token(application.mode)' space='{spacing.jsx}' shade='{colors.jsx}' title='{user.title}' css={{color: '{colors.css}'}} />
+    "};
+    let result = inspect_file_source(&system, "a.tsx", source);
+    let paths: Vec<_> = result
+        .token_refs
+        .iter()
+        .map(|reference| reference.path.as_str())
+        .collect();
+    assert_eq!(
+        paths,
+        [
+            "spacing.fn",
+            "colors.fn",
+            "spacing.gap",
+            "spacing.jsx",
+            "colors.jsx",
+            "colors.css"
+        ]
+    );
+    let mut project = pandacss_project::Project::new(system);
+    let report = project.parse_file("a.tsx", source);
+    let warnings: Vec<_> = report
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == "unknown_token_reference")
+        .collect();
+    assert_eq!(warnings.len(), paths.len());
+    assert!(
+        warnings
+            .iter()
+            .all(|warning| !warning.message.contains("user.")
+                && !warning.message.contains("application.mode"))
+    );
+}
+
+#[test]
+fn lint_keeps_each_missing_token_reference_even_with_a_fallback() {
+    let source = indoc! {r"
+        import {css} from '@panda/css'
+        css({
+            width: 'token(sizes.ghost, 10px)',
+            _hover: {width: 'token(sizes.ghost, 20px)'},
+        })
+    "};
+    let result = inspect_file_source(&system(), "a.tsx", source);
+    assert_eq!(result.token_refs.len(), 2);
+    for reference in &result.token_refs {
+        assert!(!reference.resolved);
+        assert_eq!(
+            &source[reference.span.start as usize..reference.span.end as usize],
+            "sizes.ghost"
+        );
+    }
+    let warnings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == "unknown_token_reference")
+        .collect();
+    assert_eq!(warnings.len(), 1);
+}
