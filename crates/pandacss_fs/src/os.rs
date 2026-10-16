@@ -8,7 +8,7 @@ use rustc_hash::FxHashSet;
 use walkdir::WalkDir;
 
 use crate::FileSystem;
-use crate::glob::{GlobOptions, SourceMatcher};
+use crate::glob::{GlobOptions, SourceMatcher, strip_verbatim};
 
 /// Native filesystem impl. Reads delegate to `oxc_resolver::FileSystemOs`, writes
 /// call `std::fs` directly, and `glob` overrides the default walker with `walkdir`,
@@ -201,6 +201,6 @@ impl OxcResolverFileSystem for OsFileSystem {
     }
 
     fn canonicalize(&self, path: &Path) -> io::Result<PathBuf> {
-        self.0.canonicalize(path)
+        self.0.canonicalize(path).map(strip_verbatim)
     }
 }
