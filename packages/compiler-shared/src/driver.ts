@@ -262,7 +262,7 @@ export abstract class BaseDriver implements Driver {
   }
 
   applyChange(change: SourceChange): boolean {
-    return this.applyChanges([change])[0] === true
+    return this.applyChanges([change])[0]
   }
 
   async syncDesignSystemFileChange(_change: SourceChange): Promise<boolean> {

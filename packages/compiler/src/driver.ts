@@ -213,7 +213,7 @@ export class NodeDriver extends BaseDriver {
       if (diff.hasChanged) this.parseFiles()
       return diff.hasChanged
     }
-    if (kind === 'source') return this.applySourceChanges([change], 'design-system')[0] === true
+    if (kind === 'source') return this.applySourceChanges([change], 'design-system')[0]
     return false
   }
 
