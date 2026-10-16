@@ -75,10 +75,10 @@ class BrowserDriver extends BaseDriver {
     return NO_CHANGE
   }
 
-  applyChange(change: SourceChange): boolean {
-    const changed = this.trackSourceChange(change, this.#applySourceChange(change))
+  applyChanges(changes: SourceChange[]): boolean[] {
+    const changed = changes.map((change) => this.trackSourceChange(change, this.#applySourceChange(change)))
     const refreshed = this.refreshAffectedFiles()
-    return changed || refreshed
+    return changed.map((applied) => applied || refreshed)
   }
 
   #applySourceChange(change: SourceChange): boolean {

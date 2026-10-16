@@ -213,7 +213,7 @@ export class NodeDriver extends BaseDriver {
       if (diff.hasChanged) this.parseFiles()
       return diff.hasChanged
     }
-    if (kind === 'source') return this.applySourceChange(change, 'design-system')
+    if (kind === 'source') return this.applySourceChanges([change], 'design-system')[0] === true
     return false
   }
 
@@ -296,14 +296,17 @@ export class NodeDriver extends BaseDriver {
     this.syncDesignSystemTreeShake()
   }
 
-  applyChange(change: SourceChange): boolean {
-    return this.applySourceChange({ ...change, path: this.compiler.resolveSourcePath(change.path) }, 'project')
+  applyChanges(changes: SourceChange[]): boolean[] {
+    return this.applySourceChanges(
+      changes.map((change) => ({ ...change, path: this.compiler.resolveSourcePath(change.path) })),
+      'project',
+    )
   }
 
-  private applySourceChange(change: SourceChange, admission: 'project' | 'design-system'): boolean {
-    const changed = this.trackSourceChange(change, this.admitSourceChange(change, admission))
+  private applySourceChanges(changes: SourceChange[], admission: 'project' | 'design-system'): boolean[] {
+    const changed = changes.map((change) => this.trackSourceChange(change, this.admitSourceChange(change, admission)))
     const refreshed = this.refreshAffectedFiles()
-    return this.recordSourceChange(changed || refreshed)
+    return changed.map((applied) => this.recordSourceChange(applied || refreshed))
   }
 
   /** Known files always refresh; unknown project paths must match the source globs. */
