@@ -1003,6 +1003,7 @@ impl Project {
     /// Known files whose folded imports changed since the last call. Re-parse
     /// each through the host's transform-aware path, then call again until empty.
     pub fn take_affected_files(&mut self) -> Vec<String> {
+        self.retry_unresolved();
         self.dependencies.take_affected()
     }
 
@@ -1133,22 +1134,33 @@ impl Project {
     /// Affected files keep their own source, so `cacheable` is dropped to get
     /// past the unchanged-source short-circuit.
     fn mark_affected(&mut self, path: &str, source_hash: Option<u64>, retry_unresolved: bool) {
-        let mut affected = self
+        let affected = self
             .dependency_key(path)
             .map(|key| self.dependencies.changed_importers(&key, path, source_hash))
             .unwrap_or_default();
 
-        if retry_unresolved
-            && self.dependencies.has_unresolved()
-            && let Some(resolver) = self.system.extractor_config().cross_file.as_ref()
-        {
-            let newly_resolved = self.dependencies.newly_resolved(path, resolver);
-            if !newly_resolved.is_empty() {
-                resolver.clear_resolution_cache();
-                affected.extend(newly_resolved);
-            }
+        if retry_unresolved {
+            self.dependencies.request_retry();
         }
+        self.queue_affected(affected);
+    }
 
+    fn retry_unresolved(&mut self) {
+        if !self.dependencies.take_retry() {
+            return;
+        }
+        let Some(resolver) = self.system.extractor_config().cross_file.as_ref() else {
+            return;
+        };
+        let newly_resolved = self.dependencies.newly_resolved(resolver);
+        if newly_resolved.is_empty() {
+            return;
+        }
+        resolver.clear_resolution_cache();
+        self.queue_affected(newly_resolved);
+    }
+
+    fn queue_affected(&mut self, affected: FxHashSet<Arc<str>>) {
         for importer in affected {
             if let Some(entry) = self.files.get_mut(importer.as_ref()) {
                 entry.cacheable = false;

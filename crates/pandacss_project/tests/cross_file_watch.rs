@@ -248,12 +248,40 @@ fn creating_one_module_probes_a_shared_pending_request_once() {
     fs.reset();
     project.parse_file("/proj/theme.ts", "export const brand = 'red';\n");
 
+    assert_eq!(project.take_affected_files().len(), 64);
     assert!(
         fs.probes() < 20,
         "one directory + specifier should be resolved once, got {} filesystem probes",
         fs.probes()
     );
-    assert_eq!(project.take_affected_files().len(), 64);
+}
+
+#[test]
+fn adding_files_retries_pending_requests_once_per_drain() {
+    let memory = MemoryFileSystem::new();
+    let fs = CountingFileSystem::new(memory.clone());
+    let mut project =
+        create_project(json!({})).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let batch = project.parse_batch();
+    for index in 0..64 {
+        project.parse_file_in_batch(
+            &format!("/proj/App-{index}.tsx"),
+            &app_importing_brand_from(&format!("./missing-{index}")),
+            &batch,
+            ParseTransforms::default(),
+        );
+    }
+    drop(batch);
+
+    fs.reset();
+    for index in 0..64 {
+        project.parse_file(&format!("/proj/new-{index}.tsx"), "export {};\n");
+    }
+    assert_eq!(fs.probes(), 0);
+
+    write(&memory, "missing-3.ts", "export const brand = 'red';\n");
+    assert_eq!(project.take_affected_files(), vec!["/proj/App-3.tsx"]);
+    assert!(project.take_affected_files().is_empty());
 }
 
 #[test]

@@ -232,6 +232,42 @@ describe('createNodeDriver', () => {
     }
   })
 
+  it('re-extracts an importer when its missing module arrives in a batch', async () => {
+    const watchDir = mkdtempSync(join(tmpdir(), 'panda-driver-cross-file-batch-'))
+    try {
+      writeFileTree(watchDir, {
+        'panda.config.ts': `export default {
+          include: ['**/*.tsx'],
+          importMap: { css: ['@panda/css'] },
+        }`,
+        'App.tsx': "import { brand } from './tokens'; import { css } from '@panda/css'; css({ color: brand })",
+      })
+      const driver = await createNodeDriver({ cwd: watchDir })
+      driver.parseFiles()
+
+      const other = join(watchDir, 'Other.tsx')
+      const tokens = join(watchDir, 'tokens.ts')
+      writeFileSync(other, "import { css } from '@panda/css'; css({ margin: '2px' })")
+      writeFileSync(tokens, "export const brand = 'red'")
+      expect(
+        driver.applyChanges([
+          { path: other, kind: 'add' },
+          { path: tokens, kind: 'add' },
+        ]),
+      ).toEqual([true, true])
+
+      const incrementalCss = driver.cssgen().css
+      expect(incrementalCss).toContain('color: red')
+      expect(incrementalCss).toContain('margin: 2px')
+
+      const cold = await createNodeDriver({ cwd: watchDir })
+      cold.parseFiles()
+      expect(incrementalCss).toBe(cold.cssgen().css)
+    } finally {
+      rmSync(watchDir, { recursive: true, force: true })
+    }
+  })
+
   it('re-extracts importers through the config pattern transform', async () => {
     const watchDir = mkdtempSync(join(tmpdir(), 'panda-driver-cross-file-pattern-'))
     try {

@@ -45,6 +45,7 @@ pub(super) struct DependencyGraph {
     pending_by_request: FxHashMap<ResolutionRequest, PendingResolution>,
     by_importer: FxHashMap<Arc<str>, ImporterDependencies>,
     affected: FxHashSet<Arc<str>>,
+    retry_unresolved: bool,
 }
 
 impl DependencyGraph {
@@ -53,6 +54,7 @@ impl DependencyGraph {
         self.pending_by_request.clear();
         self.by_importer.clear();
         self.affected.clear();
+        self.retry_unresolved = false;
     }
 
     pub(super) fn has_importers(&self) -> bool {
@@ -83,12 +85,16 @@ impl DependencyGraph {
             .collect()
     }
 
+    pub(super) fn request_retry(&mut self) {
+        self.retry_unresolved = true;
+    }
+
+    pub(super) fn take_retry(&mut self) -> bool {
+        std::mem::take(&mut self.retry_unresolved) && self.has_unresolved()
+    }
+
     #[must_use]
-    pub(super) fn newly_resolved(
-        &self,
-        path: &str,
-        resolver: &CrossFileResolver,
-    ) -> FxHashSet<Arc<str>> {
+    pub(super) fn newly_resolved(&self, resolver: &CrossFileResolver) -> FxHashSet<Arc<str>> {
         let groups = self.pending_by_request.values().collect::<Vec<_>>();
         let probes = groups
             .iter()
@@ -100,7 +106,6 @@ impl DependencyGraph {
             .zip(groups)
             .filter(|(resolved, _)| *resolved)
             .flat_map(|(_, group)| group.importers.iter())
-            .filter(|importer| importer.as_ref() != path)
             .cloned()
             .collect()
     }
