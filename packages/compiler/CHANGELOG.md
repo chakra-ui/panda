@@ -1,5 +1,59 @@
 # @pandacss/compiler
 
+## 2.3.0
+
+### Minor Changes
+
+- f01a419: Add `jsxMatchTag` to choose which JSX components Panda reads style props from. Match by name or import path;
+  the last matching rule wins.
+
+  ```ts
+  export default defineConfig({
+    jsxMatchTag: [
+      { from: '@tanstack/react-table', ignore: true },
+      { tag: /Button$/, props: ['color'] },
+    ],
+  })
+  ```
+
+### Patch Changes
+
+- 1fb2ee8: Fix watch mode ignoring edits to a newly swapped-in preset.
+- 36b18da: Fix recipe variants emitting in alphabetical order. They follow your config again, so a later variant
+  overrides an earlier one:
+
+  ```ts
+  variants: {
+    visual: { solid: { padding: '1px' } },
+    size: { sm: { padding: '4px' } }, // `size` wins, as declared
+  }
+  ```
+
+  Slots, compound variants, `variantKeys`, and `variantMap` keep config order too.
+
+- 8c179ea: Fix `TS2590: Expression produces a union type that is too complex to represent` when `forwardProps` names a
+  style prop on a component with many props, like `styled('input', {}, { forwardProps: ['color'] })`.
+- f01a419: Stop extracting data props from components Panda doesn't own. A prop like `columns` on a table component no
+  longer emits CSS or a `nested_property` warning when its value isn't a style:
+
+  ```tsx
+  <DataTable columns={[{ header: 'Name', accessorKey: 'name' }]} />
+  ```
+
+- d1ee159: Fix tokens whose name starts with their own category, like `colors.grey50` under `colors`:
+
+  - Generated types now list `colors.grey50` instead of `grey50`, so the token type-checks under `strictTokens` and the
+    raw name no longer does.
+  - `staticCss` wildcards on pattern props no longer cut nested token names short, like `red.500` becoming `500`.
+
+- 93269f5: Report missing tokens in style strings during linting and `panda cssgen`, including references with
+  fallbacks. Check pattern style props with rules such as `prefer-token`.
+- Updated dependencies [f01a419]
+- Updated dependencies [93269f5]
+  - @pandacss/types@2.3.0
+  - @pandacss/compiler-shared@2.3.0
+  - @pandacss/config@2.3.0
+
 ## 2.2.0
 
 ### Minor Changes
