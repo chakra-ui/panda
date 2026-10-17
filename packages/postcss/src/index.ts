@@ -160,6 +160,13 @@ async function syncDriverState(state: DriverState) {
 
 function syncProjectSources(state: DriverState) {
   const files = state.driver.scan()
+  if (state.parsedSources.size === 0) {
+    // Adding files one at a time costs the compiler time in proportion to the
+    // files it already holds, so a cold project is parsed in one batch.
+    for (const path of files) state.parsedSources.set(path, readFileStamp(path))
+    state.driver.parseFiles()
+    return
+  }
   const scanned = new Set(files)
   const changes: SourceChange[] = []
 
