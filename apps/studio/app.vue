@@ -4,6 +4,7 @@ import { Toast, Toaster } from "@ark-ui/vue/toast";
 import * as s from "./app.styles";
 import { useTheme } from "~/composables/useTheme";
 import { toaster } from "~/utils/toaster";
+import { linkLoading } from "~/utils/spec-link-state";
 
 const { theme, toggle, sync } = useTheme();
 onMounted(sync);
@@ -59,6 +60,10 @@ onMounted(sync);
       </div>
     </header>
     <div :class="s.rule" />
+    <div v-if="linkLoading" :class="s.loadingOverlay" role="status">
+      <span :class="s.spinner" />
+      <span>{{ linkLoading }}</span>
+    </div>
     <NuxtPage />
     <Toaster :toaster="toaster" v-slot="toast">
       <Toast.Root :class="[s.toast, toast.type === 'error' && s.toastError]">

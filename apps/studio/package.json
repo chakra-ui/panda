@@ -13,7 +13,8 @@
     "generate": "pnpm deps:build && panda codegen --log-level silent && nuxt generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "test": "vitest run"
+    "test": "vitest run",
+    "spec-link": "tsx scripts/spec-link.ts"
   },
   "dependencies": {
     "@ark-ui/vue": "^5.0.0",

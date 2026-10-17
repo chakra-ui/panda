@@ -3,9 +3,8 @@ import { ref } from "vue";
 import { Field } from "@ark-ui/vue/field";
 import * as s from "./index.styles";
 import { button, control } from "styled-system/recipes";
-import { parseSpec } from "~/utils/design-system";
 import { extractSpec } from "~/utils/extract-tokens";
-import { saveTokens } from "~/utils/idb";
+import { openSpec } from "~/utils/open-spec";
 import { isIgnoredPath, isSourceFile, MAX_FILE_BYTES } from "~/utils/analyze";
 import { droppedFiles } from "~/utils/dropped";
 import { useFolderDrop } from "~/composables/useFolderDrop";
@@ -19,13 +18,8 @@ const wall = [255, 222, 194, 162, 140, 45, 22, 350].flatMap((h) =>
 );
 
 async function load(raw: string) {
-  const result = parseSpec(raw);
-  if (!result.ok) {
-    error.value = result.error;
-    return;
-  }
-  await saveTokens(raw);
-  await navigateTo("/view");
+  const result = await openSpec(raw);
+  if (!result.ok) error.value = result.error;
 }
 
 async function loadSample() {
