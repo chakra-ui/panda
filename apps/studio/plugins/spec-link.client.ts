@@ -40,10 +40,14 @@ export default defineNuxtPlugin((nuxtApp) => {
   async function open(parsed: LinkParse): Promise<boolean> {
     if (!parsed.ok) return fail(parsed.error);
     const { link } = parsed;
-    linkLoading.value =
+    const message =
       link.kind === "url"
         ? `Loading design system from ${link.url.host}…`
         : "Opening design system from link…";
+    let done = false;
+    void mounted.then(() => {
+      if (!done) linkLoading.value = message;
+    });
     try {
       const raw = await resolveSpecLink(link);
       await router.isReady();
@@ -73,6 +77,7 @@ export default defineNuxtPlugin((nuxtApp) => {
           : "Couldn't load the design system from this link.",
       );
     } finally {
+      done = true;
       linkLoading.value = null;
     }
   }
