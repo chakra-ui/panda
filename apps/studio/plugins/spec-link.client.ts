@@ -1,13 +1,19 @@
 import { openSpec } from "~/utils/open-spec";
 import { droppedFiles } from "~/utils/dropped";
-import { parseSpecLink, pickTheme, resolveSpecLink, SpecLinkError } from "~/utils/spec-link";
+import {
+  parseSpecLink,
+  pickTheme,
+  resolveSpecLink,
+  SpecLinkError,
+  type LinkParse,
+} from "~/utils/spec-link";
 import { linkLoading, linkPending } from "~/utils/spec-link-state";
 import { toaster } from "~/utils/toaster";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const hash = location.hash;
   const parsed = parseSpecLink(hash);
-  if (parsed.ok && !parsed.link) return;
+  if (!parsed) return;
 
   const router = useRouter();
   const mounted = new Promise<void>((resolve) =>
@@ -18,13 +24,10 @@ export default defineNuxtPlugin((nuxtApp) => {
     toaster.create({ title: message, type: "error" });
     await mounted;
     await router.replace("/");
-    // Drop the broken link so reloading home doesn't repeat the error.
     if (location.hash) history.replaceState(history.state, "", location.pathname + location.search);
     return false;
   }
 
-  // Keep the link in the URL while its system is on screen, so a reload or copy reopens it.
-  // The router would drop or re-encode it, so it's restored verbatim after each navigation.
   function keepHashOnView() {
     const stop = router.afterEach((to) => {
       if (to.path !== "/view") return stop();
@@ -34,9 +37,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     });
   }
 
-  async function open(): Promise<boolean> {
+  async function open(parsed: LinkParse): Promise<boolean> {
     if (!parsed.ok) return fail(parsed.error);
-    const link = parsed.link!;
+    const { link } = parsed;
     linkLoading.value =
       link.kind === "url"
         ? `Loading design system from ${link.url.host}…`
@@ -51,7 +54,6 @@ export default defineNuxtPlugin((nuxtApp) => {
         openSpec(
           raw,
           (spec) => {
-            // A reload on /view keeps whatever theme the reader picked since.
             if (current.path === "/view") return { path: "/view", query: current.query };
             const theme = pickTheme(spec.themes, link.theme);
             return { path: "/view", query: theme ? { theme } : {} };
@@ -75,5 +77,5 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
   }
 
-  linkPending.current = open();
+  linkPending.value = open(parsed);
 });

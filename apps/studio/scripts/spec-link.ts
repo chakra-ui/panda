@@ -1,7 +1,3 @@
-/**
- * Prints Studio links for a spec file: an embedded `#spec=gz:` link and a hosted `#url=` link.
- *   pnpm --filter studio spec-link [path/to/spec.json] [--origin http://localhost:3000]
- */
 import { readFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { encodeSpecPayload } from "../utils/spec-link";

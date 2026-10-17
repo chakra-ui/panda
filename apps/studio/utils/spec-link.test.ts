@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { parseSpec } from "./design-system";
 import {
   decodeSpecPayload,
@@ -18,14 +18,14 @@ const sample = readFileSync(
 );
 const link = (hash: string) => {
   const parsed = parseSpecLink(hash);
-  if (!parsed.ok || !parsed.link) throw new Error(`expected a link for ${hash}`);
+  if (!parsed?.ok) throw new Error(`expected a link for ${hash}`);
   return parsed.link;
 };
 
 describe("parseSpecLink", () => {
   it("ignores a missing or unrelated hash", () => {
-    expect(parseSpecLink("")).toEqual({ ok: true, link: null });
-    expect(parseSpecLink("#colors")).toEqual({ ok: true, link: null });
+    expect(parseSpecLink("")).toBeNull();
+    expect(parseSpecLink("#colors")).toBeNull();
   });
 
   it("reads an encoded url and theme", () => {
@@ -40,13 +40,13 @@ describe("parseSpecLink", () => {
   it("allows http only on localhost and 127.0.0.1", () => {
     expect(link("#url=http%3A%2F%2Flocalhost%3A3000%2Fa.json").kind).toBe("url");
     expect(link("#url=http%3A%2F%2F127.0.0.1%3A3000%2Fa.json").kind).toBe("url");
-    expect(parseSpecLink("#url=http%3A%2F%2Fexample.com%2Fa.json").ok).toBe(false);
-    expect(parseSpecLink("#url=javascript%3Aalert(1)").ok).toBe(false);
-    expect(parseSpecLink("#url=not-a-url").ok).toBe(false);
+    expect(parseSpecLink("#url=http%3A%2F%2Fexample.com%2Fa.json")?.ok).toBe(false);
+    expect(parseSpecLink("#url=javascript%3Aalert(1)")?.ok).toBe(false);
+    expect(parseSpecLink("#url=not-a-url")?.ok).toBe(false);
   });
 
   it("rejects url and spec together", () => {
-    expect(parseSpecLink("#url=https%3A%2F%2Fexample.com%2Fa.json&spec=gz:abc").ok).toBe(false);
+    expect(parseSpecLink("#url=https%3A%2F%2Fexample.com%2Fa.json&spec=gz:abc")?.ok).toBe(false);
   });
 });
 
@@ -141,6 +141,8 @@ describe("fetchSpecText", () => {
 });
 
 describe("resolveSpecLink", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
   it("names the link type that failed", async () => {
     await expect(resolveSpecLink(link("#spec=br:abcd"))).rejects.toThrow(
       "Couldn't read the design system in this link. Unknown link format.",
@@ -151,6 +153,5 @@ describe("resolveSpecLink", () => {
     await expect(resolveSpecLink(link("#url=https%3A%2F%2Fexample.com%2Fa.json"))).rejects.toThrow(
       "Couldn't load the design system from example.com.",
     );
-    vi.unstubAllGlobals();
   });
 });

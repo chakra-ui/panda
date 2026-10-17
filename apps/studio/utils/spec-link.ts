@@ -1,10 +1,3 @@
-/**
- * Open a design system straight from the URL hash:
- *   #url=<encoded https URL>&theme=<name>
- *   #spec=gz:<base64url gzip JSON>&theme=<name>
- * The hash never reaches Studio's server.
- */
-
 export const MAX_SPEC_BYTES = 10 * 1024 * 1024;
 export const MAX_PAYLOAD_CHARS = 200_000;
 export const FETCH_TIMEOUT_MS = 10_000;
@@ -13,17 +6,17 @@ export type SpecLink =
   | { kind: "url"; url: URL; theme?: string }
   | { kind: "spec"; payload: string; theme?: string };
 
-export type LinkParse = { ok: true; link: SpecLink | null } | { ok: false; error: string };
+export type LinkParse = { ok: true; link: SpecLink } | { ok: false; error: string };
 
 export class SpecLinkError extends Error {}
 
-export function parseSpecLink(hash: string): LinkParse {
+export function parseSpecLink(hash: string): LinkParse | null {
   const params = new URLSearchParams(hash.replace(/^#/, ""));
   const url = params.get("url");
   const spec = params.get("spec");
   const theme = params.get("theme") || undefined;
 
-  if (url === null && spec === null) return { ok: true, link: null };
+  if (url === null && spec === null) return null;
   if (url !== null && spec !== null) {
     return { ok: false, error: "This link has both url and spec. Use one." };
   }
@@ -44,12 +37,10 @@ export function isAllowedSpecUrl(url: URL): boolean {
   return url.protocol === "http:" && (url.hostname === "localhost" || url.hostname === "127.0.0.1");
 }
 
-/** The link's theme if the spec defines it, otherwise the default theme. */
 export function pickTheme(themes: Record<string, unknown>, name?: string): string | undefined {
   return name && Object.hasOwn(themes, name) ? name : undefined;
 }
 
-/** Reads a byte stream, stopping as soon as it passes `max`. */
 export async function readLimited(
   stream: ReadableStream<Uint8Array>,
   max = MAX_SPEC_BYTES,
@@ -76,7 +67,6 @@ export async function readLimited(
   return new TextDecoder().decode(bytes);
 }
 
-/** A plain GET with no custom headers, so the browser skips the CORS preflight. */
 export async function fetchSpecText(
   url: URL,
   { fetch = globalThis.fetch, timeoutMs = FETCH_TIMEOUT_MS, max = MAX_SPEC_BYTES } = {},
@@ -132,7 +122,6 @@ export async function encodeSpecPayload(json: string): Promise<string> {
   return `gz:${toBase64Url(new Uint8Array(await new Response(stream).arrayBuffer()))}`;
 }
 
-/** Fetches or decodes the spec text a link points at. Throws with a user-facing message. */
 export async function resolveSpecLink(link: SpecLink): Promise<string> {
   const failure =
     link.kind === "url"

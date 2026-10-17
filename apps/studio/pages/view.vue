@@ -19,7 +19,7 @@ const usage = ref<unknown>(null);
 const analyze = useAnalyze();
 
 onMounted(async () => {
-  if (linkPending.current && !(await linkPending.current)) return;
+  if (linkPending.value && !(await linkPending.value)) return;
   const raw = await loadTokens();
   const result = raw ? parseSpec(raw) : null;
   if (!result?.ok) {

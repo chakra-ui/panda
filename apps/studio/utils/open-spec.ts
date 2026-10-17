@@ -2,7 +2,6 @@ import type { RouteLocationRaw } from "vue-router";
 import { parseSpec, type DesignSystemSpec, type ParseResult } from "~/utils/design-system";
 import { saveTokens } from "~/utils/idb";
 
-/** The one way a spec gets into Studio: validate, store, then show the view. */
 export async function openSpec(
   raw: string,
   to: RouteLocationRaw | ((spec: DesignSystemSpec) => RouteLocationRaw) = "/view",
