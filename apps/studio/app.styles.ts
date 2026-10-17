@@ -74,3 +74,28 @@ export const toast = css({
   "&[data-state='closed']": { opacity: "0" },
 });
 export const toastError = css({ bg: "danger" });
+
+export const loadingOverlay = css({
+  position: "fixed",
+  inset: "0",
+  zIndex: "50",
+  bg: "rgba(10,10,10,0.55)",
+  backdropFilter: "blur(3px)",
+  display: "flex",
+  flexDir: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "4",
+  color: "#ffffff",
+  fontFamily: "body",
+  fontSize: "14px",
+});
+export const spinner = css({
+  w: "30px",
+  h: "30px",
+  rounded: "full",
+  borderWidth: "3px",
+  borderColor: "rgba(255,255,255,0.25)",
+  borderTopColor: "#ffffff",
+  animation: "spin 0.7s linear infinite",
+});
