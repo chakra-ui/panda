@@ -311,8 +311,8 @@ fn is_valid_prop_source(ctx: CodegenContext<'_>) -> String {
         r#"const cssPropertySet = new Set<string>({props})
 const cssPropertySelectorRe = /&|@/
 
-type CssPropKey = keyof JsxStyleProps
-type OmittedCssProps<T> = DistributiveOmit<T, CssPropKey>
+export type CssPropKey = keyof JsxStyleProps
+export type OmittedCssProps<T> = DistributiveOmit<T, CssPropKey>
 
 export function isCssProperty(value: string): boolean {{
   return cssPropertySet.has(value) || value.startsWith("--") || cssPropertySelectorRe.test(value)
