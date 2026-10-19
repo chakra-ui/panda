@@ -126,10 +126,7 @@ export class PandaWebpackPlugin {
     const logger = compiler.getInfrastructureLogger?.(NAME)
 
     if (this.#options.transform) {
-      // Source transform loader + `@pandacss-internal/css` virtual module (shared
-      // unplugin). Skip node_modules — third-party code is never Panda source.
-      // unplugin's webpack adapter resolves the virtual module through
-      // `resolve.plugins`, which Rspack's resolver ignores, so Rspack gets its own adapter.
+      // Rspack ignores `resolve.plugins`, which the webpack adapter uses for the virtual module.
       const adapter = 'rspack' in compiler ? pandaTransformer.rspack : pandaTransformer.webpack
       adapter({
         exclude: [/node_modules/],
