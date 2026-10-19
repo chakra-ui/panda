@@ -32,6 +32,33 @@ describe('needsCodegen', () => {
     expect(await needsCodegen(cwd)).toBe(false)
   })
 
+  it('skips codegen when the package is hoisted to the monorepo root', async () => {
+    const cwd = createApp({ config: { importMap: '@acme/ds' } })
+    writeTree(root!, { 'node_modules/@acme/ds/package.json': json({ name: '@acme/ds' }) })
+    expect(await needsCodegen(cwd)).toBe(false)
+  })
+
+  it('runs codegen when the package folder has no package.json', async () => {
+    const cwd = createApp({ config: { importMap: '@acme/ds' } })
+    mkdirSync(join(cwd, 'node_modules/@acme/ds'), { recursive: true })
+    expect(await needsCodegen(cwd)).toBe(true)
+  })
+
+  it('runs codegen when importMap names the app itself, linked into node_modules by the workspace', async () => {
+    const cwd = createApp({ config: { importMap: 'web/styled-system' } })
+    mkdirSync(join(root!, 'node_modules'), { recursive: true })
+    symlinkSync(cwd, join(root!, 'node_modules/web'), 'dir')
+    expect(await needsCodegen(cwd)).toBe(true)
+  })
+
+  it('runs codegen for a package.json imports alias', async () => {
+    const cwd = createApp({
+      config: { importMap: '#styled-system' },
+      files: { 'package.json': json({ name: 'web', imports: { '#styled-system/*': './styled-system/*' } }) },
+    })
+    expect(await needsCodegen(cwd)).toBe(true)
+  })
+
   it('runs codegen when the importMap package is not installed', async () => {
     const cwd = createApp({ config: { importMap: '@acme/missing' } })
     expect(await needsCodegen(cwd)).toBe(true)

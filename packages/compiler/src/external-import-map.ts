@@ -1,6 +1,4 @@
-import { outdirBasename } from '@pandacss/compiler-shared'
 import { existsSync, realpathSync } from 'node:fs'
-import { createRequire } from 'node:module'
 import { basename, dirname, isAbsolute, join, sep } from 'node:path'
 
 export interface ExternalImportMapInput {
@@ -17,8 +15,7 @@ export function isExternalImportMap(input: ExternalImportMapInput): boolean {
   if (!specifiers.length) return false
 
   const outdir = toRealPath(input.outdir)
-  const outdirName = outdirBasename(input.outdir)
-  const lookupPaths = createRequire(join(input.cwd, 'package.json')).resolve.paths('pkg') ?? []
+  const outdirName = basename(input.outdir)
 
   return specifiers.every((specifier) => {
     if (specifier.startsWith('.') || isAbsolute(specifier)) return false
@@ -26,7 +23,7 @@ export function isExternalImportMap(input: ExternalImportMapInput): boolean {
     const name = packageName(specifier)
     if (name === outdirName) return false
 
-    const dir = lookupPaths.map((nodeModules) => join(nodeModules, name)).find((dir) => existsSync(dir))
+    const dir = installedPackageDir(input.cwd, name)
     if (!dir) return false
 
     const pkg = toRealPath(dir)
@@ -39,6 +36,14 @@ function importMapSpecifiers(importMap: unknown): string[] {
   return Object.values(importMap)
     .flat()
     .filter((specifier): specifier is string => typeof specifier === 'string')
+}
+
+function installedPackageDir(cwd: string, name: string): string | undefined {
+  for (let dir = cwd; ; dir = dirname(dir)) {
+    const candidate = join(dir, 'node_modules', name)
+    if (existsSync(join(candidate, 'package.json'))) return candidate
+    if (dirname(dir) === dir) return undefined
+  }
 }
 
 function packageName(specifier: string) {
