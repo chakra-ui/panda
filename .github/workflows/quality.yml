@@ -92,7 +92,27 @@ jobs:
         run: pnpm codegen codegen
 
       - name: Run tests
-        run: pnpm test && pnpm test:codegen
+        run: pnpm test
+
+  codegen-tests:
+    name: Codegen Tests
+    needs: build-native
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install
+        uses: ./.github/composite-actions/install
+
+      - name: Download native binding
+        uses: actions/download-artifact@v8
+        with:
+          name: compiler-native
+          path: packages/compiler
+
+      - name: Run codegen tests
+        run: pnpm test:codegen
 
   compiler-tests:
     name: Compiler Tests

@@ -117,4 +117,9 @@ const options: TestUserConfig = {
 
 const mode = process.env.MODE ?? 'react'
 console.log({ mode })
-export default defineConfig(options[mode])
+const config = options[mode]
+
+export default defineConfig({
+  ...config,
+  test: { ...config.test, typecheck: { ...config.test?.typecheck, checker: 'tsgo' } },
+})
