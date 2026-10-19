@@ -31,7 +31,7 @@ fn build_info_emits_interned_atoms_with_per_module_provenance() {
     // `color: red` is shared, so it appears once in `atoms` and is referenced by
     // both modules; `padding`/`margin` are module-local.
     assert_yaml_snapshot!(info, @"
-    schemaVersion: 7
+    schemaVersion: 8
     panda: ^2.0.0
     configFingerprint: cfg1-a3d145687e038e7c
     strings:
@@ -677,15 +677,13 @@ fn build_info_maps_exports_of_recipe_consuming_components() {
         "tabs.tsx",
         "import { Tabs } from './ui'; export const TabBar = () => <Tabs.Root size='sm' />;",
     );
-    // Exports something, but consumes no Panda styles — nothing to resolve to.
     project.parse_file("constants.tsx", "export const NOT_A_COMPONENT = 1;");
 
     let info = project.build_info("^2.0.0".into());
 
-    // Each recipe-consuming component resolves to its own module; the styleless
-    // module's export is omitted.
-    assert_yaml_snapshot!(info.exports, @r"
+    assert_yaml_snapshot!(info.exports, @"
     ActionButton: button.tsx
+    NOT_A_COMPONENT: constants.tsx
     TabBar: tabs.tsx
     ");
 }
@@ -770,6 +768,7 @@ fn middle_design_system_records_the_parent_exports_it_uses() {
         "@acme/ds":
           - Icon
     exports:
+      Card: card.tsx
       CheckIcon: check-icon.tsx
       Icon: index.tsx
     starReexportDependencies: []
@@ -1011,6 +1010,315 @@ fn build_info_ignores_unresolved_or_cyclic_re_exports() {
 
     let info = project.build_info("^2.0.0".into());
     assert!(info.exports.is_empty());
+}
+
+// --- Module imports (a module's styles depend on the modules it loads) ---
+
+fn module_graph_view(info: &BuildInfo) -> serde_json::Value {
+    let imports: serde_json::Map<String, serde_json::Value> = info
+        .modules
+        .iter()
+        .filter(|(_, entry)| !entry.imports.is_empty())
+        .map(|(key, entry)| (key.clone(), json!(entry.imports)))
+        .collect();
+    json!({ "exports": info.exports, "imports": imports })
+}
+
+#[test]
+fn module_records_the_sibling_modules_it_imports() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "checkbox.tsx",
+        indoc! {r"
+            import { css } from '@panda/css';
+            import { Label } from './label';
+            export const Checkbox = () => [css({ color: 'blue' }), Label()];
+        "},
+    );
+    project.parse_file(
+        "label.tsx",
+        "import { css } from '@panda/css'; export const Label = () => css({ color: 'red' });",
+    );
+    project.parse_file(
+        "index.tsx",
+        "export * from './checkbox'; export * from './label';",
+    );
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert_yaml_snapshot!(module_graph_view(&info), @"
+    exports:
+      Checkbox: checkbox.tsx
+      Label: label.tsx
+    imports:
+      checkbox.tsx:
+        - label.tsx
+      index.tsx:
+        - checkbox.tsx
+        - label.tsx
+    ");
+}
+
+#[test]
+fn every_way_of_loading_a_module_is_an_import() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "field.tsx",
+        indoc! {r"
+            import Hint from './hint';
+            import * as Icons from './icons';
+            import './reset';
+            export { Label } from './label';
+            export * from './input';
+            const Lazy = () => import('./lazy');
+            const legacy = require('./legacy');
+            export const Field = () => [Hint, Icons, Lazy, legacy];
+        "},
+    );
+    for module in ["hint", "icons", "reset", "label", "input", "lazy", "legacy"] {
+        project.parse_file(&format!("{module}.tsx"), "export {};");
+    }
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert_yaml_snapshot!(info.modules["field.tsx"].imports, @"
+    - hint.tsx
+    - icons.tsx
+    - input.tsx
+    - label.tsx
+    - lazy.tsx
+    - legacy.tsx
+    - reset.tsx
+    ");
+}
+
+#[test]
+fn type_only_imports_and_unknown_modules_are_not_imports() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "field.tsx",
+        indoc! {r"
+            import type { HintProps } from './hint';
+            export type { LabelProps } from './label';
+            import { css } from '../styled-system/css';
+            import { useState } from 'react';
+            import { Icon } from '@acme/ds';
+            import { Missing } from './missing';
+            import { Field as Self } from './field';
+            export const Field = () => [css, useState, Icon, Missing, Self];
+        "},
+    );
+    project.parse_file("hint.tsx", "export type HintProps = {};");
+    project.parse_file("label.tsx", "export type LabelProps = {};");
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert!(info.modules["field.tsx"].imports.is_empty());
+}
+
+#[test]
+fn imports_resolve_folder_indexes_and_parent_folders() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "components/field.tsx",
+        "import { Label } from './label'; import { Hint } from '../shared/hint'; export const Field = () => [Label, Hint];",
+    );
+    project.parse_file("components/label/index.tsx", "export const Label = 1;");
+    project.parse_file("shared/hint.tsx", "export const Hint = 1;");
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert_yaml_snapshot!(info.modules["components/field.tsx"].imports, @"
+    - components/label/index.tsx
+    - shared/hint.tsx
+    ");
+}
+
+#[test]
+fn esm_js_specifiers_resolve_to_their_typescript_sources() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "field.tsx",
+        "import { Label } from './label.js'; import { Hint } from './hint.mjs'; export const Field = () => [Label, Hint];",
+    );
+    project.parse_file("label.tsx", "export const Label = 1;");
+    project.parse_file("hint.mts", "export const Hint = 1;");
+    project.parse_file(
+        "index.ts",
+        "export { Label as PublicLabel } from './label.js';",
+    );
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert_yaml_snapshot!(module_graph_view(&info), @"
+    exports:
+      Field: field.tsx
+      Hint: hint.mts
+      Label: label.tsx
+      PublicLabel: label.tsx
+    imports:
+      field.tsx:
+        - hint.mts
+        - label.tsx
+      index.ts:
+        - label.tsx
+    ");
+}
+
+#[test]
+fn component_without_its_own_styles_maps_to_its_module() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "field.tsx",
+        "import { Hint } from './hint'; export const Field = () => Hint();",
+    );
+    project.parse_file(
+        "hint.tsx",
+        "import { css } from '@panda/css'; export const Hint = () => css({ color: 'green' });",
+    );
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert!(info.modules["field.tsx"].atoms.is_empty());
+    assert_yaml_snapshot!(module_graph_view(&info), @"
+    exports:
+      Field: field.tsx
+      Hint: hint.tsx
+    imports:
+      field.tsx:
+        - hint.tsx
+    ");
+}
+
+#[test]
+fn destructured_and_enum_exports_map_to_their_module() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "parts.tsx",
+        indoc! {r"
+            const create = () => ({ Root: 1, Item: 2 });
+            export const { Root, Item: ListItem } = create();
+            export const [First, ...Rest] = [1, 2];
+            export enum Size { Sm, Lg }
+        "},
+    );
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert_yaml_snapshot!(info.exports, @"
+    First: parts.tsx
+    ListItem: parts.tsx
+    Rest: parts.tsx
+    Root: parts.tsx
+    Size: parts.tsx
+    ");
+}
+
+#[test]
+fn import_cycles_record_both_directions() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "a.tsx",
+        "import { b } from './b'; export const a = () => b;",
+    );
+    project.parse_file(
+        "b.tsx",
+        "import { a } from './a'; export const b = () => a;",
+    );
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert_yaml_snapshot!(module_graph_view(&info)["imports"], @"
+    a.tsx:
+      - b.tsx
+    b.tsx:
+      - a.tsx
+    ");
+}
+
+#[test]
+fn vue_components_record_the_components_they_import() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "field.vue",
+        indoc! {r#"
+            <script setup lang="ts">
+            import Hint from './hint.vue'
+            </script>
+            <template><Hint /></template>
+        "#},
+    );
+    project.parse_file("hint.vue", "<template><span /></template>");
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert_yaml_snapshot!(info.modules["field.vue"].imports, @"
+    - hint.vue
+    ");
+}
+
+#[test]
+fn tsconfig_path_aliases_resolve_imports_and_re_exports() {
+    let tmp = tempfile::tempdir().unwrap();
+    let dir = tmp.path();
+    std::fs::create_dir_all(dir.join("src")).unwrap();
+    std::fs::write(
+        dir.join("tsconfig.json"),
+        r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } } }"#,
+    )
+    .unwrap();
+    let files = [
+        (
+            "src/checkbox.tsx",
+            "import { Label } from '@/label'; export const Checkbox = () => Label;",
+        ),
+        ("src/label.tsx", "export const Label = 1;"),
+        (
+            "src/index.ts",
+            "export { Label as PublicLabel } from '@/label';",
+        ),
+    ];
+    let mut project = create_project(json!({})).with_cross_file(
+        pandacss_extractor::CrossFileResolver::with_fs(pandacss_fs::OsFileSystem::default()),
+    );
+    for (name, source) in files {
+        let path = dir.join(name);
+        std::fs::write(&path, source).unwrap();
+        project.parse_file(path.to_str().unwrap(), source);
+    }
+
+    let info = project.build_info("^2.0.0".into());
+    let key = |name: &str| dir.join(name).to_str().unwrap().to_owned();
+
+    assert_eq!(
+        info.modules[&key("src/checkbox.tsx")].imports,
+        vec![key("src/label.tsx")]
+    );
+    assert_eq!(
+        info.modules[&key("src/index.ts")].imports,
+        vec![key("src/label.tsx")]
+    );
+    assert_eq!(info.exports.get("PublicLabel"), Some(&key("src/label.tsx")));
+}
+
+#[test]
+fn module_imports_round_trip_through_json() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "field.tsx",
+        "import { Hint } from './hint'; export const Field = Hint;",
+    );
+    project.parse_file("hint.tsx", "export const Hint = 1;");
+
+    let info = project.build_info("^2.0.0".into());
+    let json = serde_json::to_value(&info).expect("serialize");
+
+    assert_eq!(json["modules"]["field.tsx"]["imports"], json!(["hint.tsx"]));
+    assert!(json["modules"]["hint.tsx"].get("imports").is_none());
+    assert_eq!(
+        serde_json::from_value::<BuildInfo>(json).expect("deserialize"),
+        info
+    );
 }
 
 // --- JSON round-trip + schema guard ---
