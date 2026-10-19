@@ -607,3 +607,12 @@ fn declarations_type_the_style_serializer_factories() {
     export declare function createAssignCss(context: Record<string, any>): (...styles: any[]) => any;
     ");
 }
+
+#[test]
+fn declarations_type_normalize_html_props_loosely() {
+    let helpers = generate_helpers(&UserConfig::default(), CodegenFormat::Js);
+
+    assert!(file(&helpers, "helpers.d.ts").contains(
+        "export declare const normalizeHTMLProps: ((props: Record<string, any>) => Record<string, any>) & {"
+    ));
+}

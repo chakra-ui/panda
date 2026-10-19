@@ -423,8 +423,8 @@ pub(super) fn normalize_html_props() -> Item {
             }
 
             // `Object.assign` keeps `.keys` inside a pure expression, so an unused helper tree-shakes away.
-            export const normalizeHTMLProps: ((props: Record<string, unknown>) => Record<string, unknown>) & { keys: string[] } = /* @__PURE__ */ Object.assign(
-              function normalizeHTMLProps(props: Record<string, unknown>) {
+            export const normalizeHTMLProps: ((props: Record<string, any>) => Record<string, any>) & { keys: string[] } = /* @__PURE__ */ Object.assign(
+              function normalizeHTMLProps(props: Record<string, any>) {
                 return Object.fromEntries(Object.entries(props).map(([key, value]) => [convertHTMLProp(key), value]))
               },
               { keys: htmlProps },
