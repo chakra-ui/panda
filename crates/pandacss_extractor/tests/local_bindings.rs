@@ -235,3 +235,109 @@ fn a_non_raw_member_access_is_not_opaque_raw() {
     assert!(binding.has_other_references);
     assert!(binding.has_non_call_references);
 }
+
+#[test]
+fn collects_recipes_held_by_a_local_object() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = {
+          root: cva({ base: { color: 'red' } }),
+          label: cva({ variants: { on: { true: { opacity: '0.5' } } } }),
+          plain: 'not-a-recipe',
+        }
+        export const a = styles.root()
+        export const b = styles.label({ on: x })
+        export const c = styles.label.raw({ on: true })
+        export const d = styles.plain
+    "};
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
+    let bindings = &result.module.local_call_bindings;
+    assert_eq!(bindings.len(), 2);
+    assert!(bindings.iter().all(|binding| binding.local == "styles"));
+    assert_eq!(bindings[0].init_span, result.calls[0].span);
+    assert_eq!(bindings[0].calls.len(), 1);
+    assert!(!bindings[0].has_other_references);
+    assert_eq!(bindings[1].init_span, result.calls[1].span);
+    assert_eq!(bindings[1].calls.len(), 1);
+    assert_eq!(bindings[1].raw_calls.len(), 1);
+    assert!(!bindings[1].has_non_call_references);
+}
+
+#[test]
+fn using_a_member_as_a_value_marks_only_that_member() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = {
+          root: cva({ base: { color: 'red' } }),
+          label: cva({ base: { color: 'blue' } }),
+        }
+        export const alias = styles.root
+        export const cls = styles.label()
+    "};
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
+    let bindings = &result.module.local_call_bindings;
+    assert_eq!(bindings.len(), 2);
+    assert!(bindings[0].has_non_call_references);
+    assert!(!bindings[1].has_non_call_references);
+}
+
+#[test]
+fn using_the_object_as_a_value_marks_every_member() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = {
+          root: cva({ base: { color: 'red' } }),
+          label: cva({ base: { color: 'blue' } }),
+        }
+        export const cls = styles.root()
+        register(styles)
+        export const opt = styles?.label()
+    "};
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
+    let bindings = &result.module.local_call_bindings;
+    assert_eq!(bindings.len(), 2);
+    assert!(
+        bindings
+            .iter()
+            .all(|binding| binding.has_non_call_references)
+    );
+    assert_eq!(bindings[0].calls.len(), 1);
+}
+
+#[test]
+fn skips_an_object_whose_keys_may_not_read_back_the_recipe() {
+    for object in [
+        "{ root: cva({ base: { color: 'red' } }), ...other }",
+        "{ root: cva({ base: { color: 'red' } }), [key]: 1 }",
+        "{ root: cva({ base: { color: 'red' } }), root: 1 }",
+    ] {
+        let source = format!(
+            "import {{ cva }} from '@panda/css'\nconst styles = {object}\nexport const cls = styles.root()\n"
+        );
+        let result = extract_transform(&source, "fixture.tsx", &panda_config());
+        assert!(
+            result.module.local_call_bindings.is_empty(),
+            "collected a binding from {object}"
+        );
+    }
+}
+
+#[test]
+fn ignores_references_in_type_positions() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const recipe = cva({ variants: { on: { true: { opacity: '0.5' } } } })
+        const styles = { root: cva({ variants: { on: { true: { opacity: '0.5' } } } }) }
+        type RecipeProps = Parameters<typeof recipe>[0]
+        type RootProps = Parameters<typeof styles.root>[0]
+        export const a = recipe({ on: true })
+        export const b = styles.root({ on: true })
+    "};
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
+    let bindings = &result.module.local_call_bindings;
+    assert_eq!(bindings.len(), 2);
+    for binding in bindings {
+        assert!(!binding.has_other_references, "{}", binding.local);
+        assert_eq!(binding.calls.len(), 1);
+    }
+}
