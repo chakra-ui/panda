@@ -149,7 +149,7 @@ fn is_drive_path(pattern: &str) -> bool {
 #[must_use]
 pub fn real_path<F: FileSystem + ?Sized>(fs: &F, path: &Path) -> PathBuf {
     if let Ok(real) = fs.canonicalize(path) {
-        return strip_verbatim(real);
+        return real;
     }
     match (path.parent(), path.file_name()) {
         (Some(parent), Some(name)) if !parent.as_os_str().is_empty() => {
@@ -157,18 +157,6 @@ pub fn real_path<F: FileSystem + ?Sized>(fs: &F, path: &Path) -> PathBuf {
         }
         _ => path.to_path_buf(),
     }
-}
-
-/// Drops the Windows `\\?\` prefix.
-fn strip_verbatim(path: PathBuf) -> PathBuf {
-    let text = path.to_string_lossy();
-    if let Some(rest) = text.strip_prefix(r"\\?\UNC\") {
-        return PathBuf::from(format!(r"\\{rest}"));
-    }
-    if let Some(rest) = text.strip_prefix(r"\\?\") {
-        return PathBuf::from(rest);
-    }
-    path
 }
 
 pub(crate) struct Candidate<'a> {
