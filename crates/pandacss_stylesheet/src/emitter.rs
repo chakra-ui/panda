@@ -1220,7 +1220,7 @@ impl<'a> EmitContext<'a> {
     ) -> UsageMarks<'k> {
         let mut marks = UsageMarks::new(token_dictionary, keyframes);
         collect_token_ref_vars(token_refs, token_dictionary, &mut marks.token_vars);
-        self.collect_styles_usage(&self.config.global_css, &mut marks);
+        self.collect_global_styles_usage(&self.config.global_css, &mut marks);
         if let Some(keyframes) = keyframes {
             self.collect_keyframes_usage(keyframes, &mut marks);
         }
@@ -1388,6 +1388,19 @@ impl<'a> EmitContext<'a> {
         for (prop, value) in entries {
             if let Some(value) = literal_to_css(prop, value, None) {
                 sink.declaration(&hyphenate_property(prop), value.as_ref());
+            }
+        }
+    }
+
+    fn collect_global_styles_usage(&self, value: &Value, sink: &mut impl ReferenceSink) {
+        let Value::Object(entries) = value else {
+            return;
+        };
+        for (selector, styles) in entries {
+            if self.resolved_condition_paths(selector).is_some() {
+                self.collect_global_styles_usage(styles, sink);
+            } else {
+                self.collect_styles_usage(styles, sink);
             }
         }
     }

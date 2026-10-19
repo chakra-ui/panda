@@ -163,6 +163,48 @@ fn optimize_keyframes_keeps_global_css_bare_nested_selector_references() {
 }
 
 #[test]
+fn optimize_keyframes_keeps_global_css_element_selector_named_like_a_shorthand() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedKeyframes": true },
+        "utilities": {
+            "padding": { "className": "p", "shorthand": "p" }
+        },
+        "theme": {
+            "keyframes": {
+                "spin": {
+                    "to": { "transform": "rotate(360deg)" }
+                }
+            }
+        },
+        "globalCss": {
+            "p": {
+                "animationName": "spin"
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens, StylesheetLayer::Base]);
+
+    assert_snapshot!(css, @"
+    @layer tokens {
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    }
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      p {
+        animation-name: spin;
+      }
+    }
+    ");
+}
+
+#[test]
 fn optimize_keyframes_keeps_static_css_references() {
     let config = config(serde_json::json!({
         "optimize": { "removeUnusedKeyframes": true },

@@ -166,6 +166,12 @@ function createFacts(inspection: FileInspectionBatch, options: UsageReportOption
     }
   }
 
+  if (includesScope(scope, 'tokens')) {
+    for (const requirement of options.requirements ?? []) {
+      if (requirement.kind === 'token') getTokenId(facts, tokenIds, requirement.name, false)
+    }
+  }
+
   if (includesScope(scope, 'tokens') && options.suggestTokens) {
     for (const raw of facts.rawValues) {
       for (const suggestion of options.suggestTokens(raw.prop, raw.value)) {

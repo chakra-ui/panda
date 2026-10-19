@@ -48,7 +48,7 @@ impl Compiler {
     ) -> napi::Result<serde_json::Value> {
         let files: Vec<pandacss_compiler::UsageSource> = serde_json::from_value(files)
             .map_err(|err| napi::Error::from_reason(err.to_string()))?;
-        let mut project = self.inner.fork_empty();
+        let mut project = self.inner.fork_without_sources();
         let cache = std::mem::take(&mut self.callbacks.transform_cache);
         for file in files {
             super::files::parse_project_source(

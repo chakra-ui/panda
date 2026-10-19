@@ -84,6 +84,11 @@ impl<'a> StyleReferences<'a> {
         self.collect(|cx, sink| cx.collect_styles_usage(styles, sink))
     }
 
+    #[must_use]
+    pub fn global_css(&self, global_css: &Value) -> Vec<StyleReference> {
+        self.collect(|cx, sink| cx.collect_global_styles_usage(global_css, sink))
+    }
+
     /// What a configured asset's own definition references: a token's value under every
     /// condition, a keyframe's steps, or a composition's styles.
     #[must_use]

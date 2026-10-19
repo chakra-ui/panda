@@ -41,10 +41,7 @@ pub(crate) fn collect_style_requirements(
         output: Vec::new(),
     };
 
-    graph.add(
-        "globalCss",
-        references.style_object(&input.config.global_css),
-    );
+    graph.add("globalCss", references.global_css(&input.config.global_css));
     graph.add("globalVars", references.global_vars());
     for (place, atoms) in [
         ("sources", input.atoms),

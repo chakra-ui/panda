@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { createUsageReport, summarizeTokenUsage } from '@pandacss/compiler-shared'
 import { createPresetCompiler } from './preset-compiler'
+import { createProject } from './test-utils'
 
 test('configured and selected styles contribute requirements without changing source counts or project state', () => {
   const compiler = createPresetCompiler({
@@ -362,4 +363,88 @@ test('a semantic token defined only for a condition is used when config referenc
       .filter((entry) => entry.name === 'colors.onlyDark' || entry.name === 'colors.night')
       .map((entry) => `${entry.name} <- ${entry.reasons.join(', ')}`),
   ).toEqual(['colors.night <- via colors.onlyDark', 'colors.onlyDark <- globalCss'])
+})
+
+test('an app counts the styles its design system brings in through build info', () => {
+  const config = {
+    utilities: { animationName: { className: 'an' }, color: { className: 'c', values: 'colors' } },
+    theme: {
+      tokens: { colors: { brand: { value: '#f00' } } },
+      keyframes: { spin: { to: { opacity: 1 } } },
+    },
+  }
+  const designSystem = createProject(config)
+  designSystem.parseFileSource(
+    'button.tsx',
+    "import { css } from '@panda/css'\ncss({ animationName: 'spin', color: 'brand' })",
+  )
+  const app = createProject(config)
+  app.buildInfo.hydrate(designSystem.buildInfo.create({ panda: '^2.0.0' }), { name: '@acme/ds' })
+
+  expect(app.inspectUsageRequirements([]).requirements).toMatchInlineSnapshot(`
+    [
+      {
+        "kind": "keyframe",
+        "name": "spin",
+        "reasons": [
+          "sources",
+        ],
+      },
+      {
+        "kind": "token",
+        "name": "colors.brand",
+        "reasons": [
+          "sources",
+        ],
+      },
+      {
+        "kind": "utility",
+        "name": "animationName",
+        "reasons": [
+          "sources",
+        ],
+      },
+      {
+        "kind": "utility",
+        "name": "color",
+        "reasons": [
+          "sources",
+        ],
+      },
+    ]
+  `)
+})
+
+test('a colorPalette token used only from config gets a row that matches the summary', () => {
+  const compiler = createPresetCompiler({ globalCss: { body: { bg: 'colorPalette.500', color: 'red.500' } } })
+  const inspection = compiler.inspectFiles([])
+  const report = createUsageReport(inspection, {
+    spec: compiler.spec(),
+    requirements: compiler.inspectUsageRequirements([]).requirements,
+  })
+  const colors = report.views?.tokens.categories.find((category) => category.category === 'colors')
+
+  expect({ summary: report.summary.tokens.used, colors: colors?.top }).toMatchInlineSnapshot(`
+    {
+      "summary": 2,
+      "colors": [
+        {
+          "name": "colorPalette.500",
+          "uses": 1,
+          "files": 0,
+          "config": [
+            "globalCss",
+          ],
+        },
+        {
+          "name": "red.500",
+          "uses": 1,
+          "files": 0,
+          "config": [
+            "globalCss",
+          ],
+        },
+      ],
+    }
+  `)
 })

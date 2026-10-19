@@ -34,7 +34,7 @@ impl WasmCompiler {
     pub fn inspect_usage_requirements(&mut self, files: JsValue) -> Result<JsValue, JsValue> {
         let files: Vec<pandacss_compiler::UsageSource> = serde_wasm_bindgen::from_value(files)
             .map_err(|err| JsValue::from_str(&err.to_string()))?;
-        let mut project = self.inner.fork_empty();
+        let mut project = self.inner.fork_without_sources();
         let cache = std::mem::take(&mut self.callbacks.transform_cache);
         for file in files {
             super::files::parse_project_source(

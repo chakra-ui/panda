@@ -187,6 +187,24 @@ struct FileEntry {
     report: ParseFileReport,
 }
 
+impl FileEntry {
+    fn hydrated(atoms: FxHashSet<Atom>, token_refs: Vec<String>, parse_epoch: u64) -> Self {
+        Self {
+            source: Arc::from(""),
+            source_hash: 0,
+            parse_epoch,
+            cacheable: true,
+            atoms,
+            encoded_recipes: EncodedRecipes::new(false),
+            utility_styles: FxHashMap::default(),
+            token_refs,
+            exports: ExportInfo::default(),
+            diagnostics: Vec::new(),
+            report: ParseFileReport::default(),
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 enum ParseMode {
     Replace,
@@ -203,10 +221,38 @@ impl Project {
         Self::with_system(Arc::new(system))
     }
 
-    /// Starts an independent source scan with the same compiled configuration and resolver.
+    /// Keeps hydrated build info so a design system's styles still count.
     #[must_use]
-    pub fn fork_empty(&self) -> Self {
-        Self::with_system(Arc::clone(&self.system))
+    pub fn fork_without_sources(&self) -> Self {
+        let mut fork = Self::with_system(Arc::clone(&self.system));
+        fork.hydrated_recipes.clone_from(&self.hydrated_recipes);
+        fork.hydrated_recipe_order
+            .clone_from(&self.hydrated_recipe_order);
+        fork.hydrated_view_transitions
+            .clone_from(&self.hydrated_view_transitions);
+        fork.hydrated_view_transition_order
+            .clone_from(&self.hydrated_view_transition_order);
+        fork.hydrated_position_try
+            .clone_from(&self.hydrated_position_try);
+        fork.hydrated_position_try_order
+            .clone_from(&self.hydrated_position_try_order);
+        fork.hydrated_keyframes.clone_from(&self.hydrated_keyframes);
+        fork.hydrated_keyframes_order
+            .clone_from(&self.hydrated_keyframes_order);
+
+        let hydrated_files = self
+            .files
+            .iter()
+            .filter(|(path, _)| path.starts_with(build_info::HYDRATED_FILE_PREFIX));
+        for (path, entry) in hydrated_files {
+            let entry = FileEntry::hydrated(
+                entry.atoms.clone(),
+                entry.token_refs.clone(),
+                fork.parse_epoch,
+            );
+            fork.add_file_state(Arc::clone(path), entry, &[], &[]);
+        }
+        fork
     }
 
     fn with_system(system: Arc<System>) -> Self {

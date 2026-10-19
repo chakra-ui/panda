@@ -138,3 +138,24 @@ fn nested_conditions_and_selectors_are_walked() {
         assert!(found.contains(&StyleReference::Keyframe("fade".to_owned())));
     });
 }
+
+#[test]
+fn global_css_element_selectors_are_not_read_as_shorthand_properties() {
+    let config = config(json!({
+        "utilities": {
+            "padding": { "className": "p", "shorthand": "p", "values": "spacing" },
+            "margin": { "className": "m", "values": "spacing" }
+        },
+        "theme": { "tokens": { "spacing": { "4": { "value": "1rem" } } } },
+        "globalCss": { "p": { "margin": "4" } }
+    }));
+    references_for(&config, |references| {
+        assert_eq!(
+            references.global_css(&config.global_css),
+            [
+                StyleReference::Utility("margin".to_owned()),
+                token("spacing.4")
+            ]
+        );
+    });
+}
