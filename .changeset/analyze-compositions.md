@@ -5,5 +5,10 @@
 '@pandacss/compiler-shared': minor
 ---
 
-`panda analyze` now counts tokens, keyframes, and recipes used in your config, not just your source files, and shows
-where each one is used. Text, layer, and animation styles get their own `compositions` scope.
+`panda analyze` now counts what your config uses, not just your source files.
+
+- Shows where each name is used, like `3 files, globalCss` or `via animations.spin`
+- Adds a `compositions` scope for text, layer, and animation styles
+- Counts styles a design system brings in through build info
+- Fix `removeUnusedKeyframes` dropping keyframes used only through an animation token
+- Fix `removeUnusedKeyframes` dropping keyframes used under `globalCss` selectors like `p` or `h`
