@@ -376,6 +376,24 @@ fn globstar_ignores_symlink_cycle() {
     );
 }
 
+#[test]
+fn realpath_of_a_project_file_matches_the_path_node_reports() {
+    let tmp = tempfile::tempdir().unwrap();
+    let file = tmp.path().join("App.tsx");
+    fs::write(&file, "export {}").unwrap();
+
+    let real = OsFileSystem::default().canonicalize(&file).unwrap();
+
+    assert!(
+        !real.to_string_lossy().starts_with(r"\\?\"),
+        "{}",
+        real.display()
+    );
+    assert!(real.is_absolute());
+    assert_eq!(real.file_name(), file.file_name());
+    assert_eq!(fs::read_to_string(&real).unwrap(), "export {}");
+}
+
 /// Real temp dir on unix; Windows canonical paths add a `\\?\` globs can't express.
 fn real_dir(path: &std::path::Path) -> PathBuf {
     if cfg!(windows) {

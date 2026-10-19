@@ -149,7 +149,7 @@ fn is_drive_path(pattern: &str) -> bool {
 #[must_use]
 pub fn real_path<F: FileSystem + ?Sized>(fs: &F, path: &Path) -> PathBuf {
     if let Ok(real) = fs.canonicalize(path) {
-        return strip_verbatim(real);
+        return real;
     }
     match (path.parent(), path.file_name()) {
         (Some(parent), Some(name)) if !parent.as_os_str().is_empty() => {
@@ -157,18 +157,6 @@ pub fn real_path<F: FileSystem + ?Sized>(fs: &F, path: &Path) -> PathBuf {
         }
         _ => path.to_path_buf(),
     }
-}
-
-/// Drops the Windows `\\?\` prefix.
-pub(crate) fn strip_verbatim(path: PathBuf) -> PathBuf {
-    let text = path.to_string_lossy();
-    if let Some(rest) = text.strip_prefix(r"\\?\UNC\") {
-        return PathBuf::from(format!(r"\\{rest}"));
-    }
-    if let Some(rest) = text.strip_prefix(r"\\?\") {
-        return PathBuf::from(rest);
-    }
-    path
 }
 
 pub(crate) struct Candidate<'a> {
@@ -453,22 +441,4 @@ pub(crate) fn default_walk<F: FileSystem + ?Sized>(
 
     results.sort();
     Ok(results)
-}
-
-#[cfg(test)]
-mod tests {
-    use std::path::PathBuf;
-
-    use super::strip_verbatim;
-
-    #[test]
-    fn strip_verbatim_drops_the_windows_prefix() {
-        let strip = |p: &str| strip_verbatim(PathBuf::from(p));
-        assert_eq!(strip(r"\\?\C:\src\App.tsx"), PathBuf::from(r"C:\src\App.tsx"));
-        assert_eq!(
-            strip(r"\\?\UNC\server\share\App.tsx"),
-            PathBuf::from(r"\\server\share\App.tsx")
-        );
-        assert_eq!(strip("/project/src/App.tsx"), PathBuf::from("/project/src/App.tsx"));
-    }
 }
