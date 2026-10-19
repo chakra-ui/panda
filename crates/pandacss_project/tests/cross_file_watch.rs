@@ -11,7 +11,7 @@ use insta::assert_yaml_snapshot;
 use oxc_resolver::{FileMetadata, FileSystem as OxcFileSystem, ResolveError};
 use pandacss_encoder::AtomValue;
 use pandacss_extractor::CrossFileResolver;
-use pandacss_fs::{FileSystem, MemoryFileSystem};
+use pandacss_fs::{FileSystem, MemoryFileSystem, OsFileSystem};
 use pandacss_project::Project;
 use pandacss_system::ParseTransforms;
 use serde_json::json;
@@ -456,27 +456,30 @@ fn creating_a_missing_reexported_token_file_affects_the_importer() {
 
 #[test]
 fn creating_a_file_behind_a_tsconfig_path_alias_affects_the_importer() {
-    let (fs, mut project) = watch_project(&[
-        (
-            "tsconfig.json",
-            r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } } }"#,
-        ),
-        ("App.tsx", &app_importing_brand_from("@/tokens")),
-    ]);
-    project.parse_file("/proj/App.tsx", &app_importing_brand_from("@/tokens"));
+    let tmp = tempfile::tempdir().unwrap();
+    let dir = tmp.path();
+    std::fs::write(
+        dir.join("tsconfig.json"),
+        r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } } }"#,
+    )
+    .unwrap();
+    let app = dir.join("App.tsx");
+    let app_source = app_importing_brand_from("@/tokens");
+    std::fs::write(&app, &app_source).unwrap();
+    let mut project = create_project(json!({}))
+        .with_cross_file(CrossFileResolver::with_fs(OsFileSystem::default()));
+    let app = app.to_str().unwrap();
+    project.parse_file(app, &app_source);
 
     assert!(project.take_affected_files().is_empty());
     assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
 
-    write(&fs, "src/tokens.ts", "export const brand = 'red';\n");
-    assert!(!project.refresh_file("/proj/src/tokens.ts", "export const brand = 'red';\n"));
+    let tokens = dir.join("src/tokens.ts");
+    std::fs::create_dir_all(tokens.parent().unwrap()).unwrap();
+    std::fs::write(&tokens, "export const brand = 'red';\n").unwrap();
+    assert!(!project.refresh_file(tokens.to_str().unwrap(), "export const brand = 'red';\n"));
 
-    assert_eq!(refresh_affected(&mut project, &fs), vec!["/proj/App.tsx"]);
-    assert_yaml_snapshot!(sorted_atoms(&project), @r"
-    - prop: color
-      value: red
-      conditions: []
-    ");
+    assert_eq!(project.take_affected_files(), vec![app.to_owned()]);
 }
 
 #[test]

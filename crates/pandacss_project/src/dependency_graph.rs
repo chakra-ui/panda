@@ -95,6 +95,7 @@ impl DependencyGraph {
             .filter_map(|path| self.requests_by_missing_path.get(path))
             .flatten()
             .collect::<FxHashSet<_>>();
+
         requests
             .into_iter()
             .filter_map(|request| {
@@ -116,6 +117,7 @@ impl DependencyGraph {
         let Some(pending) = self.pending_by_request.get_mut(request) else {
             return;
         };
+
         let paths = paths.into_iter().map(Arc::from).collect::<Vec<_>>();
         unindex_missing_paths(
             &mut self.requests_by_missing_path,
@@ -167,6 +169,7 @@ impl DependencyGraph {
         self.remove_file(path);
 
         let mut resolves_now = false;
+
         let mut importer = ImporterDependencies {
             resolved: Vec::with_capacity(resolved.len()),
             pending: Vec::with_capacity(unresolved.len()),
@@ -189,6 +192,7 @@ impl DependencyGraph {
                 }
                 Entry::Vacant(entry) => {
                     let request = entry.key().clone();
+
                     let missing_paths = match retry(dependency) {
                         RetryOutcome::StillMissing(paths) => {
                             paths.into_iter().map(Arc::from).collect()
@@ -198,24 +202,29 @@ impl DependencyGraph {
                             Vec::new()
                         }
                     };
+
                     index_missing_paths(
                         &mut self.requests_by_missing_path,
                         &request,
                         &missing_paths,
                     );
+
                     entry.insert(PendingResolution {
                         probe: dependency.clone(),
                         importers: FxHashSet::from_iter([Arc::clone(path)]),
                         missing_paths,
                     });
+
                     request
                 }
             };
             importer.pending.push(request);
         }
+
         if !importer.resolved.is_empty() || !importer.pending.is_empty() {
             self.by_importer.insert(Arc::clone(path), importer);
         }
+
         resolves_now
     }
 

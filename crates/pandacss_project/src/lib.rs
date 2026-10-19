@@ -1149,15 +1149,18 @@ impl Project {
         if !self.dependencies.has_unresolved() {
             return;
         }
+
         let Some(resolver) = self.system.extractor_config().cross_file.as_ref() else {
             return;
         };
+
         let waiting = self.requests_waiting_on(resolver, created);
         if waiting.is_empty() {
             return;
         }
 
         resolver.clear_resolution_cache();
+
         let mut affected = FxHashSet::default();
         for (request, probe) in waiting {
             match resolver.retry(&probe) {
@@ -1169,6 +1172,7 @@ impl Project {
                 }
             }
         }
+
         self.queue_affected(affected);
     }
 
@@ -1182,12 +1186,14 @@ impl Project {
         if !waiting.is_empty() {
             return waiting;
         }
+
         // Imports behind a re-export are probed from the resolver's realpath form.
         let created = Path::new(created);
         let realpath = created
             .parent()
             .zip(created.file_name())
             .and_then(|(dir, name)| Some(resolver.dependency_key(dir)?.join(name)));
+
         match realpath.map(|path| to_forward_slash(&path)) {
             Some(realpath) if realpath != host_path => {
                 self.dependencies.requests_waiting_on(&realpath)
@@ -1241,6 +1247,7 @@ impl Project {
         }
         self.encoded_recipes_cache.add_from(&entry.encoded_recipes);
         self.files.insert(Arc::clone(&path), entry);
+
         if import_resolved_on_retry {
             self.queue_affected(FxHashSet::from_iter([path]));
         }
@@ -1253,6 +1260,7 @@ impl Project {
         unresolved: &[UnresolvedCrossFileDependency],
     ) -> bool {
         let cross_file = self.system.extractor_config().cross_file.as_ref();
+
         self.dependencies
             .replace_file(path, resolved, unresolved, |dependency| {
                 cross_file.map_or(RetryOutcome::StillMissing(Vec::new()), |resolver| {
@@ -1324,6 +1332,7 @@ impl Project {
         }
 
         self.encoded_recipes_cache.add_from(&missing_recipes);
+
         if import_resolved_on_retry {
             self.queue_affected(FxHashSet::from_iter([path]));
         }

@@ -546,6 +546,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         if !is_file {
             return None;
         }
+
         self.inner.find_tsconfig(from_file).ok().flatten()
     }
 
@@ -867,6 +868,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         let Some(directory) = from_file.parent() else {
             return RetryOutcome::StillMissing(Vec::new());
         };
+
         let tsconfig = self.tsconfig_for(from_file);
         let mut context = ResolveContext::default();
         let resolution = self.inner.resolve_with_context(
@@ -875,9 +877,11 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
             tsconfig.as_deref(),
             &mut context,
         );
+
         if resolution.is_ok() {
             return RetryOutcome::Resolved;
         }
+
         RetryOutcome::StillMissing(
             context
                 .missing_dependencies
