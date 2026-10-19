@@ -35,8 +35,10 @@ export function analyzeSources(
   }
 
   const inspection = compiler.inspectFiles(files)
+  const requirements = compiler.inspectUsageRequirements(files)
   const report = createUsageReport(inspection, {
     scope,
+    requirements: requirements.requirements,
     spec: compiler.spec(),
     sourceByPath,
     suggestTokens: (prop, value) => compiler.suggestTokens(prop, value),
@@ -46,6 +48,7 @@ export function analyzeSources(
     ...inspection.files.flatMap((file) =>
       file.diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnostic.file ?? file.path })),
     ),
+    ...requirements.diagnostics,
     ...compiler.diagnostics(),
   )
 

@@ -200,7 +200,16 @@ impl Project {
         reason = "Project conceptually takes ownership of the System"
     )]
     pub fn new(system: System) -> Self {
-        let system = Arc::new(system);
+        Self::with_system(Arc::new(system))
+    }
+
+    /// Starts an independent source scan with the same compiled configuration and resolver.
+    #[must_use]
+    pub fn fork_empty(&self) -> Self {
+        Self::with_system(Arc::clone(&self.system))
+    }
+
+    fn with_system(system: Arc<System>) -> Self {
         let mut config_diagnostics = system.diagnostics().to_vec();
         push_config_recipe_nested_property_diagnostics(&system, &mut config_diagnostics);
         let config_recipes = system

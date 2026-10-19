@@ -168,12 +168,13 @@ describe('createUsageReport', () => {
           "tokens": [],
         },
         "files": [
-          "{ path: 'app.tsx', counts: { tokens: 1, recipes: 1, utilities: 1, patterns: 1, keyframes: 1 }, diagnostics: 0, sourceUsages: 5 }",
+          "{ path: 'app.tsx', counts: { tokens: 1, recipes: 1, utilities: 1, patterns: 1, keyframes: 1, compositions: 0 }, diagnostics: 0, sourceUsages: 5 }",
         ],
         "scope": "all",
         "sourceCount": 1,
         "sourceUsages": 5,
         "summary": {
+          "compositions": "{ used: 0, unique: 0 }",
           "keyframes": "{ used: 1, unique: 1 }",
           "patterns": "{ used: 1, unique: 1 }",
           "recipes": "{ used: 1, unique: 1 }",
@@ -207,12 +208,13 @@ describe('createUsageReport', () => {
           "tokens": [],
         },
         "files": [
-          "{ path: 'app.tsx', counts: { tokens: 1, recipes: 0, utilities: 0, patterns: 0, keyframes: 0 }, diagnostics: 0, sourceUsages: 1 }",
+          "{ path: 'app.tsx', counts: { tokens: 1, recipes: 0, utilities: 0, patterns: 0, keyframes: 0, compositions: 0 }, diagnostics: 0, sourceUsages: 1 }",
         ],
         "scope": "tokens",
         "sourceCount": 1,
         "sourceUsages": 1,
         "summary": {
+          "compositions": "{ used: 0, unique: 0 }",
           "keyframes": "{ used: 0, unique: 0 }",
           "patterns": "{ used: 0, unique: 0 }",
           "recipes": "{ used: 0, unique: 0 }",
@@ -297,12 +299,13 @@ describe('createUsageReport', () => {
           ],
         },
         "files": [
-          "{ path: 'app.tsx', counts: { tokens: 1, recipes: 2, utilities: 1, patterns: 0, keyframes: 0 }, diagnostics: 0, sourceUsages: 4 }",
+          "{ path: 'app.tsx', counts: { tokens: 1, recipes: 2, utilities: 1, patterns: 0, keyframes: 0, compositions: 0 }, diagnostics: 0, sourceUsages: 4 }",
         ],
         "scope": "all",
         "sourceCount": 1,
         "sourceUsages": 4,
         "summary": {
+          "compositions": "{ used: 0, unique: 0, total: 0 }",
           "keyframes": "{ used: 0, unique: 0, total: 1 }",
           "patterns": "{ used: 0, unique: 0, total: 0 }",
           "recipes": "{ used: 2, unique: 1, total: 1 }",
@@ -514,4 +517,117 @@ describe('createUsageReport', () => {
       },
     ])
   })
+})
+
+test('config places count as uses without adding source sites', () => {
+  const inspection: FileInspectionBatch = { sourceCount: 0, files: [] }
+  const requirements = [
+    { kind: 'token' as const, name: 'colors.red.500', reasons: ['globalCss'] },
+    { kind: 'keyframe' as const, name: 'spin', reasons: ['staticCss.css'] },
+    { kind: 'recipe' as const, name: 'button', reasons: ['staticCss.recipes.button'] },
+    { kind: 'utility' as const, name: 'color', reasons: ['globalCss'] },
+  ]
+  const report = createUsageReport(inspection, { spec, requirements })
+  expect(report.sourceUsages).toBe(0)
+  expect(report.usages).toEqual([])
+  expect(report.views).toMatchInlineSnapshot(`
+    {
+      "compositions": {
+        "items": [],
+        "percentUsed": 0,
+        "total": 0,
+        "unused": [],
+        "used": 0,
+      },
+      "keyframes": {
+        "items": [
+          {
+            "config": [
+              "staticCss.css",
+            ],
+            "files": 0,
+            "name": "spin",
+            "uses": 1,
+          },
+        ],
+        "percentUsed": 100,
+        "total": 1,
+        "unused": [],
+        "used": 1,
+      },
+      "patterns": {
+        "items": [],
+        "percentUsed": 0,
+        "total": 0,
+        "unused": [],
+        "used": 0,
+      },
+      "recipes": {
+        "recipes": [
+          {
+            "config": [
+              "staticCss.recipes.button",
+            ],
+            "files": 0,
+            "name": "button",
+            "percentUsed": 0,
+            "top": [],
+            "totalVariantValues": 4,
+            "unusedVariantValues": 4,
+            "usedAs": {
+              "fn": 0,
+              "jsx": 0,
+            },
+            "usedVariantValues": 0,
+          },
+        ],
+        "unused": [],
+      },
+      "tokens": {
+        "categories": [
+          {
+            "category": "colors",
+            "files": 0,
+            "percentUsed": 50,
+            "rawValues": [],
+            "top": [
+              {
+                "config": [
+                  "globalCss",
+                ],
+                "files": 0,
+                "name": "red.500",
+                "uses": 1,
+              },
+            ],
+            "total": 2,
+            "unused": 1,
+            "used": 1,
+          },
+        ],
+        "unused": [
+          "colors.blue.500",
+        ],
+      },
+      "utilities": {
+        "items": [
+          {
+            "config": [
+              "globalCss",
+            ],
+            "files": 0,
+            "name": "color",
+            "uses": 1,
+          },
+        ],
+        "percentUsed": 100,
+        "total": 1,
+        "unused": [],
+        "used": 1,
+      },
+    }
+  `)
+  expect(createUsageReport(inspection, { spec, requirements, scope: 'keyframes' }).views?.keyframes.items).toEqual([
+    { name: 'spin', uses: 1, files: 0, config: ['staticCss.css'] },
+  ])
 })

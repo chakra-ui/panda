@@ -23,17 +23,21 @@ import { runCommand, type CommandRunContext } from '../run-command'
 export const analyzeCommand = defineCommand({
   meta: {
     name: 'analyze',
-    description: 'Inspect Panda usage across project sources',
+    description: 'Inspect Panda usage across project sources and configured styles',
   },
   args: () => ({
     ...baseArgs(),
     ...includeArgs(),
     scope: {
       type: 'string',
-      description: 'Print one section: tokens, recipes, utilities, patterns, or keyframes (token/recipe are aliases)',
+      description:
+        'Print one section: tokens, recipes, utilities, patterns, keyframes, or compositions (token/recipe are aliases)',
     },
     limit: { type: 'string', description: 'Maximum rows to show per terminal report section' },
-    unused: { type: 'boolean', description: 'List only the configured names no scanned file uses, one per line' },
+    unused: {
+      type: 'boolean',
+      description: 'List configured names that neither sources nor config use, one per line',
+    },
     outfile: { type: 'string', description: 'Output path for a JSON report' },
     ...outputArgs(),
     ...traceArgs(),
@@ -132,10 +136,11 @@ function renderAnalyzeSummary(result: AnalyzeResult, flags: AnalyzeFlags): strin
     lines.push('', ...renderRecipeReport(result.views?.recipes.recipes ?? [], limit))
   }
 
-  const named: Array<['utilities' | 'patterns' | 'keyframes', string, string]> = [
+  const named: Array<['utilities' | 'patterns' | 'keyframes' | 'compositions', string, string]> = [
     ['utilities', 'Utilities', 'Utility'],
     ['patterns', 'Patterns', 'Pattern'],
     ['keyframes', 'Keyframes', 'Keyframe'],
+    ['compositions', 'Compositions', 'Composition'],
   ]
   for (const [section, title, singular] of named) {
     if (show(section)) {
@@ -149,11 +154,12 @@ function renderAnalyzeSummary(result: AnalyzeResult, flags: AnalyzeFlags): strin
 function renderScopeSummary(result: AnalyzeResult): string[] {
   const { summary } = result
   return [
-    `tokens      ${summary.tokens.used} uses, ${summary.tokens.unique} unique`,
-    `recipes     ${summary.recipes.used} uses, ${summary.recipes.unique} unique`,
-    `utilities   ${summary.utilities.used} uses, ${summary.utilities.unique} unique`,
-    `patterns    ${summary.patterns.used} uses, ${summary.patterns.unique} unique`,
-    `keyframes   ${summary.keyframes.used} uses, ${summary.keyframes.unique} unique`,
+    `tokens         ${summary.tokens.used} uses, ${summary.tokens.unique} unique`,
+    `recipes        ${summary.recipes.used} uses, ${summary.recipes.unique} unique`,
+    `utilities      ${summary.utilities.used} uses, ${summary.utilities.unique} unique`,
+    `patterns       ${summary.patterns.used} uses, ${summary.patterns.unique} unique`,
+    `keyframes      ${summary.keyframes.used} uses, ${summary.keyframes.unique} unique`,
+    `compositions   ${summary.compositions.used} uses, ${summary.compositions.unique} unique`,
   ]
 }
 
@@ -175,7 +181,7 @@ function renderTokenReport(categories: TokenCategoryUsage[], limit: number): str
 }
 
 function renderRecipeReport(recipes: RecipeUsageItem[], limit: number): string[] {
-  if (recipes.length === 0) return ['No config recipes found']
+  if (recipes.length === 0) return ['No config recipes used']
 
   const rows = recipes.slice(0, limit).map((entry) => [
     entry.name,
@@ -184,11 +190,11 @@ function renderRecipeReport(recipes: RecipeUsageItem[], limit: number): string[]
       .slice(0, 3)
       .map((item) => `${item.name} (${item.uses})`)
       .join(', ') || '-',
-    String(entry.files),
+    formatUsedIn(entry.files, entry.config),
     formatUsedAs(entry.usedAs),
   ])
 
-  return ['Recipes', ...renderTable(['Recipe', 'Variants', 'Top variants', 'Files', 'Used as'], rows)]
+  return ['Recipes', ...renderTable(['Recipe', 'Variants', 'Top variants', 'Used in', 'Used as'], rows)]
 }
 
 // One name per line so the list pipes and diffs. A single scope drops the
@@ -203,13 +209,14 @@ function renderUnused(result: AnalyzeResult, scope: AnalyzeScope | 'all'): strin
     ['utilities', 'Utilities', views.utilities.unused],
     ['patterns', 'Patterns', views.patterns.unused],
     ['keyframes', 'Keyframes', views.keyframes.unused],
+    ['compositions', 'Compositions', views.compositions.unused],
   ]
 
   if (scope !== 'all') {
     return sections.find(([section]) => section === scope)?.[2] ?? []
   }
 
-  const lines = [`analyze: scanned ${result.sourceCount} files`, 'Unused in scanned sources']
+  const lines = [`analyze: scanned ${result.sourceCount} files`, 'Unused']
   for (const [, title, names] of sections) {
     lines.push('', `${title} (${names.length})`, ...names)
   }
@@ -229,20 +236,30 @@ function renderNamedReport(
   const lines = [heading]
 
   if (view.items.length === 0) {
-    lines.push(`No ${title.toLowerCase()} used in scanned sources`)
+    lines.push(`No ${title.toLowerCase()} used`)
   } else {
-    const rows = view.items.slice(0, limit).map((item) => [item.name, String(item.uses), String(item.files)])
-    lines.push(...renderTable([singular, 'Uses', 'Files'], rows))
+    const rows = view.items
+      .slice(0, limit)
+      .map((item) => [item.name, String(item.uses), formatUsedIn(item.files, item.config)])
+    lines.push(...renderTable([singular, 'Uses', 'Used in'], rows))
   }
 
   if (view.unused.length > 0) {
     const shown = view.unused.slice(0, limit)
     const more = view.unused.length - shown.length
     const names = more > 0 ? [...shown, `+${more} more`] : shown
-    lines.push(...wrapList(`Unused in scanned sources (${view.unused.length}): `, names))
+    lines.push(...wrapList(`Unused (${view.unused.length}): `, names))
   }
 
   return lines
+}
+
+// Source files first, then config places; long lists keep the first few.
+function formatUsedIn(files: number, config: string[] = []): string {
+  const places = [...(files > 0 ? [`${files} ${files === 1 ? 'file' : 'files'}`] : []), ...config]
+  if (places.length === 0) return '-'
+  const shown = places.slice(0, 3)
+  return places.length > shown.length ? `${shown.join(', ')}, +${places.length - shown.length} more` : shown.join(', ')
 }
 
 function wrapList(prefix: string, names: string[], width = 100): string[] {

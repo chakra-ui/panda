@@ -13,6 +13,7 @@ import type {
   TokenUsageItem,
   TokenUsageReport,
   UsageReport,
+  UsageRequirement,
   UsageReportCounts,
   UsageReportFacts,
   UsageReportScope,
@@ -25,7 +26,7 @@ import type {
 import type { SourceRange, Span } from './types/diagnostics'
 import type { Spec, SpecRecipe } from './types/output'
 
-const usageScopes: UsageReportScope[] = ['tokens', 'recipes', 'utilities', 'patterns', 'keyframes']
+const usageScopes: UsageReportScope[] = ['tokens', 'recipes', 'utilities', 'patterns', 'keyframes', 'compositions']
 
 const usageKinds: Record<UsageReportScope, UsageReportUsageKind> = {
   tokens: 'token',
@@ -33,9 +34,13 @@ const usageKinds: Record<UsageReportScope, UsageReportUsageKind> = {
   utilities: 'utility',
   patterns: 'pattern',
   keyframes: 'keyframe',
+  compositions: 'composition',
 }
 
+const compositionGroups = { textStyle: 'textStyles', layerStyle: 'layerStyles', animationStyle: 'animationStyles' }
+
 export interface UsageReportOptions {
+  requirements?: UsageRequirement[]
   scope?: UsageReportScopeOption
   spec?: Spec
   suggestTokens?: (prop: string, value: string) => TokenSuggestion[]
@@ -102,8 +107,11 @@ export function createUsageReport(inspection: FileInspectionBatch, options: Usag
     usages.push(...fileUsages.sort(compareUsageSites))
   }
 
+  const config = configPlaces(options.requirements ?? [], usages, scope)
   for (const key of usageScopes) {
-    summary[key].unique = seen[key].size
+    const places = config.get(usageKinds[key]) ?? new Map<string, string[]>()
+    for (const list of places.values()) summary[key].used += list.length
+    summary[key].unique = new Set([...seen[key], ...places.keys()]).size
   }
 
   if (options.spec) {
@@ -121,7 +129,7 @@ export function createUsageReport(inspection: FileInspectionBatch, options: Usag
   }
 
   if (options.spec) {
-    report.views = createUsageViews(facts, options.spec, usages)
+    report.views = createUsageViews(facts, options.spec, usages, config)
   }
 
   return report
@@ -296,13 +304,55 @@ function collectRecipeFacts(
   }
 }
 
-function createUsageViews(facts: UsageReportFacts, spec: Spec, usages: UsageReportUsage[]): UsageReportViews {
+type ConfigPlaces = Map<UsageReportUsageKind, Map<string, string[]>>
+
+/**
+ * Config places that use each name: `globalCss`, `recipes.button`, or `via colors.brand`
+ * when another used asset pulls it in. A direct `sources` place is already a source usage.
+ */
+function configPlaces(
+  requirements: UsageRequirement[],
+  usages: UsageReportUsage[],
+  scope: UsageReportScopeOption,
+): ConfigPlaces {
+  const written = new Set(usages.map((usage) => `${usage.kind}\0${usage.name}`))
+  const places: ConfigPlaces = new Map()
+  for (const entry of requirements) {
+    if (scope !== 'all' && entry.kind !== usageKinds[scope]) continue
+    const hasSource = written.has(`${entry.kind}\0${entry.name}`)
+    const list = [
+      ...new Set(
+        entry.reasons.flatMap((reason) => (reason !== 'sources' ? [reason] : hasSource ? [] : ['source styles'])),
+      ),
+    ].sort()
+    if (list.length === 0) continue
+    const byName = places.get(entry.kind) ?? new Map<string, string[]>()
+    byName.set(entry.name, [...(byName.get(entry.name) ?? []), ...list].sort())
+    places.set(entry.kind, byName)
+  }
+  return places
+}
+
+function withConfig<T extends { uses: number }>(item: T, config: string[] | undefined): T & { config?: string[] } {
+  if (!config?.length) return item
+  return { ...item, uses: item.uses + config.length, config }
+}
+
+function createUsageViews(
+  facts: UsageReportFacts,
+  spec: Spec,
+  usages: UsageReportUsage[],
+  config: ConfigPlaces,
+): UsageReportViews {
+  const named = (kind: UsageReportUsageKind, configured: string[]) =>
+    createNamedView(usages, kind, configured, config.get(kind) ?? new Map())
   return {
-    tokens: createTokenView(facts, spec),
-    recipes: createRecipeView(facts),
-    utilities: createNamedView(usages, 'utility', canonicalUtilityNames(spec)),
-    patterns: createNamedView(usages, 'pattern', Object.keys(spec.patterns)),
-    keyframes: createNamedView(usages, 'keyframe', spec.keyframes?.keys ?? []),
+    tokens: createTokenView(facts, spec, config.get('token') ?? new Map()),
+    recipes: createRecipeView(facts, config.get('recipe') ?? new Map()),
+    utilities: named('utility', canonicalUtilityNames(spec)),
+    patterns: named('pattern', Object.keys(spec.patterns)),
+    keyframes: named('keyframe', spec.keyframes?.keys ?? []),
+    compositions: named('composition', configuredCompositions(spec)),
   }
 }
 
@@ -310,6 +360,7 @@ function createNamedView(
   usages: UsageReportUsage[],
   kind: UsageReportUsageKind,
   configured: string[],
+  config: Map<string, string[]>,
 ): NamedUsageReport {
   const counters = new Map<string, { uses: number; files: Set<string> }>()
   for (const usage of usages) {
@@ -321,14 +372,27 @@ function createNamedView(
     counters.set(usage.name, entry)
   }
 
+  for (const name of config.keys()) {
+    if (!counters.has(name)) counters.set(name, { uses: 0, files: new Set<string>() })
+  }
   const items = [...counters.entries()]
-    .map(([name, entry]): NamedUsageItem => ({ name, uses: entry.uses, files: entry.files.size }))
+    .map(
+      ([name, entry]): NamedUsageItem =>
+        withConfig({ name, uses: entry.uses, files: entry.files.size }, config.get(name)),
+    )
     .sort(compareUsageItems)
   const unused = configured.filter((name) => !counters.has(name)).sort()
   const total = configured.length
   const used = total - unused.length
 
   return { total, used, unused, percentUsed: percent(used, total), items }
+}
+
+/** Composition names as `textStyles.lead`, read from the composition utilities' values. */
+function configuredCompositions(spec: Spec): string[] {
+  return Object.entries(compositionGroups).flatMap(([prop, group]) =>
+    (spec.utilities.properties[prop]?.literals ?? []).map((name) => `${group}.${name}`),
+  )
 }
 
 /** Utility keys minus their shorthand aliases: `p` and `padding` are one utility. */
@@ -346,10 +410,10 @@ function applySummaryTotals(summary: UsageReportSummary, spec: Spec) {
   summary.utilities.total = canonicalUtilityNames(spec).length
   summary.patterns.total = Object.keys(spec.patterns).length
   summary.keyframes.total = spec.keyframes?.keys.length ?? 0
+  summary.compositions.total = configuredCompositions(spec).length
 }
 
-function createTokenView(facts: UsageReportFacts, spec: Spec): TokenUsageReport {
-  const tokenById = new Map(facts.tokens.map((token) => [token.id, token]))
+function createTokenView(facts: UsageReportFacts, spec: Spec, config: Map<string, string[]>): TokenUsageReport {
   const tokenUses = new Map<number, { uses: number; files: Set<number> }>()
 
   for (const usage of facts.tokenUsages) {
@@ -382,15 +446,16 @@ function createTokenView(facts: UsageReportFacts, spec: Spec): TokenUsageReport 
       const categoryTokenIds = new Set(
         facts.tokens.filter((token) => token.category === category).map((token) => token.id),
       )
-      const top = [...tokenUses.entries()]
-        .filter(([tokenId]) => categoryTokenIds.has(tokenId))
-        .map(([tokenId, usage]): TokenUsageItem => {
-          const token = tokenById.get(tokenId)!
-          return {
+      const top = facts.tokens
+        .filter((token) => token.category === category && (tokenUses.has(token.id) || config.has(token.path)))
+        .map((token): TokenUsageItem => {
+          const usage = tokenUses.get(token.id)
+          const item = {
             name: token.path.slice(`${category}.`.length),
-            uses: usage.uses,
-            files: usage.files.size,
+            uses: usage?.uses ?? 0,
+            files: usage?.files.size ?? 0,
           }
+          return withConfig(item, config.get(token.path))
         })
         .sort(compareUsageItems)
 
@@ -440,14 +505,14 @@ function createTokenView(facts: UsageReportFacts, spec: Spec): TokenUsageReport 
     .sort((a, b) => b.used - a.used || a.category.localeCompare(b.category))
 
   const unused = facts.tokens
-    .filter((token) => token.configured && !tokenUses.has(token.id))
+    .filter((token) => token.configured && !tokenUses.has(token.id) && !config.has(token.path))
     .map((token) => token.path)
     .sort()
 
   return { categories, unused }
 }
 
-function createRecipeView(facts: UsageReportFacts): RecipeUsageReport {
+function createRecipeView(facts: UsageReportFacts, config: Map<string, string[]>): RecipeUsageReport {
   const recipeUses = new Map<number, { files: Set<number>; jsx: number; fn: number }>()
   const variantUses = new Map<number, Map<string, { uses: number; files: Set<number> }>>()
 
@@ -473,7 +538,8 @@ function createRecipeView(facts: UsageReportFacts): RecipeUsageReport {
       const usage = recipeUses.get(recipe.id)
       const variants = variantUses.get(recipe.id) ?? new Map()
 
-      if (!usage && variants.size === 0) return undefined
+      const places = config.get(recipe.name)
+      if (!usage && variants.size === 0 && !places) return undefined
 
       const top = [...variants.entries()]
         .map(([name, item]): RecipeVariantUsage => ({ name, uses: item.uses, files: item.files.size }))
@@ -489,13 +555,14 @@ function createRecipeView(facts: UsageReportFacts): RecipeUsageReport {
         files: usage?.files.size ?? 0,
         top,
         usedAs: { jsx: usage?.jsx ?? 0, fn: usage?.fn ?? 0 },
+        ...(places ? { config: places } : {}),
       }
     })
     .filter((entry): entry is RecipeUsageItem => Boolean(entry))
     .sort((a, b) => b.usedVariantValues - a.usedVariantValues || a.name.localeCompare(b.name))
 
   const unused = facts.recipes
-    .filter((recipe) => recipe.configured && !recipeUses.has(recipe.id))
+    .filter((recipe) => recipe.configured && !recipeUses.has(recipe.id) && !config.has(recipe.name))
     .map((recipe) => recipe.name)
     .sort()
 
@@ -515,6 +582,7 @@ function visitUsage(file: FileInspectionResult, visit: (entry: VisitedUsage) => 
     if (usage.kind === 'recipe') visit({ scope: 'recipes', name: usage.name, range: usage.range })
     if (usage.kind === 'pattern') visit({ scope: 'patterns', name: usage.name, range: usage.range })
     if (usage.kind === 'keyframe') visit({ scope: 'keyframes', name: usage.name, range: usage.range })
+    if (usage.kind === 'composition') visit({ scope: 'compositions', name: usage.name, range: usage.range })
   }
 
   for (const entry of file.componentEntries) {
@@ -558,7 +626,7 @@ function addConfiguredTokens(facts: UsageReportFacts, spec: Spec, scope: UsageRe
   if (!includesScope(scope, 'tokens')) return ids
 
   for (const path of Object.keys(spec.tokens.values).sort()) {
-    if (isVirtualToken(path)) continue
+    if (isVirtualToken(path) || isNegativeOf(path, spec.tokens.values)) continue
 
     const category = tokenCategory(path)
     if (!category || !spec.tokens.categories[category]) continue
@@ -644,7 +712,7 @@ function emptyFacts(): UsageReportFacts {
 }
 
 function createEmptyCounts(): UsageReportCounts {
-  return { tokens: 0, recipes: 0, utilities: 0, patterns: 0, keyframes: 0 }
+  return { tokens: 0, recipes: 0, utilities: 0, patterns: 0, keyframes: 0, compositions: 0 }
 }
 
 function createEmptySummary(): UsageReportSummary {
@@ -816,6 +884,13 @@ function countRecipeVariantValues(recipe: SpecRecipe | undefined): number {
 function tokenCategory(path: string): string | undefined {
   const index = path.indexOf('.')
   return index === -1 ? undefined : path.slice(0, index)
+}
+
+/** `spacing.-4` is generated from `spacing.4`; using it uses `spacing.4`. */
+function isNegativeOf(path: string, values: Record<string, string>): boolean {
+  const index = path.lastIndexOf('.')
+  const name = path.slice(index + 1)
+  return name.startsWith('-') && `${path.slice(0, index)}.${name.slice(1)}` in values
 }
 
 function isVirtualToken(path: string): boolean {
