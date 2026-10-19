@@ -1,260 +1,239 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { Clipboard } from "@ark-ui/vue/clipboard";
-import { Popover } from "@ark-ui/vue/popover";
-import * as s from "./TokenGrid.styles";
-import { tokenCell } from "styled-system/recipes";
-import { rendererFor, toNumber, type DesignSystemIndex, type TokenView } from "~/utils/design-system";
+import { computed, nextTick, watch } from 'vue'
+import { Clipboard } from '@ark-ui/vue/clipboard'
+import { Popover } from '@ark-ui/vue/popover'
+import * as s from './TokenGrid.css'
+import { tokenCell } from 'styled-system/recipes'
+import {
+  aliasOf,
+  groupColors,
+  isDarkCondition,
+  isSemantic,
+  rendererFor,
+  toNumber,
+  toPixels,
+  type DesignSystemIndex,
+  type TokenView,
+} from '~/utils/design-system'
 
 const props = defineProps<{
-  ds: DesignSystemIndex;
-  category: string;
-  theme?: string;
-  search: string;
-  preview?: string;
-}>();
+  ds: DesignSystemIndex
+  category: string
+  theme?: string
+  search: string
+  preview?: string
+  focus?: string
+  only?: Set<string>
+}>()
 
-/** Conditions render side by side rather than behind a switch. */
-const statesOf = (path: string) => props.ds.states(path, props.theme);
-const conditionOf = (state: { condition?: string }) => state.condition?.replace(/^_/, "") ?? "base";
+const statesOf = (path: string) => props.ds.states(path, props.theme)
+const conditionOf = (state: { condition?: string }) => state.condition?.replace(/^_/, '') ?? 'base'
 
-/** Derived here, not passed in, so each tab only ever holds its own tokens. */
-const tokens = computed(() => props.ds.view(props.category, { theme: props.theme }));
+const tokens = computed(() => {
+  const all = props.ds.view(props.category, { theme: props.theme })
+  const { only } = props
+  return only ? all.filter((t) => only.has(t.path)) : all
+})
 
-
-const renderer = computed(() => rendererFor(props.category));
-
-const colorGroups = computed(() =>
-  [
-    { label: "Semantic", items: values.value.filter((t) => t.semantic) },
-    { label: "Core", items: values.value.filter((t) => !t.semantic) },
-  ].filter((g) => g.items.length),
-);
+const renderer = computed(() => rendererFor(props.category))
 
 const values = computed<TokenView[]>(() => {
-  const q = props.search.trim().toLowerCase();
-  const list = q ? tokens.value.filter((t) => t.name.toLowerCase().includes(q)) : tokens.value;
-  if (renderer.value === "scale") {
-    return list.toSorted((a, b) => Math.abs(toNumber(a.value)) - Math.abs(toNumber(b.value)));
+  const q = props.search.trim().toLowerCase()
+  const list = q ? tokens.value.filter((t) => t.name.toLowerCase().includes(q)) : tokens.value
+  if (renderer.value === 'scale') {
+    return list.toSorted((a, b) => Math.abs(toNumber(a.value)) - Math.abs(toNumber(b.value)))
   }
-  return list;
-});
+  return list
+})
 
-function barWidth(value: string): string {
-  const n = Math.abs(toNumber(value));
-  return `min(${Number.isFinite(n) ? n : 9999}px, 100%)`;
+const sections = computed(() =>
+  [
+    { label: 'Semantic', tokens: values.value.filter((t) => isSemantic(props.ds, t)) },
+    { label: 'Core', tokens: values.value.filter((t) => !isSemantic(props.ds, t)) },
+  ].filter((section) => section.tokens.length),
+)
+
+const colorPalettes = computed(() => groupColors(sections.value.find((x) => x.label === 'Core')?.tokens ?? []))
+
+watch(
+  () => props.focus,
+  async (path) => {
+    if (!path || !import.meta.client) return
+    await nextTick()
+    document
+      .querySelector(`[data-token="${CSS.escape(path)}"]`)
+      ?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  },
+  { immediate: true },
+)
+
+const withPixels = (value: string) => {
+  const pixels = value.endsWith('rem') ? toPixels(value) : undefined
+  return pixels === undefined ? value : `${value} · ${pixels}px`
 }
 
-const layerRows = computed(() =>
-  values.value.map((t) => ({ ...t, n: toNumber(t.value) })).toSorted((a, b) => b.n - a.n),
-);
-const screenRows = computed(() =>
-  values.value.map((t) => ({ ...t, n: toNumber(t.value) })).toSorted((a, b) => a.n - b.n),
-);
-const maxScreen = computed(() => Math.max(...screenRows.value.map((t) => t.n), 1));
+const numbered = (list: TokenView[]) => list.map((t) => ({ ...t, n: toNumber(t.value) }))
+const layerRows = (list: TokenView[]) => numbered(list).toSorted((a, b) => b.n - a.n)
+const screenRows = (list: TokenView[]) => numbered(list).toSorted((a, b) => a.n - b.n)
+const maxScreen = (list: TokenView[]) => Math.max(...numbered(list).map((t) => t.n), 1)
 </script>
 
 <template>
-  <p v-if="!values.length" :class="s.empty">No tokens match “{{ search }}”.</p>
+  <p v-if="!values.length" :class="s.empty">No tokens match “{{ search }}”. Try part of the name.</p>
 
-  <div v-else-if="renderer === 'colors'">
-    <Popover.Root :positioning="{ placement: 'bottom-start', gutter: 6 }">
-      <template v-for="g in colorGroups" :key="g.label">
-        <p v-if="colorGroups.length > 1" :class="s.groupHead">
-          {{ g.label }} <span :class="s.groupCount">{{ g.items.length }}</span>
-        </p>
-        <div :class="s.swatches">
-          <div v-for="t in g.items" :key="t.name" :class="s.swatchCell">
-            <Clipboard.Root :default-value="t.name" :timeout="1200" :class="s.contents">
-              <Clipboard.Trigger
-                :class="tokenCell({ layout: 'swatch' })"
-                :aria-label="`Copy token name ${t.name}`"
-              >
-                <span :class="s.chip">
-                  <span
-                    v-for="st in statesOf(t.path)"
-                    :key="st.condition ?? 'base'"
-                    :class="s.chipBand"
-                    :style="{ background: st.value }"
-                  />
-                </span>
-                <span v-if="statesOf(t.path).length > 1" :class="s.chipConditions">
-                  <span v-for="st in statesOf(t.path)" :key="st.condition ?? 'base'">{{
-                    conditionOf(st)
-                  }}</span>
-                </span>
-                <span :class="s.meta">
-                  <Clipboard.Context v-slot="clip">
-                    <span :class="[s.name, clip.copied && s.copied]">{{
-                      clip.copied ? "copied ✓" : t.name
-                    }}</span>
-                  </Clipboard.Context>
-                </span>
-              </Clipboard.Trigger>
-            </Clipboard.Root>
-            <Popover.Context v-slot="api">
-              <Popover.Trigger
-                :value="t.path"
-                :class="[s.infoTrigger, api.open && api.triggerValue === t.path && s.infoTriggerOpen]"
-                :aria-label="`Values for ${t.name}`"
-              >
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.2"
-                  stroke-linecap="round"
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 11v5M12 7.6v.1" />
-                </svg>
-              </Popover.Trigger>
-            </Popover.Context>
-          </div>
+  <Popover.Root v-else :positioning="{ placement: 'bottom-start', gutter: 6 }">
+    <section v-for="section in sections" :key="section.label" :class="s.section.root">
+      <p v-if="sections.length > 1" :class="s.section.head">
+        {{ section.label }} <span :class="s.section.count">{{ section.tokens.length }}</span>
+      </p>
+
+      <template v-if="renderer === 'colors'">
+        <div v-if="section.label === 'Semantic'" :class="s.swatches">
+          <ColorSwatch
+            v-for="t in section.tokens"
+            :key="t.path"
+            :token="t"
+            :states="statesOf(t.path)"
+            :label="t.name"
+            :focused="focus === t.path"
+          />
         </div>
+        <template v-else>
+          <div v-for="palette in colorPalettes" :key="palette.name" :class="s.palette.root">
+            <p v-if="palette.name !== 'base'" :class="s.palette.head">
+              {{ palette.name }} <span :class="s.section.count">{{ palette.tokens.length }}</span>
+            </p>
+            <div :class="s.swatches">
+              <ColorSwatch
+                v-for="{ token } in palette.tokens"
+                :key="token.path"
+                :token="token"
+                :states="statesOf(token.path)"
+                :label="token.name"
+                :focused="focus === token.path"
+              />
+            </div>
+          </div>
+        </template>
       </template>
 
-      <Teleport to="body">
-        <Popover.Positioner>
-          <Popover.Content :class="s.info">
-            <Popover.Context v-slot="api">
-              <template v-if="api.triggerValue">
-                <p :class="s.infoName">{{ props.ds.name(api.triggerValue) }}</p>
-                <dl :class="s.infoList">
-                  <template v-for="st in statesOf(api.triggerValue)" :key="st.condition ?? 'base'">
-                    <dt :class="s.infoTerm">
-                      <span :class="s.infoSwatch" :style="{ background: st.value }" />
-                      {{ conditionOf(st) }}
-                    </dt>
-                    <dd :class="s.infoValue">{{ st.value }}</dd>
-                  </template>
-                </dl>
-              </template>
-            </Popover.Context>
-          </Popover.Content>
-        </Popover.Positioner>
-      </Teleport>
-    </Popover.Root>
-  </div>
+      <TypeScale
+        v-else-if="renderer === 'ramp' || renderer === 'fonts'"
+        :ds="ds"
+        :category="category"
+        :tokens="section.tokens"
+        :preview="preview"
+        :focus="focus"
+      />
 
-  <div v-else-if="renderer === 'layers'" :class="s.layers">
-    <Clipboard.Root
-      v-for="(t, i) in layerRows"
-      :key="t.name"
-      :default-value="t.name"
-      :timeout="1200"
-      :class="s.contents"
-    >
-      <Clipboard.Trigger
-        :class="s.layer"
-        :style="{
-          marginLeft: `${Math.min(i, 8) * 16}px`,
-          boxShadow: `0 ${8 - Math.min(i, 6)}px ${20 - Math.min(i * 2, 14)}px -8px rgba(0,0,0,0.35)`,
-        }"
-        :aria-label="`Copy token name ${t.name}`"
-      >
-        <span :class="s.layerName">{{ t.name }}</span>
-        <span :class="s.layerVal">{{ t.value }}</span>
-      </Clipboard.Trigger>
-    </Clipboard.Root>
-  </div>
-
-  <div v-else-if="renderer === 'screens'" :class="s.screens">
-    <Clipboard.Root
-      v-for="t in screenRows"
-      :key="t.name"
-      :default-value="t.name"
-      :timeout="1200"
-      :class="s.contents"
-    >
-      <Clipboard.Trigger :class="s.screen" :aria-label="`Copy token name ${t.name}`">
-        <span :class="s.screenName">{{ t.name }}</span>
-        <span :class="s.screenLane">
-          <span :class="s.screenBar" :style="{ width: `${(t.n / maxScreen) * 100}%` }" />
-        </span>
-        <span :class="s.screenVal">{{ t.value }}</span>
-      </Clipboard.Trigger>
-    </Clipboard.Root>
-  </div>
-
-  <div v-else :class="s.rows">
-    <Clipboard.Root
-      v-for="t in values"
-      :key="t.name"
-      :default-value="t.name"
-      :timeout="1200"
-      :class="s.contents"
-    >
-      <Clipboard.Trigger
-        :class="tokenCell({ layout: 'row' })"
-        :aria-label="`Copy token name ${t.name}`"
-      >
-        <span :class="s.rowName">{{ t.name }}</span>
-
-        <span :class="s.track" aria-hidden="true">
-          <template v-if="renderer === 'scale'">
-            <span
-              v-if="category === 'radii'"
-              :class="s.radiusBox"
-              :style="{ borderRadius: t.value }"
-            />
-            <span v-else :class="s.lane"
-              ><span :class="s.bar" :style="{ width: barWidth(t.value) }"
-            /></span>
-          </template>
-          <span
-            v-else-if="renderer === 'ramp' && category === 'lineHeights'"
-            :class="s.lineHeightSpecimen"
-            :style="{ lineHeight: t.value }"
-            >{{ props.preview }}</span
-          >
-          <span
-            v-else-if="renderer === 'ramp'"
-            :class="s.specimen"
+      <div v-else-if="renderer === 'layers'" :class="s.layer.list">
+        <Clipboard.Root
+          v-for="(t, i) in layerRows(section.tokens)"
+          :key="t.name"
+          :default-value="t.name"
+          :timeout="1200"
+          :class="s.contents"
+        >
+          <Clipboard.Trigger
+            :class="s.layer.card"
+            :data-token="t.path"
+            :data-focused="focus === t.path || undefined"
             :style="{
-              fontSize: category === 'fontSizes' ? t.value : '17px',
-              letterSpacing: category === 'letterSpacings' ? t.value : 'normal',
-              fontWeight: category === 'fontWeights' ? t.value : '400',
+              marginLeft: `${Math.min(i, 8) * 16}px`,
+              boxShadow: `0 ${8 - Math.min(i, 6)}px ${20 - Math.min(i * 2, 14)}px -8px rgba(0,0,0,0.35)`,
             }"
-            >{{ props.preview }}</span
+            :aria-label="`Copy token name ${t.name}`"
           >
-          <span
-            v-else-if="renderer === 'box'"
-            :class="[s.boxDemo, category === 'shadows' && s.boxDemoLight]"
-            :style="category === 'shadows' ? { boxShadow: t.value } : { border: t.value }"
-            >Aa</span
-          >
-          <span
-            v-else-if="renderer === 'motion'"
-            :class="s.motionChip"
-            :style="
-              category === 'animations'
-                ? { animation: t.value }
-                : category === 'durations'
-                  ? { animation: `studioSlide ${t.value} ease-in-out infinite` }
-                  : { animation: `studioSlide 1.4s ${t.value} infinite` }
-            "
-          />
-          <span
-            v-else-if="renderer === 'ratio'"
-            :class="s.ratioBox"
-            :style="{ aspectRatio: t.value }"
-          />
-          <span
-            v-else-if="renderer === 'blur'"
-            :class="s.blurTile"
-            :style="{ filter: `blur(${t.value})` }"
-          />
-        </span>
+            <span :class="s.layer.name">{{ t.name }}</span>
+            <span :class="s.layer.value">{{ t.value }}</span>
+          </Clipboard.Trigger>
+        </Clipboard.Root>
+      </div>
 
-        <Clipboard.Context v-slot="clip">
-          <span :class="[s.rowVal, clip.copied && s.copied]">{{
-            clip.copied ? "copied ✓" : t.value
-          }}</span>
-        </Clipboard.Context>
-      </Clipboard.Trigger>
-    </Clipboard.Root>
-  </div>
+      <div v-else-if="renderer === 'screens'" :class="s.screen.list">
+        <Clipboard.Root
+          v-for="t in screenRows(section.tokens)"
+          :key="t.name"
+          :default-value="t.name"
+          :timeout="1200"
+          :class="s.contents"
+        >
+          <Clipboard.Trigger
+            :class="s.screen.row"
+            :data-token="t.path"
+            :data-focused="focus === t.path || undefined"
+            :aria-label="`Copy token name ${t.name}`"
+          >
+            <span :class="s.screen.name">{{ t.name }}</span>
+            <span :class="s.screen.lane">
+              <span :class="s.screen.bar" :style="{ width: `${(t.n / maxScreen(section.tokens)) * 100}%` }" />
+            </span>
+            <span :class="s.screen.value">{{ t.value }}</span>
+          </Clipboard.Trigger>
+        </Clipboard.Root>
+      </div>
+
+      <div v-else :class="s.row.list">
+        <Clipboard.Root
+          v-for="t in section.tokens"
+          :key="t.name"
+          :default-value="t.name"
+          :timeout="1200"
+          :class="s.contents"
+        >
+          <Clipboard.Trigger
+            :class="tokenCell({ layout: 'row' })"
+            :data-token="t.path"
+            :data-focused="focus === t.path || undefined"
+            :aria-label="`Copy token name ${t.name}`"
+          >
+            <span :class="s.row.name">{{ t.name }}</span>
+
+            <span :class="s.row.track" aria-hidden="true">
+              <template v-if="statesOf(t.path).length > 1">
+                <span v-for="st in statesOf(t.path)" :key="st.condition ?? 'base'" :class="s.variant.root">
+                  <TokenSpecimen
+                    :category="category"
+                    :renderer="renderer"
+                    :value="st.value"
+                    :on-dark="isDarkCondition(st.condition)"
+                  />
+                  <span :class="s.variant.label">{{ conditionOf(st) }}</span>
+                </span>
+              </template>
+              <TokenSpecimen v-else :category="category" :renderer="renderer" :value="t.value" />
+            </span>
+
+            <Clipboard.Context v-slot="clip">
+              <span :class="s.row.value" :data-copied="clip.copied || undefined">
+                {{ clip.copied ? 'copied ✓' : withPixels(t.value) }}
+                <span v-if="!clip.copied && aliasOf(t)" :class="s.row.alias">→ {{ aliasOf(t) }}</span>
+              </span>
+            </Clipboard.Context>
+          </Clipboard.Trigger>
+        </Clipboard.Root>
+      </div>
+    </section>
+
+    <Teleport to="body">
+      <Popover.Positioner>
+        <Popover.Content :class="s.info.content">
+          <Popover.Context v-slot="api">
+            <template v-if="api.triggerValue">
+              <p :class="s.info.name">{{ props.ds.name(api.triggerValue) }}</p>
+              <dl :class="s.info.list">
+                <template v-for="st in statesOf(api.triggerValue)" :key="st.condition ?? 'base'">
+                  <dt :class="s.info.term">
+                    <span :class="s.info.swatch" :style="{ background: st.value }" />
+                    {{ conditionOf(st) }}
+                  </dt>
+                  <dd :class="s.info.value">{{ st.value }}</dd>
+                </template>
+              </dl>
+            </template>
+          </Popover.Context>
+        </Popover.Content>
+      </Popover.Positioner>
+    </Teleport>
+  </Popover.Root>
 </template>

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
-import * as s from "./analyze.styles";
-import { button } from "styled-system/recipes";
-import { index, parseSpec } from "~/utils/design-system";
-import { loadTokens, saveUsage, loadUsage } from "~/utils/idb";
-import type { CategoryUsage } from "~/utils/analyze";
-import { droppedFiles } from "~/utils/dropped";
-import { useAnalyze } from "~/composables/useAnalyze";
+import { computed, onMounted, watch } from 'vue'
+import * as s from './analyze.css'
+import { button, frame, navItem } from 'styled-system/recipes'
+import { index, parseSpec } from '~/utils/design-system'
+import { loadTokens, saveUsage, loadUsage } from '~/utils/idb'
+import type { CategoryUsage } from '~/utils/analyze'
+import { droppedFiles } from '~/utils/dropped'
+import { useAnalyze } from '~/composables/useAnalyze'
 
 const {
   ds,
@@ -25,154 +25,149 @@ const {
   onDrop,
   onDragOver,
   onDragLeave,
-} = useAnalyze();
+} = useAnalyze()
 
 useHead({
-  title: "Analyze usage — Panda Studio",
-  meta: [{ name: "robots", content: "noindex" }],
-});
+  title: 'Analyze usage — Panda Studio',
+  meta: [{ name: 'robots', content: 'noindex' }],
+})
 
-const route = useRoute();
-const scopeCategory = computed(() => String(route.query.category ?? ""));
+const classes = frame()
+const route = useRoute()
+const scopeCategory = computed(() => String(route.query.category ?? ''))
 const scopedReport = computed(() => {
-  if (!report.value) return [];
-  if (!scopeCategory.value) return report.value;
-  const scoped = report.value.filter((c) => c.type === scopeCategory.value);
-  return scoped.length ? scoped : report.value;
-});
+  if (!report.value) return []
+  if (!scopeCategory.value) return report.value
+  const scoped = report.value.filter((c) => c.type === scopeCategory.value)
+  return scoped.length ? scoped : report.value
+})
 
-const noUsage = computed(() => !!report.value?.length && report.value.every((c) => c.used === 0));
+const noUsage = computed(() => !!report.value?.length && report.value.every((c) => c.used === 0))
+
+const scopeItems = computed(() => [
+  { label: 'All categories', value: '' },
+  ...(report.value ?? []).map((c) => ({ label: c.type, value: c.type })),
+])
 
 async function onScope(v: string) {
-  await navigateTo({ path: "/analyze", query: v ? { category: v } : {} });
+  await navigateTo({ path: '/analyze', query: v ? { category: v } : {} })
 }
 
 const usageSnapshot = computed(() =>
-  report.value
-    ? { report: report.value, scannedCount: scannedCount.value, mode: mode.value }
-    : null,
-);
-watch(usageSnapshot, (u) => saveUsage(u));
+  report.value ? { report: report.value, scannedCount: scannedCount.value, mode: mode.value } : null,
+)
+watch(usageSnapshot, (u) => saveUsage(u))
 
 onMounted(async () => {
-  const raw = await loadTokens();
-  const result = raw ? parseSpec(raw) : null;
-  if (result?.ok) ds.value = index(result.spec);
+  const raw = await loadTokens()
+  const result = raw ? parseSpec(raw) : null
+  if (result?.ok) ds.value = index(result.spec)
   if (droppedFiles.value.length) {
-    await analyzeFiles(droppedFiles.value);
-    return;
+    await analyzeFiles(droppedFiles.value)
+    return
   }
   const saved = await loadUsage<{
-    report: CategoryUsage[];
-    scannedCount: number;
-    mode: "heuristic" | "precise";
-  }>();
+    report: CategoryUsage[]
+    scannedCount: number
+    mode: 'heuristic' | 'precise'
+  }>()
   if (saved?.report?.length) {
-    report.value = saved.report;
-    scannedCount.value = saved.scannedCount ?? 0;
-    mode.value = saved.mode ?? "heuristic";
+    report.value = saved.report
+    scannedCount.value = saved.scannedCount ?? 0
+    mode.value = saved.mode ?? 'heuristic'
   }
-});
+})
 </script>
 
 <template>
-  <div :class="s.wrap">
-    <NuxtLink v-if="ds" to="/view" :class="s.back">
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+  <AppFrame>
+    <template v-if="ds" #sidebar-header>
+      <DesignSearch :ds="ds" />
+    </template>
+
+    <template #sidebar>
+      <SidebarSection label="Studio">
+        <NuxtLink v-if="ds" to="/view" :class="navItem()">Tokens</NuxtLink>
+        <NuxtLink to="/analyze" :class="navItem()">Usage</NuxtLink>
+        <NuxtLink to="/" :class="navItem()">Open another system</NuxtLink>
+      </SidebarSection>
+    </template>
+
+    <template #header>
+      <PageHeader
+        title="Analyze usage"
+        description="Find the tokens your code uses, the ones it never touches, and the ones it leans on most."
       >
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
-      View tokens
-    </NuxtLink>
+        <template v-if="report" #actions>
+          <SelectField label="Category" :items="scopeItems" :value="scopeCategory" @change="onScope" />
+          <button type="button" :class="button()" @click="reset">Scan another folder</button>
+        </template>
+      </PageHeader>
+    </template>
 
-    <div :class="s.head">
-      <h1 :class="s.title">Analyze usage</h1>
-      <p :class="s.lede">
-        See which tokens your code actually uses, which are unused, and which are hot — per category.
-      </p>
-    </div>
-
-    <div v-if="busy || analyzing" :class="s.analyzing">
-      <span :class="s.spinner" />
-      {{ busy && !analyzing ? "Reading your files…" : "Analyzing your source…" }}
+    <div v-if="busy || analyzing" :class="s.analyzing" role="status">
+      <Spinner />
+      {{ busy && !analyzing ? 'Reading your files…' : 'Analyzing your source…' }}
     </div>
 
     <template v-else-if="!report">
-      <div
-        :class="s.dropzone"
-        :data-dragging="dragging || undefined"
-        @drop="onDrop"
-        @dragover="onDragOver"
-        @dragleave="onDragLeave"
-      >
-        <p v-if="ds" :class="s.dropHint">
-          Your tokens are loaded, but usage needs your <strong>source</strong>. Drop your app folder
-          or the whole repo and it'll scan which tokens you actually use.
+      <div :class="classes.root">
+        <div
+          :class="[classes.body, s.dropzone]"
+          :data-dragging="dragging || undefined"
+          @drop="onDrop"
+          @dragover="onDragOver"
+          @dragleave="onDragLeave"
+        >
+          <span :class="s.dropIcon"><Icon name="folder" :size="16" /></span>
+          <p v-if="ds" :class="s.dropTitle">Drop your app folder or the whole repo</p>
+          <p v-else :class="s.dropTitle">Drop your source folder or the whole repo</p>
+          <p :class="s.dropHint">
+            {{
+              ds
+                ? 'Your tokens are loaded. Drop your source to scan it.'
+                : 'Include your design-system.json to browse the tokens too.'
+            }}
+          </p>
+          <label :class="[button({ variant: 'primary', size: 'md' }), s.dropAction]">
+            Choose folder
+            <input type="file" webkitdirectory multiple hidden @change="onPick" />
+          </label>
+        </div>
+        <p :class="classes.bar">
+          <Icon name="info" :size="13" />
+          <span>
+            Include <code>panda.config.ts</code> for exact results from the Panda compiler. Without it, Studio matches
+            token names.
+          </span>
         </p>
-        <p v-else :class="s.dropHint">
-          Drop your source folder or the whole repo. You'll get the usage analysis — and you can view
-          its tokens too.
-        </p>
-        <p :class="s.note">
-          Include your <code>panda.config.ts</code> for <strong>compiler-grade</strong> results — the
-          real Panda compiler runs in your browser. Without it, a name-match scan runs.
-        </p>
-        <label :class="button({ variant: 'solid' })">
-          Choose folder
-          <input type="file" webkitdirectory multiple hidden @change="onPick" />
-        </label>
       </div>
-      <p v-if="empty" :class="s.note">
-        No app source found in that drop — build output (<code>styled-system/</code>,
-        <code>node_modules/</code>, <code>dist/</code>) is skipped. Drop your <code>app/</code> or
-        <code>src/</code> folder, or the whole repo.
+      <p v-if="empty" role="alert" :class="s.notice">
+        No source files found. Studio skips build output like <code>styled-system/</code>,
+        <code>node_modules/</code> and <code>dist/</code>. Drop <code>app/</code>, <code>src/</code>, or the whole repo.
       </p>
     </template>
 
     <template v-else>
-      <div :class="s.toolbar">
-        <span :class="s.scanned">
-          <span :class="s.badge" :data-precise="mode === 'precise'">{{
-            mode === "precise" ? "compiler-grade" : "heuristic"
-          }}</span>
-          Scanned {{ scannedCount }} file{{ scannedCount === 1 ? "" : "s" }}
+      <p :class="s.scanned">
+        <span :class="s.badge" :data-precise="mode === 'precise' || undefined">
+          {{ mode === 'precise' ? 'exact' : 'name match' }}
         </span>
-        <div :class="s.toolbarActions">
-          <CategorySelect
-            v-if="report"
-            :categories="report.map((c) => c.type)"
-            :category="scopeCategory"
-            @change="onScope"
-          />
-          <button :class="button({ variant: 'outline', size: 'sm' })" @click="reset">
-            Scan other files
-          </button>
-        </div>
-      </div>
+        Scanned {{ scannedCount }} file{{ scannedCount === 1 ? '' : 's' }}
+      </p>
 
-      <p v-if="noUsage" :class="s.diag">
-        Found <strong>0 token references</strong> in {{ scannedCount }} file{{
-          scannedCount === 1 ? "" : "s"
-        }}. The loaded tokens probably don't match this project — load this project's own
-        <code>design-system.json</code> (run <code>panda codegen --spec</code>). Note this tool targets
-        <strong>Panda v2</strong>.
+      <p v-if="noUsage" role="alert" :class="s.notice">
+        None of these tokens appear in {{ scannedCount }} file{{ scannedCount === 1 ? '' : 's' }}. They may belong to
+        another project: run <code>panda codegen --spec</code> here and open that file. Studio supports Panda v2.
       </p>
       <p v-else-if="preciseFailed" :class="s.hint">
-        Name-match scan — the compiler couldn't read this <code>panda.config</code><template
-          v-if="preciseError"
-        >: <code>{{ preciseError }}</code></template
+        Showing a name-match scan. The compiler couldn't read <code>panda.config</code
+        ><template v-if="preciseError"
+          >: <code>{{ preciseError }}</code></template
         >.
       </p>
 
-      <AnalyzeReport v-if="report" :report="scopedReport" />
+      <AnalyzeReport :report="scopedReport" />
     </template>
-  </div>
+  </AppFrame>
 </template>

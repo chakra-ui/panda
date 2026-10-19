@@ -11,6 +11,7 @@
     "deploy": "vercel deploy --cwd ../.. --scope chakra-ui --project panda-studio-v2 --prod --yes",
     "deploy:preview": "vercel deploy --cwd ../.. --scope chakra-ui --project panda-studio-v2 --yes",
     "generate": "pnpm deps:build && panda codegen --log-level silent && nuxt generate",
+    "sample": "panda codegen --cwd sample --spec --log-level warn && cp sample/styled-system/specs/design-system.json public/sample-design-system.json",
     "test": "vitest run",
     "spec-link": "tsx scripts/spec-link.ts"
   },

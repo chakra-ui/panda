@@ -1,3 +1,3 @@
-import { ref } from "vue";
+import { ref } from 'vue'
 
-export const droppedFiles = ref<File[]>([]);
+export const droppedFiles = ref<File[]>([])
