@@ -1,5 +1,21 @@
 # @pandacss/types
 
+## 2.3.0
+
+### Minor Changes
+
+- f01a419: Add `jsxMatchTag` to choose which JSX components Panda reads style props from. Match by name or import path;
+  the last matching rule wins.
+
+  ```ts
+  export default defineConfig({
+    jsxMatchTag: [
+      { from: '@tanstack/react-table', ignore: true },
+      { tag: /Button$/, props: ['color'] },
+    ],
+  })
+  ```
+
 ## 2.2.0
 
 No changes in this release.
