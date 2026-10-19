@@ -2,4 +2,4 @@
 '@pandacss/compiler': patch
 ---
 
-Fix `realpath` returning `\\?\`-prefixed paths on Windows, so resolved paths match the ones Node and bundlers use.
+Fix file paths on Windows starting with `\\?\`, so they match the paths Node and your bundler use.
