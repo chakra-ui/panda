@@ -5,21 +5,17 @@
   "type": "module",
   "scripts": {
     "deps:build": "pnpm --filter \"@pandacss/compiler-shared...\" build",
-    "dev": "pnpm deps:build && prisma generate && nuxt prepare && panda codegen --log-level silent && nuxt dev",
-    "build": "pnpm deps:build && prisma generate && nuxt prepare && panda codegen --log-level silent && nuxt build",
+    "dev": "pnpm deps:build && nuxt prepare && panda codegen --log-level silent && nuxt dev",
+    "build": "pnpm deps:build && nuxt prepare && panda codegen --log-level silent && nuxt build",
     "link": "vercel link --scope chakra-ui --project panda-studio-v2 --yes",
     "deploy": "vercel deploy --cwd ../.. --scope chakra-ui --project panda-studio-v2 --prod --yes",
     "deploy:preview": "vercel deploy --cwd ../.. --scope chakra-ui --project panda-studio-v2 --yes",
     "generate": "pnpm deps:build && panda codegen --log-level silent && nuxt generate",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
     "test": "vitest run",
     "spec-link": "tsx scripts/spec-link.ts"
   },
   "dependencies": {
     "@ark-ui/vue": "^5.0.0",
-    "@prisma/client": "5.9.1",
-    "nanoid": "5.1.16",
     "@pandacss/compiler-shared": "workspace:*",
     "@pandacss/compiler-wasm": "2.1.1",
     "@pandacss/config": "2.1.1",
@@ -28,15 +24,13 @@
     "nuxt": "^3.13.0",
     "sucrase": "^3.35.1",
     "vue": "^3.5.0",
-    "vue-data-ui": "^3.25.0",
-    "zod": "^3.23.0"
+    "vue-data-ui": "^3.25.0"
   },
   "devDependencies": {
     "@pandacss/dev": "2.1.1",
     "@pandacss/postcss": "2.1.1",
     "@types/node": "^22.0.0",
     "autoprefixer": "^10.4.0",
-    "prisma": "5.9.1",
     "vitest": "^2.1.0"
   }
 }
