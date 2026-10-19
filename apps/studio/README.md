@@ -15,8 +15,8 @@ Pins the **published** `@pandacss/*` betas, not the workspace sources — `@pand
 ```bash
 pnpm install
 pnpm --filter studio dev       # Nuxt dev server
-pnpm --filter studio build     # prisma generate + panda codegen + nuxt build
-pnpm --filter studio generate  # static site, viewer only (no sharing)
+pnpm --filter studio build     # panda codegen + nuxt build
+pnpm --filter studio generate  # static site
 ```
 
 ## Deploy
@@ -33,7 +33,6 @@ Note the `run`: `pnpm deploy` is a pnpm builtin and won't reach the script. Depl
 
 Environment variables:
 
-- `DATABASE_URL` — Postgres. Shared with the playground, so it **must** carry a distinct `?schema=`; `prisma db push` diffs the whole schema and would otherwise drop the playground's tables.
 - `NUXT_PUBLIC_SITE_URL` — public origin for canonical and OG URLs.
 
 ## What it does
@@ -41,7 +40,6 @@ Environment variables:
 - **Renders every category** with a view that fits it: colors → swatch grid, spacing/sizes/radii → sorted scale, fonts → specimens, fontSizes/lineHeights/letterSpacings/fontWeights → type ramp, shadows/borders → sample boxes, durations/easings/animations → live chips, the rest → a name/value table.
 - **Search** filters the active category; **click a token** to copy its name.
 - **Light + dark** plus theme switching, so semantic tokens paint their real colors.
-- **Share** a system at `/s/<slug>` (analysis at `/a/<slug>`). No account.
 - **Persists** the last-loaded system in IndexedDB.
 
 <p>
@@ -56,7 +54,7 @@ The rail's **Analyze usage** link reports which tokens are used, unused, or hot.
 - **Compiler-grade** — include `panda.config.ts` and the real compiler runs in-browser via `@pandacss/compiler-wasm`. Exact, including bare-numeric tokens.
 - **Heuristic** — no config, so a name-match scan runs. Accurate for named tokens, approximate for numeric ones.
 
-Nothing leaves the browser unless you press **Share**.
+Nothing leaves the browser.
 
 ## Stack
 

@@ -117,16 +117,16 @@ pub(super) fn slot_recipe_module(ctx: CodegenContext<'_>) -> Module {
     )))
 }
 
-const CREATE_RECIPE_CONTEXT_TYPES: &str = r"type AnyRecipeDefinition = RecipeDefinition<RecipeVariantRecord>
+const CREATE_RECIPE_CONTEXT_TYPES: &str = r"export type AnyRecipeDefinition = RecipeDefinition<RecipeVariantRecord>
 
-interface RuntimeRecipeFn {
+export interface RuntimeRecipeFn {
   __type: unknown
   (props?: never): string
 }
 
-type RecipeContextRecipe = RecipeRuntimeFn<any, any> | RuntimeRecipeFn | AnyRecipeDefinition
+export type RecipeContextRecipe = RecipeRuntimeFn<any, any> | RuntimeRecipeFn | AnyRecipeDefinition
 
-type RecipePropsOf<R extends RecipeContextRecipe> = R extends RuntimeRecipeFn
+export type RecipePropsOf<R extends RecipeContextRecipe> = R extends RuntimeRecipeFn
   ? R['__type']
   : R extends RecipeRuntimeFn<infer P, any>
     ? P
@@ -134,12 +134,12 @@ type RecipePropsOf<R extends RecipeContextRecipe> = R extends RuntimeRecipeFn
       ? RecipeSelection<T>
       : never
 
-type RecipeContextComponentProps<T extends ElementType, R extends RecipeContextRecipe, F extends string> = JsxHTMLProps<
+export type RecipeContextComponentProps<T extends ElementType, R extends RecipeContextRecipe, F extends string> = JsxHTMLProps<
   ComponentProps<T> & UnstyledProps & AsProps,
   WithForwardedProps<Assign<RecipePropsOf<R>, JsxStyleProps>, T, F>
 >
 
-type RecipeContextComponent<T extends ElementType, R extends RecipeContextRecipe, F extends string = never> = ComponentType<
+export type RecipeContextComponent<T extends ElementType, R extends RecipeContextRecipe, F extends string = never> = ComponentType<
   RecipeContextComponentProps<T, R, F>
 >
 
@@ -152,17 +152,17 @@ export interface RecipeContext<R extends RecipeContextRecipe> {
   usePropsContext: () => RecipePropsOf<R> | undefined
 }";
 
-const CREATE_SLOT_RECIPE_CONTEXT_TYPES: &str = r"type AnySlotRecipeDefinition = SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>
+const CREATE_SLOT_RECIPE_CONTEXT_TYPES: &str = r"export type AnySlotRecipeDefinition = SlotRecipeDefinition<string, SlotRecipeVariantRecord<string>>
 
-interface RuntimeSlotRecipeFn {
+export interface RuntimeSlotRecipeFn {
   __type: unknown
   __slot: string
   (props?: never): unknown
 }
 
-type SlotRecipeContextInput = SlotRecipeRuntimeFn<string, any, any> | RuntimeSlotRecipeFn | AnySlotRecipeDefinition
+export type SlotRecipeContextInput = SlotRecipeRuntimeFn<string, any, any> | RuntimeSlotRecipeFn | AnySlotRecipeDefinition
 
-type SlotNameOf<R extends SlotRecipeContextInput> = R extends RuntimeSlotRecipeFn
+export type SlotNameOf<R extends SlotRecipeContextInput> = R extends RuntimeSlotRecipeFn
   ? R['__slot']
   : R extends SlotRecipeRuntimeFn<infer S, any, any>
     ? S
@@ -170,7 +170,7 @@ type SlotNameOf<R extends SlotRecipeContextInput> = R extends RuntimeSlotRecipeF
       ? S
       : string
 
-type SlotRecipePropsOf<R extends SlotRecipeContextInput> = R extends RuntimeSlotRecipeFn
+export type SlotRecipePropsOf<R extends SlotRecipeContextInput> = R extends RuntimeSlotRecipeFn
   ? R['__type']
   : R extends SlotRecipeRuntimeFn<any, infer P, any>
     ? P
@@ -178,19 +178,19 @@ type SlotRecipePropsOf<R extends SlotRecipeContextInput> = R extends RuntimeSlot
       ? RecipeSelection<T>
       : never
 
-interface WithProviderOptions<P = {}> {
+export interface WithProviderOptions<P = {}> {
   defaultProps?: (Partial<P> & DataAttrs) | undefined
 }
 
-type SlotRecipeProviderComponent<T extends ElementType, R extends SlotRecipeContextInput, F extends string = never> = ComponentType<
+export type SlotRecipeProviderComponent<T extends ElementType, R extends SlotRecipeContextInput, F extends string = never> = ComponentType<
   JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, WithForwardedProps<Assign<SlotRecipePropsOf<R>, JsxStyleProps>, T, F>>
 >
 
-type SlotRecipeRootProviderComponent<T extends ElementType, R extends SlotRecipeContextInput> = ComponentType<
+export type SlotRecipeRootProviderComponent<T extends ElementType, R extends SlotRecipeContextInput> = ComponentType<
   ComponentProps<T> & UnstyledProps & SlotRecipePropsOf<R>
 >
 
-type SlotRecipeConsumerComponent<T extends ElementType, F extends string = never> = ComponentType<
+export type SlotRecipeConsumerComponent<T extends ElementType, F extends string = never> = ComponentType<
   JsxHTMLProps<ComponentProps<T> & UnstyledProps & AsProps, WithForwardedProps<JsxStyleProps, T, F>>
 >
 

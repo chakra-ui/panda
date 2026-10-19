@@ -33,7 +33,8 @@ tracing = { workspace = true }
 indoc = { workspace = true }
 insta = { workspace = true }
 oxc_resolver = { workspace = true }
-pandacss_fs = { workspace = true, features = ["memory"] }
+pandacss_fs = { workspace = true, features = ["memory", "os"] }
+tempfile = "3.13"
 
 [lints]
 workspace = true

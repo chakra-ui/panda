@@ -11,7 +11,7 @@ use insta::assert_yaml_snapshot;
 use oxc_resolver::{FileMetadata, FileSystem as OxcFileSystem, ResolveError};
 use pandacss_encoder::AtomValue;
 use pandacss_extractor::CrossFileResolver;
-use pandacss_fs::{FileSystem, MemoryFileSystem};
+use pandacss_fs::{FileSystem, MemoryFileSystem, OsFileSystem};
 use pandacss_project::Project;
 use pandacss_system::ParseTransforms;
 use serde_json::json;
@@ -248,12 +248,47 @@ fn creating_one_module_probes_a_shared_pending_request_once() {
     fs.reset();
     project.parse_file("/proj/theme.ts", "export const brand = 'red';\n");
 
+    assert_eq!(project.take_affected_files().len(), 64);
     assert!(
         fs.probes() < 20,
         "one directory + specifier should be resolved once, got {} filesystem probes",
         fs.probes()
     );
-    assert_eq!(project.take_affected_files().len(), 64);
+}
+
+#[test]
+fn adding_unrelated_files_does_not_retry_every_unresolved_import() {
+    let memory = MemoryFileSystem::new();
+    let fs = CountingFileSystem::new(memory.clone());
+    let mut project =
+        create_project(json!({})).with_cross_file(CrossFileResolver::with_fs(fs.clone()));
+    let batch = project.parse_batch();
+    for index in 0..64 {
+        project.parse_file_in_batch(
+            &format!("/proj/App-{index}.tsx"),
+            &app_importing_brand_from(&format!("./missing-{index}")),
+            &batch,
+            ParseTransforms::default(),
+        );
+    }
+    drop(batch);
+
+    fs.reset();
+    for index in 0..64 {
+        project.parse_file(&format!("/proj/new-{index}.tsx"), "export {};\n");
+    }
+    let lookups_per_added_file = fs.probes() / 64;
+    assert!(
+        lookups_per_added_file <= 2,
+        "64 unresolved imports should not be retried per added file, got {} lookups",
+        fs.probes()
+    );
+    assert!(project.take_affected_files().is_empty());
+
+    write(&memory, "missing-3.ts", "export const brand = 'red';\n");
+    project.refresh_file("/proj/missing-3.ts", "export const brand = 'red';\n");
+    assert_eq!(project.take_affected_files(), vec!["/proj/App-3.tsx"]);
+    assert!(project.take_affected_files().is_empty());
 }
 
 #[test]
@@ -417,6 +452,34 @@ fn creating_a_missing_reexported_token_file_affects_the_importer() {
       value: red
       conditions: []
     ");
+}
+
+#[test]
+fn creating_a_file_behind_a_tsconfig_path_alias_affects_the_importer() {
+    let tmp = tempfile::tempdir().unwrap();
+    let dir = tmp.path();
+    std::fs::write(
+        dir.join("tsconfig.json"),
+        r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } } }"#,
+    )
+    .unwrap();
+    let app = dir.join("App.tsx");
+    let app_source = app_importing_brand_from("@/tokens");
+    std::fs::write(&app, &app_source).unwrap();
+    let mut project = create_project(json!({}))
+        .with_cross_file(CrossFileResolver::with_fs(OsFileSystem::default()));
+    let app = app.to_str().unwrap();
+    project.parse_file(app, &app_source);
+
+    assert!(project.take_affected_files().is_empty());
+    assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
+
+    let tokens = dir.join("src/tokens.ts");
+    std::fs::create_dir_all(tokens.parent().unwrap()).unwrap();
+    std::fs::write(&tokens, "export const brand = 'red';\n").unwrap();
+    assert!(!project.refresh_file(tokens.to_str().unwrap(), "export const brand = 'red';\n"));
+
+    assert_eq!(project.take_affected_files(), vec![app.to_owned()]);
 }
 
 #[test]

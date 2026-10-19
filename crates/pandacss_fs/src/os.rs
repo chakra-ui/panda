@@ -201,6 +201,8 @@ impl OxcResolverFileSystem for OsFileSystem {
     }
 
     fn canonicalize(&self, path: &Path) -> io::Result<PathBuf> {
-        self.0.canonicalize(path)
+        self.0
+            .canonicalize(path)
+            .map(|real| dunce::simplified(&real).to_path_buf())
     }
 }

@@ -33,7 +33,7 @@ pub(super) fn type_import(names: &[&str], source: &str) -> ImportDecl {
     }
 }
 
-const JSX_HELPER_SOURCE: &str = r"type Props = Record<string, unknown>
+const JSX_HELPER_SOURCE: &str = r"export type Props = Record<string, unknown>
 
 export type ShouldForwardProp = (prop: string, variantKeys?: string[]) => boolean
 

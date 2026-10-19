@@ -71,9 +71,6 @@ export default defineNuxtConfig({
     "/": { prerender: true },
     "/view": { prerender: true },
     "/analyze": { prerender: true },
-    "/s/**": { prerender: false },
-    "/a/**": { prerender: false },
-    "/api/**": { prerender: false },
   },
   nitro: { prerender: { crawlLinks: false, routes: ["/", "/view", "/analyze"] } },
   vite: {

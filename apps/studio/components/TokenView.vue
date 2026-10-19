@@ -15,7 +15,6 @@ import {
 const props = defineProps<{
   ds: DesignSystemIndex;
   usage?: unknown;
-  analyzeHref?: string;
 }>();
 defineEmits<{ reset: [] }>();
 
@@ -31,11 +30,8 @@ const param = (key: string) => {
   return typeof value === "string" ? value : undefined;
 };
 
-const { status: shareStatus, share } = useShareSpec();
 const analyzeLabel = computed(() => (props.usage ? "View usage" : "Analyze usage"));
-const analyzeTo = computed(
-  () => `${props.analyzeHref ?? "/analyze"}?category=${encodeURIComponent(activeType.value)}`,
-);
+const analyzeTo = computed(() => `/analyze?category=${encodeURIComponent(activeType.value)}`);
 
 const categories = computed(() =>
   props.ds.categories().map((type) => ({ type, count: props.ds.categoryPaths(type).length })),
@@ -130,32 +126,6 @@ watch(activeType, () => setQuery({ q: undefined, text: undefined }));
             </svg>
             {{ analyzeLabel }}
           </NuxtLink>
-          <button
-            :class="[button({ variant: 'outline', size: 'sm' }), s.shareBtn]"
-            :disabled="shareStatus === 'sharing'"
-            aria-label="Share"
-            title="Create a shareable link to this system"
-            @click="share(props.ds.spec, { usage: props.usage })"
-          >
-            <span v-if="shareStatus === 'sharing'" :class="s.btnSpinner" />
-            <svg
-              v-else
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="18" cy="5" r="3" />
-              <circle cx="6" cy="12" r="3" />
-              <circle cx="18" cy="19" r="3" />
-              <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
-            </svg>
-            <span :class="s.shareText">Share</span>
-          </button>
           <button :class="[button({ variant: 'outline', size: 'sm' }), s.actionFull]" @click="$emit('reset')">
             <svg
               width="14"
