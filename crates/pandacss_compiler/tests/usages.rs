@@ -1469,3 +1469,69 @@ fn a_token_repeated_across_first_that_works_members_is_one_usage() {
     Token colors.red.300
     ");
 }
+
+#[test]
+fn spacing_values_from_a_theme_function_link_their_token() {
+    // `values: (theme) => ({ auto: 'auto', ...theme('spacing') })` serializes to a var map.
+    let system = system_with(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "red": { "300": { "value": "#f00" }, "500": { "value": "#e00" } } },
+                "spacing": { "2": { "value": "0.5rem" }, "4": { "value": "1rem" } }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" },
+            "padding": { "className": "p", "shorthand": "p", "values": "spacing" },
+            "marginTop": {
+                "className": "mt",
+                "shorthand": "mt",
+                "values": { "auto": "auto", "2": "var(--spacing-2)", "4": "var(--spacing-4)" }
+            }
+        },
+        "conditions": { "hover": "&:hover" }
+    }));
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        css({ p: '4', color: { base: 'red.300', md: 'red.500' } })
+        css({ p: { base: '4', md: '4', _hover: '4' } })
+        css({ mt: '2' })
+        css({ mt: { base: '2' } })
+        css({ mt: { md: '4' } })
+        css({ mt: { base: '2', _hover: '4' } })
+        css({ mt: 'auto' })
+    "};
+    let result = inspect_file_source(&system, "a.tsx", source);
+
+    let spans = result
+        .style_entries
+        .iter()
+        .filter(|entry| entry.kind == StyleEntryKind::Utility)
+        .flat_map(|entry| {
+            entry.value_spans.iter().map(|span| {
+                format!(
+                    "{} {} -> {}",
+                    entry.path.join("."),
+                    span.value,
+                    span.token.as_ref().map_or("-", |token| token.path.as_str())
+                )
+            })
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    assert_snapshot!(spans, @"
+    p 4 -> spacing.4
+    color red.300 -> colors.red.300
+    color red.500 -> colors.red.500
+    p 4 -> spacing.4
+    p 4 -> spacing.4
+    p 4 -> spacing.4
+    mt 2 -> spacing.2
+    mt 2 -> spacing.2
+    mt 4 -> spacing.4
+    mt 2 -> spacing.2
+    mt 4 -> spacing.4
+    mt auto -> -
+    ");
+}
