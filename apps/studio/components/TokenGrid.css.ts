@@ -12,6 +12,14 @@ export const section = {
   head: css({ display: 'flex', alignItems: 'center', gap: '2', fontSize: '15px', fontWeight: '500', color: 'ink' }),
 
   count: css({ fontSize: '12px', fontWeight: '400', color: 'faint' }),
+
+  legend: css({
+    ml: 'auto',
+    fontSize: '12px',
+    fontWeight: '400',
+    color: 'faint',
+    display: { base: 'none', sm: 'inline' },
+  }),
 }
 
 export const palette = {
@@ -31,7 +39,8 @@ export const palette = {
 export const swatches = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-  gap: '3',
+  columnGap: '5',
+  rowGap: '7',
 })
 
 export const info = {
@@ -116,25 +125,25 @@ export const layer = {
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: '4',
-    w: 'min(420px, 100%)',
-    px: '4',
-    py: '3',
+    w: 'min(520px, 100%)',
+    px: '5',
+    py: '4',
     rounded: 'xl',
     bg: 'paper',
     borderWidth: '1px',
     borderColor: 'line',
     cursor: 'pointer',
     transition: 'transform 0.12s',
-    '&:not(:first-child)': { mt: '-6px' },
+    '&:not(:first-child)': { mt: '-8px' },
     _hover: { transform: 'translateX(4px)' },
     outline: '2px solid transparent',
     outlineOffset: '3px',
     '&:is(:focus-visible, [data-focused])': { outlineColor: 'ring' },
   }),
 
-  name: css({ ...mono, fontSize: '13px', color: 'ink' }),
+  name: css({ ...mono, fontSize: '14px', color: 'ink', '&[data-copied]': { color: 'success' } }),
 
-  value: css({ ...mono, color: 'faint' }),
+  value: css({ ...mono, fontSize: '13px', color: 'faint' }),
 }
 
 export const screen = {
@@ -154,7 +163,7 @@ export const screen = {
     '&:is(:focus-visible, [data-focused])': { outlineColor: 'ring' },
   }),
 
-  name: css({ ...mono, fontSize: '13px', color: 'ink' }),
+  name: css({ ...mono, fontSize: '13px', color: 'ink', '&[data-copied]': { color: 'success' } }),
 
   lane: css({ h: '18px', p: '3px', bg: 'subtle', rounded: 'md', overflow: 'hidden' }),
 

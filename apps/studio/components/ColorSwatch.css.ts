@@ -29,20 +29,33 @@ export const chip = css({
 })
 
 export const band = css({
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'flex-end',
+  justifyContent: 'center',
   flex: '1',
   minW: '0',
   h: 'full',
+  pb: '1.5',
   '&:not(:first-child)': { borderLeftWidth: '1px', borderColor: 'divider' },
 })
 
-export const conditions = css({
-  display: 'flex',
-  gap: '2',
-  mt: '1.5',
+export const bandLabel = css({
+  maxW: 'calc(100% - 8px)',
+  px: '1.5',
+  rounded: 'sm',
+  bg: 'rgba(255,255,255,0.88)',
+  boxShadow: '0 0 0 0.5px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)',
+  color: '#171717',
   fontFamily: 'mono',
   fontSize: '10px',
-  color: 'faint',
-  '& > span': { flex: '1', minW: '0', overflow: 'hidden', textOverflow: 'ellipsis' },
+  lineHeight: '16px',
+  truncate: true,
+  opacity: '0',
+  transform: 'translateY(2px)',
+  transition: 'opacity 0.15s, transform 0.15s',
+  pointerEvents: 'none',
+  '[data-part=trigger]:is(:hover, :focus-visible) &': { opacity: '1', transform: 'none' },
 })
 
 export const name = css({

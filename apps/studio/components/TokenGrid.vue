@@ -53,6 +53,12 @@ const sections = computed(() =>
   ].filter((section) => section.tokens.length),
 )
 
+const hasSplitSwatches = computed(
+  () =>
+    renderer.value === 'colors' &&
+    (sections.value.find((x) => x.label === 'Semantic')?.tokens ?? []).some((t) => statesOf(t.path).length > 1),
+)
+
 const colorPalettes = computed(() => groupColors(sections.value.find((x) => x.label === 'Core')?.tokens ?? []))
 
 watch(
@@ -85,6 +91,9 @@ const maxScreen = (list: TokenView[]) => Math.max(...numbered(list).map((t) => t
     <section v-for="section in sections" :key="section.label" :class="s.section.root">
       <p v-if="sections.length > 1" :class="s.section.head">
         {{ section.label }} <span :class="s.section.count">{{ section.tokens.length }}</span>
+        <span v-if="section.label === 'Semantic' && hasSplitSwatches" :class="s.section.legend">
+          Split swatches show a value per condition. Hover to see which.
+        </span>
       </p>
 
       <template v-if="renderer === 'colors'">
@@ -144,7 +153,11 @@ const maxScreen = (list: TokenView[]) => Math.max(...numbered(list).map((t) => t
             }"
             :aria-label="`Copy token name ${t.name}`"
           >
-            <span :class="s.layer.name">{{ t.name }}</span>
+            <Clipboard.Context v-slot="clip">
+              <span :class="s.layer.name" :data-copied="clip.copied || undefined">
+                {{ clip.copied ? 'copied ✓' : t.name }}
+              </span>
+            </Clipboard.Context>
             <span :class="s.layer.value">{{ t.value }}</span>
           </Clipboard.Trigger>
         </Clipboard.Root>
@@ -164,7 +177,11 @@ const maxScreen = (list: TokenView[]) => Math.max(...numbered(list).map((t) => t
             :data-focused="focus === t.path || undefined"
             :aria-label="`Copy token name ${t.name}`"
           >
-            <span :class="s.screen.name">{{ t.name }}</span>
+            <Clipboard.Context v-slot="clip">
+              <span :class="s.screen.name" :data-copied="clip.copied || undefined">
+                {{ clip.copied ? 'copied ✓' : t.name }}
+              </span>
+            </Clipboard.Context>
             <span :class="s.screen.lane">
               <span :class="s.screen.bar" :style="{ width: `${(t.n / maxScreen(section.tokens)) * 100}%` }" />
             </span>

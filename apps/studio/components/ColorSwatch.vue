@@ -30,10 +30,9 @@ const conditionOf = (state: DesignSystemValue) => state.condition?.replace(/^_/,
             :key="state.condition ?? 'base'"
             :class="s.band"
             :style="{ background: state.value }"
-          />
-        </span>
-        <span v-if="states.length > 1" :class="s.conditions">
-          <span v-for="state in states" :key="state.condition ?? 'base'">{{ conditionOf(state) }}</span>
+          >
+            <span v-if="states.length > 1" :class="s.bandLabel">{{ conditionOf(state) }}</span>
+          </span>
         </span>
         <Clipboard.Context v-slot="clip">
           <span :class="s.name" :data-copied="clip.copied || undefined">
