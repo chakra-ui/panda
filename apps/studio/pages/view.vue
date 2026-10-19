@@ -56,7 +56,6 @@ async function reset() {
     v-if="ready && ds"
     :ds="ds"
     :usage="usage"
-    :analyze-href="'/analyze'"
     @reset="reset"
   />
   <div v-else :class="s.loading">

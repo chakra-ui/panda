@@ -400,12 +400,6 @@ importers:
       '@pandacss/preset-panda':
         specifier: 2.1.1
         version: 2.1.1
-      '@prisma/client':
-        specifier: 5.9.1
-        version: 5.9.1(prisma@5.9.1)
-      nanoid:
-        specifier: 5.1.16
-        version: 5.1.16
       nuxt:
         specifier: ^3.13.0
         version: 3.21.11(@oxc-project/types@0.152.0)(@parcel/watcher@2.5.6)(@types/node@22.20.1)(@vue/compiler-sfc@3.5.42)(cac@6.7.14)(commander@14.0.2)(db0@0.3.4)(esbuild@0.28.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(ioredis@5.11.1(supports-color@10.2.2))(less@4.4.2)(lightningcss@1.33.0)(magicast@0.5.4)(optionator@0.9.4)(oxlint@1.81.0)(rolldown@1.2.12)(rollup-plugin-visualizer@7.1.1(rolldown@1.2.12)(rollup@4.63.1))(rollup@4.63.1)(srvx@0.11.22)(supports-color@10.2.2)(terser@5.44.1)(tsx@4.20.6)(typescript@6.0.3)(vite@8.2.2(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(less@4.4.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.9.0))(webpack@5.102.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(esbuild@0.28.2))(yaml@2.9.0)
@@ -418,9 +412,6 @@ importers:
       vue-data-ui:
         specifier: ^3.25.0
         version: 3.25.4(vue@3.5.42(typescript@6.0.3))
-      zod:
-        specifier: ^3.23.0
-        version: 3.25.76
     devDependencies:
       '@pandacss/dev':
         specifier: 2.1.1
@@ -434,9 +425,6 @@ importers:
       autoprefixer:
         specifier: ^10.4.0
         version: 10.5.4(postcss@8.5.28)
-      prisma:
-        specifier: 5.9.1
-        version: 5.9.1
       vitest:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.0)(jsdom@27.2.0(supports-color@10.2.2))(less@4.4.2)(lightningcss@1.33.0)(supports-color@10.2.2)(terser@5.44.1)

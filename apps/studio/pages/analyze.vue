@@ -7,9 +7,7 @@ import { loadTokens, saveUsage, loadUsage } from "~/utils/idb";
 import type { CategoryUsage } from "~/utils/analyze";
 import { droppedFiles } from "~/utils/dropped";
 import { useAnalyze } from "~/composables/useAnalyze";
-import { useShareSpec } from "~/composables/useShareSpec";
 
-const { status: shareStatus, share } = useShareSpec();
 const {
   ds,
   report,
@@ -55,11 +53,6 @@ const usageSnapshot = computed(() =>
     : null,
 );
 watch(usageSnapshot, (u) => saveUsage(u));
-
-function shareReport() {
-  if (!ds.value || !usageSnapshot.value) return;
-  share(ds.value.spec, { title: "usage", path: "a", usage: usageSnapshot.value });
-}
 
 onMounted(async () => {
   const raw = await loadTokens();
@@ -159,13 +152,6 @@ onMounted(async () => {
             :category="scopeCategory"
             @change="onScope"
           />
-          <button
-            :class="button({ variant: 'outline', size: 'sm' })"
-            :disabled="shareStatus === 'sharing'"
-            @click="shareReport"
-          >
-            {{ shareStatus === "sharing" ? "Sharing…" : "Share" }}
-          </button>
           <button :class="button({ variant: 'outline', size: 'sm' })" @click="reset">
             Scan other files
           </button>
