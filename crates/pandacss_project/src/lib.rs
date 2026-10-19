@@ -28,7 +28,7 @@ mod parsed_file;
 
 pub use diagnostics::append_usage_diagnostics;
 
-use dependency_graph::DependencyGraph;
+use dependency_graph::{DependencyGraph, ResolutionRequest};
 use diagnostics::{
     dynamic_style_value_diagnostic, push_config_recipe_nested_property_diagnostics,
     push_nested_property_diagnostic,
@@ -45,8 +45,9 @@ use pandacss_config::UserConfig;
 use pandacss_encoder::{Atom, Encoder, compare_atoms_by_emit_order};
 use pandacss_extractor::{
     CrossFileDependency, CrossFileResolver, CrossFileSession, ExportInfo, LineIndex, MatchCategory,
-    UnresolvedCrossFileDependency, extract,
+    RetryOutcome, UnresolvedCrossFileDependency, extract,
 };
+use pandacss_fs::to_forward_slash;
 use pandacss_literal::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::css_properties::is_css_property;
@@ -1003,7 +1004,6 @@ impl Project {
     /// Known files whose folded imports changed since the last call. Re-parse
     /// each through the host's transform-aware path, then call again until empty.
     pub fn take_affected_files(&mut self) -> Vec<String> {
-        self.retry_unresolved();
         self.dependencies.take_affected()
     }
 
@@ -1139,25 +1139,61 @@ impl Project {
             .map(|key| self.dependencies.changed_importers(&key, path, source_hash))
             .unwrap_or_default();
 
-        if retry_unresolved {
-            self.dependencies.request_retry();
-        }
         self.queue_affected(affected);
+        if retry_unresolved {
+            self.retry_requests_waiting_on(path);
+        }
     }
 
-    fn retry_unresolved(&mut self) {
-        if !self.dependencies.take_retry() {
+    fn retry_requests_waiting_on(&mut self, created: &str) {
+        if !self.dependencies.has_unresolved() {
             return;
         }
         let Some(resolver) = self.system.extractor_config().cross_file.as_ref() else {
             return;
         };
-        let newly_resolved = self.dependencies.newly_resolved(resolver);
-        if newly_resolved.is_empty() {
+        let waiting = self.requests_waiting_on(resolver, created);
+        if waiting.is_empty() {
             return;
         }
+
         resolver.clear_resolution_cache();
-        self.queue_affected(newly_resolved);
+        let mut affected = FxHashSet::default();
+        for (request, probe) in waiting {
+            match resolver.retry(&probe) {
+                RetryOutcome::Resolved => {
+                    affected.extend(self.dependencies.importers_waiting_on(&request));
+                }
+                RetryOutcome::StillMissing(paths) => {
+                    self.dependencies.set_missing_paths(&request, paths);
+                }
+            }
+        }
+        self.queue_affected(affected);
+    }
+
+    fn requests_waiting_on(
+        &self,
+        resolver: &CrossFileResolver,
+        created: &str,
+    ) -> Vec<(ResolutionRequest, UnresolvedCrossFileDependency)> {
+        let host_path = to_forward_slash(Path::new(created));
+        let waiting = self.dependencies.requests_waiting_on(&host_path);
+        if !waiting.is_empty() {
+            return waiting;
+        }
+        // Imports behind a re-export are probed from the resolver's realpath form.
+        let created = Path::new(created);
+        let realpath = created
+            .parent()
+            .zip(created.file_name())
+            .and_then(|(dir, name)| Some(resolver.dependency_key(dir)?.join(name)));
+        match realpath.map(|path| to_forward_slash(&path)) {
+            Some(realpath) if realpath != host_path => {
+                self.dependencies.requests_waiting_on(&realpath)
+            }
+            _ => waiting,
+        }
     }
 
     fn queue_affected(&mut self, affected: FxHashSet<Arc<str>>) {
@@ -1189,8 +1225,8 @@ impl Project {
         resolved_dependencies: &[CrossFileDependency],
         unresolved_dependencies: &[UnresolvedCrossFileDependency],
     ) {
-        self.dependencies
-            .replace_file(&path, resolved_dependencies, unresolved_dependencies);
+        let import_resolved_on_retry =
+            self.replace_dependencies(&path, resolved_dependencies, unresolved_dependencies);
         self.invalidate_stylesheet_snapshots();
         for atom in &entry.atoms {
             let atoms_cache = &mut self.atoms_cache;
@@ -1204,7 +1240,25 @@ impl Project {
                 .insert(key.clone(), styles.clone());
         }
         self.encoded_recipes_cache.add_from(&entry.encoded_recipes);
-        self.files.insert(path, entry);
+        self.files.insert(Arc::clone(&path), entry);
+        if import_resolved_on_retry {
+            self.queue_affected(FxHashSet::from_iter([path]));
+        }
+    }
+
+    fn replace_dependencies(
+        &mut self,
+        path: &Arc<str>,
+        resolved: &[CrossFileDependency],
+        unresolved: &[UnresolvedCrossFileDependency],
+    ) -> bool {
+        let cross_file = self.system.extractor_config().cross_file.as_ref();
+        self.dependencies
+            .replace_file(path, resolved, unresolved, |dependency| {
+                cross_file.map_or(RetryOutcome::StillMissing(Vec::new()), |resolver| {
+                    resolver.retry(dependency)
+                })
+            })
     }
 
     fn add_file_state_additive(
@@ -1219,8 +1273,8 @@ impl Project {
             return;
         }
 
-        self.dependencies
-            .replace_file(&path, resolved_dependencies, unresolved_dependencies);
+        let import_resolved_on_retry =
+            self.replace_dependencies(&path, resolved_dependencies, unresolved_dependencies);
         self.invalidate_stylesheet_snapshots();
         let mut missing_atoms = Vec::new();
         let mut missing_utility_styles = Vec::new();
@@ -1270,6 +1324,9 @@ impl Project {
         }
 
         self.encoded_recipes_cache.add_from(&missing_recipes);
+        if import_resolved_on_retry {
+            self.queue_affected(FxHashSet::from_iter([path]));
+        }
     }
 
     fn remove_file_entry(&mut self, path: &str) -> Option<FileEntry> {

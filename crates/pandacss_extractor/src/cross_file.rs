@@ -22,7 +22,7 @@ use oxc_ast::ast::{
     Program, Statement, VariableDeclaration,
 };
 use oxc_parser::Parser;
-use oxc_resolver::{ResolveOptions, ResolverGeneric, TsconfigDiscovery};
+use oxc_resolver::{ResolveContext, ResolveOptions, ResolverGeneric, TsconfigDiscovery};
 use pandacss_fs::{FileSystem, to_forward_slash};
 use rustc_hash::{FxHashMap, FxHashSet};
 
@@ -122,6 +122,13 @@ fn default_resolve_options() -> ResolveOptions {
         tsconfig: Some(TsconfigDiscovery::Auto),
         ..ResolveOptions::default()
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RetryOutcome {
+    Resolved,
+    /// Probed paths that did not exist; creating one of them can make the import resolve.
+    StillMissing(Vec<String>),
 }
 
 /// Type-erased over `F: FileSystem` so `ExtractorConfig` stays non-generic.
@@ -225,12 +232,9 @@ impl CrossFileResolver {
         self.inner.dependency_key(path)
     }
 
-    /// Check previously unresolved requests against one fresh resolver view.
-    ///
-    /// The result at each index corresponds to the request at the same index.
     #[must_use]
-    pub fn check_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> Vec<bool> {
-        self.inner.check_resolvable(dependencies)
+    pub fn retry(&self, dependency: &UnresolvedCrossFileDependency) -> RetryOutcome {
+        self.inner.retry(dependency)
     }
 
     /// Clear cached filesystem lookups before retrying unresolved dependencies.
@@ -412,7 +416,7 @@ pub(crate) trait CrossFileLookup: Send + Sync {
 
     fn dependency_key(&self, path: &Path) -> Option<PathBuf>;
 
-    fn check_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> Vec<bool>;
+    fn retry(&self, dependency: &UnresolvedCrossFileDependency) -> RetryOutcome;
 
     fn clear_resolution_cache(&self);
 
@@ -534,6 +538,15 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
 
     fn is_resolvable(&self, from_file: &Path, specifier: &str) -> bool {
         self.resolve_auto(from_file, specifier).is_some()
+    }
+
+    fn tsconfig_for(&self, from_file: &Path) -> Option<Arc<oxc_resolver::TsConfig>> {
+        let is_file = <F as oxc_resolver::FileSystem>::metadata(&self.fs, from_file)
+            .is_ok_and(oxc_resolver::FileMetadata::is_file);
+        if !is_file {
+            return None;
+        }
+        self.inner.find_tsconfig(from_file).ok().flatten()
     }
 
     fn resolve_auto(&self, from_file: &Path, specifier: &str) -> Option<PathBuf> {
@@ -849,23 +862,29 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         Some(forward_slash_path(&parent.join(path.file_name()?)))
     }
 
-    fn check_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> Vec<bool> {
-        let resolver = ResolverGeneric::<F>::new_with_file_system(
-            self.fs.clone(),
-            self.inner.options().clone(),
+    fn retry(&self, dependency: &UnresolvedCrossFileDependency) -> RetryOutcome {
+        let from_file = Path::new(&dependency.from_file);
+        let Some(directory) = from_file.parent() else {
+            return RetryOutcome::StillMissing(Vec::new());
+        };
+        let tsconfig = self.tsconfig_for(from_file);
+        let mut context = ResolveContext::default();
+        let resolution = self.inner.resolve_with_context(
+            directory,
+            &dependency.specifier,
+            tsconfig.as_deref(),
+            &mut context,
         );
-        dependencies
-            .iter()
-            .map(|dep| {
-                resolve_with(
-                    &self.fs,
-                    &resolver,
-                    Path::new(&dep.from_file),
-                    &dep.specifier,
-                )
-                .is_some()
-            })
-            .collect()
+        if resolution.is_ok() {
+            return RetryOutcome::Resolved;
+        }
+        RetryOutcome::StillMissing(
+            context
+                .missing_dependencies
+                .iter()
+                .map(|path| to_forward_slash(path))
+                .collect(),
+        )
     }
 
     fn clear_resolution_cache(&self) {

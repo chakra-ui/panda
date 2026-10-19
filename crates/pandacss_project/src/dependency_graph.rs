@@ -4,12 +4,12 @@ use std::collections::hash_map::Entry;
 use std::path::Path;
 use std::sync::Arc;
 
-use pandacss_extractor::{CrossFileDependency, CrossFileResolver, UnresolvedCrossFileDependency};
+use pandacss_extractor::{CrossFileDependency, RetryOutcome, UnresolvedCrossFileDependency};
 use pandacss_fs::to_forward_slash;
 use rustc_hash::{FxHashMap, FxHashSet};
 
 #[derive(Clone, PartialEq, Eq, Hash)]
-struct ResolutionRequest {
+pub(super) struct ResolutionRequest {
     directory: Arc<str>,
     specifier: Arc<str>,
 }
@@ -30,6 +30,7 @@ struct PendingResolution {
     /// on its directory and module specifier, which form [`ResolutionRequest`].
     probe: UnresolvedCrossFileDependency,
     importers: FxHashSet<Arc<str>>,
+    missing_paths: Vec<Arc<str>>,
 }
 
 #[derive(Default)]
@@ -44,8 +45,8 @@ pub(super) struct DependencyGraph {
     resolved_importers: FxHashMap<Arc<str>, FxHashMap<Arc<str>, Option<u64>>>,
     pending_by_request: FxHashMap<ResolutionRequest, PendingResolution>,
     by_importer: FxHashMap<Arc<str>, ImporterDependencies>,
+    requests_by_missing_path: FxHashMap<Arc<str>, FxHashSet<ResolutionRequest>>,
     affected: FxHashSet<Arc<str>>,
-    retry_unresolved: bool,
 }
 
 impl DependencyGraph {
@@ -53,8 +54,8 @@ impl DependencyGraph {
         self.resolved_importers.clear();
         self.pending_by_request.clear();
         self.by_importer.clear();
+        self.requests_by_missing_path.clear();
         self.affected.clear();
-        self.retry_unresolved = false;
     }
 
     pub(super) fn has_importers(&self) -> bool {
@@ -85,29 +86,44 @@ impl DependencyGraph {
             .collect()
     }
 
-    pub(super) fn request_retry(&mut self) {
-        self.retry_unresolved = true;
-    }
-
-    pub(super) fn take_retry(&mut self) -> bool {
-        std::mem::take(&mut self.retry_unresolved) && self.has_unresolved()
+    #[must_use]
+    pub(super) fn requests_waiting_on(
+        &self,
+        created: &str,
+    ) -> Vec<(ResolutionRequest, UnresolvedCrossFileDependency)> {
+        let requests = self_and_ancestors(created)
+            .filter_map(|path| self.requests_by_missing_path.get(path))
+            .flatten()
+            .collect::<FxHashSet<_>>();
+        requests
+            .into_iter()
+            .filter_map(|request| {
+                let probe = self.pending_by_request.get(request)?.probe.clone();
+                Some((request.clone(), probe))
+            })
+            .collect()
     }
 
     #[must_use]
-    pub(super) fn newly_resolved(&self, resolver: &CrossFileResolver) -> FxHashSet<Arc<str>> {
-        let groups = self.pending_by_request.values().collect::<Vec<_>>();
-        let probes = groups
-            .iter()
-            .map(|group| group.probe.clone())
-            .collect::<Vec<_>>();
-        resolver
-            .check_resolvable(&probes)
-            .into_iter()
-            .zip(groups)
-            .filter(|(resolved, _)| *resolved)
-            .flat_map(|(_, group)| group.importers.iter())
-            .cloned()
-            .collect()
+    pub(super) fn importers_waiting_on(&self, request: &ResolutionRequest) -> Vec<Arc<str>> {
+        self.pending_by_request
+            .get(request)
+            .map(|pending| pending.importers.iter().cloned().collect())
+            .unwrap_or_default()
+    }
+
+    pub(super) fn set_missing_paths(&mut self, request: &ResolutionRequest, paths: Vec<String>) {
+        let Some(pending) = self.pending_by_request.get_mut(request) else {
+            return;
+        };
+        let paths = paths.into_iter().map(Arc::from).collect::<Vec<_>>();
+        unindex_missing_paths(
+            &mut self.requests_by_missing_path,
+            request,
+            &pending.missing_paths,
+        );
+        index_missing_paths(&mut self.requests_by_missing_path, request, &paths);
+        pending.missing_paths = paths;
     }
 
     pub(super) fn queue(&mut self, path: Arc<str>) {
@@ -140,14 +156,17 @@ impl DependencyGraph {
         paths
     }
 
+    /// Returns `true` when one of the unresolved imports resolves on retry.
     pub(super) fn replace_file(
         &mut self,
         path: &Arc<str>,
         resolved: &[CrossFileDependency],
         unresolved: &[UnresolvedCrossFileDependency],
-    ) {
+        retry: impl Fn(&UnresolvedCrossFileDependency) -> RetryOutcome,
+    ) -> bool {
         self.remove_file(path);
 
+        let mut resolves_now = false;
         let mut importer = ImporterDependencies {
             resolved: Vec::with_capacity(resolved.len()),
             pending: Vec::with_capacity(unresolved.len()),
@@ -170,9 +189,24 @@ impl DependencyGraph {
                 }
                 Entry::Vacant(entry) => {
                     let request = entry.key().clone();
+                    let missing_paths = match retry(dependency) {
+                        RetryOutcome::StillMissing(paths) => {
+                            paths.into_iter().map(Arc::from).collect()
+                        }
+                        RetryOutcome::Resolved => {
+                            resolves_now = true;
+                            Vec::new()
+                        }
+                    };
+                    index_missing_paths(
+                        &mut self.requests_by_missing_path,
+                        &request,
+                        &missing_paths,
+                    );
                     entry.insert(PendingResolution {
                         probe: dependency.clone(),
                         importers: FxHashSet::from_iter([Arc::clone(path)]),
+                        missing_paths,
                     });
                     request
                 }
@@ -182,6 +216,7 @@ impl DependencyGraph {
         if !importer.resolved.is_empty() || !importer.pending.is_empty() {
             self.by_importer.insert(Arc::clone(path), importer);
         }
+        resolves_now
     }
 
     pub(super) fn remove_file(&mut self, path: &str) {
@@ -209,9 +244,50 @@ impl DependencyGraph {
                             pending.importers.remove(path);
                             pending.importers.is_empty()
                         });
-                if remove_request {
-                    self.pending_by_request.remove(&request);
+                if remove_request && let Some(pending) = self.pending_by_request.remove(&request) {
+                    unindex_missing_paths(
+                        &mut self.requests_by_missing_path,
+                        &request,
+                        &pending.missing_paths,
+                    );
                 }
+            }
+        }
+    }
+}
+
+fn self_and_ancestors(path: &str) -> impl Iterator<Item = &str> {
+    std::iter::successors(Some(path), |path| parent_dir(path))
+}
+
+fn parent_dir(path: &str) -> Option<&str> {
+    let parent = Path::new(path).parent()?.to_str()?;
+    (!parent.is_empty()).then_some(parent)
+}
+
+fn index_missing_paths(
+    requests_by_missing_path: &mut FxHashMap<Arc<str>, FxHashSet<ResolutionRequest>>,
+    request: &ResolutionRequest,
+    paths: &[Arc<str>],
+) {
+    for path in paths {
+        requests_by_missing_path
+            .entry(Arc::clone(path))
+            .or_default()
+            .insert(request.clone());
+    }
+}
+
+fn unindex_missing_paths(
+    requests_by_missing_path: &mut FxHashMap<Arc<str>, FxHashSet<ResolutionRequest>>,
+    request: &ResolutionRequest,
+    paths: &[Arc<str>],
+) {
+    for path in paths {
+        if let Entry::Occupied(mut entry) = requests_by_missing_path.entry(Arc::clone(path)) {
+            entry.get_mut().remove(request);
+            if entry.get().is_empty() {
+                entry.remove();
             }
         }
     }
@@ -235,13 +311,38 @@ mod tests {
         }
     }
 
+    fn resolves_on_retry(_: &UnresolvedCrossFileDependency) -> RetryOutcome {
+        RetryOutcome::Resolved
+    }
+
+    fn theme_probe(dependency: &UnresolvedCrossFileDependency) -> RetryOutcome {
+        let directory = dependency
+            .from_file
+            .rsplit_once('/')
+            .map_or("", |(dir, _)| dir);
+        RetryOutcome::StillMissing(vec![
+            format!("{directory}/theme.ts"),
+            format!("{directory}/theme"),
+        ])
+    }
+
     #[test]
     fn replacing_an_importer_replaces_its_resolved_edges() {
         let mut graph = DependencyGraph::default();
         let importer: Arc<str> = Arc::from("/project/App.tsx");
 
-        graph.replace_file(&importer, &[resolved("/project/a.ts")], &[]);
-        graph.replace_file(&importer, &[resolved("/project/b.ts")], &[]);
+        graph.replace_file(
+            &importer,
+            &[resolved("/project/a.ts")],
+            &[],
+            resolves_on_retry,
+        );
+        graph.replace_file(
+            &importer,
+            &[resolved("/project/b.ts")],
+            &[],
+            resolves_on_retry,
+        );
 
         assert!(graph.importers_of("/project/a.ts").is_empty());
         assert_eq!(graph.importers_of("/project/b.ts"), ["/project/App.tsx"]);
@@ -253,8 +354,8 @@ mod tests {
         let first: Arc<str> = Arc::from("/project/A.tsx");
         let second: Arc<str> = Arc::from("/project/B.tsx");
 
-        graph.replace_file(&first, &[], &[unresolved(&first)]);
-        graph.replace_file(&second, &[], &[unresolved(&second)]);
+        graph.replace_file(&first, &[], &[unresolved(&first)], theme_probe);
+        graph.replace_file(&second, &[], &[unresolved(&second)], theme_probe);
 
         assert_eq!(graph.pending_by_request.len(), 1);
         assert_eq!(
@@ -272,6 +373,33 @@ mod tests {
         assert_eq!(graph.pending_by_request.len(), 1);
         graph.remove_file(&second);
         assert!(graph.pending_by_request.is_empty());
+        assert!(graph.requests_by_missing_path.is_empty());
+    }
+
+    #[test]
+    fn a_created_file_finds_only_the_requests_that_probed_it() {
+        let mut graph = DependencyGraph::default();
+        let first: Arc<str> = Arc::from("/project/a/App.tsx");
+        let second: Arc<str> = Arc::from("/project/b/App.tsx");
+        graph.replace_file(&first, &[], &[unresolved(&first)], theme_probe);
+        graph.replace_file(&second, &[], &[unresolved(&second)], theme_probe);
+
+        let waiting = graph.requests_waiting_on("/project/a/theme.ts");
+        assert_eq!(waiting.len(), 1);
+        assert_eq!(graph.importers_waiting_on(&waiting[0].0), [first]);
+        assert!(graph.requests_waiting_on("/project/c/theme.ts").is_empty());
+    }
+
+    #[test]
+    fn a_file_created_inside_a_missing_directory_finds_its_request() {
+        let mut graph = DependencyGraph::default();
+        let importer: Arc<str> = Arc::from("/project/App.tsx");
+        graph.replace_file(&importer, &[], &[unresolved(&importer)], theme_probe);
+
+        assert_eq!(
+            graph.requests_waiting_on("/project/theme/index.ts").len(),
+            1
+        );
     }
 
     #[test]
@@ -280,8 +408,8 @@ mod tests {
         let first: Arc<str> = Arc::from("/project/a/App.tsx");
         let second: Arc<str> = Arc::from("/project/b/App.tsx");
 
-        graph.replace_file(&first, &[], &[unresolved(&first)]);
-        graph.replace_file(&second, &[], &[unresolved(&second)]);
+        graph.replace_file(&first, &[], &[unresolved(&first)], theme_probe);
+        graph.replace_file(&second, &[], &[unresolved(&second)], theme_probe);
 
         assert_eq!(graph.pending_by_request.len(), 2);
     }

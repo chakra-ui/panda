@@ -257,7 +257,7 @@ fn creating_one_module_probes_a_shared_pending_request_once() {
 }
 
 #[test]
-fn adding_files_retries_pending_requests_once_per_drain() {
+fn adding_unrelated_files_does_not_retry_every_unresolved_import() {
     let memory = MemoryFileSystem::new();
     let fs = CountingFileSystem::new(memory.clone());
     let mut project =
@@ -277,9 +277,16 @@ fn adding_files_retries_pending_requests_once_per_drain() {
     for index in 0..64 {
         project.parse_file(&format!("/proj/new-{index}.tsx"), "export {};\n");
     }
-    assert_eq!(fs.probes(), 0);
+    let lookups_per_added_file = fs.probes() / 64;
+    assert!(
+        lookups_per_added_file <= 2,
+        "64 unresolved imports should not be retried per added file, got {} lookups",
+        fs.probes()
+    );
+    assert!(project.take_affected_files().is_empty());
 
     write(&memory, "missing-3.ts", "export const brand = 'red';\n");
+    project.refresh_file("/proj/missing-3.ts", "export const brand = 'red';\n");
     assert_eq!(project.take_affected_files(), vec!["/proj/App-3.tsx"]);
     assert!(project.take_affected_files().is_empty());
 }
@@ -438,6 +445,31 @@ fn creating_a_missing_reexported_token_file_affects_the_importer() {
 
     write(&fs, "tokens.ts", "export const brand = 'red';\n");
     assert!(!project.refresh_file("/proj/tokens.ts", "export const brand = 'red';\n"));
+
+    assert_eq!(refresh_affected(&mut project, &fs), vec!["/proj/App.tsx"]);
+    assert_yaml_snapshot!(sorted_atoms(&project), @r"
+    - prop: color
+      value: red
+      conditions: []
+    ");
+}
+
+#[test]
+fn creating_a_file_behind_a_tsconfig_path_alias_affects_the_importer() {
+    let (fs, mut project) = watch_project(&[
+        (
+            "tsconfig.json",
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } } }"#,
+        ),
+        ("App.tsx", &app_importing_brand_from("@/tokens")),
+    ]);
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("@/tokens"));
+
+    assert!(project.take_affected_files().is_empty());
+    assert_yaml_snapshot!(sorted_atoms(&project), @"[]");
+
+    write(&fs, "src/tokens.ts", "export const brand = 'red';\n");
+    assert!(!project.refresh_file("/proj/src/tokens.ts", "export const brand = 'red';\n"));
 
     assert_eq!(refresh_affected(&mut project, &fs), vec!["/proj/App.tsx"]);
     assert_yaml_snapshot!(sorted_atoms(&project), @r"
