@@ -128,12 +128,13 @@ export class PandaWebpackPlugin {
     if (this.#options.transform) {
       // Source transform loader + `@pandacss-internal/css` virtual module (shared
       // unplugin). Skip node_modules — third-party code is never Panda source.
-      pandaTransformer
-        .webpack({
-          exclude: [/node_modules/],
-          getCompiler: () => this.#driver?.compiler,
-        })
-        .apply(compiler)
+      // unplugin's webpack adapter resolves the virtual module through
+      // `resolve.plugins`, which Rspack's resolver ignores, so Rspack gets its own adapter.
+      const adapter = 'rspack' in compiler ? pandaTransformer.rspack : pandaTransformer.webpack
+      adapter({
+        exclude: [/node_modules/],
+        getCompiler: () => this.#driver?.compiler,
+      }).apply(compiler)
     }
 
     // Inject generated CSS in-memory: a `pre` loader on layer-declaring `.css`,
