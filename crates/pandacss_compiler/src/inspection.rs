@@ -42,6 +42,8 @@ pub enum UsageKind {
     Recipe,
     Pattern,
     Keyframe,
+    /// `textStyles.<name>`, `layerStyles.<name>`, or `animationStyles.<name>`.
+    Composition,
     #[serde(rename = "view-transition")]
     ViewTransition,
     #[serde(rename = "position-try")]

@@ -42,6 +42,11 @@ use crate::style_rules::{
 };
 use crate::writer::CssWriter;
 
+mod references;
+mod requirements;
+pub use references::{StyleReference, StyleReferences};
+pub(super) use requirements::collect_style_requirements;
+
 #[derive(Clone, Copy)]
 enum InheritedImportance {
     Normal,
@@ -310,7 +315,7 @@ fn first_that_works_value_diagnostic(prop: &str, raw: &str) -> Option<Diagnostic
     }
 }
 
-fn global_var_conflicts(config: &UserConfig, usage: Option<&UsageMarks>) -> Vec<Diagnostic> {
+fn global_var_conflicts(config: &UserConfig, usage: Option<&UsageMarks<'_>>) -> Vec<Diagnostic> {
     let Value::Object(entries) = &config.global_vars else {
         return Vec::new();
     };
@@ -468,7 +473,7 @@ fn trim_final_newline(mut css: String) -> String {
 fn prepare_emittable_token_vars<'a>(
     config: &UserConfig,
     dictionary: &'a TokenDictionary,
-    usage: Option<&UsageMarks>,
+    usage: Option<&UsageMarks<'_>>,
 ) -> TokenCssVars<'a> {
     let theme_filter = static_theme_condition_filter(config);
     let vars = dictionary.css_vars_with_theme_filter(|condition| {
@@ -930,8 +935,27 @@ fn capacity_hint(atoms: &[&Atom], recipes: &EncodedRecipesSnapshot) -> usize {
         + recipe_entries.saturating_mul(64)
 }
 
-#[derive(Default)]
-struct UsageMarks {
+/// Receives what lowered styles reference. Emission pruning and usage reports walk
+/// styles the same way and differ only in what each sink keeps.
+pub(crate) trait ReferenceSink {
+    /// A lowered CSS declaration, after utility transforms.
+    fn declaration(&mut self, prop: &str, value: &str);
+    /// A value that could not be lowered; only its token references count.
+    fn value(&mut self, value: &str);
+    /// An authored style key, before lowering.
+    fn property(&mut self, _prop: &str) {}
+    /// A `textStyle`, `layerStyle`, or `animationStyle` value.
+    fn composition(&mut self, _prop: &'static str, _name: &str) {}
+    /// Emission lowers composition styles in place; reports keep them as one reference.
+    fn expands_compositions(&self) -> bool {
+        true
+    }
+}
+
+/// What the emitted CSS reads, for pruning tokens, keyframes, and `@property` rules.
+struct UsageMarks<'a> {
+    dictionary: Option<&'a TokenDictionary>,
+    keyframe_defs: Option<&'a serde_json::Map<String, Value>>,
     token_vars: FxHashSet<String>,
     keyframes: FxHashSet<String>,
     /// A registration stays alive when its variable is written, not just read —
@@ -939,7 +963,20 @@ struct UsageMarks {
     declared_vars: FxHashSet<String>,
 }
 
-impl UsageMarks {
+impl<'a> UsageMarks<'a> {
+    fn new(
+        dictionary: Option<&'a TokenDictionary>,
+        keyframe_defs: Option<&'a serde_json::Map<String, Value>>,
+    ) -> Self {
+        Self {
+            dictionary,
+            keyframe_defs,
+            token_vars: FxHashSet::default(),
+            keyframes: FxHashSet::default(),
+            declared_vars: FxHashSet::default(),
+        }
+    }
+
     fn touches_var(&self, name: &str) -> bool {
         self.token_vars.contains(name) || self.declared_vars.contains(name)
     }
@@ -948,6 +985,30 @@ impl UsageMarks {
     /// count as the sheet using it.
     fn reads_var(&self, name: &str) -> bool {
         self.token_vars.contains(name)
+    }
+}
+
+impl ReferenceSink for UsageMarks<'_> {
+    fn declaration(&mut self, prop: &str, value: &str) {
+        self.value(value);
+
+        if prop.starts_with("--") {
+            self.declared_vars.insert(prop.to_owned());
+        }
+
+        if is_animation_property(prop) {
+            collect_keyframe_refs(
+                value,
+                self.dictionary,
+                self.keyframe_defs,
+                &mut self.keyframes,
+            );
+        }
+    }
+
+    fn value(&mut self, value: &str) {
+        collect_css_var_refs(value, &mut self.token_vars);
+        collect_token_reference_vars(value, self.dictionary, &mut self.token_vars);
     }
 }
 
@@ -1059,47 +1120,33 @@ fn collect_token_path_var(
     }
 }
 
-fn collect_value_token_refs(
-    value: &Value,
-    token_dictionary: Option<&TokenDictionary>,
-    refs: &mut FxHashSet<String>,
-) {
+fn visit_value_strings(value: &Value, sink: &mut impl ReferenceSink) {
     match value {
-        Value::String(value) => {
-            collect_css_var_refs(value, refs);
-            collect_token_reference_vars(value, token_dictionary, refs);
-        }
-        Value::Object(entries) => {
-            for value in entries.values() {
-                collect_value_token_refs(value, token_dictionary, refs);
-            }
-        }
-        Value::Array(items) => {
-            for value in items {
-                collect_value_token_refs(value, token_dictionary, refs);
-            }
-        }
+        Value::String(value) => sink.value(value),
+        Value::Object(entries) => entries
+            .values()
+            .for_each(|value| visit_value_strings(value, sink)),
+        Value::Array(items) => items
+            .iter()
+            .for_each(|value| visit_value_strings(value, sink)),
         Value::Null | Value::Bool(_) | Value::Number(_) => {}
     }
 }
 
 fn collect_keyframe_refs(
     value: &str,
+    tokens: Option<&TokenDictionary>,
     keyframes: Option<&serde_json::Map<String, Value>>,
     refs: &mut FxHashSet<String>,
 ) {
     let Some(keyframes) = keyframes else {
         return;
     };
-    for candidate in value
-        .split(|ch: char| ch.is_ascii_whitespace() || ch == ',')
-        .map(|part| part.trim_matches(|ch| matches!(ch, '"' | '\'')))
-        .filter(|part| !part.is_empty())
-    {
+    crate::visit_animation_names(value, tokens, |candidate| {
         if keyframes.contains_key(candidate) {
             refs.insert(candidate.to_owned());
         }
-    }
+    });
 }
 
 fn is_animation_property(prop: &str) -> bool {
@@ -1164,74 +1211,76 @@ impl<'a> EmitContext<'a> {
         }
     }
 
-    fn collect_usage(
+    fn collect_usage<'k>(
         &self,
-        token_dictionary: Option<&TokenDictionary>,
+        token_dictionary: Option<&'k TokenDictionary>,
         token_refs: &[String],
         atoms: &[&Atom],
         recipes: &EncodedRecipesSnapshot,
         view_transitions: &[ViewTransitionStyle],
-        keyframes: Option<&serde_json::Map<String, Value>>,
-    ) -> UsageMarks {
-        let mut marks = UsageMarks::default();
+        keyframes: Option<&'k serde_json::Map<String, Value>>,
+    ) -> UsageMarks<'k> {
+        let mut marks = UsageMarks::new(token_dictionary, keyframes);
         collect_token_ref_vars(token_refs, token_dictionary, &mut marks.token_vars);
-        self.collect_styles_usage(
-            &self.config.global_css,
-            token_dictionary,
-            keyframes,
-            &mut marks,
-        );
+        self.collect_global_styles_usage(&self.config.global_css, &mut marks);
         if let Some(keyframes) = keyframes {
-            self.collect_keyframes_usage(keyframes, token_dictionary, &mut marks);
+            self.collect_keyframes_usage(keyframes, &mut marks);
         }
-        self.collect_global_vars_usage(token_dictionary, &mut marks);
-
+        self.collect_global_vars_usage(&mut marks);
         for atom in atoms {
-            self.collect_atom_usage(atom, token_dictionary, keyframes, &mut marks);
+            self.collect_atom_usage(atom, &mut marks);
         }
-
         for group in recipes
             .base
             .iter()
             .chain(&recipes.variants)
             .chain(&recipes.compounds)
         {
-            for rule in
-                self.recipe_group_rules(&group.class_name, &group.conditions, &group.entries)
-            {
-                Self::collect_declarations_usage(
-                    &rule.declarations,
-                    token_dictionary,
-                    keyframes,
-                    &mut marks,
-                );
-            }
+            self.collect_recipe_group_usage(group, &mut marks);
         }
-
-        self.collect_view_transitions_usage(
-            view_transitions,
-            token_dictionary,
-            keyframes,
-            &mut marks,
-        );
-
+        self.collect_view_transitions_usage(view_transitions, &mut marks);
         marks
     }
 
     fn collect_view_transitions_usage(
         &self,
         styles: &[ViewTransitionStyle],
-        token_dictionary: Option<&TokenDictionary>,
-        keyframes: Option<&serde_json::Map<String, Value>>,
-        marks: &mut UsageMarks,
+        sink: &mut impl ReferenceSink,
     ) {
         for style in styles {
             for (_, body) in style.slot_bodies() {
                 let Some(body) = body else {
                     continue;
                 };
-                self.collect_styles_usage(body, token_dictionary, keyframes, marks);
+                self.collect_styles_usage(body, sink);
             }
+        }
+    }
+
+    /// One recipe base, variant, or compound group, lowered as the recipe layer writes it.
+    fn collect_recipe_group_usage(
+        &self,
+        group: &RecipeStyleGroupSnapshot,
+        sink: &mut impl ReferenceSink,
+    ) {
+        let mut entries = Vec::with_capacity(group.entries.len());
+        for entry in &group.entries {
+            sink.property(self.utility.resolve_shorthand(&entry.prop));
+
+            if let Some(prop) = composition_prop(&entry.prop)
+                && let Some(name) = atom_value_to_string(&entry.value)
+            {
+                sink.composition(prop, &name);
+                if !sink.expands_compositions() {
+                    continue;
+                }
+            }
+
+            entries.push(entry.clone());
+        }
+
+        for rule in self.recipe_group_rules(&group.class_name, &group.conditions, &entries) {
+            Self::collect_declarations_usage(&rule.declarations, sink);
         }
     }
 
@@ -1303,109 +1352,97 @@ impl<'a> EmitContext<'a> {
         diagnostics
     }
 
-    fn collect_atom_usage(
-        &self,
-        atom: &Atom,
-        token_dictionary: Option<&TokenDictionary>,
-        keyframes: Option<&serde_json::Map<String, Value>>,
-        marks: &mut UsageMarks,
-    ) {
+    fn collect_atom_usage(&self, atom: &Atom, sink: &mut impl ReferenceSink) {
+        sink.property(self.utility.resolve_shorthand(atom.prop()));
+
         let raw = atom_value_to_string(atom.value());
         let Some(raw) = raw.as_deref() else {
             return;
         };
+
         // Expand like emission does, or a member's tokens look unused and get pruned.
         if let Some(members) = parse_first_that_works_value(raw)
             && let Some(declarations) =
                 self.first_that_works_declarations(atom.prop(), &members, atom.important())
         {
-            Self::collect_declarations_usage(&declarations, token_dictionary, keyframes, marks);
+            Self::collect_declarations_usage(&declarations, sink);
             return;
         }
+
+        if let Some(prop) = composition_prop(atom.prop()) {
+            sink.composition(prop, raw);
+            if !sink.expands_compositions() {
+                return;
+            }
+        }
+
         let result = self.transform_atom_styles(atom.prop(), raw, atom.value());
         if is_composition_prop(atom.prop()) {
             if let Some(styles) = composition_style_object(atom.prop(), &result.styles) {
-                self.collect_grouped_style_usage(
-                    styles,
-                    atom.important(),
-                    token_dictionary,
-                    keyframes,
-                    marks,
-                );
+                self.collect_grouped_style_usage(styles, atom.important(), sink);
             }
             return;
         }
+
         if is_nested_style_object(&result.styles) {
-            self.collect_grouped_style_usage(
-                &result.styles,
-                atom.important(),
-                token_dictionary,
-                keyframes,
-                marks,
-            );
+            self.collect_grouped_style_usage(&result.styles, atom.important(), sink);
             return;
         }
-        Self::collect_literal_usage(&result.styles, token_dictionary, keyframes, marks);
+
+        Self::collect_literal_usage(&result.styles, sink);
     }
 
-    fn collect_literal_usage(
-        styles: &Literal,
-        token_dictionary: Option<&TokenDictionary>,
-        keyframes: Option<&serde_json::Map<String, Value>>,
-        marks: &mut UsageMarks,
-    ) {
+    fn collect_literal_usage(styles: &Literal, sink: &mut impl ReferenceSink) {
         let Literal::Object(entries) = styles else {
             return;
         };
         for (prop, value) in entries {
             if let Some(value) = literal_to_css(prop, value, None) {
-                Self::collect_declaration_usage(
-                    &hyphenate_property(prop),
-                    value.as_ref(),
-                    token_dictionary,
-                    keyframes,
-                    marks,
-                );
+                sink.declaration(&hyphenate_property(prop), value.as_ref());
             }
         }
     }
 
-    fn collect_styles_usage(
-        &self,
-        value: &Value,
-        token_dictionary: Option<&TokenDictionary>,
-        keyframes: Option<&serde_json::Map<String, Value>>,
-        marks: &mut UsageMarks,
-    ) {
+    fn collect_global_styles_usage(&self, value: &Value, sink: &mut impl ReferenceSink) {
+        let Value::Object(entries) = value else {
+            return;
+        };
+        for (selector, styles) in entries {
+            if self.resolved_condition_paths(selector).is_some() {
+                self.collect_global_styles_usage(styles, sink);
+            } else {
+                self.collect_styles_usage(styles, sink);
+            }
+        }
+    }
+
+    fn collect_styles_usage(&self, value: &Value, sink: &mut impl ReferenceSink) {
         let Value::Object(entries) = value else {
             return;
         };
         for (key, value) in entries {
+            sink.property(self.utility.resolve_shorthand(key));
+
+            if let Some(prop) = composition_prop(key) {
+                visit_scalar_strings(value, &mut |name| sink.composition(prop, name));
+                if !sink.expands_compositions() {
+                    continue;
+                }
+            }
+
             if let Some(style_entries) = self.composition_style_entries_for_value(key, value) {
-                self.collect_style_entries_usage(
-                    &style_entries,
-                    false,
-                    token_dictionary,
-                    keyframes,
-                    marks,
-                );
+                self.collect_style_entries_usage(&style_entries, false, sink);
                 continue;
             }
 
             if let Some(style_entries) = self.nested_utility_style_entries_for_value(key, value) {
-                self.collect_style_entries_usage(
-                    &style_entries,
-                    false,
-                    token_dictionary,
-                    keyframes,
-                    marks,
-                );
+                self.collect_style_entries_usage(&style_entries, false, sink);
                 continue;
             }
 
             if let Value::Object(_) = value {
                 if self.resolved_condition_paths(key).is_some() || is_nested_selector_key(key) {
-                    self.collect_styles_usage(value, token_dictionary, keyframes, marks);
+                    self.collect_styles_usage(value, sink);
                     continue;
                 }
 
@@ -1417,84 +1454,41 @@ impl<'a> EmitContext<'a> {
                     &mut declarations,
                     &mut conditional_declarations,
                 ) {
-                    Self::collect_declarations_usage(
-                        &declarations,
-                        token_dictionary,
-                        keyframes,
-                        marks,
-                    );
+                    Self::collect_declarations_usage(&declarations, sink);
                     for conditional in conditional_declarations {
-                        Self::collect_declarations_usage(
-                            &conditional.declarations,
-                            token_dictionary,
-                            keyframes,
-                            marks,
-                        );
+                        Self::collect_declarations_usage(&conditional.declarations, sink);
                     }
                     continue;
                 }
                 if self.is_bare_nested_selector_key(key) {
-                    self.collect_styles_usage(value, token_dictionary, keyframes, marks);
+                    self.collect_styles_usage(value, sink);
                     continue;
                 }
             }
 
             if let Some(declarations) = self.serialized_property_declarations(key, value) {
-                Self::collect_declarations_usage(&declarations, token_dictionary, keyframes, marks);
+                Self::collect_declarations_usage(&declarations, sink);
             } else {
-                collect_value_token_refs(value, token_dictionary, &mut marks.token_vars);
+                visit_value_strings(value, sink);
             }
         }
     }
 
-    fn collect_global_vars_usage(
-        &self,
-        token_dictionary: Option<&TokenDictionary>,
-        marks: &mut UsageMarks,
-    ) {
+    /// A `globalVars` entry is a declaration: it writes its variable and reads its value.
+    fn collect_global_vars_usage(&self, sink: &mut impl ReferenceSink) {
         let Value::Object(entries) = &self.config.global_vars else {
             return;
         };
         for (name, value) in entries {
             if let Value::String(value) = value {
-                marks.declared_vars.insert(name.clone());
-                collect_css_var_refs(value, &mut marks.token_vars);
-                collect_token_reference_vars(value, token_dictionary, &mut marks.token_vars);
+                sink.declaration(name, value);
             }
         }
     }
 
-    fn collect_declarations_usage(
-        declarations: &[Declaration],
-        token_dictionary: Option<&TokenDictionary>,
-        keyframes: Option<&serde_json::Map<String, Value>>,
-        marks: &mut UsageMarks,
-    ) {
+    fn collect_declarations_usage(declarations: &[Declaration], sink: &mut impl ReferenceSink) {
         for declaration in declarations {
-            Self::collect_declaration_usage(
-                &declaration.prop,
-                &declaration.value,
-                token_dictionary,
-                keyframes,
-                marks,
-            );
-        }
-    }
-
-    fn collect_declaration_usage(
-        prop: &str,
-        value: &str,
-        token_dictionary: Option<&TokenDictionary>,
-        keyframes: Option<&serde_json::Map<String, Value>>,
-        marks: &mut UsageMarks,
-    ) {
-        collect_css_var_refs(value, &mut marks.token_vars);
-        collect_token_reference_vars(value, token_dictionary, &mut marks.token_vars);
-        if prop.starts_with("--") {
-            marks.declared_vars.insert(prop.to_owned());
-        }
-        if is_animation_property(prop) {
-            collect_keyframe_refs(value, keyframes, &mut marks.keyframes);
+            sink.declaration(&declaration.prop, &declaration.value);
         }
     }
 
@@ -1502,35 +1496,29 @@ impl<'a> EmitContext<'a> {
         &self,
         styles: &Literal,
         important: bool,
-        token_dictionary: Option<&TokenDictionary>,
-        keyframes: Option<&serde_json::Map<String, Value>>,
-        marks: &mut UsageMarks,
+        sink: &mut impl ReferenceSink,
     ) {
         let entries = self.style_object_entries(styles);
-        self.collect_style_entries_usage(&entries, important, token_dictionary, keyframes, marks);
+        self.collect_style_entries_usage(&entries, important, sink);
     }
 
     fn collect_style_entries_usage(
         &self,
         entries: &[RecipeStyleEntry],
         important: bool,
-        token_dictionary: Option<&TokenDictionary>,
-        keyframes: Option<&serde_json::Map<String, Value>>,
-        marks: &mut UsageMarks,
+        sink: &mut impl ReferenceSink,
     ) {
         let importance = if important {
             InheritedImportance::Important
         } else {
             InheritedImportance::Normal
         };
+        for entry in entries {
+            sink.property(self.utility.resolve_shorthand(&entry.prop));
+        }
         let base_rule = LoweredTarget::new("&");
         for rule in self.style_rules_for_entries(&[base_rule], entries, importance) {
-            Self::collect_declarations_usage(
-                &rule.declarations,
-                token_dictionary,
-                keyframes,
-                marks,
-            );
+            Self::collect_declarations_usage(&rule.declarations, sink);
         }
     }
 
@@ -1840,15 +1828,14 @@ impl<'a> EmitContext<'a> {
     fn collect_keyframes_usage(
         &self,
         keyframes: &serde_json::Map<String, Value>,
-        token_dictionary: Option<&TokenDictionary>,
-        marks: &mut UsageMarks,
+        sink: &mut impl ReferenceSink,
     ) {
         for body in keyframes.values() {
             let Some(steps) = as_non_empty_object(body) else {
                 continue;
             };
             for step in steps.values() {
-                self.collect_styles_usage(step, token_dictionary, Some(keyframes), marks);
+                self.collect_styles_usage(step, sink);
             }
         }
     }
@@ -2070,7 +2057,7 @@ impl<'a> EmitContext<'a> {
         self.property_declarations(prop, &value, false)
     }
 
-    fn serialize_global_vars(&self, writer: &mut CssWriter, usage: Option<&UsageMarks>) {
+    fn serialize_global_vars(&self, writer: &mut CssWriter, usage: Option<&UsageMarks<'_>>) {
         let Value::Object(entries) = &self.config.global_vars else {
             return;
         };
@@ -2666,7 +2653,27 @@ fn write_token_var_rule(writer: &mut CssWriter, selector: &str, vars: &[TokenCss
 }
 
 fn is_composition_prop(prop: &str) -> bool {
-    matches!(prop, "textStyle" | "layerStyle" | "animationStyle")
+    composition_prop(prop).is_some()
+}
+
+fn composition_prop(prop: &str) -> Option<&'static str> {
+    ["textStyle", "layerStyle", "animationStyle"]
+        .into_iter()
+        .find(|name| *name == prop)
+}
+
+/// Visits every string leaf, so `{ base: 'sm', md: 'lg' }` yields both names.
+fn visit_scalar_strings(value: &Value, visit: &mut impl FnMut(&str)) {
+    match value {
+        Value::String(value) => visit(value),
+        Value::Array(items) => items
+            .iter()
+            .for_each(|item| visit_scalar_strings(item, visit)),
+        Value::Object(entries) => entries
+            .values()
+            .for_each(|item| visit_scalar_strings(item, visit)),
+        _ => {}
+    }
 }
 
 /// Whether a transform's styles nest further objects (a returned `_hover` or a

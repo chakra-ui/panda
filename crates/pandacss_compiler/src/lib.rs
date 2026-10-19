@@ -30,7 +30,8 @@ pub use codegen::{
 };
 pub use css::{
     CompileFileManifest, CompileLayerRange, CompileLayerRanges, CompileManifest, CompileOutput,
-    CssOutputOptions, SplitCssFile, SplitCssOutput, compile_css, compile_keyframes, compile_layers,
+    CssOutputOptions, SplitCssFile, SplitCssOutput, UsageRequirement, UsageRequirements,
+    UsageSource, collect_usage_requirements, compile_css, compile_keyframes, compile_layers,
     compile_split_css,
 };
 pub use design_system::{

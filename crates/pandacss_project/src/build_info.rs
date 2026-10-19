@@ -21,8 +21,7 @@ use pandacss_shared::{InlineKeyframe, PositionTryStyle, ViewTransitionStyle};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 
-use crate::{FileEntry, ParseFileReport};
-use pandacss_system::EncodedRecipes;
+use crate::FileEntry;
 
 /// Bumped when the on-disk shape changes; a consumer with a different
 /// `SCHEMA_VERSION` falls back to re-extracting the library's source.
@@ -958,24 +957,8 @@ impl super::Project {
         if self.files.contains_key(&key) {
             self.drop_file_state(&key);
         }
-        self.add_file_state(
-            key,
-            FileEntry {
-                source: Arc::from(""),
-                source_hash: 0,
-                parse_epoch: self.parse_epoch,
-                cacheable: true,
-                atoms,
-                encoded_recipes: EncodedRecipes::new(false),
-                utility_styles: FxHashMap::default(),
-                token_refs,
-                exports: pandacss_extractor::ExportInfo::default(),
-                diagnostics: Vec::new(),
-                report: ParseFileReport::default(),
-            },
-            &[],
-            &[],
-        );
+        let entry = FileEntry::hydrated(atoms, token_refs, self.parse_epoch);
+        self.add_file_state(key, entry, &[], &[]);
         true
     }
 }

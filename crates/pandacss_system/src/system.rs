@@ -217,6 +217,12 @@ impl System {
         self.utility.as_ref()
     }
 
+    /// The utility used to resolve values, kept even when the config declares no utilities.
+    #[must_use]
+    pub fn value_utility(&self) -> Option<&Utility> {
+        self.utility.as_ref().or(self.empty_utility.as_ref())
+    }
+
     #[must_use]
     pub fn extractor_config(&self) -> &ExtractorConfig {
         &self.extractor_config

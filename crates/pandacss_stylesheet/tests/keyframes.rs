@@ -163,6 +163,48 @@ fn optimize_keyframes_keeps_global_css_bare_nested_selector_references() {
 }
 
 #[test]
+fn optimize_keyframes_keeps_global_css_element_selector_named_like_a_shorthand() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedKeyframes": true },
+        "utilities": {
+            "padding": { "className": "p", "shorthand": "p" }
+        },
+        "theme": {
+            "keyframes": {
+                "spin": {
+                    "to": { "transform": "rotate(360deg)" }
+                }
+            }
+        },
+        "globalCss": {
+            "p": {
+                "animationName": "spin"
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens, StylesheetLayer::Base]);
+
+    assert_snapshot!(css, @"
+    @layer tokens {
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    }
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      p {
+        animation-name: spin;
+      }
+    }
+    ");
+}
+
+#[test]
 fn optimize_keyframes_keeps_static_css_references() {
     let config = config(serde_json::json!({
         "optimize": { "removeUnusedKeyframes": true },
@@ -476,4 +518,32 @@ fn compile_keyframes_empty_when_none_defined() {
     )
     .css;
     assert_eq!(css, "");
+}
+
+#[test]
+fn optimize_keyframes_keeps_global_css_selectors_nested_in_a_condition() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedKeyframes": true },
+        "conditions": { "dark": "&.dark" },
+        "utilities": {
+            "padding": { "className": "p", "shorthand": "p" }
+        },
+        "theme": {
+            "keyframes": {
+                "spin": { "to": { "transform": "rotate(360deg)" } },
+                "fade": { "to": { "opacity": "0" } },
+                "unused": { "to": { "opacity": "1" } }
+            }
+        },
+        "globalCss": {
+            "_dark": { "p": { "animationName": "spin" } },
+            "@media (min-width: 40em)": { "p": { "animationName": "fade" } }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Tokens]);
+
+    assert!(css.contains("@keyframes spin"), "{css}");
+    assert!(css.contains("@keyframes fade"), "{css}");
+    assert!(!css.contains("@keyframes unused"), "{css}");
 }

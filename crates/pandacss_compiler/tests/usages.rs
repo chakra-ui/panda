@@ -5,9 +5,20 @@ use indoc::indoc;
 use insta::{assert_snapshot, assert_yaml_snapshot};
 use serde_json::json;
 
-use pandacss_compiler::{FileInspectionResult, StyleEntryKind, inspect_file_source};
+use pandacss_compiler::{FileInspectionResult, StyleEntryKind};
+use pandacss_config::UserConfig;
 use pandacss_project::Span;
 use pandacss_system::System;
+
+/// A compiled system plus the config it came from, as the bindings hold them.
+struct Fixture {
+    system: System,
+    config: UserConfig,
+}
+
+fn inspect_file_source(fixture: &Fixture, path: &str, source: &str) -> FileInspectionResult {
+    pandacss_compiler::inspect_file_source(&fixture.system, &fixture.config, path, source)
+}
 
 /// One line per usage: `kind name` (ranges are covered by the binding tests).
 fn summary(result: &FileInspectionResult) -> String {
@@ -43,7 +54,7 @@ fn span_text(source: &str, span: Option<Span>) -> &str {
         .unwrap_or("")
 }
 
-fn system() -> System {
+fn system() -> Fixture {
     system_with(json!({
         "jsxFramework": "react",
         "theme": {
@@ -73,8 +84,12 @@ fn system() -> System {
     }))
 }
 
-fn system_with(overrides: serde_json::Value) -> System {
-    System::new(create_config(overrides)).expect("valid config")
+fn system_with(overrides: serde_json::Value) -> Fixture {
+    let config = create_config(overrides);
+    Fixture {
+        system: System::new(config.clone()).expect("valid config"),
+        config,
+    }
 }
 
 #[test]
@@ -617,6 +632,55 @@ fn animation_name_captures_keyframe() {
 }
 
 #[test]
+fn animation_tokens_are_token_usages_and_their_keyframes_are_not_written_here() {
+    let system = system_with(json!({
+        "utilities": { "animation": { "values": "animations" } },
+        "conditions": { "dark": "&[data-theme=dark]" },
+        "theme": {
+            "tokens": { "animations": {
+                "motion": { "value": "slide 300ms, fade 300ms" },
+                "pulse": { "value": "pulse 2s infinite" }
+            } },
+            "semanticTokens": { "animations": {
+                "alias": { "value": "{animations.motion}" },
+                "conditional": { "value": { "base": "{animations.alias}", "_dark": "{animations.pulse}" } }
+            } },
+            "keyframes": {
+                "motion": { "to": { "opacity": 0 } },
+                "slide": { "to": { "opacity": 1 } },
+                "fade": { "to": { "opacity": 1 } },
+                "pulse": { "to": { "opacity": 1 } }
+            }
+        }
+    }));
+    for (value, expected) in [
+        ("motion", vec!["Token animations.motion"]),
+        ("conditional", vec!["Token animations.conditional"]),
+        (
+            "slide 1s, pulse 2s",
+            vec!["Keyframe pulse", "Keyframe slide"],
+        ),
+    ] {
+        let source =
+            format!("import {{ css }} from '@panda/css'; css({{ animation: '{value}' }});");
+        let result = inspect_file_source(&system, "a.ts", &source);
+        let mut names = result
+            .usages
+            .iter()
+            .filter(|site| {
+                matches!(
+                    site.kind,
+                    pandacss_compiler::UsageKind::Keyframe | pandacss_compiler::UsageKind::Token
+                )
+            })
+            .map(|site| format!("{:?} {}", site.kind, site.name))
+            .collect::<Vec<_>>();
+        names.sort_unstable();
+        assert_eq!(names, expected, "{value}");
+    }
+}
+
+#[test]
 fn animation_name_captures_multiple_comma_separated_keyframes() {
     let result = inspect_file_source(
         &system(),
@@ -960,7 +1024,7 @@ fn inspection_and_compilation_share_file_local_condition_diagnostics() {
     "};
     let system = system();
     let inspection = inspect_file_source(&system, "a.tsx", source);
-    let mut project = pandacss_project::Project::new(system);
+    let mut project = pandacss_project::Project::new(system.system);
     let mut compiled = project.parse_file("a.tsx", source);
     for diagnostic in &mut compiled.diagnostics {
         diagnostic.file = None;
@@ -1048,7 +1112,7 @@ fn recipe_metadata_is_not_a_token_reference() {
 
 #[test]
 fn inspection_and_build_share_semantic_token_reference_boundaries() {
-    let mut project = pandacss_project::Project::new(system());
+    let mut project = pandacss_project::Project::new(system().system);
     let system = system();
     let cases: &[(&str, &[&str])] = &[
         (
@@ -1160,7 +1224,7 @@ fn recipe_variant_values_are_not_style_token_references() {
         paths,
         ["colors.default", "colors.override", "colors.nested"]
     );
-    let mut project = pandacss_project::Project::new(system);
+    let mut project = pandacss_project::Project::new(system.system);
     let report = project.parse_file("a.tsx", source);
     let warnings: Vec<_> = report
         .diagnostics
@@ -1237,7 +1301,7 @@ fn pattern_references_only_scan_style_valued_props() {
             "colors.css"
         ]
     );
-    let mut project = pandacss_project::Project::new(system);
+    let mut project = pandacss_project::Project::new(system.system);
     let report = project.parse_file("a.tsx", source);
     let warnings: Vec<_> = report
         .diagnostics
@@ -1298,4 +1362,110 @@ fn inspection_retains_reference_locations_through_indexed_style_paths() {
             reference.path
         );
     }
+}
+
+#[test]
+fn composition_usage_reports_the_style_but_not_what_its_styles_use() {
+    let system = system_with(json!({
+        "utilities": { "color": { "values": "colors" } },
+        "theme": {
+            "tokens": { "colors": { "flash": { "value": "#f00" } } },
+            "keyframes": {
+                "enter": { "to": { "opacity": 1 } },
+                "flash": { "to": { "opacity": 1 } },
+                "spin": { "to": { "opacity": 1 } }
+            },
+            "textStyles": { "lead": { "value": { "fontSize": "20px" } } },
+            "animationStyles": { "entrance": { "value": {
+                "color": "flash",
+                "animationName": "enter, flash",
+                "_hover": { "animationName": { "base": "spin" } }
+            } } }
+        }
+    }));
+    let source = "import { css } from '@panda/css'; css({ animationStyle: 'entrance', textStyle: 'lead' }); css({ textStyle: 'missing' });";
+    let result = inspect_file_source(&system, "a.ts", source);
+    let mut sites = result
+        .usages
+        .iter()
+        .filter(|site| {
+            matches!(
+                site.kind,
+                pandacss_compiler::UsageKind::Keyframe
+                    | pandacss_compiler::UsageKind::Composition
+                    | pandacss_compiler::UsageKind::Token
+            )
+        })
+        .map(|site| format!("{:?} {}", site.kind, site.name))
+        .collect::<Vec<_>>();
+    sites.sort();
+    assert_eq!(
+        sites,
+        [
+            "Composition animationStyles.entrance",
+            "Composition textStyles.lead",
+        ]
+    );
+}
+
+#[test]
+fn tokens_inside_a_jsx_css_prop_are_source_usages() {
+    let source = indoc! {r"
+        import { Box } from '@panda/jsx'
+        const el = <Box css={{ color: 'red.500' }} inputCss={{ _hover: { color: 'red.500' } }} />
+    "};
+    let result = inspect_file_source(&system(), "a.tsx", source);
+    assert_snapshot!(summary(&result), @"
+    Property color
+    Token colors.red.500
+    Property color
+    Token colors.red.500
+    ");
+}
+
+#[test]
+fn each_responsive_composition_value_is_a_source_usage() {
+    let system = system_with(json!({
+        "jsxFramework": "react",
+        "conditions": { "dark": "&.dark" },
+        "theme": { "textStyles": {
+            "lead": { "value": { "fontSize": "20px" } },
+            "xl": { "value": { "fontSize": "32px" } }
+        } }
+    }));
+    let source = indoc! {r#"
+        import { css } from '@panda/css'
+        import { Box } from '@panda/jsx'
+        css({ textStyle: { base: 'lead', _dark: 'xl' } })
+        const el = <Box textStyle="lead" />
+    "#};
+    let result = inspect_file_source(&system, "a.tsx", source);
+    let compositions = result
+        .usages
+        .iter()
+        .filter(|site| matches!(site.kind, pandacss_compiler::UsageKind::Composition))
+        .map(|site| site.name.as_str())
+        .collect::<Vec<_>>();
+    assert_yaml_snapshot!(compositions, @"
+    - textStyles.lead
+    - textStyles.xl
+    - textStyles.lead
+    ");
+}
+
+#[test]
+fn a_token_repeated_across_first_that_works_members_is_one_usage() {
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        css({ color: 'firstThatWorks(red.500, red.500)' })
+        css({ color: 'firstThatWorks(red.500, red.300)' })
+    "};
+    let result = inspect_file_source(&system(), "a.tsx", source);
+    assert_snapshot!(summary(&result), @"
+    Property color
+    Token colors.red.500
+    Property color
+    Token colors.red.500
+    Token colors.red.300
+    ");
 }
