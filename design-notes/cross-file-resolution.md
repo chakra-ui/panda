@@ -4,12 +4,12 @@
 
 `CrossFileResolver` lets the same-file `Resolver` follow `import { x } from './tokens'` references and fold the imported
 value. Module resolution itself is delegated to `oxc_resolver` (relative paths, extension probing, tsconfig paths,
-package.json `exports`). On-disk importers resolve from the file path so auto-discovered tsconfig aliases apply; virtual
-importers fall back to directory resolution. The resolver keeps a validated cache across the compiler lifetime and pins
-analyzed exports in a short-lived `CrossFileSession`. `parseFiles()` shares one session, so each imported revision is
-read and validated once across the ordered batch. Files in that batch are already visible to the resolver, so
-registering each path does not retry every previously unresolved import. A later batch observes changed files on its
-first lookup.
+package.json `exports` and `imports`, and TypeScript's `.js` → `.ts` extension aliasing). On-disk importers resolve from
+the file path so auto-discovered tsconfig aliases apply; virtual importers fall back to directory resolution. The
+resolver keeps a validated cache across the compiler lifetime and pins analyzed exports in a short-lived
+`CrossFileSession`. `parseFiles()` shares one session, so each imported revision is read and validated once across the
+ordered batch. Files in that batch are already visible to the resolver, so registering each path does not retry every
+previously unresolved import. A later batch observes changed files on its first lookup.
 
 ## Cache shape
 

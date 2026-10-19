@@ -212,6 +212,68 @@ fn tsconfig_path_alias_value_folds() {
     "##);
 }
 
+/// TypeScript (`moduleResolution: "bundler"` / `"nodenext"`), Vite, esbuild and webpack's
+/// `extensionAlias` resolve a `.js` specifier to the `.ts` source next to it.
+#[test]
+fn js_specifiers_resolve_to_typescript_sources() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { c1 } from './c1';
+            import { c2 } from './c2.js';
+            import { c3 } from '#app/c3';
+            import { c4 } from '#app/c4';
+            import { c5 } from './c5.js';
+            import { c6 } from './c6.mjs';
+            import { c7 } from './c7.cjs';
+            import { css } from '@panda/css';
+            css({ height: `[${c1}px]` });
+            css({ height: `[${c2}px]` });
+            css({ height: `[${c3}px]` });
+            css({ height: `[${c4}px]` });
+            css({ height: `[${c5}px]` });
+            css({ height: `[${c6}px]` });
+            css({ height: `[${c7}px]` });
+        "},
+        &[
+            (
+                "package.json",
+                r##"{ "imports": { "#app/*": "./app/*.js" } }"##,
+            ),
+            ("c1.ts", "export const c1 = 1;\n"),
+            ("c2.ts", "export const c2 = 2;\n"),
+            ("app/c3.js", "export const c3 = 3;\n"),
+            ("app/c4.ts", "export const c4 = 4;\n"),
+            ("c5.js", "export const c5 = 5;\n"),
+            ("c6.mts", "export const c6 = 6;\n"),
+            ("c7.cts", "export const c7 = 7;\n"),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r#"
+    calls:
+      - name: css
+        data:
+          - height: "[1px]"
+      - name: css
+        data:
+          - height: "[2px]"
+      - name: css
+        data:
+          - height: "[3px]"
+      - name: css
+        data:
+          - height: "[4px]"
+      - name: css
+        data:
+          - height: "[5px]"
+      - name: css
+        data:
+          - height: "[6px]"
+      - name: css
+        data:
+          - height: "[7px]"
+    "#);
+}
+
 fn assert_send_sync<T: Send + Sync>() {}
 
 #[test]
