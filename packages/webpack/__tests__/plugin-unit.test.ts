@@ -120,6 +120,31 @@ describe('@pandacss/webpack design-system watch', () => {
     expect(webpackApply).toHaveBeenCalledTimes(1)
   })
 
+  it('applies the Rspack source transformer when the compiler is Rspack', async () => {
+    const webpackApply = vi.fn()
+    const rspackApply = vi.fn()
+    const driver = createMockDriver()
+
+    vi.doMock('@pandacss/compiler', () => ({
+      createNodeDriver: vi.fn(async () => driver),
+    }))
+    vi.doMock('@pandacss/transformer', () => ({
+      pandaTransformer: {
+        webpack: () => ({
+          apply: webpackApply,
+        }),
+        rspack: () => ({
+          apply: rspackApply,
+        }),
+      },
+    }))
+
+    const { PandaWebpackPlugin } = await import('../src')
+    applyPlugin(new PandaWebpackPlugin({ cwd: '/project', transform: true }), { rspack: {} })
+    expect(rspackApply).toHaveBeenCalledTimes(1)
+    expect(webpackApply).not.toHaveBeenCalled()
+  })
+
   it('prefers design-system sync over config reload for artifact paths', async () => {
     const { driver, PandaWebpackPlugin } = await setupPlugin()
     driver.isConfigFile.mockImplementation((file?: string): boolean => {
@@ -172,7 +197,7 @@ async function setupPlugin() {
   return { driver, PandaWebpackPlugin }
 }
 
-function applyPlugin(plugin: PandaWebpackPlugin) {
+function applyPlugin(plugin: PandaWebpackPlugin, compilerOverrides: Record<string, unknown> = {}) {
   const warn = vi.fn()
   let watchRun: ((compiler: { modifiedFiles?: Set<string>; removedFiles?: Set<string> }) => Promise<void>) | undefined
 
@@ -188,6 +213,7 @@ function applyPlugin(plugin: PandaWebpackPlugin) {
         },
       },
     },
+    ...compilerOverrides,
   } as never)
 
   return { watchRun, warn }
