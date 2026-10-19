@@ -118,6 +118,7 @@ pub fn collect_usage_requirements(
     let prepared = prepare_stylesheet(project, user_config, utility_transform, prelude);
     let output = pandacss_stylesheet::collect_style_requirements(&prepared.input(user_config));
     let (static_diagnostics, diagnostics) = prepared.diagnostics(output.diagnostics);
+
     let mut entries = std::collections::BTreeMap::<(_, _), BTreeSet<_>>::new();
     for entry in output.requirements {
         entries
@@ -125,6 +126,7 @@ pub fn collect_usage_requirements(
             .or_default()
             .insert(entry.reason);
     }
+
     UsageRequirements {
         requirements: entries
             .into_iter()

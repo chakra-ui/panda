@@ -153,3 +153,37 @@ fn animation_variable_scanning_ignores_quoted_and_commented_references() {
     );
     assert_eq!(names, ["pulse"]);
 }
+
+#[test]
+fn an_unterminated_variable_still_visits_the_names_before_it() {
+    let mut names = Vec::new();
+    visit_animation_names("fade 1s, var(--a", None, |name| {
+        names.push(name.to_owned());
+    });
+    assert!(names.contains(&"fade".to_owned()), "{names:?}");
+}
+
+#[test]
+fn animation_tokens_that_alias_each_other_stop_after_one_pass() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "animations.a",
+            "var(--b), fade 1s",
+            "var(--a)",
+            TokenCategory::Animations,
+        ))
+        .insert(Token::new(
+            "animations.b",
+            "var(--a)",
+            "var(--b)",
+            TokenCategory::Animations,
+        ))
+        .build();
+    let mut names = Vec::new();
+    visit_animation_names("var(--a)", Some(&tokens), |name| {
+        if name == "fade" {
+            names.push(name.to_owned());
+        }
+    });
+    assert_eq!(names, ["fade"]);
+}

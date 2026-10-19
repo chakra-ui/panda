@@ -27,6 +27,7 @@ pub(crate) fn collect_style_requirements(
     generated: &[Atom],
 ) -> Vec<StyleRequirement> {
     let keyframes = merge_keyframes(&input.config.theme.keyframes, input.inline_keyframes);
+
     let references = StyleReferences::with_overrides(
         input.config,
         utility,
@@ -34,6 +35,7 @@ pub(crate) fn collect_style_requirements(
         input.utility_styles,
         keyframes.as_ref(),
     );
+
     let mut graph = RequirementGraph {
         references: &references,
         pending: Vec::new(),
@@ -43,6 +45,7 @@ pub(crate) fn collect_style_requirements(
 
     graph.add("globalCss", references.global_css(&input.config.global_css));
     graph.add("globalVars", references.global_vars());
+
     for (place, atoms) in [
         ("sources", input.atoms),
         ("staticCss.css", generated),
@@ -52,14 +55,17 @@ pub(crate) fn collect_style_requirements(
             graph.add(place, references.atom(atom));
         }
     }
+
     graph.add_recipes("recipes", input.encoded_recipes, false);
     if let Some(recipes) = input.static_encoded_recipes {
         graph.add_recipes("staticCss.recipes", recipes, true);
     }
+
     graph.add(
         "sources",
         references.values(input.token_refs.iter().map(String::as_str)),
     );
+
     for style in input.view_transitions {
         for body in style.slot_bodies().into_iter().filter_map(|(_, body)| body) {
             graph.add("viewTransitions", references.style_object(body));
@@ -80,11 +86,13 @@ pub(crate) fn collect_style_requirements(
             );
         }
     }
+
     if let Some(dictionary) = dictionary
         && let Some(filter) = static_theme_condition_filter(input.config)
     {
         let vars = dictionary.css_vars_with_theme_filter(|condition| filter.includes(condition));
         let seeded = seed_static_theme_token_vars(&vars, FxHashSet::default());
+
         let mut paths = dictionary
             .iter()
             .filter(|token| raw_css_var_name(&token.var).is_some_and(|name| seeded.contains(name)))
@@ -94,6 +102,7 @@ pub(crate) fn collect_style_requirements(
         paths.dedup();
         graph.add("staticCss.themes", paths);
     }
+
     graph.finish()
 }
 
@@ -125,6 +134,7 @@ impl RequirementGraph<'_, '_> {
                     self.push("keyframe", name.clone(), place);
                 }
             }
+
             self.pending.push((reference, None));
         }
     }
@@ -137,11 +147,13 @@ impl RequirementGraph<'_, '_> {
             .chain(&recipes.compounds)
         {
             let place = format!("{place}.{}", group.recipe);
+
             if report_recipe {
                 self.push("recipe", group.recipe.to_string(), &place);
             }
             self.add(&place, self.references.recipe_group(group));
         }
+
         for atom in &recipes.atomic {
             self.add(place, self.references.atom(atom));
         }
@@ -152,9 +164,11 @@ impl RequirementGraph<'_, '_> {
             if !self.expanded.insert(reference.clone()) {
                 continue;
             }
+
             let place = inline_place.unwrap_or_else(|| format!("via {}", label(&reference)));
             self.add(&place, self.references.dependencies(&reference));
         }
+
         self.output
     }
 }

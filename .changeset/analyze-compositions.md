@@ -5,5 +5,5 @@
 '@pandacss/compiler-shared': minor
 ---
 
-`panda analyze` now counts uses from config, not just source files. A new "Used in" column shows where each name is used
-(`3 files, globalCss`, `via animations.spin`), and text, layer, and animation styles get a `compositions` scope.
+`panda analyze` now counts tokens, keyframes, and recipes used in your config, not just your source files, and shows
+where each one is used. Text, layer, and animation styles get their own `compositions` scope.

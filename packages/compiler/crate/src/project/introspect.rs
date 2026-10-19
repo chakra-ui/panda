@@ -48,6 +48,7 @@ impl Compiler {
     ) -> napi::Result<serde_json::Value> {
         let files: Vec<pandacss_compiler::UsageSource> = serde_json::from_value(files)
             .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+
         let mut project = self.inner.fork_without_sources();
         let cache = std::mem::take(&mut self.callbacks.transform_cache);
         for file in files {
@@ -60,6 +61,7 @@ impl Compiler {
                 None,
             );
         }
+
         let result = super::css::with_project_stylesheet_transforms(
             &mut project,
             &self.user_config,
@@ -68,6 +70,7 @@ impl Compiler {
             pandacss_compiler::collect_usage_requirements,
         );
         self.callbacks.transform_cache = cache;
+
         serde_json::to_value(result).map_err(|err| napi::Error::from_reason(err.to_string()))
     }
 

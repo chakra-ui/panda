@@ -1422,3 +1422,50 @@ fn tokens_inside_a_jsx_css_prop_are_source_usages() {
     Token colors.red.500
     ");
 }
+
+#[test]
+fn each_responsive_composition_value_is_a_source_usage() {
+    let system = system_with(json!({
+        "jsxFramework": "react",
+        "conditions": { "dark": "&.dark" },
+        "theme": { "textStyles": {
+            "lead": { "value": { "fontSize": "20px" } },
+            "xl": { "value": { "fontSize": "32px" } }
+        } }
+    }));
+    let source = indoc! {r#"
+        import { css } from '@panda/css'
+        import { Box } from '@panda/jsx'
+        css({ textStyle: { base: 'lead', _dark: 'xl' } })
+        const el = <Box textStyle="lead" />
+    "#};
+    let result = inspect_file_source(&system, "a.tsx", source);
+    let compositions = result
+        .usages
+        .iter()
+        .filter(|site| matches!(site.kind, pandacss_compiler::UsageKind::Composition))
+        .map(|site| site.name.as_str())
+        .collect::<Vec<_>>();
+    assert_yaml_snapshot!(compositions, @"
+    - textStyles.lead
+    - textStyles.xl
+    - textStyles.lead
+    ");
+}
+
+#[test]
+fn a_token_repeated_across_first_that_works_members_is_one_usage() {
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        css({ color: 'firstThatWorks(red.500, red.500)' })
+        css({ color: 'firstThatWorks(red.500, red.300)' })
+    "};
+    let result = inspect_file_source(&system(), "a.tsx", source);
+    assert_snapshot!(summary(&result), @"
+    Property color
+    Token colors.red.500
+    Property color
+    Token colors.red.500
+    Token colors.red.300
+    ");
+}

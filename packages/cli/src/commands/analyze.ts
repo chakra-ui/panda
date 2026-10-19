@@ -258,6 +258,7 @@ function renderNamedReport(
 function formatUsedIn(files: number, config: string[] = []): string {
   const places = [...(files > 0 ? [`${files} ${files === 1 ? 'file' : 'files'}`] : []), ...config]
   if (places.length === 0) return '-'
+
   const shown = places.slice(0, 3)
   return places.length > shown.length ? `${shown.join(', ')}, +${places.length - shown.length} more` : shown.join(', ')
 }

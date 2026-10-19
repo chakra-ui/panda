@@ -108,6 +108,7 @@ export function createUsageReport(inspection: FileInspectionBatch, options: Usag
   }
 
   const config = configPlaces(options.requirements ?? [], usages, scope)
+
   for (const key of usageScopes) {
     const places = config.get(usageKinds[key]) ?? new Map<string, string[]>()
     for (const list of places.values()) summary[key].used += list.length
@@ -323,8 +324,10 @@ function configPlaces(
 ): ConfigPlaces {
   const written = new Set(usages.map((usage) => `${usage.kind}\0${usage.name}`))
   const places: ConfigPlaces = new Map()
+
   for (const entry of requirements) {
     if (scope !== 'all' && entry.kind !== usageKinds[scope]) continue
+
     const hasSource = written.has(`${entry.kind}\0${entry.name}`)
     const list = [
       ...new Set(
@@ -332,15 +335,18 @@ function configPlaces(
       ),
     ].sort()
     if (list.length === 0) continue
+
     const byName = places.get(entry.kind) ?? new Map<string, string[]>()
     byName.set(entry.name, [...(byName.get(entry.name) ?? []), ...list].sort())
     places.set(entry.kind, byName)
   }
+
   return places
 }
 
 function withConfig<T extends { uses: number }>(item: T, config: string[] | undefined): T & { config?: string[] } {
   if (!config?.length) return item
+
   return { ...item, uses: item.uses + config.length, config }
 }
 
@@ -352,6 +358,7 @@ function createUsageViews(
 ): UsageReportViews {
   const named = (kind: UsageReportUsageKind, configured: string[]) =>
     createNamedView(usages, kind, configured, config.get(kind) ?? new Map())
+
   return {
     tokens: createTokenView(facts, spec, config.get('token') ?? new Map()),
     recipes: createRecipeView(facts, config.get('recipe') ?? new Map()),
@@ -381,6 +388,7 @@ function createNamedView(
   for (const name of config.keys()) {
     if (!counters.has(name)) counters.set(name, { uses: 0, files: new Set<string>() })
   }
+
   const items = [...counters.entries()]
     .map(
       ([name, entry]): NamedUsageItem =>
@@ -452,8 +460,10 @@ function createTokenView(facts: UsageReportFacts, spec: Spec, config: Map<string
       const categoryTokenIds = new Set(
         facts.tokens.filter((token) => token.category === category).map((token) => token.id),
       )
-      const top = facts.tokens
-        .filter((token) => token.category === category && (tokenUses.has(token.id) || config.has(token.path)))
+      const usedTokens = facts.tokens.filter(
+        (token) => token.category === category && (tokenUses.has(token.id) || config.has(token.path)),
+      )
+      const top = usedTokens
         .map((token): TokenUsageItem => {
           const usage = tokenUses.get(token.id)
           const item = {
@@ -461,6 +471,7 @@ function createTokenView(facts: UsageReportFacts, spec: Spec, config: Map<string
             uses: usage?.uses ?? 0,
             files: usage?.files.size ?? 0,
           }
+
           return withConfig(item, config.get(token.path))
         })
         .sort(compareUsageItems)
@@ -492,9 +503,10 @@ function createTokenView(facts: UsageReportFacts, spec: Spec, config: Map<string
         .filter((entry): entry is TokenRawValueUsage => Boolean(entry))
         .sort(compareRawValues)
 
-      const used = top.length
-      const total =
-        facts.tokens.filter((token) => token.category === category && token.configured).length || categoryTokenIds.size
+      // Virtual `colorPalette` rows are listed but don't count against the configured total.
+      const configured = facts.tokens.filter((token) => token.category === category && token.configured).length
+      const used = configured ? usedTokens.filter((token) => token.configured).length : usedTokens.length
+      const total = configured || categoryTokenIds.size
 
       return {
         category,
@@ -507,7 +519,7 @@ function createTokenView(facts: UsageReportFacts, spec: Spec, config: Map<string
         rawValues,
       }
     })
-    .filter((entry) => entry.used > 0 || entry.rawValues.length > 0)
+    .filter((entry) => entry.top.length > 0 || entry.rawValues.length > 0)
     .sort((a, b) => b.used - a.used || a.category.localeCompare(b.category))
 
   const unused = facts.tokens
@@ -894,9 +906,11 @@ function tokenCategory(path: string): string | undefined {
 
 /** `spacing.-4` is generated from `spacing.4`; using it uses `spacing.4`. */
 function isNegativeOf(path: string, values: Record<string, string>): boolean {
-  const index = path.lastIndexOf('.')
-  const name = path.slice(index + 1)
-  return name.startsWith('-') && `${path.slice(0, index)}.${name.slice(1)}` in values
+  const category = tokenCategory(path)
+  if (!category) return false
+
+  const name = path.slice(category.length + 1)
+  return name.startsWith('-') && `${category}.${name.slice(1)}` in values
 }
 
 function isVirtualToken(path: string): boolean {

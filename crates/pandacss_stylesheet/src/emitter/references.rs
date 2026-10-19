@@ -98,6 +98,7 @@ impl<'a> StyleReferences<'a> {
                 let Some(dictionary) = self.dictionary else {
                     return;
                 };
+
                 let animation = dictionary
                     .token(path)
                     .is_some_and(|token| token.category == TokenCategory::Animations);
@@ -107,6 +108,7 @@ impl<'a> StyleReferences<'a> {
                         .iter()
                         .filter_map(|condition| dictionary.token_with_condition(path, condition)),
                 );
+
                 for token in values {
                     if animation {
                         sink.declaration("animation", &token.value);
@@ -114,6 +116,7 @@ impl<'a> StyleReferences<'a> {
                         sink.value(&token.value);
                     }
                 }
+
                 sink.forget(&StyleReference::Token(path.clone()));
             }),
             StyleReference::Keyframe(name) => self.collect(|cx, sink| {
@@ -121,6 +124,7 @@ impl<'a> StyleReferences<'a> {
                     .keyframes
                     .and_then(|frames| frames.get(name))
                     .and_then(Value::as_object);
+
                 for step in steps.into_iter().flat_map(serde_json::Map::values) {
                     cx.collect_styles_usage(step, sink);
                 }
@@ -129,8 +133,10 @@ impl<'a> StyleReferences<'a> {
                 let Some((prop, name)) = composition_parts(path) else {
                     return;
                 };
+
                 let value = AtomValue::String(name.into());
                 let result = cx.transform_atom_styles(prop, name, &value);
+
                 if let Some(styles) = composition_style_object(prop, &result.styles) {
                     cx.collect_grouped_style_usage(styles, false, sink);
                 }
@@ -172,6 +178,7 @@ impl<'a> StyleReferences<'a> {
             seen: FxHashSet::default(),
             references: Vec::new(),
         };
+
         walk(&self.cx, &mut sink);
         sink.references
     }
@@ -187,6 +194,7 @@ impl<'a> StyleReferences<'a> {
         if utility.is_known(canonical) {
             return Some(canonical.to_owned());
         }
+
         self.cx
             .config
             .utilities
@@ -220,6 +228,7 @@ impl ReferenceCollector<'_, '_> {
 impl ReferenceSink for ReferenceCollector<'_, '_> {
     fn declaration(&mut self, prop: &str, value: &str) {
         self.value(value);
+
         if is_animation_property(prop)
             && let Some(keyframes) = self.owner.keyframes
         {
@@ -235,11 +244,13 @@ impl ReferenceSink for ReferenceCollector<'_, '_> {
         let mut vars = FxHashSet::default();
         collect_css_var_refs(value, &mut vars);
         collect_token_reference_vars(value, self.owner.dictionary, &mut vars);
+
         let mut paths = vars
             .iter()
             .filter_map(|var| self.owner.token_path(var))
             .collect::<Vec<_>>();
         paths.sort_unstable();
+
         for path in paths {
             self.push(StyleReference::Token(path));
         }

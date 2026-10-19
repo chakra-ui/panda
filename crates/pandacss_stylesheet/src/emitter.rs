@@ -991,9 +991,11 @@ impl<'a> UsageMarks<'a> {
 impl ReferenceSink for UsageMarks<'_> {
     fn declaration(&mut self, prop: &str, value: &str) {
         self.value(value);
+
         if prop.starts_with("--") {
             self.declared_vars.insert(prop.to_owned());
         }
+
         if is_animation_property(prop) {
             collect_keyframe_refs(
                 value,
@@ -1264,6 +1266,7 @@ impl<'a> EmitContext<'a> {
         let mut entries = Vec::with_capacity(group.entries.len());
         for entry in &group.entries {
             sink.property(self.utility.resolve_shorthand(&entry.prop));
+
             if let Some(prop) = composition_prop(&entry.prop)
                 && let Some(name) = atom_value_to_string(&entry.value)
             {
@@ -1272,8 +1275,10 @@ impl<'a> EmitContext<'a> {
                     continue;
                 }
             }
+
             entries.push(entry.clone());
         }
+
         for rule in self.recipe_group_rules(&group.class_name, &group.conditions, &entries) {
             Self::collect_declarations_usage(&rule.declarations, sink);
         }
@@ -1349,10 +1354,12 @@ impl<'a> EmitContext<'a> {
 
     fn collect_atom_usage(&self, atom: &Atom, sink: &mut impl ReferenceSink) {
         sink.property(self.utility.resolve_shorthand(atom.prop()));
+
         let raw = atom_value_to_string(atom.value());
         let Some(raw) = raw.as_deref() else {
             return;
         };
+
         // Expand like emission does, or a member's tokens look unused and get pruned.
         if let Some(members) = parse_first_that_works_value(raw)
             && let Some(declarations) =
@@ -1361,12 +1368,14 @@ impl<'a> EmitContext<'a> {
             Self::collect_declarations_usage(&declarations, sink);
             return;
         }
+
         if let Some(prop) = composition_prop(atom.prop()) {
             sink.composition(prop, raw);
             if !sink.expands_compositions() {
                 return;
             }
         }
+
         let result = self.transform_atom_styles(atom.prop(), raw, atom.value());
         if is_composition_prop(atom.prop()) {
             if let Some(styles) = composition_style_object(atom.prop(), &result.styles) {
@@ -1374,10 +1383,12 @@ impl<'a> EmitContext<'a> {
             }
             return;
         }
+
         if is_nested_style_object(&result.styles) {
             self.collect_grouped_style_usage(&result.styles, atom.important(), sink);
             return;
         }
+
         Self::collect_literal_usage(&result.styles, sink);
     }
 
@@ -1411,12 +1422,14 @@ impl<'a> EmitContext<'a> {
         };
         for (key, value) in entries {
             sink.property(self.utility.resolve_shorthand(key));
+
             if let Some(prop) = composition_prop(key) {
                 visit_scalar_strings(value, &mut |name| sink.composition(prop, name));
                 if !sink.expands_compositions() {
                     continue;
                 }
             }
+
             if let Some(style_entries) = self.composition_style_entries_for_value(key, value) {
                 self.collect_style_entries_usage(&style_entries, false, sink);
                 continue;

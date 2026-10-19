@@ -448,3 +448,164 @@ test('a colorPalette token used only from config gets a row that matches the sum
     }
   `)
 })
+
+const requirementLines = (requirements: Array<{ kind: string; name: string; reasons: string[] }>) =>
+  requirements
+    .filter((entry) => entry.kind !== 'utility')
+    .map((entry) => `${entry.kind} ${entry.name} <- ${entry.reasons.join(', ')}`)
+
+test('negative spacing tokens are never listed as unused, including fractional ones', () => {
+  const compiler = createPresetCompiler()
+  const report = createUsageReport(compiler.inspectFiles([]), { spec: compiler.spec(), requirements: [] })
+  const negatives = report.views?.tokens.unused.filter((path) => path.startsWith('spacing.-'))
+
+  expect(negatives).toEqual([])
+  expect(report.views?.tokens.unused).toContain('spacing.1.5')
+})
+
+test('a colorPalette row does not count toward a category being used', () => {
+  const compiler = createPresetCompiler({ globalCss: { body: { bg: 'colorPalette.500', color: 'red.500' } } })
+  const report = createUsageReport(compiler.inspectFiles([]), {
+    spec: compiler.spec(),
+    requirements: compiler.inspectUsageRequirements([]).requirements,
+  })
+  const colors = report.views?.tokens.categories.find((category) => category.category === 'colors')
+
+  expect({ used: colors?.used, rows: colors?.top.map((row) => row.name) }).toMatchInlineSnapshot(`
+    {
+      "used": 1,
+      "rows": [
+        "colorPalette.500",
+        "red.500",
+      ],
+    }
+  `)
+})
+
+test('styles a design system brings in are labelled as source styles in the report', () => {
+  const config = {
+    utilities: { color: { className: 'c', values: 'colors' } },
+    theme: { tokens: { colors: { brand: { value: '#f00' } } } },
+  }
+  const designSystem = createProject(config)
+  designSystem.parseFileSource('button.tsx', "import { css } from '@panda/css'\ncss({ color: 'brand' })")
+  const app = createProject(config)
+  app.buildInfo.hydrate(designSystem.buildInfo.create({ panda: '^2.0.0' }), { name: '@acme/ds' })
+
+  const report = createUsageReport(app.inspectFiles([]), {
+    spec: app.spec(),
+    requirements: app.inspectUsageRequirements([]).requirements,
+  })
+
+  expect(report.views?.tokens.categories[0]?.top).toMatchInlineSnapshot(`
+    [
+      {
+        "name": "brand",
+        "uses": 1,
+        "files": 0,
+        "config": [
+          "source styles",
+        ],
+      },
+    ]
+  `)
+})
+
+test('a design system recipe call keeps what its recipe uses', () => {
+  const config = {
+    utilities: { color: { className: 'c', values: 'colors' }, animationName: { className: 'an' } },
+    theme: {
+      tokens: { colors: { r: { value: '#f00' } } },
+      keyframes: { spin: { to: { opacity: 1 } } },
+      recipes: { btn: { className: 'btn', variants: { v: { x: { color: 'r', animationName: 'spin' } } } } },
+    },
+  }
+  const designSystem = createProject(config)
+  designSystem.parseFileSource('button.tsx', "import { btn } from '@panda/recipes'\nbtn({ v: 'x' })")
+  const app = createProject(config)
+  app.buildInfo.hydrate(designSystem.buildInfo.create({ panda: '^2.0.0' }), { name: '@acme/ds' })
+
+  expect(requirementLines(app.inspectUsageRequirements([]).requirements)).toMatchInlineSnapshot(`
+    [
+      "keyframe spin <- recipes.btn",
+      "token colors.r <- recipes.btn",
+    ]
+  `)
+})
+
+test('compositions used by recipes and staticCss are credited to those places', () => {
+  const compiler = createPresetCompiler({
+    staticCss: { css: [{ properties: { textStyle: ['heading.lg'] } }], recipes: { withText: [{}] } },
+    theme: {
+      extend: {
+        tokens: { colors: { b: { value: '#00f' } } },
+        textStyles: {
+          lead: { value: { color: 'b' } },
+          heading: { lg: { value: { fontSize: '2xl' } } },
+        },
+        recipes: { withText: { className: 'with-text', base: { textStyle: 'lead' } } },
+      },
+    },
+  })
+
+  const lines = requirementLines(compiler.inspectUsageRequirements([]).requirements)
+  expect(lines.filter((line) => line.includes('textStyles') || line.includes('colors.b'))).toMatchInlineSnapshot(`
+    [
+      "composition textStyles.heading.lg <- staticCss.css",
+      "composition textStyles.lead <- staticCss.recipes.withText",
+      "token colors.b <- via textStyles.lead",
+      "token fontSizes.2xl <- via textStyles.heading.lg",
+    ]
+  `)
+})
+
+test('an inline keyframes() call credits what its steps use to source styles', () => {
+  const compiler = createPresetCompiler({ theme: { extend: { tokens: { colors: { c: { value: '#0f0' } } } } } })
+  const files = [
+    {
+      path: '/virtual/a.ts',
+      source:
+        "import { css, keyframes } from '@panda/css'; css({ animationName: keyframes({ to: { color: '{colors.c}' } }) })",
+    },
+  ]
+
+  expect(requirementLines(compiler.inspectUsageRequirements(files).requirements)).toMatchInlineSnapshot(`
+    [
+      "token colors.c <- sources",
+    ]
+  `)
+})
+
+test('view transition styles are credited to viewTransitions', () => {
+  const compiler = createPresetCompiler({ theme: { extend: { tokens: { colors: { vt: { value: '#123' } } } } } })
+  const files = [
+    {
+      path: '/virtual/a.ts',
+      source: "import { viewTransition } from '@panda/css'; viewTransition({ old: { color: 'vt' } })",
+    },
+  ]
+
+  expect(requirementLines(compiler.inspectUsageRequirements(files).requirements)).toMatchInlineSnapshot(`
+    [
+      "token colors.vt <- viewTransitions",
+    ]
+  `)
+})
+
+test('inspecting requirements leaves utility transform output unchanged', () => {
+  const compiler = createPresetCompiler({
+    utilities: {
+      extend: {
+        glow: { transform: (value: string) => ({ boxShadow: `0 0 4px ${value}` }) },
+      },
+    },
+  })
+  const files = [{ path: '/virtual/a.ts', source: "import { css } from '@panda/css'; css({ glow: 'red' })" }]
+  compiler.parseFileSource(files[0]!.path, files[0]!.source)
+  const before = compiler.compile().css
+
+  compiler.inspectUsageRequirements(files)
+
+  expect(compiler.compile().css).toBe(before)
+  expect(before).toContain('box-shadow: 0 0 4px red')
+})

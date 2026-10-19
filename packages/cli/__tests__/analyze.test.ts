@@ -529,6 +529,61 @@ describe('cli analyze', () => {
     expect(all.views?.utilities.unused).not.toContain('animationName')
     expect(all.views?.recipes.unused).toEqual(['unusedRecipe'])
   })
+
+  it('reports compositions and lists where a utility is used, keeping the first few places', async () => {
+    dir = createFixture(
+      `export default {
+        outdir: 'styled-system',
+        include: ['**/*.tsx'],
+        importMap: { css: ['@panda/css'] },
+        globalCss: { body: { color: 'red.500', textStyle: 'lead' } },
+        staticCss: { css: [{ properties: { color: ['red.500'] } }] },
+        theme: {
+          tokens: { colors: { red: { 500: { value: '#f00' } } } },
+          textStyles: {
+            lead: { value: { color: 'red.500' } },
+            unused: { value: { fontSize: '10px' } },
+          },
+        },
+        utilities: { color: { className: 'c', values: 'colors' } },
+      }`,
+      { source: false },
+    )
+    writeFileSync(join(dir, 'A.tsx'), "import { css } from '@panda/css'\ncss({ color: 'red.500' })")
+    writeFileSync(join(dir, 'B.tsx'), "import { css } from '@panda/css'\ncss({ color: 'red.500' })")
+
+    const logs: string[] = []
+    const log = (message: string) => logs.push(message)
+
+    await runAnalyze({ cwd: dir, scope: 'compositions' }, { log })
+    const compositions = logs.join('\n')
+
+    logs.length = 0
+    await runAnalyze({ cwd: dir, scope: 'utilities' }, { log })
+    const utilities = logs.join('\n')
+
+    logs.length = 0
+    await runAnalyze({ cwd: dir, unused: true, scope: 'compositions' }, { log })
+
+    expect(compositions).toMatchInlineSnapshot(`
+      "analyze: scanned 2 files
+
+      Compositions   1/2 used (50.00%)
+      Composition       Uses   Used in
+      textStyles.lead   1      globalCss
+      Unused (1): textStyles.unused"
+    `)
+    expect(utilities).toMatchInlineSnapshot(`
+      "analyze: scanned 2 files
+
+      Utilities   2/3 used (66.67%)
+      Utility     Uses   Used in
+      color       5      2 files, globalCss, staticCss.css, +1 more
+      textStyle   1      globalCss
+      Unused (1): colorPalette"
+    `)
+    expect(logs).toEqual(['textStyles.unused'])
+  })
 })
 
 interface AnalyzeReportPayload {

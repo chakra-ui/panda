@@ -34,6 +34,7 @@ impl WasmCompiler {
     pub fn inspect_usage_requirements(&mut self, files: JsValue) -> Result<JsValue, JsValue> {
         let files: Vec<pandacss_compiler::UsageSource> = serde_wasm_bindgen::from_value(files)
             .map_err(|err| JsValue::from_str(&err.to_string()))?;
+
         let mut project = self.inner.fork_without_sources();
         let cache = std::mem::take(&mut self.callbacks.transform_cache);
         for file in files {
@@ -45,6 +46,7 @@ impl WasmCompiler {
                 None,
             );
         }
+
         let result = super::css::with_project_stylesheet_transforms(
             &mut project,
             &self.user_config,
@@ -52,6 +54,7 @@ impl WasmCompiler {
             pandacss_compiler::collect_usage_requirements,
         );
         self.callbacks.transform_cache = cache;
+
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         result
             .serialize(&serializer)

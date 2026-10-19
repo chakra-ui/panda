@@ -159,3 +159,78 @@ fn global_css_element_selectors_are_not_read_as_shorthand_properties() {
         );
     });
 }
+
+#[test]
+fn global_css_selectors_under_a_condition_are_read_as_selectors() {
+    let config = config(json!({
+        "conditions": { "dark": "&.dark" },
+        "utilities": {
+            "padding": { "className": "p", "shorthand": "p", "values": "spacing" },
+            "margin": { "className": "m", "values": "spacing" }
+        },
+        "theme": { "tokens": { "spacing": { "4": { "value": "1rem" } } } },
+        "globalCss": {
+            "_dark": { "p": { "margin": "4" } },
+            "@media (min-width: 40em)": { "p": { "margin": "4" } }
+        }
+    }));
+    references_for(&config, |references| {
+        assert_eq!(
+            references.global_css(&config.global_css),
+            [
+                StyleReference::Utility("margin".to_owned()),
+                token("spacing.4")
+            ]
+        );
+    });
+}
+
+#[test]
+fn every_responsive_composition_value_is_a_reference() {
+    let config = config(json!({
+        "conditions": { "dark": "&.dark" },
+        "theme": { "textStyles": {
+            "lead": { "value": { "fontSize": "20px" } },
+            "xl": { "value": { "fontSize": "32px" } }
+        } },
+        "globalCss": { "body": { "textStyle": { "base": "lead", "_dark": "xl" } } }
+    }));
+    references_for(&config, |references| {
+        let found = references.global_css(&config.global_css);
+        assert!(found.contains(&StyleReference::Composition("textStyles.lead".to_owned())));
+        assert!(found.contains(&StyleReference::Composition("textStyles.xl".to_owned())));
+    });
+}
+
+#[test]
+fn a_hyphenated_css_property_key_resolves_to_its_utility() {
+    let config = config(json!({
+        "utilities": { "marginTop": { "className": "mt", "values": "spacing" } },
+        "theme": { "tokens": { "spacing": { "4": { "value": "1rem" } } } },
+        "globalCss": { "body": { "margin-top": "4" } }
+    }));
+    references_for(&config, |references| {
+        assert!(
+            references
+                .global_css(&config.global_css)
+                .contains(&StyleReference::Utility("marginTop".to_owned()))
+        );
+    });
+}
+
+#[test]
+fn a_composition_depends_on_what_its_conditional_styles_use() {
+    let config = config(json!({
+        "conditions": { "dark": "&.dark" },
+        "utilities": { "color": { "className": "c", "values": "colors" } },
+        "theme": {
+            "tokens": { "colors": { "night": { "value": "#111" } } },
+            "textStyles": { "lead": { "value": { "_dark": { "color": "night" } } } }
+        }
+    }));
+    references_for(&config, |references| {
+        let found =
+            references.dependencies(&StyleReference::Composition("textStyles.lead".to_owned()));
+        assert!(found.contains(&token("colors.night")), "{found:?}");
+    });
+}

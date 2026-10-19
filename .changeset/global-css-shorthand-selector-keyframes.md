@@ -2,4 +2,4 @@
 '@pandacss/compiler': patch
 ---
 
-Fix `removeUnusedKeyframes` dropping keyframes used in a `globalCss` rule whose selector matches a shorthand, like `p` or `h`.
+Fix `removeUnusedKeyframes` dropping keyframes used under `globalCss` selectors like `p` or `h`.
