@@ -3,6 +3,10 @@
 
 use std::collections::BTreeSet;
 
+use oxc_allocator::Allocator;
+use oxc_codegen::{Codegen, CodegenOptions, IndentChar};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use pandacss_config::{
     PatternConfig, PatternPropertyConfig, PatternPropertyTypeKind, PatternTypeDefinition,
 };
@@ -127,6 +131,8 @@ pub fn module_with_type_data(
 
     let type_imports = type_imports(pattern, definition);
     let mut module = Module::new()
+        // The transform is the config's JavaScript, copied as written.
+        .with_source_pragma("// @ts-nocheck")
         .with_import(ImportDecl::value(
             ["getPatternStyles", "patternFns"],
             "./runtime",
@@ -178,6 +184,7 @@ pub fn module_with_type_data(
             &function_name,
             &raw_name,
             &fn_type_name,
+            &type_name,
             &prop_keys,
         ))
 }
@@ -210,31 +217,39 @@ fn runtime_module(ctx: CodegenContext<'_>) -> Module {
             ["mapObject", "withDefaults"],
             &ctx.runtime_import(RuntimeImport::Helpers, "../helpers"),
         ))
+        .with_import(ImportDecl::ty(["PatternHelpers"], "../types/pattern"))
+        .with_item(Item::runtime(ItemNode::RawStmt(
+            indoc::indoc! {r"
+                const CSS_FUNCTION_REGEX = /^(min|max|clamp|calc)\(.*\)/
+                const CSS_VAR_REGEX = /^var\(--.+\)$/
+                const CSS_UNIT_REGEX = /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/
+            "}
+            .trim()
+            .into(),
+        )))
         .with_item(runtime_function(
             "isCssFunction",
             vec![Param::typed("v", TsType::Unknown)],
             TsType::Bool,
-            r#"return typeof v === "string" && /^(min|max|clamp|calc)\(.*\)/.test(v)"#,
+            r#"return typeof v === "string" && CSS_FUNCTION_REGEX.test(v)"#,
         ))
         .with_item(runtime_function(
             "isCssVar",
             vec![Param::typed("v", TsType::Unknown)],
             TsType::Bool,
-            r#"return typeof v === "string" && /^var\(--.+\)$/.test(v)"#,
+            r#"return typeof v === "string" && CSS_VAR_REGEX.test(v)"#,
         ))
         .with_item(runtime_function(
             "isCssUnit",
             vec![Param::typed("v", TsType::Unknown)],
             TsType::Bool,
-            r#"return typeof v === "string" && /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/.test(v)"#,
+            r#"return typeof v === "string" && CSS_UNIT_REGEX.test(v)"#,
         ))
         .with_item(Item::runtime(ItemNode::Const(ConstDecl {
             exported: true,
             declare: false,
             name: "patternFns".into(),
-            type_annotation: Some(TsType::Raw(
-                "Record<string, (...args: any[]) => any>".into(),
-            )),
+            type_annotation: Some(TsType::Ref("PatternHelpers".into())),
             init: Some(Expr::Raw(
                 "{ map: mapObject, isCssFunction, isCssVar, isCssUnit }".into(),
             )),
@@ -470,7 +485,13 @@ fn raw_function(name: &str, config_name: &str, styles_name: &str) -> Item {
     }))
 }
 
-fn public_function_const(name: &str, raw_name: &str, fn_type_name: &str, prop_keys: &str) -> Item {
+fn public_function_const(
+    name: &str,
+    raw_name: &str,
+    fn_type_name: &str,
+    type_name: &str,
+    prop_keys: &str,
+) -> Item {
     Item::both(ItemNode::Const(ConstDecl {
         exported: true,
         declare: false,
@@ -479,7 +500,7 @@ fn public_function_const(name: &str, raw_name: &str, fn_type_name: &str, prop_ke
         init: Some(crate::Expr::Raw(format!(
             // Both calls need `@__PURE__`: a pure call is only droppable when
             // its arguments are droppable too.
-            "/* @__PURE__ */ Object.assign(/* @__PURE__ */ memo(function {name}(styles = {{}}) {{\n  return css({raw_name}(styles))\n}}), {{ raw: {raw_name}, propKeys: {prop_keys} }})"
+            "/* @__PURE__ */ Object.assign(/* @__PURE__ */ memo(function {name}(styles = {{}}) {{\n  return css({raw_name}(styles))\n}}), {{ raw: {raw_name}, propKeys: {prop_keys} as Array<keyof {type_name}> }})"
         ))),
         js_doc: None,
     }))
@@ -500,8 +521,31 @@ fn pattern_config_source(pattern: &PatternConfig, meta: Option<&PatternCodegenMe
     meta.filter(|meta| !meta.config_source.trim().is_empty())
         .map_or_else(
             || fallback_pattern_config_source(pattern),
-            |meta| meta.config_source.clone(),
+            |meta| print_config_source(&meta.config_source),
         )
+}
+
+fn print_config_source(source: &str) -> String {
+    const PREFIX: &str = "export default ";
+    let program = format!("{PREFIX}{source}");
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, &program, SourceType::mjs()).parse();
+    if parsed.panicked || !parsed.errors.is_empty() {
+        return source.to_owned();
+    }
+    let printed = Codegen::new()
+        .with_options(CodegenOptions {
+            indent_char: IndentChar::Space,
+            indent_width: 2,
+            ..CodegenOptions::default()
+        })
+        .build(&parsed.program)
+        .code;
+    printed
+        .trim_end()
+        .strip_prefix(PREFIX)
+        .and_then(|expression| expression.strip_suffix(';'))
+        .map_or_else(|| source.to_owned(), str::to_owned)
 }
 
 fn fallback_pattern_config_source(pattern: &PatternConfig) -> String {

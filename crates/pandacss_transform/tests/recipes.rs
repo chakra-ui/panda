@@ -198,7 +198,7 @@ fn applies_boolean_variant() {
     let output = transform_with_button(source);
 
     assert!(output.changed);
-    assert_snapshot!(output.code, @r#"export const cls = "button button--block_true button--size_md button--variant_solid";"#);
+    assert_snapshot!(output.code, @r#"export const cls = "button button--size_md button--variant_solid button--block_true";"#);
 }
 
 #[test]
@@ -325,7 +325,7 @@ fn rewrites_three_conditional_variants_as_a_decision_tree() {
     assert!(!output.bailed);
     assert_snapshot!(
         output.code,
-        @r#"export const cls = "button" + " " + (isSmall ? (isSolid ? (isWide ? "button--block_true button--size_sm button--variant_solid" : "button--size_sm button--variant_solid") : isWide ? "button--block_true button--size_sm button--variant_outline button--compound__size_sm__variant_outline" : "button--size_sm button--variant_outline button--compound__size_sm__variant_outline") : isSolid ? (isWide ? "button--block_true button--size_lg button--variant_solid" : "button--size_lg button--variant_solid") : isWide ? "button--block_true button--size_lg button--variant_outline" : "button--size_lg button--variant_outline");"#
+        @r#"export const cls = "button" + " " + (isSmall ? (isSolid ? (isWide ? "button--size_sm button--variant_solid button--block_true" : "button--size_sm button--variant_solid") : isWide ? "button--size_sm button--variant_outline button--block_true button--compound__size_sm__variant_outline" : "button--size_sm button--variant_outline button--compound__size_sm__variant_outline") : isSolid ? (isWide ? "button--size_lg button--variant_solid button--block_true" : "button--size_lg button--variant_solid") : isWide ? "button--size_lg button--variant_outline button--block_true" : "button--size_lg button--variant_outline");"#
     );
 }
 
@@ -601,7 +601,7 @@ fn applies_a_slot_compound_variant_only_to_the_slots_it_styles() {
 
     let output = transform_with_tabs(source);
 
-    assert_snapshot!(output.code, @r#"export const classes = { root: "tabs__root tabs__root--fitted_true tabs__root--size_sm", trigger: "tabs__trigger tabs__trigger--fitted_true tabs__trigger--size_sm tabs__trigger--compound__fitted_true__size_sm", indicator: "tabs__indicator tabs__indicator--fitted_true tabs__indicator--size_sm" };"#);
+    assert_snapshot!(output.code, @r#"export const classes = { root: "tabs__root tabs__root--size_sm tabs__root--fitted_true", trigger: "tabs__trigger tabs__trigger--size_sm tabs__trigger--fitted_true tabs__trigger--compound__fitted_true__size_sm", indicator: "tabs__indicator tabs__indicator--size_sm tabs__indicator--fitted_true" };"#);
 }
 
 #[test]
@@ -629,7 +629,7 @@ fn rewrites_two_conditional_slot_variants_as_a_decision_tree_per_slot() {
 
     assert!(output.changed);
     assert!(!output.bailed);
-    assert_snapshot!(output.code, @r#"export const classes = { root: "tabs__root" + " " + (isSmall ? (isFitted ? "tabs__root--fitted_true tabs__root--size_sm" : "tabs__root--size_sm") : isFitted ? "tabs__root--fitted_true tabs__root--size_lg" : "tabs__root--size_lg"), trigger: "tabs__trigger" + " " + (isSmall ? (isFitted ? "tabs__trigger--fitted_true tabs__trigger--size_sm tabs__trigger--compound__fitted_true__size_sm" : "tabs__trigger--size_sm") : isFitted ? "tabs__trigger--fitted_true tabs__trigger--size_lg" : "tabs__trigger--size_lg"), indicator: "tabs__indicator" + " " + (isSmall ? (isFitted ? "tabs__indicator--fitted_true tabs__indicator--size_sm" : "tabs__indicator--size_sm") : isFitted ? "tabs__indicator--fitted_true tabs__indicator--size_lg" : "tabs__indicator--size_lg") };"#);
+    assert_snapshot!(output.code, @r#"export const classes = { root: "tabs__root" + " " + (isSmall ? (isFitted ? "tabs__root--size_sm tabs__root--fitted_true" : "tabs__root--size_sm") : isFitted ? "tabs__root--size_lg tabs__root--fitted_true" : "tabs__root--size_lg"), trigger: "tabs__trigger" + " " + (isSmall ? (isFitted ? "tabs__trigger--size_sm tabs__trigger--fitted_true tabs__trigger--compound__fitted_true__size_sm" : "tabs__trigger--size_sm") : isFitted ? "tabs__trigger--size_lg tabs__trigger--fitted_true" : "tabs__trigger--size_lg"), indicator: "tabs__indicator" + " " + (isSmall ? (isFitted ? "tabs__indicator--size_sm tabs__indicator--fitted_true" : "tabs__indicator--size_sm") : isFitted ? "tabs__indicator--size_lg tabs__indicator--fitted_true" : "tabs__indicator--size_lg") };"#);
 }
 
 #[test]
@@ -776,7 +776,7 @@ fn applies_the_class_prefix_to_recipe_and_slot_recipe_classes() {
     let output = transform_with_default_targets(&prefixed_button_and_tabs(false), source);
 
     assert_snapshot!(output.code, @r#"
-    export const cls = "pd-button pd-button--block_true pd-button--size_sm pd-button--compound__block_true__size_sm";
+    export const cls = "pd-button pd-button--size_sm pd-button--block_true pd-button--compound__block_true__size_sm";
     export const classes = { root: "pd-tabs__root pd-tabs__root--size_sm", trigger: "pd-tabs__trigger pd-tabs__trigger--size_sm pd-tabs__trigger--compound__size_sm" };
     "#);
 }

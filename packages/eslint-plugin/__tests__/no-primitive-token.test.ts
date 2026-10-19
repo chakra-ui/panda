@@ -84,6 +84,21 @@ ruleTester.run('no-primitive-token', {
     },
     {
       filename: 'app.tsx',
+      code: withCss("css({ boxShadow: '0 0 0 1px {colors.red.500/40}' })"),
+      errors: [
+        {
+          message: 'Use a semantic colors token instead of the primitive token "red.500".',
+          suggestions: [
+            {
+              desc: 'Use the semantic token "colors.fg.error"',
+              output: withCss("css({ boxShadow: '0 0 0 1px {colors.fg.error/40}' })"),
+            },
+          ],
+        },
+      ],
+    },
+    {
+      filename: 'app.tsx',
       code: ["import { token } from '@panda/tokens'", "const error = token('colors.red.500')"].join('\n'),
       errors: [
         {

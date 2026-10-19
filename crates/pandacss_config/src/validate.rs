@@ -126,7 +126,7 @@ fn validate_conditions(value: Option<&Value>, diagnostics: &mut Vec<Diagnostic>)
             diagnostics.push(warn(
                 diagnostic_codes::CONFIG_CONDITION_ARRAY_UNSUPPORTED,
                 format!(
-                    "Array conditions are not supported in v2: `conditions.{name}`. Use block form with `@slot` instead."
+                    "Array conditions are deprecated in v2: `conditions.{name}` was converted automatically. Use block form with `@slot` instead."
                 ),
             ));
             for item in items.iter().filter_map(Value::as_str) {
@@ -137,6 +137,45 @@ fn validate_conditions(value: Option<&Value>, diagnostics: &mut Vec<Diagnostic>)
         if let Some(block) = condition.as_object() {
             validate_condition_block(block, diagnostics);
         }
+    }
+}
+
+/// Rewrites v1 array conditions into block form, ordered like v1: at-rules
+/// first, pseudo-elements last, other selectors in array order.
+pub fn convert_array_conditions(config: &mut Value) {
+    let Some(entries) = config.get_mut("conditions").and_then(Value::as_object_mut) else {
+        return;
+    };
+
+    for condition in entries.values_mut() {
+        let Some(items) = condition.as_array() else {
+            continue;
+        };
+        let mut parts: Vec<String> = items
+            .iter()
+            .filter_map(Value::as_str)
+            .map(str::to_owned)
+            .collect();
+        if parts.is_empty() {
+            continue;
+        }
+        parts.sort_by_key(|part| condition_part_order(part));
+        *condition = parts
+            .into_iter()
+            .rev()
+            .fold(Value::from("@slot"), |inner, part| {
+                Value::Object(serde_json::Map::from_iter([(part, inner)]))
+            });
+    }
+}
+
+fn condition_part_order(part: &str) -> u8 {
+    if part.starts_with('@') {
+        0
+    } else if part.contains("::") {
+        2
+    } else {
+        1
     }
 }
 

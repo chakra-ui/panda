@@ -35,9 +35,10 @@
 
 <br/>
 
-## 🐼 Panda v2 (beta)
+## 🐼 Panda v2
 
-Panda v2 is in **beta** — the compiler is rewritten in Rust (Oxc engine). v1 stays on the `latest` tag; try v2 with `@pandacss/dev@beta`. See the **[v2 beta guide & migration](./V2_MIGRATION.md)**.
+Panda v2 rewrites the compiler in Rust on the Oxc engine. Upgrading from v1? Follow the
+**[upgrade guide](https://panda-css.com/docs/get-started/upgrading-to-v2)**.
 
 ## Documentation
 
@@ -107,14 +108,14 @@ function Example() {
 ## Contributing
 
 Feel like contributing? That's awesome! We have a
-[contributing guide](https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md) to help guide you.
+[contributing guide](https://github.com/chakra-ui/panda/blob/v2/CONTRIBUTING.md) to help guide you.
 
 ### Want to help improve the docs?
 
-Our docsite lives in the [monorepo](./website/pages/docs/).
+Our docs live in [`website/content/docs`](./website/content/docs/).
 
 If you're interested in contributing to the documentation, check out the
-[contributing guide](https://github.com/chakra-ui/panda/blob/main/CONTRIBUTING.md).
+[contributing guide](https://github.com/chakra-ui/panda/blob/v2/CONTRIBUTING.md).
 
 ## Support
 

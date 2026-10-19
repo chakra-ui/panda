@@ -1,7 +1,9 @@
 import type { Diagnostic } from '@pandacss/compiler'
-import { type Inspect, type RuleContextWithReport, type RuleModuleLike, toEslintLoc } from './shared'
+import { FILE_START_LOC, type Inspect, type RuleContextWithReport, type RuleModuleLike, toEslintLoc } from './shared'
 
 export const extractionDiagnosticsRuleName = 'extraction-diagnostics'
+
+const unknownTokenReferenceCode = 'unknown_token_reference'
 
 export interface ExtractionDiagnosticsRuleOptions {
   inspect: Inspect
@@ -24,7 +26,10 @@ export function createExtractionDiagnosticsRule(options: ExtractionDiagnosticsRu
         Program() {
           const inspection = options.inspect(context)
           if (!inspection) return
-          reportDiagnostics(context, inspection.diagnostics)
+          reportDiagnostics(
+            context,
+            inspection.diagnostics.filter((diagnostic) => diagnostic.code !== unknownTokenReferenceCode),
+          )
         },
       }
     },
@@ -36,7 +41,7 @@ export function reportDiagnostics(context: RuleContextWithReport, diagnostics: r
     context.report({
       messageId: 'diagnostic',
       data: { message: diagnostic.message },
-      ...(diagnostic.location ? { loc: toEslintLoc(diagnostic.location) } : {}),
+      loc: diagnostic.location ? toEslintLoc(diagnostic.location) : FILE_START_LOC,
     })
   }
 }

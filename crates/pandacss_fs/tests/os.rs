@@ -124,3 +124,281 @@ fn create_dir_all_and_remove_dir_all() {
     osfs.remove_dir_all(&tmp.path().join("a")).unwrap();
     assert!(!tmp.path().join("a").exists());
 }
+
+#[test]
+fn glob_monorepo_parent_dir_include_returns_normalized_paths() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    fs::create_dir_all(root.join("apps/demo/src")).unwrap();
+    fs::create_dir_all(root.join("packages/ui/src")).unwrap();
+    fs::write(root.join("apps/demo/src/App.tsx"), "").unwrap();
+    fs::write(root.join("packages/ui/src/Card.tsx"), "").unwrap();
+
+    let opts = GlobOptions {
+        include: vec![
+            "src/**/*.tsx".into(),
+            "../../packages/ui/src/**/*.tsx".into(),
+        ],
+        cwd: root.join("apps/demo"),
+        absolute: true,
+        ..Default::default()
+    };
+    let mut results = OsFileSystem::default().glob(&opts).unwrap();
+    results.sort();
+
+    let card = root.join("packages/ui/src/Card.tsx");
+    assert_eq!(
+        results,
+        vec![root.join("apps/demo/src/App.tsx"), card.clone()]
+    );
+    assert!(pandacss_fs::matches_globs(&card, &opts));
+}
+
+#[test]
+fn glob_monorepo_absolute_include_outside_cwd() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    fs::create_dir_all(root.join("apps/demo")).unwrap();
+    fs::create_dir_all(root.join("packages/ui/src")).unwrap();
+    fs::write(root.join("packages/ui/src/Card.tsx"), "").unwrap();
+
+    let include = format!("{}/packages/ui/src/**/*.tsx", root.display());
+    let opts = GlobOptions {
+        include: vec![include],
+        cwd: root.join("apps/demo"),
+        absolute: true,
+        ..Default::default()
+    };
+    let card = root.join("packages/ui/src/Card.tsx");
+    assert_eq!(
+        OsFileSystem::default().glob(&opts).unwrap(),
+        vec![card.clone()]
+    );
+    assert!(pandacss_fs::matches_globs(&card, &opts));
+}
+
+#[cfg(unix)]
+#[test]
+fn glob_sibling_packages_skips_linked_node_modules() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    let names: Vec<String> = (0..24).map(|i| format!("pkg{i:02}")).collect();
+    for (i, name) in names.iter().enumerate() {
+        let pkg = root.join(name);
+        fs::create_dir_all(pkg.join("src")).unwrap();
+        fs::create_dir_all(pkg.join("node_modules")).unwrap();
+        fs::write(pkg.join("src/index.ts"), "").unwrap();
+        for dep in &names[..i] {
+            std::os::unix::fs::symlink(root.join(dep), pkg.join("node_modules").join(dep)).unwrap();
+        }
+    }
+
+    let opts = GlobOptions {
+        include: vec!["../*/src/*.ts".into()],
+        cwd: root.join("pkg00"),
+        absolute: true,
+        ..Default::default()
+    };
+    let results = OsFileSystem::default().glob(&opts).unwrap();
+
+    let expected: Vec<PathBuf> = names
+        .iter()
+        .map(|name| root.join(name).join("src/index.ts"))
+        .collect();
+    assert_eq!(results, expected);
+}
+
+#[cfg(unix)]
+#[test]
+fn glob_sibling_packages_ignores_symlink_cycle_in_node_modules() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    fs::create_dir_all(root.join("app/src")).unwrap();
+    fs::create_dir_all(root.join("app/node_modules")).unwrap();
+    fs::write(root.join("app/src/App.tsx"), "").unwrap();
+    std::os::unix::fs::symlink(root.join("app"), root.join("app/node_modules/app")).unwrap();
+
+    let opts = GlobOptions {
+        include: vec!["../*/src/*.tsx".into()],
+        cwd: root.join("app"),
+        absolute: true,
+        ..Default::default()
+    };
+    assert_eq!(
+        OsFileSystem::default().glob(&opts).unwrap(),
+        vec![root.join("app/src/App.tsx")]
+    );
+}
+
+#[cfg(unix)]
+fn link(target: &std::path::Path, link: &std::path::Path) {
+    std::os::unix::fs::symlink(target, link).unwrap();
+}
+
+#[cfg(unix)]
+#[test]
+fn globstar_across_pnpm_links_reports_each_file_once() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    let names: Vec<String> = (0..24).map(|i| format!("pkg{i:02}")).collect();
+    for (i, name) in names.iter().enumerate() {
+        let pkg = root.join(name);
+        fs::create_dir_all(pkg.join("src")).unwrap();
+        fs::create_dir_all(pkg.join("node_modules")).unwrap();
+        fs::write(pkg.join("src/index.ts"), "").unwrap();
+        for dep in &names[..i] {
+            link(&root.join(dep), &pkg.join("node_modules").join(dep));
+        }
+    }
+
+    let opts = GlobOptions {
+        include: vec!["../**/src/*.ts".into()],
+        cwd: root.join("pkg00"),
+        absolute: true,
+        ..Default::default()
+    };
+    let expected: Vec<PathBuf> = names
+        .iter()
+        .map(|name| root.join(name).join("src/index.ts"))
+        .collect();
+    assert_eq!(OsFileSystem::default().glob(&opts).unwrap(), expected);
+}
+
+#[cfg(unix)]
+#[test]
+fn glob_follows_linked_folder_from_outside_the_project() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    fs::create_dir_all(root.join("app/src")).unwrap();
+    fs::create_dir_all(root.join("shared/src")).unwrap();
+    fs::write(root.join("app/src/App.ts"), "").unwrap();
+    fs::write(root.join("shared/src/theme.ts"), "").unwrap();
+    link(&root.join("shared/src"), &root.join("app/src/shared"));
+
+    let opts = GlobOptions {
+        include: vec!["src/**/*.ts".into()],
+        cwd: root.join("app"),
+        absolute: true,
+        ..Default::default()
+    };
+    assert_eq!(
+        OsFileSystem::default().glob(&opts).unwrap(),
+        vec![
+            root.join("app/src/App.ts"),
+            root.join("app/src/shared/theme.ts"),
+        ]
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn glob_reports_file_behind_inner_link_under_its_real_path() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    fs::create_dir_all(root.join("src/components")).unwrap();
+    fs::write(root.join("src/components/Button.ts"), "").unwrap();
+    link(&root.join("src/components"), &root.join("src/alias"));
+
+    let opts = GlobOptions {
+        include: vec!["src/**/*.ts".into()],
+        cwd: root.clone(),
+        absolute: true,
+        ..Default::default()
+    };
+    assert_eq!(
+        OsFileSystem::default().glob(&opts).unwrap(),
+        vec![root.join("src/components/Button.ts")]
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn glob_follows_link_when_only_the_link_path_matches() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    fs::create_dir_all(root.join("app")).unwrap();
+    fs::create_dir_all(root.join("lib/code")).unwrap();
+    fs::write(root.join("lib/code/theme.ts"), "").unwrap();
+    link(&root.join("lib/code"), &root.join("app/src"));
+
+    let opts = GlobOptions {
+        include: vec!["*/src/*.ts".into()],
+        cwd: root.clone(),
+        absolute: true,
+        ..Default::default()
+    };
+    assert_eq!(
+        OsFileSystem::default().glob(&opts).unwrap(),
+        vec![root.join("app/src/theme.ts")]
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn glob_includes_symlinked_file() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    fs::create_dir_all(root.join("src")).unwrap();
+    fs::create_dir_all(root.join("vendor")).unwrap();
+    fs::write(root.join("vendor/tokens.ts"), "").unwrap();
+    link(&root.join("vendor/tokens.ts"), &root.join("src/tokens.ts"));
+
+    let opts = GlobOptions {
+        include: vec!["src/**/*.ts".into()],
+        cwd: root.clone(),
+        absolute: true,
+        ..Default::default()
+    };
+    assert_eq!(
+        OsFileSystem::default().glob(&opts).unwrap(),
+        vec![root.join("src/tokens.ts")]
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn globstar_ignores_symlink_cycle() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    fs::create_dir_all(root.join("src/nested")).unwrap();
+    fs::write(root.join("src/nested/App.ts"), "").unwrap();
+    link(&root.join("src"), &root.join("src/nested/back"));
+
+    let opts = GlobOptions {
+        include: vec!["src/**/*.ts".into()],
+        cwd: root.clone(),
+        absolute: true,
+        ..Default::default()
+    };
+    assert_eq!(
+        OsFileSystem::default().glob(&opts).unwrap(),
+        vec![root.join("src/nested/App.ts")]
+    );
+}
+
+#[test]
+fn realpath_of_a_project_file_matches_the_path_node_reports() {
+    let tmp = tempfile::tempdir().unwrap();
+    let file = tmp.path().join("App.tsx");
+    fs::write(&file, "export {}").unwrap();
+
+    let real = OsFileSystem::default().canonicalize(&file).unwrap();
+
+    assert!(
+        !real.to_string_lossy().starts_with(r"\\?\"),
+        "{}",
+        real.display()
+    );
+    assert!(real.is_absolute());
+    assert_eq!(real.file_name(), file.file_name());
+    assert_eq!(fs::read_to_string(&real).unwrap(), "export {}");
+}
+
+/// Real temp dir on unix; Windows canonical paths add a `\\?\` globs can't express.
+fn real_dir(path: &std::path::Path) -> PathBuf {
+    if cfg!(windows) {
+        path.to_path_buf()
+    } else {
+        path.canonicalize().unwrap()
+    }
+}

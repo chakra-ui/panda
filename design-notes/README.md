@@ -28,6 +28,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
 
 - [Compiler lifecycle](./compiler-lifecycle.md) — end-to-end `createCompiler(config)` flow (construct → ingest → extract
   → encode → emit → output), build vs watch modes, and which phases are built vs deferred.
+- [Color palette selection](./color-palette-selection.md) — which names `colorPalette` accepts and which tokens each
+  maps.
 - [Crate layering](./crate-layering.md) — Tier 0/1/2/3 dependency model and what lives in each tier.
 - [Extraction pipeline](./extraction-pipeline.md) — single-parse flow from source to `ExtractUsage`, parse-error
   contract, fast paths.
@@ -46,6 +48,10 @@ Some topics span several notes. Keep the detailed contract in one place and link
 
 - [Filesystem](./filesystem.md) — `pandacss_fs` trait, os/memory impls, glob via `fast-glob`, WASM compat.
 - [Literal evaluator](./literal-evaluator.md) — what folds vs what doesn't (literals, pure helpers, token/raw calls).
+- [Astro parser](./astro-parser.md) — Panda-owned `.astro` tokenizer in `pandacss_sfc` that ports Astro's parser rules
+  and lowers to a same-offset JS program; parity checked against Astro's parser during development.
+- [MDX extraction](./mdx-parser.md) — Markdown exclusions and JSX/JavaScript islands lowered for one Oxc parse,
+  extraction parity coverage, and performance expectations.
 - [StyleTree](./style-tree.md) — span-backed transform IR for `css()` / JSX conditionals; `project_literal` for encode.
 - [Cross-file resolution](./cross-file-resolution.md) — `CrossFileResolver`, cache shape (`Literal` | `PureFn` plus
   provenance hashes), cycle guard, hash-keyed `Project` reverse index and host-driven affected-file refresh for watch.
@@ -120,12 +126,6 @@ Some topics span several notes. Keep the detailed contract in one place and link
   name, why `breakpoints` is the exception, and why extends are not collected and applied last.
 - [Panda lint plugins](./lint-plugins.md) — ESLint and Oxlint plugins backed by shared internal utilities,
   compiler-backed source inspection, and `inspectFileSource`.
-- [Config authoring language service](./config-authoring-language-service.md) — preset-aware editor intelligence for
-  `panda.config.*` without ambient generated types.
-- [Language service implementation](./language-service-implementation.md) — `compiler/tooling` subpath,
-  `@pandacss/typescript-plugin` (classic tsserver plugin) + `@pandacss/language-server` (LSP) shipping together in Phase
-  1 over one shared core — TypeScript 7 (Corsa/`tsgo`) drops the classic plugin API, so both transports are built now
-  instead of deferring the LSP.
 
 ### Testing
 

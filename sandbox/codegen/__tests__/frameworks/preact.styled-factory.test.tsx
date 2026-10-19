@@ -368,3 +368,48 @@ describe('styled elements and patterns', () => {
     )
   })
 })
+
+describe('styled factory with style defaultProps', () => {
+  test('css and style props in defaultProps of an inline recipe', () => {
+    const Card = styled('div', { base: { color: 'red.500' } }, { defaultProps: { css: { bg: 'blue.500' }, px: '2' } })
+
+    const { container } = render(<Card>card</Card>)
+
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
+      `"<div class="c_red.500 px_2 bg_blue.500">card</div>"`,
+    )
+  })
+
+  test('css in defaultProps of a config recipe', () => {
+    const Button = styled('button', buttonWithCompoundVariants, { defaultProps: { css: { mx: '2' } } })
+
+    const { container } = render(<Button>Click me</Button>)
+
+    expect(container.firstElementChild?.outerHTML).toMatchInlineSnapshot(
+      `"<button class="button button--visual_unstyled mx_2">Click me</button>"`,
+    )
+  })
+})
+
+describe('styled factory defaultProps', () => {
+  test('an undefined prop keeps its default', () => {
+    const Button = styled('button', buttonWithCompoundVariants, {
+      defaultProps: { visual: 'solid', 'aria-label': 'Close' },
+    })
+
+    const { container } = render(
+      <Button visual={undefined} aria-label={undefined}>
+        Close
+      </Button>,
+    )
+
+    expect(container.firstChild).toMatchInlineSnapshot(`
+      <button
+        aria-label="Close"
+        class="button button--visual_solid button--compound__visual_solid"
+      >
+        Close
+      </button>
+    `)
+  })
+})

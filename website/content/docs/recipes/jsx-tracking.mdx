@@ -108,6 +108,42 @@ jsx: [/^Panel/]
 
 Keep `Card` / `Card.Root` in that list if those tags still appear in the app.
 
+## Skip tracking with `staticCss`
+
+If you'd rather not keep `jsx` in sync with your component names, pregenerate the recipe's variants with `staticCss`.
+Panda then emits every variant whatever the tag is called, so a renamed export or a wrapper never leaves you without
+CSS. That's how `cva` and `sva` already work.
+
+```ts
+export const cardRecipe = defineSlotRecipe({
+  className: 'card',
+  slots: ['root', 'header'],
+  variants: {
+    size: {
+      sm: { root: { padding: '2' } },
+      lg: { root: { padding: '6' } }
+    }
+  },
+  staticCss: ['*'] // every variant, whatever the tag is called
+})
+```
+
+Or list the recipes in your config:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  staticCss: {
+    recipes: {
+      button: ['*'],
+      card: ['*']
+    }
+  }
+})
+```
+
+The trade-off is size: you ship every variant, used or not. That's cheap for design-system recipes with a handful of
+variants. Avoid `recipes: '*'` across a large app. See [Static CSS](/docs/styling/static#recipes).
+
 ## False matches
 
 A local `<Button>` that is **not** this recipe can still be treated as one. The match is not import-gated.

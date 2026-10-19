@@ -110,9 +110,7 @@ fn property_type_data(
     };
     literals.sort();
 
-    let explicit_category = property.values_category.as_deref();
-    let (token_category, literals) =
-        collapse_inferred_token_category(literals, explicit_category, tokens);
+    let (token_category, literals) = collapse_inferred_token_category(literals, property, tokens);
     let alias = utility_value_alias_name(name, property, token_category.as_deref(), &literals);
 
     UtilityPropertyTypeData {
@@ -131,10 +129,10 @@ fn property_type_data(
 /// matching v1's `type:Tokens["…"]` stub.
 fn collapse_inferred_token_category(
     literals: Vec<String>,
-    explicit_category: Option<&str>,
+    property: &UtilityProperty,
     tokens: Option<&TokenDictionary>,
 ) -> (Option<String>, Vec<String>) {
-    if let Some(category) = explicit_category {
+    if let Some(category) = property.values_category.as_deref() {
         let token_category = TokenCategory::from_path_segment(category);
         let empty_known = !matches!(token_category, TokenCategory::Other(_))
             && tokens.is_some_and(|tokens| {
@@ -156,8 +154,6 @@ fn collapse_inferred_token_category(
         return (None, literals);
     }
 
-    let remaining_set: BTreeSet<&str> = literals.iter().map(String::as_str).collect();
-
     let mut matches: Vec<(TokenCategory, usize)> = tokens
         .categories()
         .filter_map(|category| {
@@ -165,7 +161,12 @@ fn collapse_inferred_token_category(
             if keys.is_empty() {
                 return None;
             }
-            let all_present = keys.keys().all(|key| remaining_set.contains(key.as_ref()));
+            let all_present = keys.iter().all(|(key, token_value)| {
+                matches!(
+                    property.values.get(key.as_ref()),
+                    Some(Literal::String(value)) if value == token_value.as_ref()
+                )
+            });
             all_present.then_some((category.clone(), keys.len()))
         })
         .collect();

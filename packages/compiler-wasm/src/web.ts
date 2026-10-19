@@ -109,7 +109,7 @@ export function build(
 
   const prepared = prepareCompilerConfig(config)
   const compiler = mod.WasmCompiler.fromConfig(fs, prepared, buildFromConfigOptions(callbacks)) as RuntimeWasmCompiler
-  registerCallbacks(compiler, callbacks, hooks, compiler.tokenDictionary?.())
+  registerCallbacks(compiler, prepared, callbacks, hooks, compiler.tokenDictionary?.())
 
   // Expose host fs/path namespaces so the return shape matches native.
   Object.defineProperty(compiler, 'fs', { value: fs, enumerable: false })

@@ -194,25 +194,25 @@ fn config_utility_transform_failures_are_reported_and_retried_but_success_is_cac
     };
 
     let first = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
         .collect::<Vec<_>>();
     let second = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
         .collect::<Vec<_>>();
     let recovered = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
         .collect::<Vec<_>>();
     let cached = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
@@ -263,13 +263,13 @@ fn static_recipe_utility_transform_failures_are_reported_and_retried() {
     };
 
     let first = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
         .collect::<Vec<_>>();
     let second = project
-        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform)
+        .stylesheet_snapshots_with_utility_transform(&user_config, &mut transform, &[])
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.code.clone())
@@ -318,6 +318,122 @@ fn invalid_color_opacity_modifier_emits_warning_with_span() {
     );
 
     assert_snapshot!(summary(&report.diagnostics), @"Warning invalid_color_opacity_modifier Color value `red/abc` has an invalid opacity modifier; expected a number (e.g. `40`) or an opacity token (e.g. `half`) [34..56]");
+}
+
+#[test]
+fn important_color_with_opacity_modifier_does_not_warn() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#fca5a5" } }
+                },
+                "opacity": {
+                    "half": { "value": "0.5" }
+                }
+            }
+        },
+        "utilities": {
+            "backgroundColor": {
+                "className": "bg",
+                "shorthand": "bg",
+                "values": "colors"
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ bg: 'red.300/60 !important' });
+            css({ bg: 'red.300/40!' });
+            css({ bg: 'red.300/70!important' });
+            css({ bg: 'red.300/20   !important' });
+            css({ bg: 'red.300/half !important' });
+        "},
+    );
+
+    assert!(
+        report.diagnostics.is_empty(),
+        "{}",
+        summary(&report.diagnostics)
+    );
+}
+
+#[test]
+fn important_color_with_opacity_modifier_in_jsx_and_conditions_does_not_warn() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#fca5a5" } }
+                },
+                "opacity": {
+                    "half": { "value": "0.5" }
+                }
+            }
+        },
+        "utilities": {
+            "backgroundColor": {
+                "className": "bg",
+                "shorthand": "bg",
+                "values": "colors"
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "style.tsx",
+        indoc! {r"
+            import { css } from '@panda/css';
+            import { styled } from '@panda/jsx';
+            css({ bg: { base: 'red.300/60 !important', _hover: 'red.300/40!' } });
+            const el = <styled.div bg='red.300/50!' />;
+        "},
+    );
+
+    assert!(
+        report.diagnostics.is_empty(),
+        "{}",
+        summary(&report.diagnostics)
+    );
+}
+
+#[test]
+fn unknown_opacity_modifier_with_important_still_warns() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "theme": {
+            "tokens": {
+                "colors": {
+                    "red": { "300": { "value": "#fca5a5" } }
+                },
+                "opacity": {
+                    "half": { "value": "0.5" }
+                }
+            }
+        },
+        "utilities": {
+            "backgroundColor": {
+                "className": "bg",
+                "shorthand": "bg",
+                "values": "colors"
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ bg: 'red.300/bogus !important' });
+        "},
+    );
+
+    assert_snapshot!(summary(&report.diagnostics), @"Warning invalid_color_opacity_modifier Color value `red.300/bogus !important` has an invalid opacity modifier; expected a number (e.g. `40`) or an opacity token (e.g. `half`) [34..73]");
 }
 
 #[test]
@@ -410,7 +526,7 @@ fn bare_condition_name_is_not_an_unknown_condition() {
             css({ print: { display: 'none' } });
         "},
     );
-    assert_snapshot!(summary(&report.diagnostics), @"");
+    assert_snapshot!(summary(&report.diagnostics), @"Warning nested_property `print` in `print.display` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `_print` instead. [34..69]");
 }
 
 #[test]
@@ -472,4 +588,218 @@ fn source_read_failure_keeps_last_good_styles_and_reports_the_miss() {
     assert!(project.get_file("never.ts").is_none());
     assert!(project.remove_file("never.ts"));
     assert!(project.file_diagnostics().is_empty());
+}
+
+#[test]
+fn property_nested_under_a_non_condition_key_warns() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let report = project.parse_file(
+        "style.tsx",
+        indoc! {r"
+            import { css, cva } from '@panda/css';
+            import { styled } from '@panda/jsx';
+            css({ has: { svg: { color: 'red' } } });
+            cva({ variants: { size: { sm: { icon: { _hover: { color: 'red' } } } } } });
+            const el = <styled.div css={{ svg: { color: 'red' } }} />;
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"
+    Warning nested_property `has` in `has.svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `'&:has(svg)'` instead. [76..115]
+    Warning nested_property `icon` in `icon._hover.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition or a selector like `'& icon'` instead. [117..192]
+    Warning nested_property `svg` in `svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition or a selector like `'& svg'` instead. [205..251]
+    ");
+}
+
+#[test]
+fn data_prop_on_a_panda_component_still_warns() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "utilities": { "columns": { "className": "columns" } }
+    }));
+    let report = project.parse_file(
+        "style.tsx",
+        indoc! {r"
+            import { styled } from '@panda/jsx';
+            const el = <styled.div columns={{ header: 'Name' }} />;
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"Warning nested_property `columns` in `columns.header` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition or a selector like `'& columns'` instead. [48..91]");
+}
+
+#[test]
+fn valid_nesting_does_not_warn() {
+    let mut project = create_project(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css, cva } from '@panda/css';
+            css({ '& svg': { color: 'red' }, '&:has(svg)': { color: 'red' } });
+            css({ color: { base: 'red', _hover: 'blue' } });
+            cva({ base: { _hover: { color: 'red' } }, variants: { size: { sm: { color: 'red' } } } });
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"");
+}
+
+#[test]
+fn config_recipe_with_a_property_nested_under_a_non_condition_key_warns() {
+    let project = create_project(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "recipes": {
+                "button": { "className": "button", "base": { "has": { "svg": { "color": "red" } } } }
+            },
+            "slotRecipes": {
+                "card": { "className": "card", "slots": ["root"], "base": { "root": { "svg": { "color": "red" } } } }
+            }
+        }
+    }));
+    assert_snapshot!(summary(project.diagnostics()), @"
+    Warning nested_property theme.recipes.button: `has` in `has.svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `'&:has(svg)'` instead.
+    Warning nested_property theme.slotRecipes.card: `svg` in `svg.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use a condition or a selector like `'& svg'` instead.
+    ");
+}
+
+#[test]
+fn nested_property_leaves_the_selector_argument_open_when_nothing_sits_between() {
+    let mut project = create_project(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            css({ has: { color: 'red' } });
+        "},
+    );
+    assert_snapshot!(summary(&report.diagnostics), @"Warning nested_property `has` in `has.color` is not a condition or selector, so it is emitted as a CSS property and the styles under it never apply. Use `'&:has(…)'` instead. [34..64]");
+}
+
+#[test]
+fn unknown_token_references_in_style_values_warn_once_per_call() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "theme": {
+            "tokens": {
+                "colors": { "red": { "500": { "value": "#f00" } } },
+                "sizes": { "4": { "value": "1rem" } }
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "style.tsx",
+        indoc! {r"
+            import { css, cva, sva } from '@panda/css';
+            import { Box } from '@panda/jsx';
+            css({
+              boxShadow: '0 0 0 1px {colors.shadow}',
+              border: '1px solid token(colors.border, red)',
+              width: 'calc(token(sizes.width) + 2px)',
+              _hover: { color: '{colors.hover/50}' },
+              caretColor: { base: '{colors.base}', _hover: '{colors.shadow}' },
+              accentColor: ['{colors.array}'],
+            });
+            cva({ base: { color: '{colors.cvaBase}' }, variants: { tone: { x: { color: '{colors.cvaVariant}' } } } });
+            sva({ slots: ['root'], base: { root: { color: '{colors.slot}' } } });
+            const J = () => <Box boxShadow='0 0 0 1px {colors.jsx}' />;
+        "},
+    );
+
+    assert_snapshot!(summary(&report.diagnostics), @"
+    Warning unknown_token_reference Token `colors.shadow` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `colors.border` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `sizes.width` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `colors.hover` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `colors.base` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `colors.array` was not found. Check the path or add the token to your theme. [78..365]
+    Warning unknown_token_reference Token `colors.cvaBase` was not found. Check the path or add the token to your theme. [367..472]
+    Warning unknown_token_reference Token `colors.cvaVariant` was not found. Check the path or add the token to your theme. [367..472]
+    Warning unknown_token_reference Token `colors.slot` was not found. Check the path or add the token to your theme. [474..542]
+    Warning unknown_token_reference Token `colors.jsx` was not found. Check the path or add the token to your theme. [560..602]
+    ");
+}
+
+#[test]
+fn resolved_token_references_and_non_references_do_not_warn() {
+    let mut project = create_project(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "red": { "500": { "value": "#f00" } } },
+                "sizes": { "4": { "value": "1rem" } }
+            }
+        }
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r#"
+            import { css } from '@panda/css';
+            css({
+              boxShadow: '0 0 0 1px {colors.red.500}',
+              outline: '1px solid token(colors.red.500, blue)',
+              width: 'calc(token(sizes.4) + 2px)',
+              color: '{colors.red.500/50}',
+              content: '"{ hello }"',
+              quotes: '"{" "}"',
+              backgroundImage: 'url(/img.v2.png)',
+              fill: 'var(--colors-red-500)',
+            });
+        "#},
+    );
+
+    assert!(
+        report.diagnostics.is_empty(),
+        "{}",
+        summary(&report.diagnostics)
+    );
+}
+
+#[test]
+fn missing_token_fallbacks_warn_once_per_owner_at_the_owner_location() {
+    let mut project = create_project(json!({
+        "theme": {"tokens": {"sizes": {"4": {"value": "1rem"}}}}
+    }));
+    let report = project.parse_file(
+        "style.ts",
+        indoc! {r"
+        import {css} from '@panda/css'
+        css({
+            width: 'token(sizes.ghost, 10px)',
+            _hover: {width: 'token(sizes.ghost, 20px)'},
+        })
+        css({width: 'token(sizes.ghost, 30px)'})
+    "},
+    );
+    let warnings: Vec<_> = report
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == diagnostic_codes::UNKNOWN_TOKEN_REFERENCE)
+        .collect();
+    assert_eq!(warnings.len(), 2);
+    assert!(
+        warnings
+            .iter()
+            .all(|warning| warning.message.contains("`sizes.ghost`"))
+    );
+    let lines: Vec<_> = warnings
+        .iter()
+        .map(|warning| {
+            warning
+                .location
+                .as_ref()
+                .expect("source location")
+                .start
+                .line
+        })
+        .collect();
+    assert_eq!(lines, [2, 6]);
 }

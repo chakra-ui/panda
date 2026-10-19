@@ -272,7 +272,7 @@ fn optimize_tokens_keeps_custom_property_direct_token_path_references() {
     }
     @layer utilities {
       .\--css-var_colors\.red\.300 {
-        --css-var: colors.red.300;
+        --css-var: var(--colors-red-300);
       }
       .color_var\(--css-var\) {
         color: var(--css-var);
@@ -312,7 +312,7 @@ fn optimize_tokens_keeps_custom_property_curly_token_modifier_references() {
     }
     @layer utilities {
       .\--css-var_\{colors\.red\.300\/40\} {
-        --css-var: {colors.red.300/40};
+        --css-var: color-mix(in oklab, var(--colors-red-300) 40%, transparent);
       }
       .color_var\(--css-var\) {
         color: var(--css-var);
@@ -1137,6 +1137,51 @@ fn css_var_root_override_applies_to_tokens_and_global_vars() {
     @layer tokens {
       :where(html) {
         --colors-red: #f00;
+      }
+    }
+    ");
+}
+
+#[test]
+fn recipe_token_pruning_uses_the_winning_composition_declarations() {
+    let config = config(serde_json::json!({
+        "optimize": { "removeUnusedTokens": true },
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "fontWeight": { "values": "fontWeights" } },
+        "theme": {
+            "tokens": {
+                "fontWeights": {
+                    "normal": { "value": "400" },
+                    "medium": { "value": "500" }
+                }
+            },
+            "textStyles": { "body": { "value": { "fontWeight": "normal" } } },
+            "recipes": {
+                "message": {
+                    "className": "message",
+                    "base": { "textStyle": "body", "fontWeight": "medium" }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { message } from '@panda/recipes'; message();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Tokens, StylesheetLayer::Recipes]);
+
+    assert_snapshot!(css, @r"
+    @layer tokens {
+      :where(:root, :host) {
+        --font-weights-medium: 500;
+      }
+    }
+    @layer recipes {
+      @layer base {
+        .message {
+          font-weight: var(--font-weights-medium);
+        }
       }
     }
     ");

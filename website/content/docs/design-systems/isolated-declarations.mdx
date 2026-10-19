@@ -102,6 +102,9 @@ export const button: RecipeRuntimeFn<{ visual?: 'solid' | 'outline' }> = cva({
 })
 ```
 
+In a package built on a design system, import these types from the design system's `types` export instead, for example
+`@acme/ds/types`. `panda lib` adds that export for you.
+
 `RecipeRuntimeFn` accepts a second type parameter for the variant map, but it defaults to `object`. Leave it off unless
 some other code reads `button.variantMap` and needs the exact key arrays.
 

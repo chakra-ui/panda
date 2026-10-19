@@ -1,5 +1,5 @@
 import { createNodeDriver, type Diagnostic, type Driver } from '@pandacss/compiler'
-import { formatDiagnostic, withDiagnosticFile, type SourceChange } from '@pandacss/compiler-shared'
+import { createDiagnosticLog, type SourceChange } from '@pandacss/compiler-shared'
 import {
   createPandaSourcePluginHooks,
   createSourceTransformer,
@@ -23,21 +23,6 @@ export interface PandaPluginOptions {
   transform?: boolean
 }
 
-function warnDiagnostics(
-  warn: (message: string) => void,
-  diagnostics: readonly Diagnostic[] | undefined,
-  context: string,
-  file?: string,
-) {
-  if (!diagnostics?.length) return
-  const shown = diagnostics
-    .slice(0, 3)
-    .map((diagnostic) => formatDiagnostic(withDiagnosticFile(diagnostic, file)))
-    .join('\n')
-  const hidden = diagnostics.length > 3 ? `\n...and ${diagnostics.length - 3} more` : ''
-  warn(`panda: ${diagnostics.length} diagnostic(s) ${context}\n${shown}${hidden}`)
-}
-
 /**
  * Vite plugin for Panda CSS.
  * The CSS file declaring Panda layers is treated as the generated CSS root.
@@ -51,6 +36,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
   let designSystemDiagnosticsRef: readonly Diagnostic[] | undefined
   let sourceTransformer: SourceTransformer | undefined
   let sourceTransformerCompiler: Driver['compiler'] | undefined
+  const warnDiagnostics = createDiagnosticLog()
   const watchedFiles = new Set<string>()
   const rootIds = new Set<string>()
 
@@ -154,43 +140,51 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
       return sourceHooks?.load(id) ?? null
     },
 
-    transform(code, id) {
-      const transformer = transformEnabled ? resolveSourceTransformer() : undefined
-      if (transformer) {
-        const sourceResult = runSourceTransform(
-          this,
-          {
-            getCompiler: () => driver?.compiler,
-            getTransformer: () => transformer,
-          },
-          code,
-          id,
-        )
-        if (sourceResult) {
-          warnDiagnostics((message) => this.warn(message), sourceResult.diagnostics, 'while transforming source', id)
-          return { code: sourceResult.code, map: sourceResult.map }
+    transform: {
+      order: 'pre',
+      handler(code, id) {
+        const transformer = transformEnabled ? resolveSourceTransformer() : undefined
+        if (transformer) {
+          const sourceResult = runSourceTransform(
+            this,
+            {
+              getCompiler: () => driver?.compiler,
+              getTransformer: () => transformer,
+            },
+            code,
+            id,
+          )
+          if (sourceResult) {
+            warnDiagnostics((message) => this.warn(message), sourceResult.diagnostics, 'while transforming source', {
+              file: id.split('?')[0] ?? id,
+              onlyNew: true,
+            })
+            return { code: sourceResult.code, map: sourceResult.map }
+          }
         }
-      }
 
-      if (!driver || extname(id.split('?')[0] ?? id) !== '.css') return null
-      if (!driver.compiler.hasLayerDeclaration(code)) return null
+        if (!driver || extname(id.split('?')[0] ?? id) !== '.css') return null
+        if (!driver.compiler.hasLayerDeclaration(code)) return null
 
-      rootIds.add(id)
-      addPandaWatchFiles((file) => this.addWatchFile(file), id)
-      warnDesignSystemDiagnostics((message) => {
-        if (resolvedConfig) {
-          resolvedConfig.logger.warn(message)
-        } else {
-          this.warn(message)
-        }
-      })
+        rootIds.add(id)
+        addPandaWatchFiles((file) => this.addWatchFile(file), id)
+        warnDesignSystemDiagnostics((message) => {
+          if (resolvedConfig) {
+            resolvedConfig.logger.warn(message)
+          } else {
+            this.warn(message)
+          }
+        })
 
-      const polyfill = driver.config.polyfill === true
-      const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })
-      warnDiagnostics((message) => this.warn(message), output.diagnostics, 'while compiling the stylesheet')
+        const polyfill = driver.config.polyfill === true
+        const output = driver.cssgen({ emitLayerDeclaration: false, polyfill })
+        warnDiagnostics((message) => this.warn(message), output.diagnostics, 'while compiling the stylesheet', {
+          onlyNew: true,
+        })
 
-      const entry = polyfill ? driver.compiler.stripLayerOrderStatements(code) : code
-      return { code: `${entry}\n${output.css}`, map: null }
+        const entry = polyfill ? driver.compiler.stripLayerOrderStatements(code) : code
+        return { code: `${entry}\n${output.css}`, map: null }
+      },
     },
 
     async hotUpdate(ctx: HotUpdateOptions) {
@@ -234,7 +228,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
           (message) => ctx.server.config.logger.warn(message),
           driver.compiler.getFile(ctx.file)?.diagnostics,
           `while parsing ${ctx.file}`,
-          ctx.file,
+          { file: ctx.file },
         )
         return withInvalidatedRoots(this.environment, ctx.modules)
       }

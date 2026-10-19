@@ -796,3 +796,29 @@ fn an_ampersand_in_the_middle_of_a_parent_condition_inside_a_theme() {
     }
     ");
 }
+
+#[test]
+fn analyze_credits_static_theme_tokens_and_what_their_theme_values_use() {
+    let config = themed_config(serde_json::json!({}));
+    let mut project = crate::common::project_with_source(&config, "");
+    let snapshots = project.stylesheet_snapshots(&config);
+    let requirements = pandacss_stylesheet::collect_style_requirements(
+        &crate::common::project_input(&config, &snapshots),
+    )
+    .requirements;
+    let tokens = requirements
+        .iter()
+        .filter(|requirement| requirement.kind == "token")
+        .map(|requirement| format!("{} <- {}", requirement.name, requirement.reason))
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    assert_snapshot!(tokens, @"
+    colors.accent <- staticCss.themes
+    colors.blue <- via colors.accent
+    colors.white <- via colors.accent
+    colors.purple <- via colors.accent
+    colors.black <- via colors.accent
+    colors.green <- via colors.accent
+    ");
+}

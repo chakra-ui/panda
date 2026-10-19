@@ -152,6 +152,14 @@ impl Token {
         self
     }
 
+    /// The path without its category: `red.500` for `colors.red.500`.
+    #[must_use]
+    pub fn name(&self) -> Option<&str> {
+        self.path
+            .strip_prefix(self.category.as_str())
+            .and_then(|rest| rest.strip_prefix('.'))
+    }
+
     #[must_use]
     pub fn extension(&self, key: &str) -> Option<&str> {
         self.extensions

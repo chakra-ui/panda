@@ -4,11 +4,12 @@ import {
   mergePatternDefaultValues,
   PATTERN_HELPERS,
 } from '@pandacss/compiler-shared'
-import type { ProjectCallbacks, ProjectHooks, TokenLookup } from '@pandacss/compiler-shared'
+import type { ProjectCallbacks, ProjectHooks, SerializedConfig, TokenLookup } from '@pandacss/compiler-shared'
 import type { WasmCompiler } from './types'
 
 export function registerCallbacks(
   project: WasmCompiler,
+  config: SerializedConfig,
   callbacks: ProjectCallbacks,
   hooks: ProjectHooks | undefined,
   tokenDictionary: TokenLookup | undefined,
@@ -32,10 +33,10 @@ export function registerCallbacks(
   if (patternTransforms && Object.keys(patternTransforms).length > 0 && !project.registerPatternTransform) {
     throw new Error('WASM project does not support pattern.transform callbacks')
   }
-  const config = project.config()
   const patternDefaultValues = callbacks['pattern.defaultValues']
-  const patternDefaultValueRefs =
-    config && patternDefaultValues ? getPatternDefaultValueRefsByTransformId(config) : new Map<string, string>()
+  const patternDefaultValueRefs = patternDefaultValues
+    ? getPatternDefaultValueRefsByTransformId(config)
+    : new Map<string, string>()
   if (project.registerPatternTransform && patternTransforms && Object.keys(patternTransforms).length > 0) {
     for (const [id, callback] of Object.entries(patternTransforms)) {
       const defaultValueId = patternDefaultValueRefs.get(id)

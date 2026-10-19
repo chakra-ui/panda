@@ -46,7 +46,7 @@
     "watch": "pnpm codegen && panda lib --watch"
   },
   "peerDependencies": {
-    "@pandacss/dev": "^2.0.0"
+    "@pandacss/dev": "^2.1.1"
   },
   "dependencies": {
     "@sandbox/foundations": "workspace:*"

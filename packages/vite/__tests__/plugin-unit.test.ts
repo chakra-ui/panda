@@ -6,11 +6,13 @@ const CSS_ROOT = '@layer reset, base, tokens, recipes, utilities;'
 
 interface TestPlugin {
   configResolved(config: unknown): Promise<void>
-  transform: (
-    this: { addWatchFile: (file: string) => void; warn: (message: string) => void },
-    code: string,
-    id: string,
-  ) => unknown
+  transform: {
+    handler: (
+      this: { addWatchFile: (file: string) => void; warn: (message: string) => void },
+      code: string,
+      id: string,
+    ) => unknown
+  }
   hotUpdate: (this: { environment: unknown }, ctx: unknown) => Promise<unknown>
 }
 
@@ -26,7 +28,7 @@ describe('@pandacss/vite design-system HMR', () => {
     const addWatchFile = vi.fn()
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
-    plugin.transform.call({ addWatchFile, warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
+    plugin.transform.handler.call({ addWatchFile, warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
 
     expect(driver.scan).not.toHaveBeenCalled()
     expect(addWatchFile.mock.calls.map(([file]) => file)).toMatchInlineSnapshot(`
@@ -54,7 +56,7 @@ describe('@pandacss/vite design-system HMR', () => {
     const plugin = pandacss() as unknown as TestPlugin
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
-    plugin.transform.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
+    plugin.transform.handler.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
 
     expect(driver.scan).toHaveBeenCalledOnce()
   })
@@ -66,7 +68,7 @@ describe('@pandacss/vite design-system HMR', () => {
     const ctx = { addWatchFile, warn: vi.fn() }
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
-    plugin.transform.call(ctx, CSS_ROOT, '/project/src/index.css')
+    plugin.transform.handler.call(ctx, CSS_ROOT, '/project/src/index.css')
     expect(addWatchFile).toHaveBeenCalledWith('/project/src/app.tsx')
 
     addWatchFile.mockClear()
@@ -76,7 +78,7 @@ describe('@pandacss/vite design-system HMR', () => {
       dirs: ['/project/src'],
       config: ['panda.config.ts'],
     })
-    plugin.transform.call(ctx, CSS_ROOT, '/project/src/index.css')
+    plugin.transform.handler.call(ctx, CSS_ROOT, '/project/src/index.css')
 
     expect(addWatchFile.mock.calls.map(([file]) => file)).toEqual(['/project/src/new.tsx'])
   })
@@ -89,7 +91,7 @@ describe('@pandacss/vite design-system HMR', () => {
     const invalidateModule = vi.fn()
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
-    plugin.transform.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
+    plugin.transform.handler.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
 
     const environment = {
       moduleGraph: {
@@ -269,7 +271,7 @@ describe('@pandacss/vite design-system HMR', () => {
     driver.isSourceFile.mockImplementation((file: string): boolean => file === '/project/src/app.tsx')
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
-    plugin.transform.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
+    plugin.transform.handler.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
 
     const modules = await plugin.hotUpdate.call(
       { environment: ssr },
@@ -294,7 +296,7 @@ describe('@pandacss/vite design-system HMR', () => {
     driver.isSourceFile.mockImplementation((file: string): boolean => file === '/project/src/app.tsx')
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
-    plugin.transform.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
+    plugin.transform.handler.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
 
     const modules = await plugin.hotUpdate.call(
       { environment: ssr },
@@ -320,7 +322,7 @@ describe('@pandacss/vite design-system HMR', () => {
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
     expect(createSourceTransformer).not.toHaveBeenCalled()
 
-    const result = plugin.transform.call(
+    const result = plugin.transform.handler.call(
       { addWatchFile: vi.fn(), warn },
       "import { css } from '@panda/css'\nexport const cls = css({ color: 'red' })",
       '/project/src/app.tsx',
@@ -353,7 +355,7 @@ describe('@pandacss/vite design-system HMR', () => {
 
     await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
     expect(createSourceTransformer).toHaveBeenCalledWith(driver.compiler)
-    const result = plugin.transform.call(
+    const result = plugin.transform.handler.call(
       { addWatchFile: vi.fn(), warn },
       "import { css } from '@panda/css'\nexport const cls = css({ color: 'red' })",
       '/project/src/app.tsx',
@@ -369,6 +371,29 @@ describe('@pandacss/vite design-system HMR', () => {
         "map": "source-map",
       }
     `)
+  })
+
+  it('warns when source transformation leaves a broken static call unchanged', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss({ transform: true }) as unknown as TestPlugin
+    const warn = vi.fn()
+    const code = "import { css } from '@panda/css'\nexport const cls = css({ has: { svg: { color: 'red' } } })"
+
+    driver.sourceTransformer.transformSource.mockReturnValueOnce({
+      code,
+      map: null,
+      changed: false,
+      bailed: true,
+      diagnostics: [{ code: 'nested_property', severity: 'warning', message: 'Use a selector instead.' }],
+      dependencies: [],
+      helper: { needsCx: false, needsAttachRecipe: false, needsMemoRecipe: false },
+    })
+
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    const result = plugin.transform.handler.call({ addWatchFile: vi.fn(), warn }, code, '/project/src/app.tsx')
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('warning nested_property'))
+    expect(result).toEqual({ code, map: null })
   })
 
   it('rebuilds the cached source transformer after a compiler reload', async () => {
@@ -391,7 +416,7 @@ describe('@pandacss/vite design-system HMR', () => {
     createSourceTransformer.mockReturnValueOnce(nextTransformer)
     driver.compiler = nextCompiler
 
-    const result = plugin.transform.call(
+    const result = plugin.transform.handler.call(
       { addWatchFile: vi.fn(), warn: vi.fn() },
       "import { css } from '@panda/css'\nexport const cls = css({ color: 'red' })",
       '/project/src/app.tsx',

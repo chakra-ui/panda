@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Rust
         run: rustup toolchain install 1.93.0 --profile minimal --component clippy --component rustfmt
@@ -77,7 +77,7 @@ jobs:
           - windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Rust
         run: rustup toolchain install 1.93.0 --profile minimal --component clippy --component rustfmt

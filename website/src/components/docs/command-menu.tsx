@@ -4,7 +4,7 @@ import { dialogSlotRecipe } from '@/components/ui/dialog'
 import { SEARCH_HOTKEY } from '@/components/docs/search'
 import {
   convertToSearchItems,
-  filterSearchItems,
+  createSearchFilter,
   type SearchIndex
 } from '@/lib/search-index'
 import { useMatchMedia } from '@/lib/use-match-media'
@@ -23,7 +23,7 @@ import {
   useMemo,
   useState
 } from 'react'
-import { Box, Center, HStack, Stack } from 'styled-system/jsx'
+import { Box, Center, Stack } from 'styled-system/jsx'
 
 const SUGGESTIONS = ['recipes', 'tokens', 'conditions', 'staticCss']
 
@@ -105,15 +105,17 @@ export const CommandMenu = (props: Props) => {
 
   const searchIndex = useSearchIndex(open)
   const prefetchSearchIndex = usePrefetchSearchIndex()
-  const items = useMemo(
-    () => (searchIndex ? convertToSearchItems(searchIndex) : []),
+  const search = useMemo(
+    () =>
+      searchIndex
+        ? createSearchFilter(convertToSearchItems(searchIndex))
+        : null,
     [searchIndex]
   )
 
   const matches = useMemo(
-    () =>
-      searchIndex ? filterSearchItems(items, searchIndex, inputValueState) : {},
-    [items, searchIndex, inputValueState]
+    () => (search ? search(inputValueState) : {}),
+    [search, inputValueState]
   )
 
   const filteredItems = useMemo(
@@ -204,27 +206,6 @@ export const CommandMenu = (props: Props) => {
                   })}
                 />
               </Combobox.Control>
-
-              <HStack
-                justify="flex-end"
-                gap="4"
-                px="4"
-                py="2.5"
-                borderBottomWidth="1px"
-                borderColor="border"
-                flexWrap="wrap"
-              >
-                <HStack
-                  gap="3"
-                  textStyle="eyebrow"
-                  color="fg.subtle"
-                  display={{ base: 'none', md: 'flex' }}
-                >
-                  <span>&uarr;&darr; move</span>
-                  <span>&crarr; open</span>
-                  <span>esc close</span>
-                </HStack>
-              </HStack>
 
               <Combobox.Content
                 className={cx(

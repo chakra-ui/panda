@@ -12,44 +12,116 @@ const className = css({
   colorPalette: 'blue',
   bg: 'colorPalette.100',
   _hover: {
-    bg: 'colorPalette.200'
+    bg: 'colorPalette.500'
   }
 })
 ```
 
-This will translate to the `blue.100` background color and `blue.200` background color on hover.
+This will translate to the `blue.100` background color and `blue.500` background color on hover.
 
 Virtual colors are useful when creating easily customizable components.
 
-## Using opacity modifier
+## How Palettes Work
 
-See [using a custom property](/docs/styling/color-opacity-modifier#using-a-custom-property) for the
-`{colors.colorPalette…/opacity}` syntax on `--*` variables:
+Every color group in your theme is a palette. The examples on this page use this theme:
 
-```js
-import { css } from '../styled-system/css'
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
 
-const className = css({
-  colorPalette: 'blue',
-  '--tint': '{colors.colorPalette.500/50}',
-  bg: 'var(--tint)',
-  color: 'colorPalette.700'
+export default defineConfig({
+  theme: {
+    tokens: {
+      colors: {
+        blue: {
+          100: { value: '#dbeafe' },
+          500: { value: '#3b82f6' },
+          700: { value: '#1d4ed8' }
+        },
+        gray: {
+          100: { value: '#f3f4f6' },
+          500: { value: '#6b7280' },
+          700: { value: '#374151' }
+        }
+      }
+    },
+    semanticTokens: {
+      colors: {
+        blue: {
+          solid: {
+            bg: { value: '{colors.blue.500}' },
+            fg: { value: 'white' }
+          }
+        },
+        gray: {
+          solid: {
+            bg: { value: '{colors.gray.500}' },
+            fg: { value: 'white' }
+          }
+        }
+      }
+    }
+  }
 })
 ```
 
-## Using with recipes
+Base and semantic tokens under the same name form one palette, so this theme produces four palettes. Each maps every
+token below it to a virtual `colorPalette.*` token:
+
+- `blue` and `gray`: `colorPalette.100`, `colorPalette.500`, `colorPalette.700`, `colorPalette.solid.bg`,
+  `colorPalette.solid.fg`
+- `blue.solid` and `gray.solid`: `colorPalette.bg`, `colorPalette.fg`
+
+Use a top-level palette to reach all of its tokens:
+
+```tsx
+css({ colorPalette: 'blue', bg: 'colorPalette.solid.bg', color: 'colorPalette.solid.fg' })
+```
+
+Or use a nested group as the palette, so the virtual tokens start from that group:
+
+```tsx
+css({ colorPalette: 'blue.solid', bg: 'colorPalette.bg', color: 'colorPalette.fg' })
+```
+
+### Default Values
+
+A `DEFAULT` token makes the bare `colorPalette` token resolve to it:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    semanticTokens: {
+      colors: {
+        brand: {
+          DEFAULT: { value: '{colors.blue.500}' },
+          hover: { value: '{colors.blue.700}' }
+        }
+      }
+    }
+  }
+})
+```
+
+```tsx
+css({ colorPalette: 'brand', bg: 'colorPalette', _hover: { bg: 'colorPalette.hover' } })
+```
+
+## Usage
+
+### With Recipes
 
 You can also use virtual colors with recipes.
 
 ```js
-import { css, cva, cx } from '../styled-system/css'
+import { cva } from '../styled-system/css'
 
 const button = cva({
   base: {
     padding: 4
     // you can also specify a default colorPalette in the `base` recipe key
     // colorPalette: 'blue',
-    // ^^^^^^^^^^^^^^^^^^^^
   },
   variants: {
     variant: {
@@ -60,7 +132,7 @@ const button = cva({
 })
 ```
 
-## Using with different color modes
+### With Color Modes
 
 You can also use virtual colors with different conditions, such as color modes.
 
@@ -72,8 +144,8 @@ const someButton = cva({
   variants: {
     variant: {
       primary: {
-        bg: { base: 'colorPalette.500', _dark: 'colorPalette.200' },
-        color: { base: 'white', _dark: 'gray.900' }
+        bg: { base: 'colorPalette.500', _dark: 'colorPalette.100' },
+        color: { base: 'white', _dark: 'gray.700' }
       }
     }
   },
@@ -85,113 +157,59 @@ export const App = () => {
     <>
       <div className="light">
         <button className={cx(css({ colorPalette: 'blue' }), someButton())}>Click me</button>
-        <button className={cx(css({ colorPalette: 'green' }), someButton())}>Click me</button>
-        <button className={cx(css({ colorPalette: 'red' }), someButton())}>Click me</button>
+        <button className={cx(css({ colorPalette: 'gray' }), someButton())}>Click me</button>
       </div>
       <div className="dark">
         <button className={cx(css({ colorPalette: 'blue' }), someButton())}>Click me</button>
-        <button className={cx(css({ colorPalette: 'green' }), someButton())}>Click me</button>
-        <button className={cx(css({ colorPalette: 'red' }), someButton())}>Click me</button>
+        <button className={cx(css({ colorPalette: 'gray' }), someButton())}>Click me</button>
       </div>
     </>
   )
 }
 ```
 
-## Semantic Virtual Colors
+### With Opacity Modifiers
 
-Semantic virtual colors gives you an ability to create a virtual color organized by category, variant and state.
-Hierarchically organized virtual colors are useful when creating easily customizable components.
+Add `/opacity` to a virtual color in any color property:
 
 ```js
-const theme = {
-  extend: {
-    semanticTokens: {
-      colors: {
-        button: {
-          dark: {
-            value: 'navy'
-          },
-          light: {
-            DEFAULT: {
-              value: 'skyblue'
-            },
-            accent: {
-              DEFAULT: {
-                value: 'cyan'
-              },
-              secondary: {
-                value: 'blue'
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-You can now use the root `button` color palette and its values directly:
-
-```tsx
 import { css } from '../styled-system/css'
 
-export const App = () => {
-  return (
-    <button
-      className={css({
-        colorPalette: 'button',
-        color: 'colorPalette.light',
-        backgroundColor: 'colorPalette.dark',
-        _hover: {
-          color: 'colorPalette.light.accent',
-          background: 'colorPalette.light.accent.secondary'
-        }
-      })}
-    >
-      Root color palette
-    </button>
-  )
-}
+const className = css({
+  colorPalette: 'blue',
+  bg: 'colorPalette.500/50',
+  color: 'colorPalette.700'
+})
 ```
 
-Or you can use any deeply nested property (e.g. `button.light.accent`) as a root color palette:
+To use it inside another value, like a shadow or a gradient, store it in a CSS variable with the
+[token reference syntax](/docs/styling/color-opacity-modifier#using-a-custom-property):
 
-```tsx
+```js
 import { css } from '../styled-system/css'
 
-export const App = () => {
-  return (
-    <button
-      className={css({
-        colorPalette: 'button.light.accent',
-        color: 'colorPalette.secondary'
-      })}
-    >
-      Nested color palette leaf
-    </button>
-  )
-}
+const className = css({
+  colorPalette: 'blue',
+  '--ring': '{colors.colorPalette.500/50}',
+  boxShadow: '0 0 0 2px var(--ring)'
+})
 ```
 
-> **Note**: Nested tokens require glob patterns in the `colorPalette` config (e.g., `'button.*'`) to generate proper CSS
-> variables.
+## Pregenerating Palettes
 
-## Pregenerated Virtual Colors
-
-Use the `staticCss` option in the config to pre-generate values for the `colorPalette` property.
-
-This is useful when you want to use a color palette that can be changed at runtime (e.g. in Storybook knobs).
+Use the `staticCss` option in the config to pre-generate values for the `colorPalette` property. This is useful when you
+want to use a color palette that can be changed at runtime (e.g. in Storybook knobs).
 
 > Learn more about [static css generation](/docs/styling/static).
 
-```tsx
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
 export default defineConfig({
   staticCss: {
     css: [
       {
-        properties: { colorPalette: ['red', 'blue'] }
+        properties: { colorPalette: ['blue', 'gray'] }
       }
     ]
   }
@@ -201,21 +219,23 @@ export default defineConfig({
 Then in your code, you can design components that use the `colorPalette` property:
 
 ```tsx
+import { useState } from 'react'
 import { css } from '../styled-system/css'
 
 function ButtonShowcase() {
-  const [colorPalette, setColorPalette] = useState('red')
+  const [colorPalette, setColorPalette] = useState('blue')
+
   return (
     <div>
       <select value={colorPalette} onChange={e => setColorPalette(e.currentTarget.value)}>
-        <option value="red">Red</option>
         <option value="blue">Blue</option>
+        <option value="gray">Gray</option>
       </select>
 
       <button
         className={css({
-          bg: 'colorPalette.50',
-          color: 'colorPalette.500',
+          bg: 'colorPalette.100',
+          color: 'colorPalette.700',
           colorPalette
         })}
       >
@@ -228,14 +248,104 @@ function ButtonShowcase() {
 
 ## Configuration
 
-By default, color palette generation is enabled and includes all colors defined in your theme.
+Use the `colorPalette` property in your theme to choose which palettes are generated.
 
-You can control which colors are used to generate color palettes by configuring the `colorPalette` property in your
-theme.
+### Include Palettes
 
-### Disable Color Palette
+Use `include` to list the palettes you want:
 
-To completely disable color palette generation, set `enabled` to `false`:
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    colorPalette: {
+      include: ['gray']
+    }
+  }
+})
+```
+
+Only `gray` is a palette now, and it keeps all of its tokens, including the nested ones:
+
+```tsx
+css({ colorPalette: 'gray', bg: 'colorPalette.solid.bg', color: 'colorPalette.100' })
+```
+
+Nested groups are palettes too. Include them with a glob pattern:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    colorPalette: {
+      include: ['gray.*'] // gray and gray.solid
+    }
+  }
+})
+```
+
+### Exclude Palettes
+
+Use `exclude` to drop palettes. Excluding a palette also drops its nested groups:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    colorPalette: {
+      exclude: ['blue'] // gray and gray.solid remain
+    }
+  }
+})
+```
+
+`exclude` wins over `include`:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    colorPalette: {
+      include: ['gray', 'blue'],
+      exclude: ['blue'] // only gray
+    }
+  }
+})
+```
+
+### Keep Only Top-Level Palettes
+
+Every nested group is a palette, so a theme with many nested groups per color (`gray.solid`, `gray.subtle`,
+`gray.surface`, …) can produce hundreds of palette names. With `strictTokens`, that union can make TypeScript report
+"Expression produces a union type that is too complex to represent" on components with spread props.
+
+Exclude every nested name to keep only the top-level palettes:
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+export default defineConfig({
+  theme: {
+    colorPalette: {
+      exclude: ['*.*'] // blue and gray, but not blue.solid or gray.solid
+    }
+  }
+})
+```
+
+Every virtual token still works through the top-level palette:
+
+```tsx
+css({ colorPalette: 'gray', bg: 'colorPalette.solid.bg', color: 'colorPalette.100' })
+```
+
+### Disable Palettes
+
+To turn off color palette generation entirely, set `enabled` to `false`:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -247,100 +357,4 @@ export default defineConfig({
     }
   }
 })
-```
-
-### Include Specific Colors
-
-To generate color palettes for only specific colors, use the `include` option:
-
-```ts filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  theme: {
-    colorPalette: {
-      include: ['gray', 'blue', 'red']
-    }
-  }
-})
-```
-
-This will only generate color palettes for `gray`, `blue`, and `red` colors, even if you have other colors defined in
-your theme.
-
-**Glob patterns** are supported for nested tokens:
-
-```ts filename="panda.config.ts"
-colorPalette: {
-  include: ['gray.*', 'blue.*'] // Includes all nested tokens
-}
-```
-
-### Exclude Specific Colors
-
-To exclude certain colors from color palette generation, use the `exclude` option:
-
-```ts filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  theme: {
-    colorPalette: {
-      exclude: ['yellow', 'orange']
-    }
-  }
-})
-```
-
-This will generate color palettes for all colors except `yellow` and `orange`.
-
-### Combination of Options
-
-You can combine the `enabled`, `include`, and `exclude` options as needed:
-
-```ts filename="panda.config.ts"
-import { defineConfig } from '@pandacss/dev'
-
-export default defineConfig({
-  theme: {
-    colorPalette: {
-      enabled: true,
-      include: ['gray', 'blue', 'red', 'green'],
-      exclude: ['red'] // This will override the include for 'red'
-    }
-  }
-})
-```
-
-In this example, color palettes will be generated for `gray`, `blue`, and `green`, but not for `red` (since it's
-excluded).
-
-## Nested Semantic Tokens
-
-If nested tokens show as raw paths (e.g., `colors.base.accent`) instead of CSS variables, use glob patterns:
-
-```ts filename="panda.config.ts"
-semanticTokens: {
-  colors: {
-    button: {
-      primary: {
-        DEFAULT: { value: '{colors.blue.500}' },
-        hover: { value: '{colors.blue.600}' }
-      }
-    }
-  }
-},
-colorPalette: {
-  include: ['button.*']  // Include all nested paths
-}
-```
-
-Usage:
-
-```tsx
-className={css({
-  colorPalette: 'button.primary',
-  bg: 'colorPalette',
-  _hover: { bg: 'colorPalette.hover' }
-})}
 ```

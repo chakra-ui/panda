@@ -3,15 +3,17 @@
 //! `{...spread}` attributes in source order.
 
 use crate::{
-    Diagnostic, ExpressionFacts, ExtractorConfig, ImportSpecifierKind, JsxKind, Literal,
-    MatchCategory, MatchedImport, Matchers, Span, StyleObject, StyleTree, VisitorContext,
+    Diagnostic, ExpressionFacts, ExtractorConfig, ImportSpecifierKind, JsxKind, JsxTagAction,
+    Literal, MatchCategory, MatchedImport, Matchers, Span, StyleObject, StyleTree, VisitorContext,
     jsx_react_runtime,
     matcher::member_display,
     source_refs::{
         StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_jsx_attribute_source_refs,
     },
     span_from_oxc,
-    style_tree::{ProjectionRetention, jsx_attributes_to_style_tree, project_style},
+    style_tree::{
+        ProjectionRetention, jsx_attributes_to_style_tree, project_style, retain_style_tree_props,
+    },
     styled_bindings::{StyledBinding, StyledBindings, collect_styled_bindings},
 };
 use oxc_allocator::Allocator;
@@ -22,7 +24,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use rustc_hash::FxHashSet;
 use serde::Serialize;
 use smallvec::SmallVec;
 use std::borrow::Cow;
@@ -145,12 +147,10 @@ pub fn extract_jsx(
 
     let allocator = Allocator::default();
     let raw_source = source;
-    let format = crate::adapter::SfcFormat::from_path(path);
-    let source = crate::adapt_source(source, format);
-    let source = source.as_ref();
-    let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
-    let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(format))
+    let adapted = crate::adapter::AdaptedSource::new(source, path);
+    let source = adapted.code.as_ref();
+    let parser_return = Parser::new(&allocator, source, adapted.source_type(path))
+        .with_options(adapted.parse_options())
         .parse();
 
     let cross_file = config
@@ -172,10 +172,18 @@ pub fn extract_jsx(
         pattern_raw_transform: None,
         recipe_raw_resolve: None,
     });
-    let ctx = VisitorContext::new(matched, config).with_resolver(&resolver);
+    let imports = if config.jsx.tag_rules_use_from() {
+        crate::imports::collect_imports(&parser_return.program)
+    } else {
+        Vec::new()
+    };
+    let ctx = VisitorContext::new(matched, config)
+        .with_resolver(&resolver)
+        .with_imports(&imports);
     let mut jsx = collect_jsx(&parser_return.program, &ctx, true);
     jsx.extend(crate::template_styles::collect_template_styles(
         raw_source,
+        &adapted,
         path,
         matched,
         config,
@@ -185,7 +193,7 @@ pub fn extract_jsx(
     ));
     ExtractedJsxResult {
         jsx,
-        diagnostics: crate::collect_parser_diagnostics(&parser_return.errors, source),
+        diagnostics: adapted.parse_diagnostics(&parser_return.errors),
     }
 }
 
@@ -309,10 +317,58 @@ pub(crate) struct ResolvedTag<'a> {
     /// Set when the tag is a local `styled()` chain the fold may collapse to
     /// its host element.
     pub(crate) styled: Option<&'a StyledBinding>,
+    /// Style props a `jsxMatchTag` rule limits this tag to.
+    pub(crate) props: Option<&'a FxHashSet<String>>,
 }
 
 impl Extractor<'_, '_, '_> {
     fn resolve_tag<'a>(&'a self, name: &'a JSXElementName<'_>) -> Option<ResolvedTag<'a>> {
+        let detected = self.detect_tag(name);
+        if self.ctx.config.jsx.tag_rules.is_empty() {
+            return detected;
+        }
+        let (tag, root) = match name {
+            JSXElementName::IdentifierReference(id) => {
+                (Cow::Borrowed(id.name.as_str()), id.name.as_str())
+            }
+            JSXElementName::MemberExpression(member) => {
+                let (root, _, path) = flatten_member(member)?;
+                (Cow::Owned(member_display(root, &path)), root)
+            }
+            _ => return detected,
+        };
+        self.apply_tag_rule(detected, tag, root)
+    }
+
+    /// `jsxMatchTag` rules sit above Panda's own detection: the last matching
+    /// rule ignores the tag or includes it, whatever Panda decided.
+    fn apply_tag_rule<'a>(
+        &'a self,
+        detected: Option<ResolvedTag<'a>>,
+        tag: Cow<'a, str>,
+        root: &'a str,
+    ) -> Option<ResolvedTag<'a>> {
+        let from = self.ctx.import_sources.get(root).copied();
+        match self.ctx.config.jsx.tag_rule(&tag, from) {
+            None => detected,
+            Some(JsxTagAction::Ignore) => None,
+            Some(JsxTagAction::Include(props)) => {
+                let mut resolved = detected.unwrap_or(ResolvedTag {
+                    category: MatchCategory::Jsx,
+                    name: tag,
+                    alias: Cow::Borrowed(root),
+                    emit_empty: false,
+                    panda_owned: false,
+                    styled: None,
+                    props: None,
+                });
+                resolved.props = props.as_deref();
+                Some(resolved)
+            }
+        }
+    }
+
+    fn detect_tag<'a>(&'a self, name: &'a JSXElementName<'_>) -> Option<ResolvedTag<'a>> {
         // Lowercase HTML idents, `JSXNamespacedName` (`<svg:circle>`),
         // and `ThisExpression` (`<this.X>`) are never Panda usages.
         match name {
@@ -341,6 +397,7 @@ impl Extractor<'_, '_, '_> {
                         emit_empty: true,
                         panda_owned: true,
                         styled: None,
+                        props: None,
                     });
                 }
 
@@ -361,6 +418,7 @@ impl Extractor<'_, '_, '_> {
                         emit_empty: true,
                         panda_owned: true,
                         styled: Some(binding),
+                        props: None,
                     });
                 }
 
@@ -381,6 +439,7 @@ impl Extractor<'_, '_, '_> {
                     emit_empty: is_configured_component,
                     panda_owned: false,
                     styled: None,
+                    props: None,
                 })
             }
             JSXElementName::MemberExpression(member) => {
@@ -397,11 +456,6 @@ impl Extractor<'_, '_, '_> {
         root_ident: &'a IdentifierReference<'_>,
         path: &[&str],
     ) -> Option<ResolvedTag<'a>> {
-        if let Some(resolver) = self.ctx.resolver
-            && !resolver.is_import_binding(root_ident)
-        {
-            return None;
-        }
         let Some(matched) = self.ctx.aliases.get(root) else {
             let display = member_display(root, path);
             let is_configured_component = self.ctx.config.jsx.is_component_tag(&display);
@@ -419,10 +473,16 @@ impl Extractor<'_, '_, '_> {
                     emit_empty: is_configured_component,
                     panda_owned: false,
                     styled: None,
+                    props: None,
                 });
             }
             return None;
         };
+        if let Some(resolver) = self.ctx.resolver
+            && !resolver.is_import_binding(root_ident)
+        {
+            return None;
+        }
         match matched.kind {
             ImportSpecifierKind::Named => {
                 // A named member tag is a Panda usage only for a factory or a
@@ -444,6 +504,7 @@ impl Extractor<'_, '_, '_> {
                         emit_empty: true,
                         panda_owned: true,
                         styled: None,
+                        props: None,
                     });
                 }
 
@@ -458,6 +519,7 @@ impl Extractor<'_, '_, '_> {
                     emit_empty: true,
                     panda_owned: true,
                     styled: None,
+                    props: None,
                 })
             }
             ImportSpecifierKind::Namespace => {
@@ -477,6 +539,7 @@ impl Extractor<'_, '_, '_> {
                     emit_empty: true,
                     panda_owned: true,
                     styled: None,
+                    props: None,
                 })
             }
             ImportSpecifierKind::Default => None,
@@ -487,6 +550,22 @@ impl Extractor<'_, '_, '_> {
         &'a self,
         expr: &'a Expression<'_>,
     ) -> Option<ResolvedTag<'a>> {
+        let detected = self.detect_runtime_tag(expr);
+        if self.ctx.config.jsx.tag_rules.is_empty() {
+            return detected;
+        }
+        let (tag, root) = match expr {
+            Expression::Identifier(id) => (Cow::Borrowed(id.name.as_str()), id.name.as_str()),
+            Expression::StaticMemberExpression(member) => {
+                let (root, _, path) = flatten_expr_member(member)?;
+                (Cow::Owned(member_display(root, &path)), root)
+            }
+            _ => return detected,
+        };
+        self.apply_tag_rule(detected, tag, root)
+    }
+
+    fn detect_runtime_tag<'a>(&'a self, expr: &'a Expression<'_>) -> Option<ResolvedTag<'a>> {
         match expr {
             Expression::Identifier(id) => {
                 if let Some(matched) = self.ctx.aliases.get(id.name.as_str()) {
@@ -513,6 +592,7 @@ impl Extractor<'_, '_, '_> {
                         emit_empty: true,
                         panda_owned: true,
                         styled: None,
+                        props: None,
                     });
                 }
 
@@ -534,6 +614,7 @@ impl Extractor<'_, '_, '_> {
                     emit_empty: is_configured_component,
                     panda_owned: false,
                     styled: None,
+                    props: None,
                 })
             }
             Expression::StringLiteral(s) => {
@@ -548,6 +629,7 @@ impl Extractor<'_, '_, '_> {
                     emit_empty: true,
                     panda_owned: false,
                     styled: None,
+                    props: None,
                 })
             }
             Expression::StaticMemberExpression(member) => {
@@ -577,6 +659,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             let alias = resolved.alias.into_owned();
             let emit_empty = resolved.emit_empty;
             let panda_owned = resolved.panda_owned;
+            let rule_props = resolved.props;
 
             let styled_base = resolved.styled.map(StyledBinding::composed_base);
             let styled_intrinsic = resolved.styled.map(|binding| binding.intrinsic.clone());
@@ -586,10 +669,13 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 &self.ctx.config.jsx,
                 &tag_name,
             );
-            let style = match (styled_base, style) {
+            let mut style = match (styled_base, style) {
                 (Some(base), style) => prepend_styled_base(base, style),
                 (None, style) => style,
             };
+            if let (Some(props), Some(tree)) = (rule_props, style.as_mut()) {
+                retain_style_tree_props(tree, &|key| props.contains(key));
+            }
             let retain = self.retain_transform_facts;
             let retention = if retain {
                 ProjectionRetention::Retain
@@ -597,7 +683,10 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 ProjectionRetention::Discard
             };
             let (data, style) = project_style(style, retention);
-            let data = data.unwrap_or_else(|| Literal::Object(vec![]));
+            let mut data = data.unwrap_or_else(|| Literal::Object(vec![]));
+            if !panda_owned && !emit_empty {
+                self.ctx.config.jsx.retain_style_values(&mut data);
+            }
             let data_empty = matches!(&data, Literal::Object(entries) if entries.is_empty());
             if data_empty && !emit_empty {
                 walk::walk_jsx_element(self, jsx_el);

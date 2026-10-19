@@ -143,6 +143,14 @@ impl System {
         recipe_name: &str,
         selected: &Literal,
     ) {
+        if let Literal::Conditional(branches) = selected {
+            for branch in branches {
+                self.process_recipe_usage(encoded, recipe_name, branch);
+            }
+
+            return;
+        }
+
         encoded.process_usage(
             &self.recipes,
             recipe_name,
@@ -207,6 +215,12 @@ impl System {
     #[must_use]
     pub fn utility(&self) -> Option<&Utility> {
         self.utility.as_ref()
+    }
+
+    /// The utility used to resolve values, kept even when the config declares no utilities.
+    #[must_use]
+    pub fn value_utility(&self) -> Option<&Utility> {
+        self.utility.as_ref().or(self.empty_utility.as_ref())
     }
 
     #[must_use]

@@ -92,9 +92,9 @@ export function Button(props: ComponentPropsWithoutRef<'button'>) {
 export { Button } from './button/button'
 ```
 
-Inside the package, `Button` imports from the local `styled-system`. Once published, consumers of this walkthrough just
-import `Button` itself from `@acme/ds`. An app that also wants your `css()` or `cva()` directly, to build its own
-components on the same tokens, can import those from `@acme/ds/css` too, covered in
+Inside the package, `Button` imports from the local `styled-system`. Once published, consumers of this walkthrough get
+`Button` itself from `@acme/ds`. An app that also wants your `css()` or `cva()` directly, to build its own components on
+the same tokens, can import those from `@acme/ds/css` too, covered in
 [Consume with Panda](/docs/design-systems/consume-with-panda).
 
 ## Set up package.json
@@ -144,7 +144,7 @@ the app's theme, and replays `buildinfo.json`. The app gets your styles without 
 
 `panda lib` also syncs `package.json` exports for you. Your `"."` entry stays untouched. Everything else is generated
 fresh each run. Only categories your package actually uses show up, so this walkthrough has no patterns and `./patterns`
-is absent:
+is absent. `./jsx` and `./jsx/*` appear only when `jsxFramework` is set:
 
 ```json filename="packages/ds/package.json"
 {
@@ -183,10 +183,15 @@ is absent:
     "./tokens": {
       "types": "./styled-system/tokens/index.d.ts",
       "default": "./styled-system/tokens/index.js"
+    },
+    "./types": {
+      "types": "./styled-system/types/index.d.ts"
     }
   }
 }
 ```
+
+`./types` has no runtime code. It's there so packages built on your design system can annotate the recipes they export.
 
 Don't hand-edit the generated subpaths. The next `panda lib` run overwrites them anyway.
 

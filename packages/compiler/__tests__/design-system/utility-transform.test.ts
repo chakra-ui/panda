@@ -22,7 +22,7 @@ const PRESET = `export default {
 
 /** Carrier atom for `boxSize: '4'`, the shape `panda lib` writes. */
 const BUILD_INFO = {
-  schemaVersion: 6,
+  schemaVersion: 7,
   panda: '^2.0.0',
   configFingerprint: 'cfg1-test',
   strings: ['boxSize', '4'],
@@ -91,7 +91,7 @@ describe('design system utility transform', () => {
   },
 }`,
       buildInfo: {
-        schemaVersion: 6,
+        schemaVersion: 7,
         panda: '^2.0.0',
         configFingerprint: 'cfg1-test',
         strings: ['debug'],

@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 import { slotButton } from '../styled-system/recipes/'
 
 // slotButton is defined in ../preset.ts: slots root + icon, visual solid | outline | unstyled (default unstyled)
@@ -64,5 +64,12 @@ describe('config slot recipe', () => {
         "visual": "unstyled",
       }
     `)
+  })
+
+  test('every slot class is typed as a string', () => {
+    const result = slotButton()
+
+    expectTypeOf(result.root).toEqualTypeOf<string>()
+    expect(result.root).toBeTypeOf('string')
   })
 })

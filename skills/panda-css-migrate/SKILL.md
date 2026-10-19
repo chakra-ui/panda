@@ -1,11 +1,11 @@
 ---
 name: panda-css-migrate
 description: >-
-  Upgrade a Panda CSS project from v1 to v2, or debug a project that worked on 1.x and breaks on the 2.x beta. Use when
-  installing @pandacss/dev@beta, when a build fails after upgrading, when config hooks, createStyleContext, template
-  literal styles, panda ship, panda mcp, or --cpu-prof stop working, or when CSS output changes after the upgrade. Do
-  not use for writing styles (use panda-css), designing tokens and recipes (use panda-css-theming), or migrating from
-  Tailwind, Emotion, or styled-components.
+  Upgrade a Panda CSS project from v1 to v2, or debug a project that worked on 1.x and breaks on 2.x. Use when upgrading
+  @pandacss/dev to v2, when a build fails after upgrading, when config hooks, createStyleContext, template literal
+  styles, panda ship, panda mcp, or --cpu-prof stop working, or when CSS output changes after the upgrade. Do not use
+  for writing styles (use panda-css), designing tokens and recipes (use panda-css-theming), or migrating from Tailwind,
+  Emotion, or styled-components.
 ---
 
 # Panda CSS v1 → v2
@@ -13,8 +13,8 @@ description: >-
 v2 keeps the authoring API and rewrites the compiler in Rust. Your `panda.config.ts` carries over. What breaks is mostly
 config plumbing, a few CLI flags, and packages that no longer exist.
 
-The full guide is [`V2_MIGRATION.md`](https://github.com/chakra-ui/panda/blob/main/V2_MIGRATION.md). This skill is the
-ordered path through it. Read the guide for anything below that needs detail.
+The full guide is [Upgrading to v2](https://panda-css.com/docs/get-started/upgrading-to-v2). This skill is the ordered
+path through it. Read the guide for anything below that needs detail.
 
 ## Before you start
 
@@ -30,11 +30,11 @@ If either fails, fix that first. Nothing else matters until the config loads.
 
 Work in order. Run `panda build` after each group; failures compound if you batch them.
 
-**1. Move every `@pandacss/*` package to `@beta` together.**
+**1. Move every `@pandacss/*` package to v2 together.**
 
 ```bash
-pnpm add -D @pandacss/dev@beta
-pnpm add -D @pandacss/postcss@beta   # or @pandacss/vite@beta, @pandacss/webpack@beta, @pandacss/rollup@beta
+pnpm add -D @pandacss/dev@latest
+pnpm add -D @pandacss/postcss@latest   # or @pandacss/vite, @pandacss/webpack, @pandacss/rollup
 ```
 
 Never mix a v1 package with a v2 one. All packages share one version.
@@ -168,10 +168,6 @@ If the upgrade surfaces one of these, it isn't a regression you introduced:
 - If the build misbehaves under `@pandacss/postcss`, try the Vite plugin or plain `panda build` to isolate it before
   filing a bug.
 
-For what's still being finished in the beta, read the "Still being finalized" section of
-[`V2_MIGRATION.md`](https://github.com/chakra-ui/panda/blob/main/V2_MIGRATION.md) rather than trusting a status claim
-copied into a skill.
-
 ## It's working if
 
 - `panda build` completes with no diagnostics on a config you didn't have to rewrite.
@@ -182,6 +178,6 @@ copied into a skill.
 
 ## See also
 
-- The full guide: [`V2_MIGRATION.md`](https://github.com/chakra-ui/panda/blob/main/V2_MIGRATION.md).
+- The full guide: [Upgrading to v2](https://panda-css.com/docs/get-started/upgrading-to-v2).
 - Writing styles once the upgrade is done: call the Skill tool with "panda-css".
 - Tokens and recipe architecture: call the Skill tool with "panda-css-theming".

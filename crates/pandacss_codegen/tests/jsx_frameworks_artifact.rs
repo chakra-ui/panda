@@ -85,21 +85,21 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
             "from 'preact';",
             "forwardRef(function WithContext",
             "forwardRef(function WithProvider",
-            "type ElementType = JSX.ElementType",
+            "ElementType, JsxFactoryOptions, UnstyledProps, WithForwardedProps } from '../types/jsx'",
         ),
         (
             "solid",
             "from 'solid-js/web';",
             "createComponent(StyledComponent, props)",
             "createMemo(() =>",
-            "MaybeAccessor",
+            "import type { Component, ComponentProps, ContextProviderComponent } from 'solid-js'",
         ),
         (
             "vue",
             "from 'vue';",
             "const PropsContext = Symbol('PropsContext')",
             "provide(SlotStylesContext, resolvedSlots)",
-            "VModelProps",
+            "UnstyledProps, VModelProps, WithForwardedProps } from '../types/jsx'",
         ),
     ] {
         let artifacts = ArtifactGraph.generate_all(
@@ -199,7 +199,9 @@ fn solid_slot_recipe_context_supports_function_default_props() {
     assert!(
         code.contains("typeof defaults === 'function' ? createMemo(defaults) : () => defaults")
     );
-    assert!(code.contains("const propsWithClass = defaults ? { ...defaults, ...propsWithoutChildren } : propsWithoutChildren"));
+    assert!(code.contains(
+        "const propsWithClass = defaults ? mergeProps(defaults, propsWithoutChildren) : propsWithoutChildren"
+    ));
     assert!(code.contains("const slots = resolvedSlots()"));
     assert!(code.contains("const resolved = resolveProps(propsWithClass, slots[slot])"));
     assert!(code.contains("return local.children ?? defaultProps()?.children"));

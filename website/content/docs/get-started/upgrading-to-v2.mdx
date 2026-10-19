@@ -1,12 +1,7 @@
 ---
 title: Upgrading to v2
-description: What changed in Panda v2, how to install the beta, and the breaking changes to fix as you migrate.
+description: What changed in Panda v2, how to install it, and the breaking changes to fix as you migrate.
 ---
-
-<Callout type="warning">
-  v2 is in beta (`2.0.0-beta`). The authoring API is stable, but the package layout and a few CLI surfaces are still
-  moving. Install it with the `@beta` tag; a plain install stays on v1.
-</Callout>
 
 v2 keeps the framework you already know and rewrites the compiler underneath it. You write the same `css()`, recipes,
 patterns, tokens, conditions, and JSX props. What changed is how Panda turns them into CSS.
@@ -25,44 +20,36 @@ Output stays in parity with v1 except for the deliberate changes below.
 
 See [Why Panda → How it works](/docs/get-started/why-panda#how-it-works) for the model it keeps.
 
-## Try the beta
-
-### Release channels
-
-v1 and v2 ship side by side on npm. Install without a tag and you stay on stable v1.
-
-| Channel  | Version           | Install              |
-| -------- | ----------------- | -------------------- |
-| `latest` | v1 (`1.x`)        | `@pandacss/dev`      |
-| `beta`   | v2 (`2.0.0-beta`) | `@pandacss/dev@beta` |
-
-All `@pandacss/*` packages move on one version. Don't mix a v1 package with a v2 one.
-
-### Install
+## Install
 
 Most projects only need `@pandacss/dev`:
 
 ```bash
-pnpm add -D @pandacss/dev@beta
+pnpm add -D @pandacss/dev@latest
 ```
 
-Add integrations on the same tag when you need them: `@pandacss/postcss@beta`, `@pandacss/vite@beta`,
-`@pandacss/webpack@beta`, `@pandacss/rollup@beta`, or `@pandacss/bun@beta`.
+Upgrade any integration you use to the same version: `@pandacss/postcss`, `@pandacss/vite`, `@pandacss/webpack`,
+`@pandacss/rollup`, or `@pandacss/bun`. All `@pandacss/*` packages move on one version. Don't mix a v1 package with a v2
+one.
 
 v2 is ESM only and needs Node 22 or newer. Set `"type": "module"` (or use `.mjs`) so your `panda.config.ts` loads as
 ESM.
 
-Want reproducible installs? Pin an exact version like `@pandacss/dev@2.0.0-beta.16`. `@beta` always resolves to the
-newest pre-release.
-
 ### Build
 
-Your v1 `panda.config.ts` carries over. Regenerate:
+Your v1 `panda.config.ts` carries over. The first time, regenerate from a clean output folder:
 
 ```bash
-panda build    # codegen + cssgen in one pass
-panda dev      # rebuild on change
+panda build --clean      # codegen + cssgen in one pass
+panda codegen --clean    # or, if you only run codegen
+panda dev                # rebuild on change
 ```
+
+You only need `--clean` once. v2 doesn't delete files it no longer generates, and by default v1 wrote `.mjs` where v2
+writes `.js`. Vite resolves `index.mjs` before `index.js`, so a leftover v1 file can win over the new one.
+
+Missing `Flex` or other pattern components after that? Add `@pandacss/preset-base`. See
+[Presets aren't added for you](#presets-arent-added-for-you).
 
 The `panda` and `pandacss` binaries are the same as v1.
 
@@ -179,6 +166,12 @@ npx -y @pandacss/mcp
 
 See [MCP server](/docs/get-started/mcp-server).
 
+### Compound variants are their own class
+
+v1 merged compound-variant styles into the `css` prop, so a `textStyle` in `css` replaced the compound's text style. v2
+emits each compound variant as its own class, so properties you don't override still apply. If you relied on the
+replacement, override those properties in `css` directly.
+
 ### Packages folded into the compiler
 
 These v1 internals are gone; their work lives in `@pandacss/compiler` now. Drop direct imports of `@pandacss/core`,
@@ -190,9 +183,102 @@ the compiler reads `.vue`, `.svelte`, and `.astro` files directly, so remove the
 
 ### Config options removed
 
-Ten options are gone: `studio` (and its sub-options), `eject`, `emitTokensOnly`, `gitignore`, `clean`, `watch`, `poll`,
+Nine options are gone: `studio` (and its sub-options), `eject`, `emitTokensOnly`, `gitignore`, `clean`, `watch`, `poll`,
 `lightningcss`, and `browserslist`. `forceConsistentTypeExtension` is replaced by `forceImportExtension` — different
 semantics, not a rename. `outExtension` gains a `'ts'` value. See [Config](/docs/reference/config).
+
+### Presets aren't added for you
+
+v1 added `@pandacss/preset-base` unless you set `eject: true`, even when you listed your own presets. v2 adds nothing. A
+config that only lists its own presets loses the base utilities and conditions. It still builds, but with
+`unknown_condition` warnings. List the presets you need:
+
+```ts
+// ❌ v1: preset-base was added for you
+export default defineConfig({ presets: ['@acme/preset'] })
+
+// ✅ v2
+export default defineConfig({ presets: ['@pandacss/preset-base', '@acme/preset'] })
+```
+
+### theme.containerSizes is now theme.containers
+
+The old key is ignored without a warning, so every `@name/size` container condition stops working.
+
+```ts
+// ❌ v1
+theme: {
+  extend: {
+    containerSizes: {
+      sm: '384px'
+    }
+  }
+}
+
+// ✅ v2
+theme: {
+  extend: {
+    containers: {
+      sm: '384px'
+    }
+  }
+}
+```
+
+### Type imports moved
+
+`@pandacss/dev` only exports the `Config`, `Preset`, and `UserConfig` types. Import other config types from
+`@pandacss/types`:
+
+```ts
+// ❌ v1
+import type { RecipeConfig } from '@pandacss/dev'
+
+// ✅ v2
+import type { RecipeConfig } from '@pandacss/types'
+```
+
+Generated types changed too:
+
+- `Token` and `SizeToken` moved from `styled-system/tokens` to `styled-system/types`.
+- `types/prop-type` (`UtilityValues`) and `CssProperties` are gone. Use `SystemStyleObject` or `SystemProperties` from
+  `styled-system/types`.
+- The generated `RecipeConfig` and `SlotRecipeConfig` are now `RecipeDefinition` and `SlotRecipeDefinition`, without the
+  config fields (`className`, `jsx`, `staticCss`, `description`). Use `@pandacss/types` for the config shape.
+
+### Template literal syntax is removed
+
+The `syntax` option and the `template-literal` authoring mode are gone. Drop `syntax` from your config and the
+`--syntax` flag from `panda init`, and write styles as objects:
+
+```ts
+// ❌ v1
+css`
+  color: red;
+`
+
+// ✅ v2
+css({ color: 'red' })
+```
+
+### Array conditions are deprecated
+
+Array conditions still work: Panda converts them to the object form and warns. Move to an object that nests each rule
+and ends in `'@slot'`:
+
+```ts
+// ❌ v1
+conditions: {
+  supportHover: ['@media (hover: hover)', '&:hover']
+}
+
+// ✅ v2
+conditions: {
+  supportHover: {
+    '@media (hover: hover)': { '&:hover': '@slot' }
+  }
+}
+```
 
 ### Qwik JSX is removed
 
@@ -202,20 +288,82 @@ semantics, not a rename. `outExtension` gains a `'ts'` value. See [Config](/docs
 ```tsx
 // ❌ v1
 import { Box } from 'styled-system/jsx'
-<Box color="red.500" />
+;<Box color="red.500" />
 
 // ✅ v2
 import { css } from 'styled-system/css'
-<div class={css({ color: 'red.500' })} />
+;<div class={css({ color: 'red.500' })} />
 ```
 
 ### CLI commands and flags
 
-`panda inspect`, `panda validate`, and `panda info` are removed. Use `panda doctor` (add `--json` for scripts).
+Check your package scripts as well as your config. The CLI no longer accepts several v1 commands and flags. Use
+`panda doctor` to check your setup, and add `--json` for scripts.
 
-Logging flags are consolidated: `--log-level silent|error|warn|info|debug` replaces `--silent`, `--quiet`, and
-`--verbose`. `--profile` replaces `--cpu-prof` and covers time in the Rust engine, not just the Node side. Shared flags
-are kebab-case (`--max-warnings`, `--watch-debounce`, …). See [CLI](/docs/reference/cli).
+#### Replace removed commands
+
+| v1 command                                           | v2 replacement                                                                                                       |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `panda spec`                                         | `panda codegen --spec`, or `--spec=./design-system.json` for a custom path                                           |
+| `panda ship`                                         | `panda lib` to publish a design system; `panda buildinfo --outfile ./dist/panda.buildinfo.json` for build info alone |
+| `panda emit-pkg`                                     | Removed. `panda lib` manages design-system package exports; review other runtime package exports yourself            |
+| `panda studio` (including `--build` and `--preview`) | Use the hosted [Studio](https://studio.panda-css.com/)                                                               |
+
+`--spec` also works on `panda build` and `panda lib`. It writes one design-system document instead of the v1 spec files.
+See [Codegen](/docs/reference/cli#codegen).
+
+#### Replace logging and profiling flags
+
+`--silent` is now `--log-level silent`. Update scripts such as:
+
+```json
+// v1
+{ "scripts": { "prepare": "panda codegen --silent" } }
+
+// v2
+{ "scripts": { "prepare": "panda codegen --log-level silent" } }
+```
+
+Use `--log-level error` if you want errors to remain visible. `silent` also suppresses normal diagnostic output. The
+available levels are `silent`, `error`, `warn`, `info`, and `debug`.
+
+`--profile` replaces `--cpu-prof` and includes time in the Rust engine. It writes `trace.json` and `timings.json`, not a
+Node `.cpuprofile`; update any scripts that read the old profile. Shared flags use kebab-case (`--max-warnings`,
+`--watch-debounce`, …). See [CLI](/docs/reference/cli).
+
+#### Replace positional globs with --include
+
+`panda`, `panda cssgen`, `panda analyze`, and `panda debug` no longer take a positional glob. Use `--include`, and
+repeat it for more globs:
+
+```bash
+# v1
+panda cssgen "src/**/*.tsx"
+
+# v2
+panda cssgen --include "src/**/*.tsx" --include "components/**/*.tsx"
+```
+
+A positional glob on bare `panda` is treated as a command name. On `cssgen`, `analyze`, and `debug`, it does not
+restrict the scan; Panda uses your configured `include` list instead.
+
+`panda cssgen tokens` (and `preflight`, `static`, `global`, or `keyframes`) no longer selects an individual artifact.
+Generate the full stylesheet, or use `panda cssgen --splitting` and import the layers you need.
+
+#### Update output and build flags
+
+| v1 flag                                           | v2 replacement                                                                                  |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `panda -o dist`                                   | `panda --outdir dist`. On the full build, `-o` now means `--outfile`, a CSS file path           |
+| `panda --preflight`, `--hash`, `--exclude` / `-e` | Set `preflight`, `hash`, and `exclude` in `panda.config.ts`                                     |
+| `panda --minify` / `-m`                           | Set `minify` in config, or run `panda cssgen --minify`                                          |
+| `panda cssgen -m`                                 | Use the full `--minify` flag                                                                    |
+| `panda cssgen --clean`                            | Use `panda build --clean` or `panda codegen --clean` to clean generated output                  |
+| `--poll` / `-p`                                   | Remove it; watching has no polling flag. `--watch-debounce` changes rebuild timing, not polling |
+| `--lightningcss`, `--emitTokensOnly`              | Remove them; these flags have no v2 equivalent                                                  |
+
+`panda cssgen --minimal` now includes `staticCss` rules, because they live in the `recipes` and `utilities` layers.
+Per-package sheets built with `--minimal` repeat the static rules the host sheet already ships.
 
 ### Theme keys without `extend` replace less than they did
 
@@ -292,6 +440,25 @@ css({ scrollbarWidth: 'thin' })
 If you passed a single color to `scrollbarColor`, move it to `scrollbarThumb`. `scrollbarColor` is now a raw two-value
 string (`'red transparent'`).
 
+### sizes.prose is narrower
+
+`@pandacss/preset-panda` changes `sizes.prose` from `65ch` to `60ch`. Styles such as `maxWidth: 'prose'` will use the
+narrower value. To keep the v1 width, override the token:
+
+```ts
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        sizes: {
+          prose: { value: '65ch' }
+        }
+      }
+    }
+  }
+})
+```
+
 ### No universal variable reset
 
 v1 seeded `--translate-x`, `--blur`, `--gradient-from-position` and friends through a `*, ::before, ::after, ::backdrop`
@@ -301,6 +468,35 @@ carry their own defaults and only ship when you use the utility. A page that use
 This needs `@property` (Chrome 85+, Safari 16.4+, Firefox 128+); older browsers drop the affected utilities rather than
 mis-render them. Set `optimize.propertyFallback: true` to also seed the defaults as plain declarations for the variables
 your project uses.
+
+## Panda follows imports
+
+In v1, a style value imported from another file produced no CSS. Panda saw `brand`, couldn't follow the import, and
+skipped the property. v2 follows the import, reads the value, and generates the rule.
+
+```ts filename="theme.ts"
+export const brand = 'red.500'
+export const gutter = '4'
+```
+
+```tsx filename="button.tsx"
+import { css } from '../styled-system/css'
+import { brand, gutter } from './theme'
+
+// ❌ v1: no CSS for either property
+// ✅ v2: background: var(--colors-red-500) and padding-inline: var(--spacing-4)
+css({ bg: brand, px: gutter })
+```
+
+Panda follows named imports, re-exports, `export *` barrels, and tsconfig path aliases. Imported helper functions and
+`css.raw()` styles work too, as long as the result is static.
+
+If you added `staticCss` entries or copied a value inline only because v1 couldn't see the import, you can remove them.
+
+Two forms still aren't followed: default imports (`import theme from './theme'`) and namespace imports
+(`import * as theme from './theme'`). Use a named import instead. Values that only exist at runtime, like props or
+state, never produce CSS from any file. See
+[Imports from other files](/docs/styling/dynamic-styling#imports-from-other-files).
 
 ## What's new you'll want
 
@@ -315,8 +511,7 @@ Beyond parity, v2 adds features worth turning on:
   [View transitions](/docs/styling/view-transition).
 - **`positionTry()`.** Define CSS anchor-positioning fallbacks with a typed, tree-shaken factory. Replaces the removed
   `globalPositionTry` config. See [Position try](/docs/styling/position-try).
-- **Cross-file composition and source transforms.** Compose `css.raw()` styles across files, and let bundler plugins
-  rewrite static `css()` calls with `transform: true`.
+- **Source transforms.** Let bundler plugins rewrite static `css()` calls with `transform: true`.
 - **Smaller `.d.ts`.** `cva` / `sva` return types key on a clean props type, which unblocks `isolatedDeclarations`. See
   [Isolated declarations](/docs/design-systems/isolated-declarations).
 - **Design systems.** `panda lib` publishes a component library; apps consume it with the `designSystem` config field.

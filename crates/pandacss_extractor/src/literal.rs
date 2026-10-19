@@ -446,10 +446,8 @@ fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_, '_>>) 
             }
         };
     }
-    // Left didn't fold, so it's a dynamic condition, not a style alternative —
-    // the right operand is the only extractable style (node's
-    // `maybeResolveConditionalExpression` does the same).
-    expression_to_literal(&l.right, resolver)
+    // A style fallback is extractable, but it cannot prove a runtime value constant.
+    None
 }
 
 fn eval_conditional(

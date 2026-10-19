@@ -375,6 +375,32 @@ fn transform_resolves_base_less_semantic_tokens_to_vars() {
 }
 
 #[test]
+fn skips_color_palette_utility_without_color_tokens() {
+    let config: UserConfig = serde_json::from_value(json!({
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "4": { "value": "1rem" }
+                }
+            }
+        }
+    }))
+    .expect("config");
+    let tokens = TokenDictionary::from_config(&config)
+        .expect("token dictionary")
+        .expect("non-empty dictionary");
+    let utility = Utility::from_config_with_options(
+        &config.utilities,
+        UtilityOptions {
+            tokens: Some(Arc::new(tokens)),
+            ..UtilityOptions::default()
+        },
+    );
+
+    assert!(!utility.is_known("colorPalette"));
+}
+
+#[test]
 fn disabled_color_palette_generation_does_not_register_utility() {
     let config: UserConfig = serde_json::from_value(json!({
         "theme": {

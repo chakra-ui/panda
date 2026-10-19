@@ -613,6 +613,26 @@ advanced_snapshot!(
 // --- || / ?? spreads bail when left is dynamic ---
 
 #[test]
+fn imported_nullish_fallback_keeps_the_runtime_style_call() {
+    let source = indoc! {r"
+        import { color } from './styles';
+        import { css } from '@panda/css';
+        export const cls = css({ color });
+    "};
+    let output = transform_cross_file(
+        "main.tsx",
+        source,
+        &[("styles.ts", "export const color = runtime.color ?? 'gray';")],
+    );
+
+    assert_snapshot!(output.code, @r"
+    import { color } from './styles';
+    import { css } from '@panda/css';
+    export const cls = css({ color });
+    ");
+}
+
+#[test]
 fn logical_or_spread_with_dynamic_left_bails() {
     let source = indoc! {r#"
         import { css } from '@panda/css';

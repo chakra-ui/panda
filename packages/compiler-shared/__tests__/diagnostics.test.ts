@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Diagnostic, ParseFileReport } from '../src'
 import {
   collectParseDiagnostics,
+  createDiagnosticLog,
   dedupeDiagnostics,
   diagnosticKey,
   diagnosticKeyWithoutFile,
@@ -96,5 +97,28 @@ describe('diagnostics', () => {
     expect(diagnosticsPass([warning], { maxWarnings: 0 })).toBe(false)
     expect(diagnosticsPass([warning], { maxWarnings: '1' })).toBe(true)
     expect(diagnosticsPass([warning], { maxWarnings: '' })).toBe(true)
+  })
+
+  it('skips warnings a file edit already printed when the stylesheet build lists them again', () => {
+    const messages: string[] = []
+    const warn = (message: string) => messages.push(message)
+    const warnDiagnostics = createDiagnosticLog()
+    const fileWarning = { ...warning, file: 'src/app.tsx' }
+    const stylesheetWarning = { ...warning, code: 'static_css_invalid' }
+
+    warnDiagnostics(warn, [fileWarning], 'while parsing src/app.tsx')
+    warnDiagnostics(warn, [fileWarning, stylesheetWarning], 'while compiling the stylesheet', { onlyNew: true })
+    warnDiagnostics(warn, [fileWarning], 'while parsing src/app.tsx')
+
+    expect(messages).toMatchInlineSnapshot(`
+      [
+        "panda: 1 diagnostic(s) while parsing src/app.tsx
+      warning extract_warning src/app.tsx Unsupported value",
+        "panda: 1 diagnostic(s) while compiling the stylesheet
+      warning static_css_invalid Unsupported value",
+        "panda: 1 diagnostic(s) while parsing src/app.tsx
+      warning extract_warning src/app.tsx Unsupported value",
+      ]
+    `)
   })
 })

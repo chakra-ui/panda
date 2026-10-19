@@ -27,27 +27,28 @@ The commands are:
 
 Most commands accept these flags.
 
-| Flag                   | Description                                                                      |
-| ---------------------- | -------------------------------------------------------------------------------- |
-| `--cwd <dir>`          | Current working directory                                                        |
-| `--config, -c <path>`  | Path to the Panda config file                                                    |
-| `--json`               | Print the result as JSON (for scripts)                                           |
-| `--format <format>`    | Diagnostic output format: `human`, `pretty`, `json`, or `github`                 |
-| `--log-level <level>`  | Output level: `silent`, `error`, `warn`, `info`, or `debug`                      |
-| `--max-warnings <n>`   | Fail when warning diagnostics exceed this count                                  |
-| `--logfile <file>`     | Write human output to a log file                                                 |
-| `--no-color`           | Disable ANSI colors (or set the `NO_COLOR` environment variable)                 |
-| `--profile`            | Capture compiler timings — see [Profiling a slow build](#profiling-a-slow-build) |
-| `--trace`              | Enable compiler tracing                                                          |
-| `--trace-output <fmt>` | Trace output: `fmt` or `chrome-json`                                             |
-| `--trace-file <file>`  | Trace output file for `chrome-json` tracing                                      |
+| Flag                   | Description                                                                      | Related                              |
+| ---------------------- | -------------------------------------------------------------------------------- | ------------------------------------ |
+| `--cwd <dir>`          | Current working directory                                                        |                                      |
+| `--config, -c <path>`  | Path to the Panda config file                                                    |                                      |
+| `--json`               | Print the result as JSON (for scripts)                                           |                                      |
+| `--format <format>`    | Diagnostic output format: `human`, `pretty`, `json`, or `github`                 |                                      |
+| `--log-level <level>`  | Output level: `silent`, `error`, `warn`, `info`, or `debug`                      |                                      |
+| `--max-warnings <n>`   | Fail when warning diagnostics exceed this count                                  |                                      |
+| `--logfile <file>`     | Write human output to a log file                                                 |                                      |
+| `--no-color`           | Disable ANSI colors (or set the `NO_COLOR` environment variable)                 |                                      |
+| `--profile`            | Capture compiler timings — see [Profiling a slow build](#profiling-a-slow-build) |                                      |
+| `--spec <path>`        | Also write the design system spec, optionally to a path                          | [JSON Spec](/docs/theming/json-spec) |
+| `--trace`              | Enable compiler tracing                                                          |                                      |
+| `--trace-output <fmt>` | Trace output: `fmt` or `chrome-json`                                             |                                      |
+| `--trace-file <file>`  | Trace output file for `chrome-json` tracing                                      |                                      |
 
 Commands that scan your source files (`dev`, `build`, `check`, `cssgen`, `analyze`, `debug`, `lib`, `buildinfo`) also
 take `--include`:
 
-| Flag               | Description                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------ |
-| `--include <glob>` | Source globs to scan, replacing the config `include` list (repeat or comma-separate) |
+| Flag               | Description                                                                       |
+| ------------------ | --------------------------------------------------------------------------------- |
+| `--include <glob>` | Source globs to scan, replacing the config `include` list (repeat for more globs) |
 
 Commands that watch (`dev`, `build`, `codegen`, `cssgen`, `lib`) also take:
 
@@ -75,19 +76,19 @@ pnpm panda init --interactive
 pnpm panda init --postcss
 ```
 
-| Flag                          | Description                                                 | Related                                                      |
-| ----------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
-| `--interactive, -i`           | Run the setup wizard                                        | -                                                            |
-| `--force, -f`                 | Overwrite an existing config file                           | -                                                            |
-| `--postcss, -p`               | Emit a [PostCSS](https://postcss.org/) config file          | -                                                            |
-| `--outdir <dir>`              | Output directory for generated files                        | [`config.outdir`](/docs/reference/config#outdir)             |
-| `--out-extension <ext>`       | Generated runtime file extension: `ts`, `js`, or `mjs`      | [`config.outExtension`](/docs/reference/config#outextension) |
-| `--jsx-framework <framework>` | JSX framework: `react`, `preact`, `vue`, or `solid`         | [`config.jsxFramework`](/docs/reference/config#jsxframework) |
-| `--jsx-style-props <mode>`    | JSX style props: `all`, `minimal`, or `none`                | -                                                            |
-| `--strict-tokens`             | Set `strictTokens` to `true`                                | [`config.strictTokens`](/docs/reference/config#stricttokens) |
-| `--skip-presets`              | Skip adding and installing the default presets              | -                                                            |
-| `--no-gitignore`              | Don't update `.gitignore` with the output directory         | -                                                            |
-| `--no-codegen`                | Don't run codegen after setup                               | -                                                            |
+| Flag                          | Description                                            | Related                                                      |
+| ----------------------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| `--interactive, -i`           | Run the setup wizard                                   | -                                                            |
+| `--force, -f`                 | Overwrite an existing config file                      | -                                                            |
+| `--postcss, -p`               | Emit a [PostCSS](https://postcss.org/) config file     | -                                                            |
+| `--outdir <dir>`              | Output directory for generated files                   | [`config.outdir`](/docs/reference/config#outdir)             |
+| `--out-extension <ext>`       | Generated runtime file extension: `ts`, `js`, or `mjs` | [`config.outExtension`](/docs/reference/config#outextension) |
+| `--jsx-framework <framework>` | JSX framework: `react`, `preact`, `vue`, or `solid`    | [`config.jsxFramework`](/docs/reference/config#jsxframework) |
+| `--jsx-style-props <mode>`    | JSX style props: `all`, `minimal`, or `none`           | -                                                            |
+| `--strict-tokens`             | Set `strictTokens` to `true`                           | [`config.strictTokens`](/docs/reference/config#stricttokens) |
+| `--skip-presets`              | Skip adding and installing the default presets         | -                                                            |
+| `--no-gitignore`              | Don't update `.gitignore` with the output directory    | -                                                            |
+| `--no-codegen`                | Don't run codegen after setup                          | -                                                            |
 
 `panda init` also accepts the [shared flags](#shared-flags), except `--watch`, `--max-warnings`, and the tracing flags.
 
@@ -322,8 +323,7 @@ pnpm panda analyze --outfile analyze.json
 ## doctor
 
 Validate your setup and print a project summary — config path, source count, generated artifacts, conditions, token
-categories, and utilities. It reports any config or diagnostic errors and exits non-zero when it finds them. This
-replaces the v1 `inspect`, `validate`, and `info` commands.
+categories, and utilities. It reports any config or diagnostic errors and exits non-zero when it finds them.
 
 ```bash
 pnpm panda doctor

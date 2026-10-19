@@ -39,5 +39,5 @@
   <!-- footer rule + meta -->
   <line x1="96" y1="540" x2="1104" y2="540" class="rule" stroke-width="1.5"/>
   <text x="96" y="576" font-family="'Source Code Pro',ui-monospace,monospace" font-size="18" class="muted">panda-css.com</text>
-  <text x="1104" y="576" text-anchor="end" font-family="'Source Code Pro',ui-monospace,monospace" font-size="18" class="muted">npm i @pandacss/dev@beta</text>
+  <text x="1104" y="576" text-anchor="end" font-family="'Source Code Pro',ui-monospace,monospace" font-size="18" class="muted">npm i @pandacss/dev@latest</text>
 </svg>

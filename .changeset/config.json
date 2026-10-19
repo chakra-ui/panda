@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unpkg.com/@changesets/config@2.1.1/schema.json",
+  "$schema": "https://unpkg.com/@changesets/config@4.0.1/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [["@pandacss/**"]],
@@ -8,5 +8,9 @@
   "baseBranch": "v2",
   "updateInternalDependencies": "patch",
   "bumpVersionsWithWorkspaceProtocolOnly": true,
-  "ignore": ["sandbox-*", "@pandacss/bench"]
+  "ignore": ["sandbox-*", "@pandacss/bench"],
+  "privatePackages": {
+    "version": true,
+    "tag": false
+  }
 }

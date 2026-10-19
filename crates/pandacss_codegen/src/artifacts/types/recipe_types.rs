@@ -1,6 +1,4 @@
-use std::collections::BTreeMap;
-
-use pandacss_config::VariantTypeData;
+use pandacss_config::{VariantTypeData, VariantTypeMap};
 
 use crate::artifacts::ts_string::{quote_member, string_literal, string_union, type_raw};
 use crate::{ImportDecl, Module};
@@ -19,7 +17,7 @@ const RECIPE_TYPES: &str = r"export type RecipeVariantProps<T> = T extends (prop
 export type RecipeVariant<T> = Required<NonNullable<RecipeVariantProps<T>>>
 
 export type RecipeVariantMap<Variant extends object> = {
-  [K in keyof Variant]-?: Array<Variant[K]>
+  [K in keyof Variant]-?: Array<Exclude<Variant[K], undefined>>
 }
 
 export type RecipeConfigVariantMap<T> = {
@@ -40,7 +38,7 @@ export interface RecipeRuntimeFn<Props extends object = object, Map extends obje
 export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
 
 export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> {
-  (props?: Props): SlotRecord<Slot, string>
+  (props?: Props): Record<Slot, string>
   __type: Props
   __slot: Slot
   variantMap: Map
@@ -57,11 +55,11 @@ export type RecipeVariantRecord = Record<string, Record<string, SystemStyleObjec
 export type RecipeSelection<T extends RecipeVariantRecord> = string extends keyof T
   ? {}
   : {
-      [K in keyof T]?: StringToBoolean<keyof T[K]>
+      [K in keyof T]?: StringToBoolean<keyof T[K]> | undefined
     }
 
 export type RecipeCompoundSelection<T> = {
-  [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
+  [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>> | undefined
 }
 
 export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantRecord> {
@@ -79,7 +77,7 @@ export type SlotRecipeVariantRecord<Slot extends string> = Record<string, Record
 
 export interface SlotRecipeDefinition<Slot extends string = string, T extends SlotRecipeVariantRecord<Slot> = SlotRecipeVariantRecord<Slot>> {
   className?: string
-  slots: Slot[]
+  slots: readonly Slot[]
   base?: SlotRecord<Slot, SystemStyleObject>
   variants?: T
   defaultVariants?: RecipeSelection<T>
@@ -93,7 +91,7 @@ export interface SlotRecipeCreatorFn {
 pub(crate) fn concrete_recipe_types(
     type_name: &str,
     slots: Option<&[String]>,
-    variants: &BTreeMap<String, VariantTypeData>,
+    variants: &VariantTypeMap,
     has_compound_variants: bool,
 ) -> Vec<String> {
     let variant_name = format!("{type_name}Variant");
@@ -123,7 +121,7 @@ pub(crate) fn concrete_recipe_types(
     out
 }
 
-fn variant_type(type_name: &str, variants: &BTreeMap<String, VariantTypeData>) -> String {
+fn variant_type(type_name: &str, variants: &VariantTypeMap) -> String {
     if variants.is_empty() {
         return format!("export type {type_name} = {{}}");
     }
@@ -141,7 +139,7 @@ fn variant_props_type(props_name: &str, variant_name: &str, has_compound_variant
     // The runtime rejects conditional variant values when compound variants exist.
     if has_compound_variants {
         return format!(
-            "export type {props_name} = {{\n  [K in keyof {variant_name}]?: {variant_name}[K]\n}}"
+            "export type {props_name} = {{\n  [K in keyof {variant_name}]?: {variant_name}[K] | undefined\n}}"
         );
     }
     format!(

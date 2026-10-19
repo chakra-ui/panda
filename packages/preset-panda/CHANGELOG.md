@@ -1,5 +1,104 @@
 # @pandacss/preset-panda
 
+## 2.2.0
+
+### Patch Changes
+
+- @pandacss/types@2.2.0
+
+## 2.1.2
+
+### Patch Changes
+
+- 30465d3: `panda` starts faster. Installed presets load with Node instead of being re-bundled on every run, and a build
+  no longer loads the code for `init` and `debug`.
+
+  - `@pandacss/preset-base`, `@pandacss/preset-panda` and `@pandacss/preset-typography` are now ESM-only, like the rest
+    of v2.
+  - Generated `styled-system/patterns` files are reformatted once.
+
+- @pandacss/types@2.1.2
+
+## 2.1.1
+
+### Patch Changes
+
+- @pandacss/types@2.1.1
+
+## 2.1.0
+
+### Patch Changes
+
+- @pandacss/types@2.1.0
+
+## 2.0.1
+
+### Patch Changes
+
+- @pandacss/types@2.0.1
+
+## 2.0.0
+
+### Major Changes
+
+- bb3d117: Panda 2.0 replaces the compiler with a Rust engine built on [Oxc](https://oxc.rs). You write the same
+  `css()`, recipes, patterns, tokens, and JSX props.
+
+  #### Improvements
+
+  - [New Rust engine](https://panda-css.com/blog/panda-css-v2#inside-the-new-engine): one parse per file, cross-file
+    value resolution, and native CSS output. No more `ts-morph` or PostCSS in the build.
+  - [Much faster builds](https://panda-css.com/blog/panda-css-v2#how-much-faster-is-panda-20): extraction is 15–37×
+    faster, watch mode ~360×, and `staticCss` ~85×.
+  - [Lighter generated types](https://panda-css.com/blog/panda-css-v2#generated-types-are-lighter): ~99% fewer
+    TypeScript type instantiations, so your editor and CI do less work.
+  - [Faster runtime](https://panda-css.com/blog/panda-css-v2#runtime-is-4-faster): `css()` and recipes memoize repeated
+    styles, up to ~4× faster.
+  - [One engine for Node and the browser](https://panda-css.com/blog/panda-css-v2#one-engine-for-node-and-browser):
+    `@pandacss/compiler-wasm` runs the same engine in the browser and produces the same CSS.
+  - [Bundler plugins](https://panda-css.com/docs/styling/source-transforms#enabling-it): `@pandacss/vite`,
+    `@pandacss/webpack`, `@pandacss/rollup`, and `@pandacss/bun` run Panda inside your build.
+  - [Source transforms](https://panda-css.com/docs/styling/source-transforms): with `transform: true`, the bundler
+    rewrites static `css()`, recipe, pattern, and `styled()` calls to class strings, so the styling runtime drops out of
+    your bundle.
+  - [Smaller CSS with `optimize`](https://panda-css.com/docs/styling/optimization): opt in to removing unused tokens and
+    keyframes, emitting only the compound variants you use, and tree-shaking design systems.
+
+  #### New features
+
+  - [Publishable design systems](https://panda-css.com/blog/panda-css-v2#publishable-design-systems): author with
+    `panda lib`, consume with `designSystem`, with no re-extraction in the app.
+  - [View transitions](https://panda-css.com/blog/panda-css-v2#view-transitions): `viewTransition()` styles the View
+    Transitions API and gives you a stable class.
+  - [Value fallbacks, local keyframes, and anchor fallbacks](https://panda-css.com/blog/panda-css-v2#ordered-value-fallbacks):
+    `firstThatWorks()`, `keyframes()`, and `positionTry()`, tree-shaken to what you use.
+  - [New utilities](https://panda-css.com/blog/panda-css-v2#new-base-preset-utilities): masks, scrollbars, and pointer
+    and validity conditions.
+  - [Variables via `@property`](https://panda-css.com/blog/panda-css-v2#variables-via-property): no more 34-variable
+    reset on every element.
+  - [A rebuilt CLI](https://panda-css.com/blog/panda-css-v2#a-better-cli): `panda` runs codegen and CSS together, and
+    `panda doctor`, `panda analyze`, `panda debug`, and `--profile` help you inspect a project.
+  - [ESLint and oxlint plugin](https://panda-css.com/blog/panda-css-v2#eslint-plugin): lints against the same extraction
+    your build uses.
+  - [Typography preset](https://panda-css.com/blog/panda-css-v2#a-typography-preset): `@pandacss/preset-typography` adds
+    a `prose` recipe for Markdown and CMS content.
+
+  Panda 2.0 is ESM-only and needs Node 22 or newer. To move an existing project, follow the
+  [upgrade guide](https://panda-css.com/docs/get-started/upgrading-to-v2). For the full story,
+  [read the announcement post](https://panda-css.com/blog/panda-css-v2).
+
+### Patch Changes
+
+- Updated dependencies [bb3d117]
+  - @pandacss/types@2.0.0
+
+## 2.0.0-beta.20
+
+### Patch Changes
+
+- Updated dependencies [9e45720]
+  - @pandacss/types@2.0.0-beta.20
+
 ## 2.0.0-beta.19
 
 ### Patch Changes
@@ -72,219 +171,6 @@
 - Updated dependencies [2714583]
   - @pandacss/types@2.0.0-beta.10
 
-## 1.4.0
+## 1.x and earlier
 
-### Minor Changes
-
-- **Preset Base**: Change default spacing from `10px` and `8px`
-  - **Preset Panda**: Add `5.5` to spacing scale to cover more minor scales
-
-## 1.2.0
-
-### Patch Changes
-
-- Add `4.5` to spacing and sizing scales which maps to `18px`
-  - @pandacss/types@1.2.0
-
-## 1.0.0
-
-### Major Changes
-
-- Stable release of PandaCSS
-
-  ### Style Context
-
-  Add `createStyleContext` function to framework artifacts for React, Preact, Solid, and Vue frameworks
-
-  ```tsx
-  import { sva } from 'styled-system/css'
-  import { createStyleContext } from 'styled-system/jsx'
-
-  const card = sva({
-    slots: ['root', 'label'],
-    base: {
-      root: {
-        color: 'red',
-        bg: 'red.300',
-      },
-      label: {
-        fontWeight: 'medium',
-      },
-    },
-    variants: {
-      size: {
-        sm: {
-          root: {
-            padding: '10px',
-          },
-        },
-        md: {
-          root: {
-            padding: '20px',
-          },
-        },
-      },
-    },
-    defaultVariants: {
-      size: 'sm',
-    },
-  })
-
-  const { withProvider, withContext } = createStyleContext(card)
-
-  const CardRoot = withProvider('div', 'root')
-  const CardLabel = withContext('label', 'label')
-  ```
-
-  Then, use like this:
-
-  ```tsx
-  <CardRoot size="sm">
-    <CardLabel>Hello</CardLabel>
-  </CardRoot>
-  ```
-
-## 0.49.0
-
-### Minor Changes
-
-- Add support for animation styles. Animation styles focus solely on animations, allowing you to orchestrate animation
-  properties.
-
-  > Pairing animation styles with text styles and layer styles can make your styles a lot cleaner.
-
-  Here's an example of this:
-
-  ```jsx
-  import { defineAnimationStyles } from '@pandacss/dev'
-
-  export const animationStyles = defineAnimationStyles({
-    'slide-fade-in': {
-      value: {
-        transformOrigin: 'var(--transform-origin)',
-        animationDuration: 'fast',
-        '&[data-placement^=top]': {
-          animationName: 'slide-from-top, fade-in',
-        },
-        '&[data-placement^=bottom]': {
-          animationName: 'slide-from-bottom, fade-in',
-        },
-        '&[data-placement^=left]': {
-          animationName: 'slide-from-left, fade-in',
-        },
-        '&[data-placement^=right]': {
-          animationName: 'slide-from-right, fade-in',
-        },
-      },
-    },
-  })
-  ```
-
-  With that defined, I can use it in my recipe or css like so:
-
-  ```js
-  export const popoverSlotRecipe = defineSlotRecipe({
-    slots: anatomy.keys(),
-    base: {
-      content: {
-        _open: {
-          animationStyle: 'scale-fade-in',
-        },
-        _closed: {
-          animationStyle: 'scale-fade-out',
-        },
-      },
-    },
-  })
-  ```
-
-  This feature will drive consumers to lean in towards CSS for animations rather than JS. Composing animation names is a
-  powerful feature we should encourage consumers to use.
-
-## 0.42.0
-
-### Minor Changes
-
-- Ensure classnames are unique across utilities to prevent potential clash
-  - Add support for `4xl` border radius token
-
-## 0.27.0
-
-### Minor Changes
-
-- Improve performance, mostly for the CSS generation by removing a lot of `postcss` usage (and plugins).
-
-  ## Public changes:
-
-  - Introduce a new `config.lightningcss` option to use `lightningcss` (currently disabled by default) instead of
-    `postcss`.
-  - Add a new `config.browserslist` option to configure the browserslist used by `lightningcss`.
-  - Add a `--lightningcss` flag to the `panda` and `panda cssgen` command to use `lightningcss` instead of `postcss` for
-    this run.
-
-  ## Internal changes:
-
-  - `markImportant` fn from JS instead of walking through postcss AST nodes
-  - use a fork of `stitches` `stringify` function instead of `postcss-css-in-js` to write the CSS string from a JS
-    object
-  - only compute once `TokenDictionary` properties
-  - refactor `serializeStyle` to use the same code path as the rest of the pipeline with `StyleEncoder` / `StyleDecoder`
-    and rename it to `transformStyles` to better convey what it does
-
-- Add support for aspect ratio tokens in the panda config or preset. Aspect ratio tokens are used to define the aspect
-  ratio of an element.
-
-  ```js
-  export default defineConfig({
-    // ...
-    theme: {
-      extend: {
-        // add aspect ratio tokens
-        tokens: {
-          aspectRatios: {
-            '1:1': '1',
-            '16:9': '16/9',
-          },
-        },
-      },
-    },
-  })
-  ```
-
-  Here's what the default aspect ratio tokens in the base preset looks like:
-
-  ```json
-  {
-    "square": { "value": "1 / 1" },
-    "landscape": { "value": "4 / 3" },
-    "portrait": { "value": "3 / 4" },
-    "wide": { "value": "16 / 9" },
-    "ultrawide": { "value": "18 / 5" },
-    "golden": { "value": "1.618 / 1" }
-  }
-  ```
-
-  **Breaking Change**
-
-  The built-in token values has been removed from the `aspectRatio` utility to the `@pandacss/preset-base` as a token.
-
-  For most users, this change should be a drop-in replacement. However, if you used a custom preset in the config, you
-  might need to update it to include the new aspect ratio tokens.
-
-## 0.5.0
-
-### Patch Changes
-
-- Update the color palette to match Tailwind's new palette.
-
-## 0.3.1
-
-### Patch Changes
-
-- Baseline release for the launch
-
-## 0.3.0
-
-### Patch Changes
-
-- Initial release
+See the [v1 changelog](https://github.com/chakra-ui/panda/blob/v1/packages/preset-panda/CHANGELOG.md).

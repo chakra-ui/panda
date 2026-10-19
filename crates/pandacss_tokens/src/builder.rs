@@ -125,7 +125,7 @@ impl TokenDictionaryBuilder {
                 if !token.var.is_empty() {
                     by_var.entry(Arc::clone(&token.var)).or_insert(i);
                 }
-                if let Some(key) = token.path.split_once('.').map(|(_, key)| key) {
+                if let Some(key) = token.name() {
                     by_category_key
                         .entry(token.category.clone())
                         .or_default()
@@ -138,7 +138,7 @@ impl TokenDictionaryBuilder {
                         .or_insert_with(|| Arc::from(category_value(token)));
                 }
             } else {
-                if let Some(key) = token.path.split_once('.').map(|(_, key)| key) {
+                if let Some(key) = token.name() {
                     by_category_key
                         .entry(token.category.clone())
                         .or_default()
@@ -163,11 +163,13 @@ impl TokenDictionaryBuilder {
         }
 
         let suggestion_index = build_suggestion_index(&self.tokens, &by_path, &by_path_condition);
+        let by_reference = build_reference_index(&self.tokens, &by_path);
 
         TokenDictionary {
             tokens: self.tokens,
             by_path,
             by_var,
+            by_reference,
             by_category,
             by_category_key,
             category_values_cache,
@@ -264,4 +266,17 @@ fn build_suggestion_index(
     }
 
     index
+}
+
+fn build_reference_index(
+    tokens: &[Token],
+    by_path: &FxHashMap<Arc<str>, usize>,
+) -> FxHashMap<Arc<str>, usize> {
+    by_path
+        .values()
+        .filter_map(|&i| {
+            let reference = category_value(&tokens[i]);
+            (!reference.is_empty()).then(|| (Arc::from(reference), i))
+        })
+        .collect()
 }

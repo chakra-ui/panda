@@ -6,7 +6,6 @@
 #[derive(Clone, Copy, Default)]
 struct ScanState {
     quote: Option<u8>,
-    escaped: bool,
     comment: bool,
 }
 
@@ -20,13 +19,8 @@ impl ScanState {
             }
             return index + 1;
         }
-        if self.escaped {
-            self.escaped = false;
-            return index + 1;
-        }
         if byte == b'\\' {
-            self.escaped = true;
-            return index + 1;
+            return index + escape_len(bytes, index);
         }
         if let Some(quote) = self.quote {
             if byte == quote {
@@ -45,8 +39,59 @@ impl ScanState {
     }
 
     const fn is_code(self) -> bool {
-        self.quote.is_none() && !self.comment && !self.escaped
+        self.quote.is_none() && !self.comment
     }
+}
+
+/// Byte length of the escape at `bytes[index]` (`\`): one escaped character,
+/// or up to six hex digits plus one optional whitespace terminator.
+pub(crate) fn escape_len(bytes: &[u8], index: usize) -> usize {
+    let hex = bytes[index + 1..]
+        .iter()
+        .take(6)
+        .take_while(|byte| byte.is_ascii_hexdigit())
+        .count();
+    if hex == 0 {
+        return 1 + bytes.get(index + 1).map_or(0, |&byte| utf8_len(byte));
+    }
+    let end = index + 1 + hex;
+    match bytes.get(end..end + 2) {
+        Some(b"\r\n") => 1 + hex + 2,
+        _ if bytes
+            .get(end)
+            .is_some_and(|byte| matches!(byte, b' ' | b'\t' | b'\n' | b'\r' | b'\x0c')) =>
+        {
+            1 + hex + 1
+        }
+        _ => 1 + hex,
+    }
+}
+
+pub(crate) const fn utf8_len(lead: u8) -> usize {
+    match lead {
+        0xF0.. => 4,
+        0xE0.. => 3,
+        0xC0.. => 2,
+        _ => 1,
+    }
+}
+
+/// Syntax bytes outside strings, comments, and escapes, from `start` on.
+pub(crate) fn code_bytes(input: &str, start: usize) -> impl Iterator<Item = (usize, u8)> + '_ {
+    let bytes = input.as_bytes();
+    let mut state = ScanState::default();
+    let mut index = start;
+    std::iter::from_fn(move || {
+        while index < bytes.len() {
+            let at = index;
+            let was_code = state.is_code();
+            index = state.advance(bytes, at);
+            if was_code && state.is_code() && index == at + 1 {
+                return Some((at, bytes[at]));
+            }
+        }
+        None
+    })
 }
 
 /// Byte offsets where `needle` starts outside CSS strings and comments.
@@ -270,10 +315,83 @@ mod tests {
     use insta::assert_yaml_snapshot;
 
     use super::{
-        code_matches, contains_code_byte, contains_multiple_code_bytes,
-        contains_top_level_combinator, first_code_delimiter, replace_code_byte,
+        code_bytes, code_matches, contains_code_byte, contains_multiple_code_bytes,
+        contains_top_level_combinator, escape_len, first_code_delimiter, replace_code_byte,
         selector_is_merge_safe, strip_spaced_code_byte, visit_top_level_code_byte,
     };
+
+    fn code_text(input: &str) -> String {
+        code_bytes(input, 0)
+            .map(|(_, byte)| char::from(byte))
+            .collect()
+    }
+
+    #[test]
+    fn escape_covers_one_escaped_character() {
+        assert_eq!(escape_len(br"\:b", 0), 2);
+        assert_eq!(escape_len(br"\\b", 0), 2);
+    }
+
+    #[test]
+    fn escape_covers_a_multibyte_character() {
+        assert_eq!(escape_len(r"\éb".as_bytes(), 0), 3);
+    }
+
+    #[test]
+    fn escape_covers_hex_digits_and_one_whitespace() {
+        assert_eq!(escape_len(br"\31 a", 0), 4);
+        assert_eq!(escape_len(br"\31  a", 0), 4);
+        assert_eq!(escape_len(b"\\31\ta", 0), 4);
+        assert_eq!(escape_len(b"\\31\r\na", 0), 5);
+        assert_eq!(escape_len(br"\31a", 0), 4);
+    }
+
+    #[test]
+    fn escape_stops_after_six_hex_digits() {
+        assert_eq!(escape_len(br"\0000311", 0), 7);
+    }
+
+    #[test]
+    fn escape_at_the_end_covers_the_backslash() {
+        assert_eq!(escape_len(br"\", 0), 1);
+    }
+
+    #[test]
+    fn code_bytes_skip_escapes() {
+        assert_eq!(code_text(r".a\:b\,c:d"), ".abc:d");
+    }
+
+    #[test]
+    fn code_bytes_skip_hex_escape_terminator() {
+        assert_eq!(code_text(r".\31 0 .b"), ".0 .b");
+    }
+
+    #[test]
+    fn code_bytes_skip_strings_and_comments() {
+        assert_eq!(code_text(r#"[a="x,y"] /* , */ ,"#), "[a=]  ,");
+    }
+
+    #[test]
+    fn code_bytes_skip_escaped_quotes_inside_strings() {
+        assert_eq!(code_text(r#"[a="x\"y"],b"#), "[a=],b");
+    }
+
+    #[test]
+    fn code_bytes_do_not_open_a_string_on_an_escaped_quote() {
+        assert_eq!(code_text(r#".a\"b, .c"#), ".ab, .c");
+    }
+
+    #[test]
+    fn code_bytes_start_mid_input() {
+        let indices: Vec<usize> = code_bytes(".a(.b)", 2).map(|(index, _)| index).collect();
+        assert_eq!(indices, vec![2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn scanner_helpers_ignore_hex_escape_terminator() {
+        assert!(!contains_top_level_combinator(r".\31 0"));
+        assert!(contains_top_level_combinator(r".\31 0 .b"));
+    }
 
     #[test]
     fn ignores_strings_comments_and_escapes() {

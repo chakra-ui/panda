@@ -505,6 +505,8 @@ fn lookup_style_member(object: &StyleTree, key: &str) -> Option<StyleTree> {
             let idx = key.parse::<usize>().ok()?;
             items.get(idx).cloned()
         }
+        StyleTree::OpenWithFallback(fallback) => lookup_style_member(fallback, key)
+            .map(|member| StyleTree::OpenWithFallback(Box::new(member))),
         _ => None,
     }
 }
@@ -850,26 +852,39 @@ pub(crate) fn jsx_attributes_to_style_tree(
 }
 
 fn filter_spread_props(spread: &mut StyleSpread, jsx: &crate::JsxExtractionConfig, tag_name: &str) {
+    retain_spread_props(spread, &|key| jsx.should_extract_prop(tag_name, key));
+}
+
+/// Keeps only the props `keep` accepts, in direct entries and spread arms.
+pub(crate) fn retain_style_tree_props(tree: &mut StyleTree, keep: &impl Fn(&str) -> bool) {
+    if let StyleTree::Object(obj) = tree {
+        obj.entries.retain(|(key, _)| keep(key));
+        for spread in &mut obj.spreads {
+            retain_spread_props(spread, keep);
+        }
+    }
+}
+
+fn retain_spread_props(spread: &mut StyleSpread, keep: &impl Fn(&str) -> bool) {
     match spread {
         StyleSpread::Ternary {
             consequent,
             alternate,
             ..
         } => {
-            filter_object_props(consequent, jsx, tag_name);
-            filter_object_props(alternate, jsx, tag_name);
+            retain_object_props(consequent, keep);
+            retain_object_props(alternate, keep);
         }
         StyleSpread::And { value, .. } | StyleSpread::OpenWithFallback { fallback: value } => {
-            filter_object_props(value, jsx, tag_name);
+            retain_object_props(value, keep);
         }
         StyleSpread::Open { .. } => {}
     }
 }
 
-fn filter_object_props(tree: &mut StyleTree, jsx: &crate::JsxExtractionConfig, tag_name: &str) {
+fn retain_object_props(tree: &mut StyleTree, keep: &impl Fn(&str) -> bool) {
     if let StyleTree::Object(obj) = tree {
-        obj.entries
-            .retain(|(key, _)| jsx.should_extract_prop(tag_name, key));
+        obj.entries.retain(|(key, _)| keep(key));
     }
 }
 

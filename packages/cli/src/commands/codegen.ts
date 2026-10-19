@@ -31,7 +31,7 @@ export const codegenCommand = defineCommand({
     'watch-debounce': { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
     check: { type: 'boolean', description: 'Check generated files without writing' },
   }),
-  run: async ({ args }) => setExitCode(await runCodegen(parseCliFlags(codegenFlagsSchema, args))),
+  run: async ({ args, rawArgs }) => setExitCode(await runCodegen(parseCliFlags(codegenFlagsSchema, args, rawArgs))),
 })
 
 export async function runCodegen(flags: CodegenFlags = {}, output: OutputSink = consoleOutput): Promise<CodegenResult> {

@@ -3,6 +3,7 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "eslint.workingDirectories": ["./packages/**", "./sandbox/**", "./sandbox/next-js"],
   "biome.enabled": false,
+  "deno.enablePaths": ["./sandbox-deno"],
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer",
     "editor.formatOnSave": true

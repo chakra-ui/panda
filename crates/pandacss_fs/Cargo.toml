@@ -9,10 +9,11 @@ publish = false
 
 [features]
 default = ["os"]
-os = ["dep:walkdir"]
+os = ["dep:dunce", "dep:walkdir"]
 memory = []
 
 [dependencies]
+dunce = { workspace = true, optional = true }
 fast-glob = { workspace = true }
 oxc_resolver = { workspace = true }
 rustc-hash = { workspace = true }

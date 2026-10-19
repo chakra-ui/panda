@@ -10,7 +10,6 @@
 //! for tooling and parity tests.
 
 mod adapter;
-mod astro_adapter;
 mod calls;
 mod cross_file;
 mod design_system_imports;
@@ -28,14 +27,15 @@ mod source;
 mod source_refs;
 mod style_tree;
 mod styled_bindings;
-mod svelte_adapter;
 mod template_styles;
 mod transform_facts;
-mod vue_adapter;
 
 use pandacss_literal::Literal;
 
-pub use calls::{CallCalleeKind, CallFacts, ExtractedCall, ExtractedCallsResult, extract_calls};
+pub use calls::{
+    CallCalleeKind, CallFacts, ExtractedCall, ExtractedCallsResult, JsxFactoryCallKind,
+    extract_calls,
+};
 pub use design_system_imports::{
     DesignSystemImportSelection, DesignSystemPackageQuery, DesignSystemUsage,
     collect_design_system_imports, collect_design_system_imports_for_packages,
@@ -55,7 +55,7 @@ pub use imports::{
 pub use local_bindings::{LocalBindingCall, LocalCallBinding, LocalDeclarationKind};
 // Internal helpers that take Oxc-shaped inputs — kept out of the public
 // surface so consumers don't accidentally couple to oxc_ast / oxc_diagnostics.
-pub use cross_file::{CrossFileResolver, CrossFileSession};
+pub use cross_file::{CrossFileResolver, CrossFileSession, RetryOutcome};
 pub(crate) use export_names::collect_export_info;
 pub use export_names::{ExportInfo, ReExport};
 pub(crate) use imports::{collect_imports, collect_parser_diagnostics};
@@ -63,9 +63,9 @@ pub use jsx::{
     ExtractedJsx, ExtractedJsxResult, JsxAttr, JsxSourceFacts, JsxSourceKind, extract_jsx,
 };
 pub use matcher::{
-    ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, MatchCategory, MatchedImport,
-    Matcher, Matchers, NameMatcher, TokenDictionary, match_import_records,
-    match_import_records_resolved, match_imports,
+    ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, JsxTagAction, JsxTagRule,
+    MatchCategory, MatchedImport, Matcher, Matchers, NameMatcher, NamePattern, TokenDictionary,
+    match_import_records, match_import_records_resolved, match_imports,
 };
 pub use pandacss_shared::{
     Diagnostic, DiagnosticLabel, DiagnosticSeverity, SourceLocation, SourceRange, Span,
@@ -84,7 +84,6 @@ pub use transform_facts::{
 
 // Internal-only: keep `VisitorContext` accessible to sibling modules but out
 // of the public API.
-pub(crate) use adapter::adapt_source;
 pub(crate) use matcher::VisitorContext;
 pub(crate) use scope::Resolver;
 pub use source::LineIndex;

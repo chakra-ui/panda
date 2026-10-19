@@ -30,7 +30,7 @@ describe('compiler.buildInfo', () => {
     // modules; `padding`/`margin` are module-local.
     expect(libBuildInfo()).toMatchInlineSnapshot(`
       {
-        "schemaVersion": 6,
+        "schemaVersion": 7,
         "panda": "^2.0.0",
         "configFingerprint": "cfg1-1d59a305c6c7d898",
         "strings": [

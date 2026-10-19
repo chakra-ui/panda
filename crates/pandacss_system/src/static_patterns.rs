@@ -241,12 +241,7 @@ impl ExpansionCtx<'_> {
                 .and_then(|category| {
                     let category = TokenCategory::from_path_segment(category);
                     let values = self.token_dictionary?.category_values_str(&category)?;
-                    Some(
-                        values
-                            .keys()
-                            .map(|path| strip_category_prefix(path))
-                            .collect(),
-                    )
+                    Some(values.keys().map(ToString::to_string).collect())
                 })
                 .unwrap_or_default(),
             _ => Vec::new(),
@@ -281,11 +276,6 @@ fn push_unique(out: &mut Vec<String>, value: String) {
     if !out.contains(&value) {
         out.push(value);
     }
-}
-
-fn strip_category_prefix(path: &str) -> String {
-    path.split_once('.')
-        .map_or_else(|| path.to_owned(), |(_, rest)| rest.to_owned())
 }
 
 fn string_array(value: Option<&Value>) -> Vec<String> {

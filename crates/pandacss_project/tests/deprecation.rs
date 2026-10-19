@@ -164,6 +164,39 @@ fn deprecated_token_resolution_emits_token_warning() {
 }
 
 #[test]
+fn deprecated_token_in_a_binding_read_as_a_test_and_a_value_warns_once() {
+    let mut project = create_project(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "legacy": { "value": "#f00", "deprecated": true } }
+            }
+        },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let report = project.parse_file(
+        "a.tsx",
+        indoc! {r"
+            import { css } from '@panda/css';
+            import { token } from '@panda/tokens';
+            function size(n: number) {
+              if (n < 0) return 0;
+              return n * 4;
+            }
+            const values = { color: token('colors.legacy'), width: size(2) };
+            css(values ? { margin: '1' } : { margin: '2' });
+            css({ color: values.color });
+        "},
+    );
+    let codes: Vec<&str> = report
+        .diagnostics
+        .iter()
+        .map(|d| d.code.as_str())
+        .filter(|code| *code == "deprecated_token_used")
+        .collect();
+    assert_snapshot!(format!("{codes:?}"), @r#"["deprecated_token_used"]"#);
+}
+
+#[test]
 fn token_used_inside_css_call_emits_token_warning_not_utility_warning() {
     let mut project = create_project(json!({
         "theme": {

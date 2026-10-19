@@ -253,6 +253,27 @@ fn named_const_import_resolves_to_value() {
 }
 
 #[test]
+fn const_imported_from_a_js_module_with_jsx_resolves_to_value() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { brand } from './theme';
+            import { css } from '@panda/css';
+            css({ color: brand });
+        "},
+        &[(
+            "theme.js",
+            "export const Badge = () => <span>new</span>;\nexport const brand = '#ef4444';\n",
+        )],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r##"
+    calls:
+      - name: css
+        data:
+          - color: "#ef4444"
+    "##);
+}
+
+#[test]
 fn imported_object_folds_member_access() {
     let (fs, main) = project(
         indoc::indoc! {r"
@@ -1232,6 +1253,134 @@ fn imported_pure_arrow_call_folds() {
 }
 
 #[test]
+fn imported_pure_helper_with_locals_folds() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { card } from './helpers';
+            import { css } from '@panda/css';
+            css(card('red'));
+        "},
+        &[(
+            "helpers.ts",
+            indoc::indoc! {r"
+                export function card(tone: string) {
+                  const rule = { color: tone };
+                  return { '& .card': rule };
+                }
+            "},
+        )],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r#"
+    calls:
+      - name: css
+        data:
+          - "& .card":
+              color: red
+    "#);
+}
+
+#[test]
+fn imported_pure_helper_calling_another_file_folds() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { card } from './card';
+            import { rule } from './rule';
+            import { css } from '@panda/css';
+            const badge = (tone: string) => ({ '& .badge': rule(tone) });
+            css({ ...card('red'), ...badge('blue') });
+        "},
+        &[
+            (
+                "card.ts",
+                "import { rule } from './rule';\nexport const card = (tone: string) => ({ '& .card': rule(tone) });\n",
+            ),
+            (
+                "rule.ts",
+                "export const rule = (color: string) => ({ color });\n",
+            ),
+        ],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r#"
+    calls:
+      - name: css
+        data:
+          - "& .card":
+              color: red
+            "& .badge":
+              color: blue
+    "#);
+}
+
+#[test]
+fn imported_destructured_helper_folds() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { text } from './helpers';
+            import { css } from '@panda/css';
+            css(text({ tone: 'red' }));
+        "},
+        &[(
+            "helpers.ts",
+            "export const text = ({ tone, size = 'md' }: { tone: string; size?: string }) => ({ color: tone, fontSize: size });\n",
+        )],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"
+    calls:
+      - name: css
+        data:
+          - color: red
+            fontSize: md
+    ");
+}
+
+#[test]
+fn imported_unevaluated_helper_keeps_static_siblings_without_warning() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { card } from './helpers';
+            import { css } from '@panda/css';
+            css({ ...card('red'), margin: '8px' });
+        "},
+        &[(
+            "helpers.ts",
+            indoc::indoc! {r"
+                export function card(tone: string) {
+                  if (!tone) return {};
+                  return { color: tone };
+                }
+            "},
+        )],
+    );
+    let usage = run(&fs, &main);
+    assert!(usage.diagnostics.is_empty());
+    assert_yaml_snapshot!(usage.calls[0].data[0], @r#"margin: 8px"#);
+}
+
+#[test]
+fn imported_hook_picking_a_branch_does_not_warn() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { useExpanded } from './hooks';
+            import { css } from '@panda/css';
+            export const panel = () => css(useExpanded() ? { color: 'red' } : { color: 'blue' });
+        "},
+        &[(
+            "hooks.ts",
+            indoc::indoc! {r"
+                import { createContext, useContext } from 'react';
+                const ExpandedContext = createContext(false);
+                export function useExpanded() {
+                  if (typeof window === 'undefined') return false;
+                  return useContext(ExpandedContext);
+                }
+            "},
+        )],
+    );
+    let usage = run(&fs, &main);
+    assert!(usage.diagnostics.is_empty(), "{:?}", usage.diagnostics);
+}
+
+#[test]
 fn imported_group_hover_helper_folds_computed_key() {
     let (fs, main) = project(
         indoc::indoc! {r"
@@ -1352,6 +1501,139 @@ fn imported_pure_helper_object_return_spreads() {
             backgroundColor: teal.650
             padding: 4px
     "##);
+}
+
+#[test]
+fn imported_logical_style_binding_keeps_its_fallback() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { color } from './values';
+            import { css } from '@panda/css';
+
+            css({ color });
+        "},
+        &[(
+            "values.ts",
+            indoc::indoc! {r"
+                export const color = runtime.color ?? 'gray';
+            "},
+        )],
+    );
+
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
+    calls:
+      - name: css
+        data:
+          - color: gray
+    ");
+}
+
+#[test]
+fn imported_partial_style_object_keeps_its_fallback_and_known_members() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { styles } from './values';
+            import { css } from '@panda/css';
+
+            css({ ...styles });
+        "},
+        &[(
+            "values.ts",
+            indoc::indoc! {r"
+                export const styles = { color: runtime.color ?? 'gray', padding: '4px' };
+            "},
+        )],
+    );
+
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
+    calls:
+      - name: css
+        data:
+          - color: gray
+            padding: 4px
+    ");
+}
+
+#[test]
+fn imported_logical_default_does_not_make_comparisons_constant() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { count } from './values';
+            import { css } from '@panda/css';
+
+            css({ color: count > 0 ? 'green' : 'gray' });
+        "},
+        &[(
+            "values.ts",
+            indoc::indoc! {r"
+                export const count = runtime.count ?? 0;
+            "},
+        )],
+    );
+
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
+    calls:
+      - name: css
+        data:
+          - color:
+              kind: conditional
+              branches:
+                - green
+                - gray
+    ");
+}
+
+#[test]
+fn imported_export_alias_keeps_style_members() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { theme } from './values';
+            import { css } from '@panda/css';
+
+            css({ color: theme.color, padding: theme.padding });
+        "},
+        &[(
+            "values.ts",
+            indoc::indoc! {r"
+                export const styles = { color: runtime.color ?? 'gray', padding: '4px' };
+                export { styles as theme };
+            "},
+        )],
+    );
+
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
+    calls:
+      - name: css
+        data:
+          - color: gray
+            padding: 4px
+    ");
+}
+
+#[test]
+fn imported_destructured_export_keeps_its_style_fallback() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { extractedColor } from './values';
+            import { css } from '@panda/css';
+
+            css({ color: extractedColor });
+        "},
+        &[(
+            "values.ts",
+            indoc::indoc! {r"
+                const styles = { color: runtime.color ?? 'gray', padding: '4px' };
+                export const { color: extractedColor } = styles;
+            "},
+        )],
+    );
+
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @r"
+    calls:
+      - name: css
+        data:
+          - color: gray
+    ");
 }
 
 #[test]

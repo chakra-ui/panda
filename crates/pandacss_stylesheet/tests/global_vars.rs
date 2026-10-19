@@ -332,8 +332,8 @@ fn property_fallback_seeds_non_inheriting_vars_on_every_element() {
         --made-with-panda: '🐼';
       }
       button {
-        color: var(--panel-color);
         gap: var(--panel-gap, 0);
+        color: var(--panel-color);
       }
       *, ::before, ::after, ::backdrop {
         --panel-color: blue;

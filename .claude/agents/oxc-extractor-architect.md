@@ -1,6 +1,6 @@
 ---
 name: oxc-extractor-architect
-description: Use when designing or debugging the Panda v2 Oxc extractor in `crates/pandacss_extractor` — parsing, import matching, call/JSX visitors, literal folding, same-file `Resolver`, cross-file resolution, Vue/Svelte/Astro adapters, template-style extraction, or ts-evaluator parity. Invoke for new syntax support, false-positive/negative extractions, span/diagnostic issues, and framework SFC masking.\n\nExamples:\n- <example>User: "Add support for extracting css from a new call pattern in pandacss_extractor"\nAssistant: "I'll use oxc-extractor-architect to design the visitor and literal folding changes."\n[Uses Agent tool to invoke oxc-extractor-architect]</example>\n- <example>User: "css() inside a shadowed import name is being extracted incorrectly"\nAssistant: "Let me invoke oxc-extractor-architect — this is likely Resolver/import-binding semantics."\n[Uses Agent tool to invoke oxc-extractor-architect]</example>\n- <example>User: "Vue template static attrs aren't being picked up"\nAssistant: "I'll call oxc-extractor-architect for template_styles + vue_adapter coordination."\n[Uses Agent tool to invoke oxc-extractor-architect]</example>
+description: Use when designing or debugging the Panda v2 Oxc extractor in `crates/pandacss_extractor` — parsing, import matching, call/JSX visitors, literal folding, same-file `Resolver`, cross-file resolution, Vue/Svelte/Astro adapters, template-style extraction, or ts-evaluator parity. Invoke for new syntax support, false-positive/negative extractions, span/diagnostic issues, and framework SFC masking.\n\nExamples:\n- <example>User: "Add support for extracting css from a new call pattern in pandacss_extractor"\nAssistant: "I'll use oxc-extractor-architect to design the visitor and literal folding changes."\n[Uses Agent tool to invoke oxc-extractor-architect]</example>\n- <example>User: "css() inside a shadowed import name is being extracted incorrectly"\nAssistant: "Let me invoke oxc-extractor-architect — this is likely Resolver/import-binding semantics."\n[Uses Agent tool to invoke oxc-extractor-architect]</example>\n- <example>User: "Vue template static attrs aren't being picked up"\nAssistant: "I'll call oxc-extractor-architect for template_styles + pandacss_sfc::vue coordination."\n[Uses Agent tool to invoke oxc-extractor-architect]</example>
 model: inherit
 ---
 
@@ -173,11 +173,11 @@ Test with `CrossFileResolver::with_fs(MemoryFileSystem)`.
 
 ### Source masking (parse path — `adapt_source`)
 
-| File      | Module              | Strategy                                                                   |
-| --------- | ------------------- | -------------------------------------------------------------------------- |
-| `.vue`    | `vue_adapter.rs`    | Copy `<script>`; copy `{{ }}` + bound attrs in HTML `<template>`           |
-| `.svelte` | `svelte_adapter.rs` | Copy `<script>`; scan markup `{...}` with Svelte block prefixes            |
-| `.astro`  | `astro_adapter.rs`  | Copy `---` frontmatter (+ `;` for ASI); copy `{ expr }`; skip script/style |
+| File      | Module                 | Strategy                                                                       |
+| --------- | ---------------------- | ------------------------------------------------------------------------------ |
+| `.vue`    | `pandacss_sfc::vue`    | Copy `<script>`; copy `{{ }}` + bound attrs in HTML `<template>`               |
+| `.svelte` | `pandacss_sfc::svelte` | Copy `<script>`; scan markup `{...}` with Svelte block prefixes                |
+| `.astro`  | `pandacss_sfc::astro`  | Tokenize like Astro's parser; lower frontmatter + `{ expr }` to same-offset JS |
 
 Mask blanks non-JS to spaces (preserve newlines); wraps copied expressions in `(` `)` via `copy_expression`.
 
@@ -199,8 +199,7 @@ Changes to framework support often need **both** `*_adapter.rs` (mask) and `temp
 ## Config types (`matcher.rs`)
 
 - **`Matchers`** — per-category `Matcher { modules, names }` + `jsx_factories`, `jsx_kinds`
-- **`ExtractorConfig`** — matchers, jsx config, `has_jsx_framework`, `token_dictionary`,
-  `cross_file`
+- **`ExtractorConfig`** — matchers, jsx config, `has_jsx_framework`, `token_dictionary`, `cross_file`
 - **`VisitorContext`** — alias map + optional `&Resolver`
 
 Public API must not expose `oxc_ast` / `oxc_diagnostics` — keep Oxc types `pub(crate)`.

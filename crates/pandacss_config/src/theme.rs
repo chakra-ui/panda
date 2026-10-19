@@ -216,7 +216,7 @@ pub struct RecipeConfig {
     #[serde(default)]
     pub base: Option<StyleConfig>,
     #[serde(default)]
-    pub variants: BTreeMap<String, BTreeMap<String, StyleConfig>>,
+    pub variants: IndexMap<String, IndexMap<String, StyleConfig>>,
     #[serde(default, rename = "defaultVariants")]
     pub default_variants: BTreeMap<String, VariantSelection>,
     #[serde(default, rename = "compoundVariants")]
@@ -296,6 +296,9 @@ pub struct Tokens {
     pub aspect_ratios: TokenGroup<String>,
     #[serde(default, rename = "containerNames")]
     pub container_names: TokenGroup<String>,
+    /// User-defined categories (`foobar`), keyed by category name.
+    #[serde(flatten)]
+    pub custom: IndexMap<String, TokenGroup<StringOrNumber>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -347,6 +350,9 @@ pub struct SemanticTokens {
     pub aspect_ratios: TokenGroup<SemanticValue<String>>,
     #[serde(default, rename = "containerNames")]
     pub container_names: TokenGroup<SemanticValue<String>>,
+    /// User-defined categories (`foobar`), keyed by category name.
+    #[serde(flatten)]
+    pub custom: IndexMap<String, TokenGroup<SemanticValue<StringOrNumber>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

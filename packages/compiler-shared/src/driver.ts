@@ -203,7 +203,7 @@ export abstract class BaseDriver implements Driver {
   abstract get configPath(): string | undefined
   abstract get configDependencies(): string[]
   abstract reload(): Promise<DiffConfigResult>
-  abstract applyChange(change: SourceChange): boolean
+  abstract applyChanges(changes: SourceChange[]): boolean[]
   abstract getOutdir(outdir?: string): string
 
   scan(options?: ScanOptions): string[] {
@@ -262,8 +262,8 @@ export abstract class BaseDriver implements Driver {
     return applied
   }
 
-  applyChanges(changes: SourceChange[]): boolean[] {
-    return changes.map((change) => this.applyChange(change))
+  applyChange(change: SourceChange): boolean {
+    return this.applyChanges([change])[0]
   }
 
   async syncDesignSystemFileChange(_change: SourceChange): Promise<boolean> {

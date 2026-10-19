@@ -11,7 +11,7 @@
     "build": "pnpm codegen && tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "react": "19.2.8",
@@ -31,6 +31,7 @@
     "@testing-library/vue": "8.1.0",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2",
     "@vitejs/plugin-react-swc": "4.3.3",
     "@vitejs/plugin-vue": "6.0.8",
     "@vitejs/plugin-vue-jsx": "5.1.6",

@@ -31,9 +31,9 @@ into a slot recipe, cleaning up a theme that's drifted.
 
 ### `panda-css-migrate`
 
-Upgrading v1 to v2, and debugging projects that worked on 1.x and break on the beta.
+Upgrading v1 to v2, and debugging projects that worked on 1.x and break on 2.x.
 
-Triggers on: installing `@pandacss/dev@beta`, build failures after upgrading, `createStyleContext`, config hooks,
+Triggers on: upgrading `@pandacss/dev` to v2, build failures after upgrading, `createStyleContext`, config hooks,
 template literal styles, `panda ship`, `panda mcp`, `--cpu-prof`, CSS output changing after the upgrade.
 
 This one is temporary. It exists for the v2 transition and will be archived once v2 is stable and v1 projects have

@@ -19,6 +19,12 @@ export const showcases: Showcase[] = [
     image: '/showcase/contra.png'
   },
   {
+    name: 'Brilliant',
+    description: 'Interactive learning for math and coding',
+    url: 'https://brilliant.org/',
+    image: '/showcase/brilliant.png'
+  },
+  {
     name: 'Magic Labs',
     description: 'Web3 Wallet Infrastructure',
     url: 'https://magic.link/',
@@ -68,8 +74,8 @@ export const showcases: Showcase[] = [
     image: '/showcase/cool-contrast.png'
   },
   {
-    name: 'Cerberus Design System',
-    description: 'Guarding brand integrity with a flexible design system',
+    name: 'Cerberus UI Platform',
+    description: 'Improving React development for humans and agents.',
     url: 'https://cerberus.digitalu.design/',
     image: '/showcase/cerberus.png'
   }

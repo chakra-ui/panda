@@ -1,3 +1,4 @@
+import { parseArgs } from 'node:util'
 import type { ArgsDef } from 'citty'
 import type { FlagsInfer, FlagsSchema, Issue, ParseResult, Shape } from './flags-schema'
 
@@ -49,16 +50,34 @@ export function includeArgs(): ArgsDef {
   }
 }
 
-/** Normalize `--include` (string, repeated array, or comma-separated) into a glob list. */
+/** Normalize `--include` (one glob per flag, repeatable) into a glob list. Commas are glob syntax, not separators. */
 export function normalizeInclude(value: unknown): string[] | undefined {
   if (value == null) return undefined
 
-  const globs = (Array.isArray(value) ? value : [value])
-    .flatMap((entry) => String(entry).split(','))
-    .map((entry) => entry.trim())
-    .filter(Boolean)
+  const globs = (Array.isArray(value) ? value : [value]).map((entry) => String(entry).trim()).filter(Boolean)
 
   return globs.length > 0 ? globs : undefined
+}
+
+const LIST_FLAG_OPTIONS = {
+  include: { type: 'string', multiple: true },
+  files: { type: 'string', multiple: true },
+} as const
+
+/** citty keeps only the last value of a repeated flag, so list flags are read from argv. */
+export function collectListFlags(rawArgs: readonly string[]): Record<string, string[]> {
+  const { values } = parseArgs({
+    args: [...rawArgs],
+    options: LIST_FLAG_OPTIONS,
+    strict: false,
+    allowPositionals: true,
+  })
+  const lists: Record<string, string[]> = {}
+  for (const name of Object.keys(LIST_FLAG_OPTIONS)) {
+    const entries = (values[name] as unknown[] | undefined)?.filter((entry) => typeof entry === 'string')
+    if (entries?.length) lists[name] = entries
+  }
+  return lists
 }
 
 /** `--spec` takes an optional path. citty has no optional-value type, so it is
@@ -93,8 +112,12 @@ export function runtimeArgs(): ArgsDef {
   }
 }
 
-export function parseCliFlags<TSchema extends FlagsSchema<Shape>>(schema: TSchema, args: unknown): FlagsInfer<TSchema> {
-  const flags = normalizeCliFlags(args)
+export function parseCliFlags<TSchema extends FlagsSchema<Shape>>(
+  schema: TSchema,
+  args: unknown,
+  rawArgs: readonly string[] = [],
+): FlagsInfer<TSchema> {
+  const flags = { ...normalizeCliFlags(args), ...collectListFlags(rawArgs) }
   // `schema`'s member access resolves through the `FlagsSchema<Shape>` bound, not
   // the caller's concrete shape — bridge back to the precise inferred type here.
   const result = schema.safeParse(flags) as ParseResult<FlagsInfer<TSchema>>

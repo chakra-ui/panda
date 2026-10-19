@@ -1,7 +1,7 @@
 use pandacss_config::{JsxStylePropsConfig, PatternConfig};
 
-use super::jsx_helper::{raw_runtime, raw_type, type_import, value_import};
-use crate::{CodegenContext, ImportDecl, Module, RuntimeImport};
+use super::jsx_helper::{type_import, value_import};
+use crate::{CodegenContext, ImportDecl, Item, Module, RuntimeImport};
 
 pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfig) -> Module {
     let factory = factory_name(ctx);
@@ -34,28 +34,28 @@ pub(super) fn module(ctx: CodegenContext<'_>, name: &str, pattern: &PatternConfi
         ));
     }
 
-    module
-        .with_item(raw_runtime(pattern_runtime_body(
+    module.with_item(Item::typed_source(format!(
+        "export interface {component_props} extends {props_name}, DistributiveOmit<{html_props}<{jsx_element:?}>, {omit_keys}> {{}}\n\n{runtime}",
+        component_props = meta.component_props,
+        props_name = meta.props_name,
+        html_props = meta.html_props,
+        jsx_element = meta.jsx_element,
+        omit_keys = meta.omit_keys,
+        runtime = pattern_runtime_body(
             &meta.jsx_name,
+            &meta.component_props,
             &factory,
             &meta.jsx_element,
             &meta.raw_name,
             &pattern_keys_json,
             style_props(ctx),
-        )))
-        .with_item(raw_type(format!(
-            "export interface {component_props} extends {props_name}, DistributiveOmit<{html_props}<{jsx_element:?}>, {omit_keys}> {{}}\n\nexport declare const {jsx_name}: Component<{component_props}>",
-            component_props = meta.component_props,
-            props_name = meta.props_name,
-            html_props = meta.html_props,
-            jsx_element = meta.jsx_element,
-            omit_keys = meta.omit_keys,
-            jsx_name = meta.jsx_name,
-        )))
+        ),
+    )))
 }
 
 fn pattern_runtime_body(
     jsx_name: &str,
+    component_props: &str,
     factory: &str,
     jsx_element: &str,
     style_getter: &str,
@@ -65,29 +65,29 @@ fn pattern_runtime_body(
     let body = match mode {
         JsxStylePropsConfig::All => format!(
             r"const styleProps = {style_getter}(patternProps)
-  const mergedProps = mergeProps(styleProps, restProps)"
+  const mergedProps = mergeProps(styleProps, restProps as Record<string, unknown>)"
         ),
         JsxStylePropsConfig::Minimal => format!(
             r"const cssProps = createMemo(() => {{
     const styleProps = {style_getter}(patternProps)
     return {{ css: mergeCss(styleProps, props.css) }}
   }})
-  const mergedProps = mergeProps(restProps, cssProps)"
+  const mergedProps = mergeProps(restProps as Record<string, unknown>, cssProps)"
         ),
         JsxStylePropsConfig::None => format!(
             r"const cssProps = createMemo(() => {{
     const styleProps = {style_getter}(patternProps)
     return {{ css: styleProps }}
   }})
-  const mergedProps = mergeProps(restProps, cssProps)"
+  const mergedProps = mergeProps(restProps as Record<string, unknown>, cssProps)"
         ),
     };
 
     format!(
-        r"export const {jsx_name} = /* @__PURE__ */ function {jsx_name}(props) {{
+        r"export const {jsx_name}: Component<{component_props}> = /* @__PURE__ */ function {jsx_name}(props: {component_props}) {{
   const [patternProps, restProps] = splitProps(props, {pattern_keys_json})
   {body}
-  return createComponent({factory}[{jsx_element:?}], mergedProps)
+  return createComponent({factory}[{jsx_element:?}] as Component<Record<string, unknown>>, mergedProps)
 }}"
     )
 }

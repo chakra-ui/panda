@@ -225,3 +225,27 @@ fn color_without_modifier_is_not_flagged() {
     let utility = color_utilities();
     assert!(!utility.is_invalid_color_opacity_modifier("red.300"));
 }
+
+#[test]
+fn important_after_a_valid_modifier_is_not_flagged() {
+    let utility = color_utilities();
+    assert!(!utility.is_invalid_color_opacity_modifier("red.300/60 !important"));
+    assert!(!utility.is_invalid_color_opacity_modifier("red.300/40!"));
+    assert!(!utility.is_invalid_color_opacity_modifier("red.300/half !important"));
+    assert!(!utility.is_invalid_color_opacity_modifier("red.300/70!important"));
+    assert!(!utility.is_invalid_color_opacity_modifier("red.300/20   !important"));
+}
+
+#[test]
+fn important_without_a_modifier_is_not_flagged() {
+    let utility = color_utilities();
+    assert!(!utility.is_invalid_color_opacity_modifier("red.300 !important"));
+    assert!(!utility.is_invalid_color_opacity_modifier("red.300!"));
+}
+
+#[test]
+fn important_after_an_unknown_modifier_is_still_flagged() {
+    let utility = color_utilities();
+    assert!(utility.is_invalid_color_opacity_modifier("red.300/unknown !important"));
+    assert!(utility.is_invalid_color_opacity_modifier("red.300/unknown!"));
+}

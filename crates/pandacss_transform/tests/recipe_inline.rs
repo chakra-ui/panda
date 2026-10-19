@@ -85,6 +85,36 @@ fn rewrites_inline_sva_to_a_specialized_function() {
 }
 
 #[test]
+fn rewrites_inline_sva_with_slots_declared_as_const() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        const slots = ['root', 'trigger'] as const;
+        export const tabs = sva({
+          slots,
+          base: {
+            root: { display: 'flex' },
+            trigger: { cursor: 'pointer' },
+          },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    const slots = ['root', 'trigger'] as const;
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => ({ root: "d_flex", trigger: "cursor_pointer" }), {
+      slots,
+      base: {
+        root: { display: 'flex' },
+        trigger: { cursor: 'pointer' },
+      },
+    }, [], {}, {});
+    "#);
+}
+
+#[test]
 fn specializes_sva_class_names_without_a_recipe_runtime() {
     let source = indoc! {r#"
         import { sva } from '@panda/css';
@@ -432,6 +462,160 @@ fn encodes_an_sva_option_with_no_styles_as_an_empty_map() {
       slots: ['root', 'trigger'],
       variants: { size: { sm: { root: { gap: '4px' } }, md: {} } },
     }, ["size"], { size: ["sm", "md"] }, {});
+    "#);
+}
+
+#[test]
+fn encodes_a_cva_option_with_an_empty_style_as_no_classes() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        export const button = cva({
+          variants: { disabled: { true: { opacity: '0.5' }, false: {} } },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["disabled"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ true: "opacity_0.5" }[v0]) || ''; }, {
+      variants: { disabled: { true: { opacity: '0.5' }, false: {} } },
+    }, ["disabled"], { disabled: ["true", "false"] });
+    "#);
+}
+
+#[test]
+fn encodes_an_sva_slot_with_an_empty_variant_style_as_no_classes() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const tabs = sva({
+          slots: ['root', 'trigger'],
+          variants: { size: { sm: { root: { gap: '4px' } }, md: { root: {} } } },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ sm: "gap_4px" }[v0]) || '', trigger: '' }; }, {
+      slots: ['root', 'trigger'],
+      variants: { size: { sm: { root: { gap: '4px' } }, md: { root: {} } } },
+    }, ["size"], { size: ["sm", "md"] }, {});
+    "#);
+}
+
+#[test]
+fn encodes_an_sva_slot_with_an_empty_base_as_no_classes() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const tabs = sva({
+          slots: ['root', 'trigger'],
+          base: { root: { display: 'flex' }, trigger: {} },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => ({ root: "d_flex", trigger: '' }), {
+      slots: ['root', 'trigger'],
+      base: { root: { display: 'flex' }, trigger: {} },
+    }, [], {}, {});
+    "#);
+}
+
+#[test]
+fn skips_a_cva_compound_variant_with_an_empty_style() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        export const button = cva({
+          variants: { size: { sm: { padding: '4px' } } },
+          compoundVariants: [{ size: 'sm', css: {} }],
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ sm: "padding_4px" }[v0]) || ''; }, {
+      variants: { size: { sm: { padding: '4px' } } },
+      compoundVariants: [{ size: 'sm', css: {} }],
+    }, ["size"], { size: ["sm"] });
+    "#);
+}
+
+#[test]
+fn skips_an_sva_compound_variant_with_an_empty_slot_style() {
+    let source = indoc! {r#"
+        import { sva } from '@panda/css';
+        export const tabs = sva({
+          slots: ['root'],
+          variants: { size: { sm: { root: { gap: '4px' } } } },
+          compoundVariants: [{ size: 'sm', css: { root: {} } }],
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const tabs = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return { root: ({ sm: "gap_4px" }[v0]) || '' }; }, {
+      slots: ['root'],
+      variants: { size: { sm: { root: { gap: '4px' } } } },
+      compoundVariants: [{ size: 'sm', css: { root: {} } }],
+    }, ["size"], { size: ["sm"] }, {});
+    "#);
+}
+
+#[test]
+fn encodes_a_cva_variant_whose_options_are_all_empty() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        export const button = cva({
+          base: { color: 'red' },
+          variants: { ghost: { true: {}, false: {} } },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["ghost"], v0 = _p0 === void 0 ? void 0 : _p0; return 'color_red'; }, {
+      base: { color: 'red' },
+      variants: { ghost: { true: {}, false: {} } },
+    }, ["ghost"], { ghost: ["true", "false"] });
+    "#);
+}
+
+#[test]
+fn a_default_variant_pointing_at_an_empty_option_adds_no_classes() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        export const button = cva({
+          variants: { disabled: { true: { opacity: '0.5' }, false: {} } },
+          defaultVariants: { disabled: false },
+        });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.changed);
+    assert_snapshot!(output.code, @r#"
+    import { attachRecipe as __pr } from '@pandacss-internal/css';
+    export const button = /* @__PURE__ */ __pr((p = {}) => { p ??= {}; const _p0 = p["disabled"], v0 = _p0 === void 0 ? false : _p0; return ({ true: "opacity_0.5" }[v0]) || ''; }, {
+      variants: { disabled: { true: { opacity: '0.5' }, false: {} } },
+      defaultVariants: { disabled: false },
+    }, ["disabled"], { disabled: ["true", "false"] });
     "#);
 }
 

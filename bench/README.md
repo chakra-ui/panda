@@ -16,6 +16,18 @@ Legacy comparison pins live in this package (`@pandacss/node@1.12.0` and friends
 `pnpm --filter=./bench` so those npm versions resolve. Root vitest aliases `@pandacss/*` into `packages/*/src` and
 cannot see `@pandacss/node`.
 
+## CLI cold start (`cold-start`)
+
+```sh
+pnpm --filter @pandacss/compiler build:native
+pnpm --filter @pandacss/compiler --filter @pandacss/config --filter @pandacss/cli build
+pnpm --filter=./bench cold-start            # --runs 10 by default
+```
+
+Times real `panda` processes on a small project with no presets, `preset-base`, and `preset-base` + `preset-panda`,
+against the workspace packages. The presets are copied into `node_modules` the way an install lays them out, and each
+run is a fresh process. `node startup` is the floor a process pays before any Panda code runs.
+
 ## Runtime SSR benchmark (`runtime-css`)
 
 ```sh
@@ -47,7 +59,7 @@ pnpm --filter=./bench transform-audit              # every project with a panda 
 pnpm --filter=./bench transform-audit website      # or specific projects
 ```
 
-Transforms every source file of each real project in the repo (`website`, `playground`, the sandboxes) with that
+Transforms every source file of each real project in the repo (`website`, `apps/playground`, the sandboxes) with that
 project's own config, and checks that every class the transform folded in is defined by the project's stylesheet. It
 exits non-zero on a miss. Classes the runtime also returns but whose styles are empty are listed in `EMPTY_RULES` with
 the reason. This caught condition chains the transform named in a different order than the stylesheet
@@ -60,11 +72,10 @@ pnpm --filter @pandacss/transformer build:fast   # the transformer and its inter
 pnpm --filter=./bench recipe-runtime             # CALLS=200000, RENDERS=20000 by default
 ```
 
-Runs each recipe two ways — the styled-system `cva`/`sva` and the transformer's specialized output — and checks
-both return the same classes before timing them. Sections: recipe
-calls per workload, the internal `cx` against a plain join, bundle bytes, and `styled()` configs rendered with
-`react-dom/server`. The transformer and `rolldown` load from `packages/transformer`, so the bench adds no dependencies
-of its own.
+Runs each recipe two ways — the styled-system `cva`/`sva` and the transformer's specialized output — and checks both
+return the same classes before timing them. Sections: recipe calls per workload, the internal `cx` against a plain join,
+bundle bytes, and `styled()` configs rendered with `react-dom/server`. The transformer and `rolldown` load from
+`packages/transformer`, so the bench adds no dependencies of its own.
 
 ## staticCss condition sweep (`static_css_conditions`)
 
@@ -79,6 +90,30 @@ is pure overhead. Guards the condition-lookup cache in `pandacss_config::Theme` 
 `rules x containers^2`.
 
 See [`staticcss-build-cost.md`](./staticcss-build-cost.md) for the measured before/after.
+
+## Recipe compositions (`recipe_compositions`)
+
+```sh
+cargo run -p pandacss_bench --bin recipe_compositions --release
+BENCH_CSS_OUT=out.css cargo run -p pandacss_bench --bin recipe_compositions --release
+```
+
+Emits CSS for 300 recipes and 100 slot recipes that mix explicit properties with `textStyle` / `layerStyle`, across
+variants, compound variants, and conditions. Guards the cost of resolving explicit-over-composition precedence. Diff the
+saved CSS between branches to check that only values change, not rule order.
+
+## SFC extraction (`sfc_extract`)
+
+```sh
+cargo run -p pandacss_bench --bin sfc_extract --release
+ONLY=astro-scripts cargo run -p pandacss_bench --bin sfc_extract --release
+```
+
+Extracts generated `.astro`, `.svelte` and `.vue` files at 25, 100 and 400 KB, `.astro` files with 0, 1, 10 and 100
+client scripts (with and without Panda imports), nesting depth, unclosed comments, and a mid-edit typo (an unclosed `{`
+in Svelte, unclosed `{{` in Vue). Each fixture asserts it extracts calls without warnings, and the script fixtures
+assert the exact count: the template's calls plus one per Panda script. `usPerKb` should stay flat across sizes of one
+scenario; a rise means a scan grew faster than the file.
 
 ## Current Targets
 

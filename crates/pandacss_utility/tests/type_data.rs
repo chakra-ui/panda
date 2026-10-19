@@ -347,3 +347,127 @@ fn collapses_resolved_gradient_category_keys_for_typegen() {
     assert_eq!(gradient.literals, ["to-r"]);
     assert_eq!(gradient.alias, "BackgroundGradientValue");
 }
+
+#[test]
+fn literal_keys_do_not_imply_a_token_category() {
+    let utility = Utility::from_config_with_options(
+        &utility_config(json!({
+            "flex": {
+                "values": { "1": "1 1 0%", "auto": "1 1 auto" }
+            },
+            "border": { "values": "borders" },
+            "customBorder": {
+                "values": { "1": "var(--borders-1)", "none": "none" }
+            }
+        })),
+        UtilityOptions {
+            tokens: Some(Arc::new(
+                TokenDictionary::builder()
+                    .insert(Token::new(
+                        "borders.1",
+                        "1px solid",
+                        "var(--borders-1)",
+                        TokenCategory::Borders,
+                    ))
+                    .build(),
+            )),
+            ..UtilityOptions::default()
+        },
+    );
+
+    let types = utility.type_data();
+    let properties = ["flex", "border", "customBorder"].map(|name| {
+        let property = &types.properties[name];
+        json!({
+            "name": name,
+            "tokenCategory": property.token_category,
+            "literals": property.literals,
+        })
+    });
+
+    assert_yaml_snapshot!(properties, @r#"
+    - name: flex
+      tokenCategory: ~
+      literals:
+        - "1"
+        - auto
+    - name: border
+      tokenCategory: borders
+      literals: []
+    - name: customBorder
+      tokenCategory: borders
+      literals:
+        - none
+    "#);
+}
+
+#[test]
+fn nested_text_style_default_is_named_by_its_parent_key() {
+    let mut utility = Utility::from_config(&utility_config(json!({})));
+    let theme: pandacss_config::Theme = serde_json::from_value(json!({
+        "textStyles": {
+            "DEFAULT": { "value": { "fontSize": "15px" } },
+            "body": {
+                "DEFAULT": { "value": { "fontSize": "16px" } },
+                "compact": { "value": { "fontSize": "14px" } }
+            }
+        }
+    }))
+    .unwrap();
+    utility.register_compositions(&theme);
+
+    let mut literals = utility.type_data().properties["textStyle"].literals.clone();
+    literals.sort();
+    assert_eq!(literals, ["DEFAULT", "body", "body.compact"]);
+}
+
+#[test]
+fn nested_layer_and_animation_style_defaults_are_named_by_their_parent_key() {
+    let mut utility = Utility::from_config(&utility_config(json!({})));
+    let theme: pandacss_config::Theme = serde_json::from_value(json!({
+        "layerStyles": {
+            "card": {
+                "DEFAULT": { "value": { "background": "white" } },
+                "muted": { "value": { "background": "gray" } }
+            }
+        },
+        "animationStyles": {
+            "fade": {
+                "DEFAULT": { "value": { "animationName": "fade" } },
+                "slow": { "value": { "animationName": "fade" } }
+            }
+        }
+    }))
+    .unwrap();
+    utility.register_compositions(&theme);
+
+    let type_data = utility.type_data();
+    let mut layer = type_data.properties["layerStyle"].literals.clone();
+    layer.sort();
+    let mut animation = type_data.properties["animationStyle"].literals.clone();
+    animation.sort();
+    assert_eq!(layer, ["card", "card.muted"]);
+    assert_eq!(animation, ["fade", "fade.slow"]);
+}
+
+#[test]
+fn default_in_the_middle_of_a_text_style_path_is_dropped_from_its_name() {
+    let mut utility = Utility::from_config(&utility_config(json!({})));
+    let theme: pandacss_config::Theme = serde_json::from_value(json!({
+        "textStyles": {
+            "heading": {
+                "h1": {
+                    "DEFAULT": { "value": { "fontSize": "32px" } },
+                    "light": { "value": { "fontWeight": "light" } }
+                }
+            },
+            "mid": { "DEFAULT": { "inner": { "value": { "letterSpacing": "1px" } } } }
+        }
+    }))
+    .unwrap();
+    utility.register_compositions(&theme);
+
+    let mut literals = utility.type_data().properties["textStyle"].literals.clone();
+    literals.sort();
+    assert_eq!(literals, ["heading.h1", "heading.h1.light", "mid.inner"]);
+}

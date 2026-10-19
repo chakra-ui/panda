@@ -144,16 +144,47 @@ fn expands_global_css_composition_props_through_utilities() {
     }));
     let css = compile_output(&config, "", StylesheetOptions::default())
         .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      pre, code {
+        animation: fade-in 120ms ease;
+        font-size: var(--font-sizes-sm);
+        line-height: var(--line-heights-tight);
+        background-color: var(--colors-red-500);
+      }
+    }
+    ");
+}
+
+#[test]
+fn global_css_text_style_uses_the_nested_default() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "textStyles": {
+                "body": {
+                    "DEFAULT": { "value": { "fontSize": "16px", "lineHeight": "1.6" } },
+                    "compact": { "value": { "fontSize": "14px" } }
+                }
+            }
+        },
+        "globalCss": {
+            "p.lead": { "textStyle": "body" }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
     assert_snapshot!(css, @r"
 @layer base {
   :root {
     --made-with-panda: '🐼';
   }
-  pre, code {
-    font-size: var(--font-sizes-sm);
-    line-height: var(--line-heights-tight);
-    background-color: var(--colors-red-500);
-    animation: fade-in 120ms ease;
+  p.lead {
+    font-size: 16px;
+    line-height: 1.6;
   }
 }
 ");
@@ -329,6 +360,41 @@ fn emits_global_css_from_serialized_config() {
 }
 
 #[test]
+fn global_css_nests_conditions_around_complex_selectors_like_css_nesting() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "dark": ".dark &",
+            "hover": "&:is(:hover, [data-hover])",
+            "icon": "& :where(svg)"
+        },
+        "utilities": { "color": { "className": "c" } },
+        "globalCss": {
+            ".btn": { "_dark": { "color": "white" } },
+            ".card .title": {
+                "_dark": { "color": "white" },
+                "_hover": { "_icon": { "color": "red" } }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .dark .btn, .dark :is(.card .title) {
+        color: white;
+      }
+      .card .title:is(:hover, [data-hover]) :where(svg) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
 fn emits_global_css_direct_nesting_and_conditions() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
@@ -438,17 +504,17 @@ fn emits_global_css_nested_utility_transforms() {
     }));
     let css = compile_output(&config, "", StylesheetOptions::default())
         .get_layer_css(&[StylesheetLayer::Base]);
-    assert_snapshot!(css, @r"
-@layer base {
-  :root {
-    --made-with-panda: '🐼';
-  }
-  .btn:hover > :not([hidden]) ~ :not([hidden]) {
-    border-inline-end-width: 0px;
-    border-inline-start-width: 40px;
-  }
-}
-");
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .btn:hover > :not([hidden]) ~ :not([hidden]) {
+        border-inline-start-width: 40px;
+        border-inline-end-width: 0px;
+      }
+    }
+    ");
 }
 
 #[test]
@@ -717,6 +783,126 @@ fn feature_selector_does_not_invalidate_a_duplicate_fallback_rule() {
       }
       .fallback {
         color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn global_css_text_style_expands_in_place() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "textStyles": { "body": { "value": { "color": "gray", "fontSize": "14px" } } }
+        },
+        "globalCss": {
+            "p.style-last": { "color": "blue", "textStyle": "body" },
+            "p.style-first": { "textStyle": "body", "color": "blue" }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      p.style-last {
+        color: gray;
+        font-size: 14px;
+      }
+      p.style-first {
+        color: blue;
+        font-size: 14px;
+      }
+    }
+    ");
+}
+
+#[test]
+fn global_css_puts_shorthands_before_longhands_and_keeps_authored_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "zIndex": { "className": "z" },
+            "color": { "className": "c" },
+            "borderColor": { "className": "bdc" },
+            "border": { "className": "bd" }
+        },
+        "globalCss": {
+            ".card": { "zIndex": "1", "color": "red", "borderColor": "blue", "border": "1px solid" }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .card {
+        border: 1px solid;
+        border-color: blue;
+        z-index: 1;
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn global_css_style_after_a_layer_style_overrides_it() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "borderColor": { "className": "bdc" },
+            "borderWidth": { "className": "bdw" }
+        },
+        "theme": {
+            "layerStyles": {
+                "card": { "value": { "borderWidth": "1px", "borderColor": "red" } }
+            }
+        },
+        "globalCss": {
+            ".card": { "layerStyle": "card", "borderColor": "blue" }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      .card {
+        border-width: 1px;
+        border-color: blue;
+      }
+    }
+    ");
+}
+
+#[test]
+fn token_expansion_preserves_longer_identifiers_and_uses_missing_token_fallbacks() {
+    let config = config(serde_json::json!({
+        "theme": { "tokens": { "colors": { "red": { "value": "#f00" } } } },
+        "globalCss": {
+            "body": {
+                "--value": "url(/a/mytoken(1).png) my-token(colors.red) xtoken(colors.red) 1token(colors.red) _token(colors.red) token(colors.red)",
+                "width": "token(sizes.ghost, 10px)"
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Base]);
+    assert_snapshot!(css, @"
+    @layer base {
+      :root {
+        --made-with-panda: '🐼';
+      }
+      body {
+        --value: url(/a/mytoken(1).png) my-token(colors.red) xtoken(colors.red) 1token(colors.red) _token(colors.red) var(--colors-red);
+        width: 10px;
       }
     }
     ");

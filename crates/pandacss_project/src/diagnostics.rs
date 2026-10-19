@@ -1,11 +1,36 @@
-use pandacss_encoder::ConditionMatcher;
+use pandacss_encoder::{ConditionMatcher, Encoder};
 use pandacss_extractor::{ExtractedCall, ExtractedJsx, LineIndex, MatchCategory, Span};
 use pandacss_literal::Literal;
 use pandacss_shared::{Diagnostic, diagnostic_codes};
-use pandacss_utility::Utility;
+use pandacss_system::{System, visit_call_style_strings, visit_jsx_style_strings};
+use pandacss_tokens::TokenDictionary;
+use pandacss_utility::{Utility, token_references};
 use rustc_hash::FxHashSet;
 
 use crate::ProjectConditionMatcher;
+
+/// Appends file-local style diagnostics shared by compilation and source inspection.
+pub fn append_usage_diagnostics(
+    system: &System,
+    calls: &[ExtractedCall],
+    jsx: &[ExtractedJsx],
+    line_index: &LineIndex<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    if let Some(utility) = system.utility() {
+        if !utility.deprecated_props().is_empty() {
+            push_deprecated_utility_diagnostics(calls, jsx, utility, line_index, out);
+        }
+
+        push_invalid_color_opacity_modifier_diagnostics(calls, jsx, utility, line_index, out);
+    }
+
+    push_unknown_condition_diagnostics(calls, jsx, system.conditions(), line_index, out);
+
+    if let Some(tokens) = system.token_dictionary() {
+        push_unknown_token_reference_diagnostics(system, calls, jsx, &tokens, line_index, out);
+    }
+}
 
 fn push_usage_diagnostics(
     calls: &[ExtractedCall],
@@ -157,6 +182,47 @@ fn unknown_condition_diagnostic(
     )
 }
 
+pub(super) fn push_nested_property_diagnostic(
+    encoder: &mut Encoder<ProjectConditionMatcher>,
+    system: &System,
+    span: Option<Span>,
+    line_index: &LineIndex<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    let (Some(nested), Some(span)) = (encoder.take_nested_property(), span) else {
+        return;
+    };
+    out.push(located_warning(
+        diagnostic_codes::NESTED_PROPERTY,
+        system.nested_property_message(&nested),
+        span,
+        line_index,
+    ));
+}
+
+pub(super) fn push_config_recipe_nested_property_diagnostics(
+    system: &System,
+    out: &mut Vec<Diagnostic>,
+) {
+    let mut encoder = Encoder::with_conditions(system.conditions().clone());
+    let mut push = |source: &str, encoder: &mut Encoder<ProjectConditionMatcher>| {
+        if let Some(nested) = encoder.take_nested_property() {
+            out.push(Diagnostic::warning(
+                diagnostic_codes::NESTED_PROPERTY,
+                format!("{source}: {}", system.nested_property_message(&nested)),
+            ));
+        }
+    };
+    for (source, _, recipe) in system.config_recipes() {
+        system.process_recipe_atoms(&mut encoder, recipe);
+        push(&source, &mut encoder);
+    }
+    for (source, _, recipe) in system.config_slot_recipes() {
+        system.process_slot_recipe_atoms(&mut encoder, recipe);
+        push(&source, &mut encoder);
+    }
+}
+
 pub(super) fn push_invalid_color_opacity_modifier_diagnostics(
     calls: &[ExtractedCall],
     jsx: &[ExtractedJsx],
@@ -216,6 +282,43 @@ fn invalid_color_opacity_modifier_diagnostic(
         format!(
             "Color value `{value}` has an invalid opacity modifier; expected a number (e.g. `40`) or an opacity token (e.g. `half`)"
         ),
+        span,
+        line_index,
+    )
+}
+
+fn push_unknown_token_reference_diagnostics(
+    system: &System,
+    calls: &[ExtractedCall],
+    jsx: &[ExtractedJsx],
+    tokens: &TokenDictionary,
+    line_index: &LineIndex<'_>,
+    out: &mut Vec<Diagnostic>,
+) {
+    let mut seen = FxHashSet::default();
+    let mut collect = |span, text: &str| {
+        for (path, _) in token_references(text, tokens) {
+            if tokens.token(path).is_none() && seen.insert((span, path.to_owned())) {
+                out.push(unknown_token_reference_diagnostic(path, span, line_index));
+            }
+        }
+    };
+    for call in calls {
+        visit_call_style_strings(system, call, |_, text| collect(call.span, text));
+    }
+    for entry in jsx {
+        visit_jsx_style_strings(system, entry, |_, text| collect(entry.span, text));
+    }
+}
+
+fn unknown_token_reference_diagnostic(
+    path: &str,
+    span: Span,
+    line_index: &LineIndex<'_>,
+) -> Diagnostic {
+    located_warning(
+        diagnostic_codes::UNKNOWN_TOKEN_REFERENCE,
+        format!("Token `{path}` was not found. Check the path or add the token to your theme."),
         span,
         line_index,
     )

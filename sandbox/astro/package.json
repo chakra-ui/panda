@@ -13,8 +13,8 @@
     "cssgen": "panda cssgen"
   },
   "dependencies": {
-    "@astrojs/solid-js": "5.1.3",
-    "astro": "6.4.8",
+    "@astrojs/solid-js": "7.0.2",
+    "astro": "7.3.5",
     "solid-js": "1.9.15"
   },
   "devDependencies": {

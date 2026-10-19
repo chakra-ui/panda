@@ -78,7 +78,7 @@ describe('cli smoke', () => {
       debug Dump resolved config and per-file extraction for bug reports
       buildinfo Build a portable panda.buildinfo.json for a design-system library
       lib Publish a design system: write machine artifacts under panda/, and sync package.json exports
-      analyze Inspect Panda usage across project sources
+      analyze Inspect Panda usage across project sources and configured styles
       codegen Generate the panda system
       cssgen Generate CSS from project files
 

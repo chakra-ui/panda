@@ -109,8 +109,8 @@ fn a_position_try_call_in_css_emits_the_theme_block() {
 
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
-    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+    @layer recipes { @layer base, slots, variants, compound_variants; }
+    @layer recipes.slots { @layer base, variants, compound_variants; }
     @layer base {
       :root {
         --made-with-panda: '🐼';
@@ -149,8 +149,8 @@ fn the_prefix_applies_to_both_the_value_and_the_block() {
 
     assert_snapshot!(css, @"
     @layer reset, base, tokens, recipes, utilities;
-    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+    @layer recipes { @layer base, slots, variants, compound_variants; }
+    @layer recipes.slots { @layer base, variants, compound_variants; }
     @layer base {
       :root {
         --made-with-panda: '🐼';

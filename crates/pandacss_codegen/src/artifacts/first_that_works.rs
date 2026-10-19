@@ -101,4 +101,6 @@ const FIRST_THAT_WORKS_FN_TYPE: &str = "<
   sixth?: F,
 ) => T extends FirstThatWorksMember ? A | B | C | D | E | F : FirstThatWorksMemberOf<T>";
 
-const FIRST_THAT_WORKS_IMPL: &str = "(...values: any[]) => `__FN__(${values.join('__SEP__')})`";
+// The declared return type is the member you passed in, so style props accept it; the
+// runtime returns a `firstThatWorks(...)` token. `as never` bridges the two.
+const FIRST_THAT_WORKS_IMPL: &str = "(...values: Array<FirstThatWorksMember | undefined>) => `__FN__(${values.join('__SEP__')})` as never";

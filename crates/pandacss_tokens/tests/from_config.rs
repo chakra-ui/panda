@@ -765,6 +765,22 @@ fn snapshot_token_details(dict: &TokenDictionary) -> Vec<serde_json::Value> {
 }
 
 #[test]
+fn negative_spacing_token_var_resolves_to_its_calc_value() {
+    let dict = build_dictionary(json!({
+        "theme": { "tokens": { "spacing": { "2": { "value": "0.5rem" } } } }
+    }));
+
+    assert_eq!(
+        dict.get_var_str("spacing.-2", None),
+        Some("calc(var(--spacing-2) * -1)")
+    );
+    assert_eq!(
+        dict.get_var_str("spacing.2", None),
+        Some("var(--spacing-2)")
+    );
+}
+
+#[test]
 fn negative_spacing_covers_the_shapes_a_scale_can_take() {
     let dictionary = build_dictionary(json!({
         "theme": {
@@ -831,4 +847,106 @@ fn negative_spacing_keeps_fractional_names_intact() {
         .expect("fractional negative should exist");
     assert_eq!(half.extension("prop"), Some("-0.5"));
     assert_eq!(half.extension("originalPath"), Some("spacing.0.5"));
+}
+
+#[test]
+fn runtime_negative_spacing_variables_match_v1_without_changing_style_values() {
+    let dict = build_dictionary(json!({
+        "theme": {
+            "tokens": {
+                "spacing": {
+                    "1.5": { "value": "0.375rem" }
+                }
+            }
+        }
+    }));
+    let variable = r"var(--spacing-1\.5)";
+    let negative_value = format!("calc({variable} * -1)");
+
+    assert_eq!(dict.runtime_var_str("spacing.1.5", None), Some(variable));
+    assert_eq!(dict.runtime_var_str("spacing.-1.5", None), Some(variable));
+    assert_eq!(
+        dict.get_var_str("spacing.-1.5", None),
+        Some(negative_value.as_str())
+    );
+    assert_eq!(
+        dict.runtime_value_str("spacing.-1.5", None),
+        Some(negative_value.as_str())
+    );
+    assert_eq!(
+        dict.runtime_var_str("spacing.-1.5", Some("ignored")),
+        Some(variable)
+    );
+    assert_eq!(
+        dict.runtime_var_str("spacing.missing", Some("fallback")),
+        Some("fallback")
+    );
+    assert_eq!(dict.runtime_var_str("spacing.missing", None), None);
+}
+
+#[test]
+fn custom_token_categories_are_collected() {
+    let dict = build_dictionary(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "red": { "value": "rebeccapurple" } },
+                "foobar": {
+                    "example": { "value": "test" },
+                    "count": { "value": 2 }
+                }
+            },
+            "semanticTokens": {
+                "foobar": {
+                    "accent": {
+                        "value": { "base": "{foobar.example}", "_dark": "dark" }
+                    }
+                }
+            }
+        }
+    }));
+
+    assert_yaml_snapshot!(snapshot_tokens(&dict), @r#"
+    - path: colors.red
+      value: rebeccapurple
+      var: var(--colors-red)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: foobar.example
+      value: test
+      var: var(--foobar-example)
+      category: foobar
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: foobar.count
+      value: "2"
+      var: var(--foobar-count)
+      category: foobar
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: foobar.accent
+      value: var(--foobar-example)
+      var: var(--foobar-accent)
+      category: foobar
+      condition: ~
+      deprecated: false
+      description: ~
+    - path: foobar.accent
+      value: dark
+      var: var(--foobar-accent)
+      category: foobar
+      condition: _dark
+      deprecated: false
+      description: ~
+    - path: colors.colorPalette
+      value: var(--colors-color-palette)
+      var: var(--colors-color-palette)
+      category: colors
+      condition: ~
+      deprecated: false
+      description: ~
+    "#);
 }

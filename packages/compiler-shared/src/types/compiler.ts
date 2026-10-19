@@ -9,6 +9,7 @@ import type {
   FileInspectionBatch,
   FileInspectionResult,
   SourceFileInput,
+  UsageRequirements,
   ParsedFileView,
   ParseFileReport,
   ProjectSummary,
@@ -261,6 +262,8 @@ export interface Compiler {
     packages: Array<{ packageRoots: string[]; excludeModules?: string[] }>,
   ): Array<string[] | null>
   isSourceFile(path: string): boolean
+  /** The tracked path for `path`, following symlinks. */
+  resolveSourcePath(path: string): string
   parseFiles(paths: string[]): ParseFileReport[]
   parseFile(path: string): ParseFileReport
   parseFileSource(path: string, source: string): ParseFileReport
@@ -300,6 +303,7 @@ export interface Compiler {
    */
   extractFileSource(path: string, source: string): ExtractResult
   inspectFile(input: SourceFileInput): FileInspectionResult
+  inspectUsageRequirements(files: SourceFileInput[]): UsageRequirements
   inspectFiles(files: SourceFileInput[]): FileInspectionBatch
   resolveUtilityValue(input: ResolveUtilityValueInput): ResolvedUtilityValue | null
   suggestTokens(prop: string, value: string): TokenSuggestion[]

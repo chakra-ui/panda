@@ -14,7 +14,47 @@ impl WasmCompiler {
     /// Returns a JS error if serialization fails.
     #[wasm_bindgen(js_name = inspectFileSource)]
     pub fn inspect_file_source(&self, path: &str, source: &str) -> Result<JsValue, JsValue> {
-        let result = pandacss_compiler::inspect_file_source(self.inner.system(), path, source);
+        let result = pandacss_compiler::inspect_file_source(
+            self.inner.system(),
+            &self.user_config,
+            path,
+            source,
+        );
+        let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
+        result
+            .serialize(&serializer)
+            .map_err(|err| JsValue::from_str(&err.to_string()))
+    }
+
+    /// Collect dependencies of styles selected by fresh sources and configuration.
+    ///
+    /// # Errors
+    /// Returns a JS error if the input or result cannot be serialized.
+    #[wasm_bindgen(js_name = inspectUsageRequirements)]
+    pub fn inspect_usage_requirements(&mut self, files: JsValue) -> Result<JsValue, JsValue> {
+        let files: Vec<pandacss_compiler::UsageSource> = serde_wasm_bindgen::from_value(files)
+            .map_err(|err| JsValue::from_str(&err.to_string()))?;
+
+        let mut project = self.inner.fork_without_sources();
+        let cache = std::mem::take(&mut self.callbacks.transform_cache);
+        for file in files {
+            super::files::parse_project_source(
+                &mut project,
+                &mut self.callbacks,
+                &file.path,
+                &file.source,
+                None,
+            );
+        }
+
+        let result = super::css::with_project_stylesheet_transforms(
+            &mut project,
+            &self.user_config,
+            &mut self.callbacks,
+            pandacss_compiler::collect_usage_requirements,
+        );
+        self.callbacks.transform_cache = cache;
+
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
         result
             .serialize(&serializer)
@@ -45,6 +85,7 @@ impl WasmCompiler {
             "cssValue": resolved.css_value.to_json(),
             "important": resolved.important,
             "source": pandacss_compiler::utility_value_source_json(resolved.source),
+            "tokens": resolved.tokens,
         });
 
         let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);

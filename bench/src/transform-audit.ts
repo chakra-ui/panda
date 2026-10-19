@@ -28,7 +28,7 @@ const TOOLING_CONFIG = /(panda|vite|postcss|next|astro|svelte)\.config\./
 const STRING_LITERAL = /(["'`])((?:\\.|(?!\1)[^\\\n])*)\1/g
 
 function projectsWithConfig(): string[] {
-  const candidates = ['website', 'playground', ...readdir('sandbox').map((name) => `sandbox/${name}`)]
+  const candidates = ['website', 'apps/playground', ...readdir('sandbox').map((name) => `sandbox/${name}`)]
   return candidates.filter((project) =>
     ['ts', 'mjs', 'js'].some((ext) => existsSync(join(repoRoot, project, `panda.config.${ext}`))),
   )

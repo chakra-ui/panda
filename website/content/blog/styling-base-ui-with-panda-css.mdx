@@ -323,10 +323,10 @@ export function NotificationsPopover() {
 ### Style context
 
 Passing `styles.trigger`, `styles.popup`, and the rest works. If you reuse the Popover, wrap [Base UI] parts once with
-`createStyleContext`. It returns components with the recipe styles attached.
+`createSlotRecipeContext`. It returns components with the recipe styles attached.
 
-`createStyleContext` is imported from `styled-system/jsx`, which Panda only generates when `jsxFramework` is set. If you
-haven't already, add it to your `panda.config.ts`:
+`createSlotRecipeContext` is imported from `styled-system/jsx`, which Panda only generates when `jsxFramework` is set.
+If you haven't already, add it to your `panda.config.ts`:
 
 ```ts
 // panda.config.ts
@@ -344,10 +344,10 @@ part once, map it to a slot, and export the set as a `Popover` object. Parts tha
 ```tsx
 // components/ui/popover.tsx
 import { Popover as BasePopover } from '@base-ui/react/popover'
-import { createStyleContext } from 'styled-system/jsx'
+import { createSlotRecipeContext } from 'styled-system/jsx'
 import { popover } from './popover-styles'
 
-const { withRootProvider, withContext } = createStyleContext(popover)
+const { withRootProvider, withContext } = createSlotRecipeContext(popover)
 
 export const Popover = {
   // Root renders no DOM element, so it only provides context
@@ -386,7 +386,7 @@ export function NotificationsPopover() {
 }
 ```
 
-[See the createStyleContext version on StackBlitz](https://stackblitz.com/edit/stackblitz-starters-cxtirdhq?file=app%2Fpopover-with-style-context.tsx).
+[See how to use slot recipe context](/docs/recipes/slot-recipe-context).
 
 Two details matter:
 
@@ -399,7 +399,7 @@ Two details matter:
 [Base UI] gives you accessible, unstyled components. Panda gives you tokens, conditions, and recipes for the visual
 layer. Style each part through `className`, then use `_checked`, `_open`, `_disabled`, and the other built-in conditions
 against [Base UI]'s state attributes. For multi-part components, use a slot recipe. When you want reusable components,
-wrap that recipe with `createStyleContext`.
+wrap that recipe with `createSlotRecipeContext`.
 
 To go deeper, see the Panda docs on [recipes](/docs/recipes/atomic-recipe), [slot recipes](/docs/recipes/slot-recipes),
 [conditional styles](/docs/styling/conditional-styles), and [slot recipe context](/docs/recipes/slot-recipe-context).

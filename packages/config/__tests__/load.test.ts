@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -528,6 +528,111 @@ describe('loadConfig presets', () => {
     expect(new Set(result.dependencies).size).toBe(result.dependencies.length)
   })
 
+  test('reloads a string preset when a file it imports changes', async () => {
+    const cwd = writeTempProject({
+      'preset-token.ts': `export const presetColor = '#0f0'`,
+      'preset.ts': `import { presetColor } from './preset-token'
+        export default { theme: { extend: { tokens: { colors: { brand: { value: presetColor } } } } } }`,
+      'panda.config.ts': `export default { outdir: 'styled-system', presets: ['./preset.ts'] }`,
+    })
+    const brand = (result: LoadConfigResult) => (result.config.theme as any).tokens.colors.brand
+
+    const first = await loadConfig({ cwd })
+    const second = await loadConfig({ cwd })
+    expect(brand(first)).toEqual({ value: '#0f0' })
+    expect(second.config).toEqual(first.config)
+
+    const token = join(cwd, 'preset-token.ts')
+    writeFileSync(token, `export const presetColor = '#f00'`)
+    const later = new Date(Date.now() + 10_000)
+    utimesSync(token, later, later)
+
+    expect(brand(await loadConfig({ cwd }))).toEqual({ value: '#f00' })
+  })
+
+  const brandPreset = (color: string) =>
+    `export default { theme: { tokens: { colors: { brand: { value: '${color}' } } } } }`
+  const brand = (result: LoadConfigResult) => (result.config.theme as any).tokens.colors.brand.value
+  const touch = (path: string) => {
+    const later = new Date(Date.now() + 10_000)
+    utimesSync(path, later, later)
+  }
+
+  test('imports an installed ESM preset package once until it is reinstalled', async () => {
+    const evaluated = (color: string) =>
+      `globalThis.__brandPresetEvals = (globalThis.__brandPresetEvals ?? 0) + 1\n${brandPreset(color)}`
+    const cwd = writeTempProject({
+      'node_modules/brand-preset/package.json': JSON.stringify({
+        name: 'brand-preset',
+        type: 'module',
+        exports: './index.js',
+      }),
+      'node_modules/brand-preset/index.js': evaluated('#0f0'),
+      'panda.config.ts': `export default { outdir: 'styled-system', presets: ['brand-preset'] }`,
+    })
+    const evals = () => (globalThis as { __brandPresetEvals?: number }).__brandPresetEvals
+
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0')
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0')
+    expect(evals()).toBe(1)
+
+    const entry = join(cwd, 'node_modules/brand-preset/index.js')
+    writeFileSync(entry, evaluated('#f00'))
+    touch(entry)
+    const reloaded = await loadConfig({ cwd })
+    expect(brand(reloaded)).toBe('#f00')
+    expect(evals()).toBe(2)
+    expect(reloaded.dependencies).toContain(join('node_modules', 'brand-preset', 'index.js'))
+  })
+
+  test('gives preset:resolved hooks a copy of an installed preset', async () => {
+    const cwd = writeTempProject({
+      'node_modules/brand-preset/package.json': JSON.stringify({
+        name: 'brand-preset',
+        type: 'module',
+        exports: './index.js',
+      }),
+      'node_modules/brand-preset/index.js': brandPreset('#0f0'),
+      'panda.config.ts': `export default {
+        outdir: 'styled-system',
+        presets: ['brand-preset'],
+        plugins: [{ name: 'suffix', hooks: { 'preset:resolved': ({ preset }) => { preset.theme.tokens.colors.brand.value += '!' } } }],
+      }`,
+    })
+
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0!')
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0!')
+  })
+
+  test('bundles a CommonJS preset package given by name', async () => {
+    const result = await loadTempConfig({
+      'node_modules/cjs-brand/package.json': JSON.stringify({ name: 'cjs-brand', main: 'index.cjs' }),
+      'node_modules/cjs-brand/index.cjs': `module.exports = { theme: { tokens: { colors: { brand: { value: '#0f0' } } } } }`,
+      'panda.config.ts': `export default { outdir: 'styled-system', presets: ['cjs-brand'] }`,
+    })
+
+    expect(brand(result)).toBe('#0f0')
+  })
+
+  test('bundles a workspace-linked preset so edits to its imports show up', async () => {
+    const workspace = writeTempProject({
+      'package.json': JSON.stringify({ name: 'linked-brand', type: 'module', exports: './index.js' }),
+      'tokens.js': `export const color = '#0f0'`,
+      'index.js': `import { color } from './tokens.js'
+        export default { theme: { tokens: { colors: { brand: { value: color } } } } }`,
+    })
+    const cwd = writeTempProject({
+      'panda.config.ts': `export default { outdir: 'styled-system', presets: ['linked-brand'] }`,
+    })
+    mkdirSync(join(cwd, 'node_modules'), { recursive: true })
+    symlinkSync(workspace, join(cwd, 'node_modules/linked-brand'), 'junction')
+
+    expect(brand(await loadConfig({ cwd }))).toBe('#0f0')
+
+    writeFileSync(join(workspace, 'tokens.js'), `export const color = '#f00'`)
+    expect(brand(await loadConfig({ cwd }))).toBe('#f00')
+  })
+
   test('bundles a config that imports a CommonJS node_modules preset', async () => {
     // require() forces rolldown's createRequire(import.meta.url) interop; __esModule +
     // exports.default exercises the default-import unwrap that bundling must preserve.
@@ -631,6 +736,143 @@ describe('loadConfig presets', () => {
 })
 
 describe('loadConfig module loading', () => {
+  test('loads tokens from a UI library without running its unused components', async () => {
+    const result = await loadTempConfig({
+      'node_modules/@acme/ds/package.json': JSON.stringify({
+        name: '@acme/ds',
+        type: 'module',
+        sideEffects: false,
+        exports: './index.js',
+      }),
+      'node_modules/@acme/ds/index.js': [
+        "export { colors } from './colors.js'",
+        "export { Button } from './button.js'",
+      ].join('\n'),
+      'node_modules/@acme/ds/colors.js': "export const colors = { brand: { value: '#0f0' } }",
+      'node_modules/@acme/ds/button.js': ['globalThis.__acmeButtonRan = true', 'export const Button = () => null'].join(
+        '\n',
+      ),
+      'panda.config.ts': [
+        "import { colors } from '@acme/ds'",
+        "export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: colors.brand.value + (globalThis.__acmeButtonRan ? ' button-ran' : '') } } } } }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"#0f0"`)
+  })
+
+  test('runs a side-effect import from the config even when the package declares no side effects', async () => {
+    const result = await loadTempConfig({
+      'node_modules/liar/package.json': JSON.stringify({
+        name: 'liar',
+        type: 'module',
+        sideEffects: false,
+        exports: { './setup': './setup.js' },
+      }),
+      'node_modules/liar/setup.js': "globalThis.__liarBrand = '#0f0'",
+      'panda.config.ts': [
+        "import 'liar/setup'",
+        "export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: globalThis.__liarBrand } } } } }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"#0f0"`)
+  })
+
+  test('runs a local side-effect import from the config', async () => {
+    const result = await loadTempConfig({
+      'register.ts': "globalThis.__localBrand = '#0f0'",
+      'panda.config.ts': [
+        "import './register'",
+        "export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: globalThis.__localBrand } } } } }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"#0f0"`)
+  })
+
+  test('keeps side effects of a package without a sideEffects field', async () => {
+    const result = await loadTempConfig({
+      'node_modules/plain/package.json': JSON.stringify({ name: 'plain', type: 'module', exports: './index.js' }),
+      'node_modules/plain/index.js': [
+        "export { colors } from './colors.js'",
+        "export { other } from './other.js'",
+      ].join('\n'),
+      'node_modules/plain/colors.js': "export const colors = { brand: { value: '#0f0' } }",
+      'node_modules/plain/other.js': ['globalThis.__plainOtherRan = true', 'export const other = 1'].join('\n'),
+      'panda.config.ts': [
+        "import { colors } from 'plain'",
+        "export default { outdir: 'styled-system', theme: { tokens: { colors: { brand: { value: colors.brand.value + (globalThis.__plainOtherRan ? ' other-ran' : '') } } } } }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"#0f0 other-ran"`)
+  })
+
+  test('reads one member of a namespace import', async () => {
+    const result = await loadTempConfig({
+      'node_modules/ns/package.json': JSON.stringify({
+        name: 'ns',
+        type: 'module',
+        sideEffects: false,
+        exports: './index.js',
+      }),
+      'node_modules/ns/index.js': [
+        "export const colors = { brand: { value: '#0f0' } }",
+        'export const unused = { big: true }',
+      ].join('\n'),
+      'panda.config.ts': [
+        "import * as ds from 'ns'",
+        "export default { outdir: 'styled-system', theme: { tokens: { colors: ds.colors } } }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"#0f0"`)
+  })
+
+  test('bundles a design-system package the config imports instead of loading it module by module', () => {
+    const components = Array.from({ length: 20 }, (_, index) => `component${index}`)
+    const dir = writeTempProject({
+      'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds', type: 'module', exports: './index.js' }),
+      'node_modules/@acme/ds/index.js': [
+        "export { colors } from './colors.js'",
+        ...components.map((name) => `export { ${name} } from './${name}.js'`),
+      ].join('\n'),
+      'node_modules/@acme/ds/colors.js': "export const colors = { brand: { value: '#0f0' } }",
+      ...Object.fromEntries(
+        components.map((name) => [`node_modules/@acme/ds/${name}.js`, `export const ${name} = () => null`]),
+      ),
+      'panda.config.ts': [
+        "import { colors } from '@acme/ds'",
+        "export default { outdir: 'styled-system', theme: { tokens: { colors } } }",
+      ].join('\n'),
+    })
+    const loadPath = process.cwd().endsWith(join('packages', 'config'))
+      ? join(process.cwd(), 'src/load.ts')
+      : join(process.cwd(), 'packages/config/src/load.ts')
+    const script = `
+      import { registerHooks } from 'node:module'
+      let packageModules = 0
+      registerHooks({
+        load(url, context, next) {
+          if (url.includes('/node_modules/@acme/ds/')) packageModules++
+          return next(url, context)
+        },
+      })
+      const { loadConfig } = await import(${JSON.stringify(pathToFileURL(loadPath).href)})
+      const result = await loadConfig({ cwd: ${JSON.stringify(dir)} })
+      console.log(JSON.stringify({ brand: result.config.theme.tokens.colors.brand.value, packageModules }))
+    `
+
+    // A child Node process, like the CLI: the Vitest module runner takes a different load path.
+    const output = execFileSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', script], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+    })
+
+    expect(JSON.parse(output)).toEqual({ brand: '#0f0', packageModules: 0 })
+  })
+
   test('loads configs that use local dynamic imports', () => {
     const dir = writeTempProject({
       'preset.ts': `export default {

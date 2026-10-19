@@ -15,19 +15,9 @@ impl TokenDictionary {
         let mut categories = BTreeMap::new();
 
         for (category, values) in &self.category_values_cache {
-            let category_name = category.as_str();
-            let name = category_name.to_owned();
+            let name = category.as_str().to_owned();
 
-            // Category-relative (`red.500`, not `colors.red.500`) — matches legacy codegen.
-            let mut values = values
-                .keys()
-                .map(|key| {
-                    let key = key.as_ref();
-                    key.strip_prefix(category_name)
-                        .and_then(|rest| rest.strip_prefix('.'))
-                        .map_or_else(|| key.to_owned(), ToOwned::to_owned)
-                })
-                .collect::<Vec<_>>();
+            let mut values = values.keys().map(ToString::to_string).collect::<Vec<_>>();
             values.sort();
             values.shrink_to_fit();
 

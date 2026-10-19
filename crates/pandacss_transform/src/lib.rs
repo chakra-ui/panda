@@ -8,6 +8,7 @@
 mod apply;
 mod css_keys;
 mod css_partial;
+mod diagnostics;
 mod helper;
 mod imports;
 mod js;
@@ -92,6 +93,22 @@ pub fn transform_source_with(
         None => source,
     };
 
+    // MDX support is extraction-only; leave its source unchanged.
+    if std::path::Path::new(path)
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("mdx"))
+    {
+        return TransformOutput {
+            code: source.to_owned(),
+            map: None,
+            changed: false,
+            bailed: true,
+            diagnostics: Vec::new(),
+            dependencies: Vec::new(),
+            helper: TransformHelperFacts::default(),
+        };
+    }
+
     let extracted = {
         let _span = tracing::trace_span!(target: "transform", "transform_extract").entered();
         let mut resolve_recipe_raw = |factory: &str, definition: &Literal, props: &Literal| {
@@ -108,7 +125,16 @@ pub fn transform_source_with(
         let _span = tracing::trace_span!(target: "transform", "transform_plan").entered();
         plan::build_plan(system, source, &extracted, options, transforms.pattern)
     };
+    let nested_diagnostics = diagnostics::nested_property_diagnostics(
+        system,
+        source,
+        path,
+        &extracted,
+        &options.targets,
+        &plan.rewrites,
+    );
     let mut diagnostics = extracted.diagnostics;
+    diagnostics.extend(nested_diagnostics);
     diagnostics.extend(
         plan.hashed_recipe
             .map(|span| hashed_recipe_warning(path, span)),

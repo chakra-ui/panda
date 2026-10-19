@@ -10,17 +10,17 @@ for the browser playground with `--no-default-features --features memory`.
 
 ## Why a new crate, why now
 
-Today only `CrossFileResolver::extract_exports` reads from disk (`std::fs::read_to_string`). One read path doesn't
-justify an abstraction layer. But three forcing functions land at once:
+Before this abstraction, `CrossFileResolver::extract_exports` read directly from disk. Three requirements drove the move
+to an injected filesystem:
 
 1. **WASM / browser playground.** `wasm32-unknown-unknown` has no `std::fs`. The Rust engine has to run in the browser
-   eventually (current playground uses ts-morph's `useInMemoryFileSystem`; v2 wants to swap to the Rust engine via
-   wasm). Every `std::fs::*` call in core crates becomes a compile error on that target.
+   through `@pandacss/compiler-wasm`, which the playground now uses. Core filesystem calls must go through the injected
+   filesystem so they work on both native and WASM targets.
 2. **Glob resolution for `include` / `exclude`.** Panda v1's `Runtime.fs.glob` (in `nodeRuntime`) handles
    `{ include, exclude, cwd }` discovery against `fast-glob`. The Rust side needs the same so a wasm host can feed
    source files through globbing rather than enumerating every path manually.
-3. **Better tests.** `crates/pandacss_extractor/tests/cross_file.rs` writes to `tempfile::TempDir` today — slow, leaky,
-   parallel-unsafe. In-memory fixtures fix all three.
+3. **Better tests.** Cross-file tests previously wrote fixtures to `tempfile::TempDir`. In-memory fixtures now keep
+   those tests independent of disk.
 
 The abstraction was originally scoped out (see [scope-and-boundaries](./scope-and-boundaries.md) before this note
 landed). The WASM requirement reversed that decision.
@@ -144,18 +144,37 @@ watch list — see [output-and-host-layer](./output-and-host-layer.md).
 2. Seed the queue with `walk_roots(opts)` rather than `cwd`. A root whose `read_dir` fails with `NotFound` or
    `PermissionDenied` is skipped (a hoisted base may not exist; missing dirs yield `[]`, matching `fast-glob`).
 3. For each entry, walked breadth-first:
-   - Compute path relative to `cwd` (patterns stay `cwd`-relative regardless of the start root).
+   - Match each glob against the path in its own form: absolute for an absolute glob, otherwise `cwd`-relative with `..`
+     once the path leaves `cwd`, so `../packages/ui/**` reaches a sibling package. An include only matches files under
+     its own walk root, so `**/*.tsx` never claims files outside `cwd`.
    - If any `exclude` pattern matches → prune. **Important: pruning at the dir level skips descending entirely**, so
      `node_modules/**` in `exclude` never enters the directory.
-   - If entry is a dir → push to queue.
+   - If entry is a dir → push to queue only when some include could match a file below it
+     (`SourceMatcher::may_include_under`, matched one path segment at a time; `**` or a brace holding `/` keeps it).
+     `../*/src/*.ts` never enters `../*/node_modules`, so pnpm workspace links aren't followed into an exponential
+     number of paths.
    - Else if any `include` pattern matches → add to results.
 4. Sort results for determinism.
 
 The directory-pruning rule matters for performance. Without it, an exclude pattern for `node_modules/**` would still
 call `read_dir` on every nested directory before filtering — orders of magnitude slower on real projects.
 
+Roots and results are lexically normalized (`a/../b` → `b`). `SourceMatcher` holds these rules and is shared by both
+walkers and `matches_globs`, so a watch event classifies a file exactly as `scan()` found it. `isSourceFile` uses
+`matches_globs_in`, which compares real paths. `resolveSourcePath` maps a symlinked spelling of a tracked file back to
+its entry via `path_aliases`: the real path re-rooted under each symlinked root, so cost scales with roots, not files.
+`scan()` keeps paths spelled under the `cwd` it was given.
+
 **`OsFileSystem` overrides `glob`** to run one `walkdir` per hoisted root instead of recursive `read_dir`. Same
-`fast-glob` matchers, faster directory traversal on native. The default walker stays in place for `MemoryFileSystem`
+`fast-glob` matchers, faster directory traversal on native.
+
+**Symlinks.** Each root is walked without following links first, recording every real directory it enters. Symlinked
+directories found along the way are walked afterwards (sorted, breadth-first), each only if its real target wasn't
+entered yet. So a file is reported once, under its real spelling when the walk reaches it directly, and pnpm workspace
+links or cycles can't multiply the walk (a 16-package workspace under `../**/src/*.ts` went from 65,535 paths to 16).
+Links to targets outside the walked tree are still followed. One accepted gap, shared with TypeScript's `include`: if a
+link's name is what makes a file match (`app/src -> ../lib/code` under `*/src/*.ts`) and the target was already entered
+under its real path, the link spelling is skipped. Symlinked files are reported under the link path, as before. The default walker stays in place for `MemoryFileSystem`
 (read_dir on a HashMap is already O(1) per dir).
 
 ## Crate layout
@@ -185,9 +204,9 @@ crates/pandacss_fs/
 Tier-0 — sits below Tier 1 (`pandacss_tokens`, `pandacss_recipes`) in [crate-layering](./crate-layering.md). No
 Panda-specific data shapes; pure infrastructure.
 
-Path-string rules (`/` separators, `.`/`..` folding, a leading `./` on glob patterns) live here too, even though they
-do no IO, so every crate normalizes paths the same way. A leading `..` is kept, so a path outside the project root
-never collapses onto a project module.
+Path-string rules (`/` separators, `.`/`..` folding, a leading `./` on glob patterns) live here too, even though they do
+no IO, so every crate normalizes paths the same way. A leading `..` is kept, so a path outside the project root never
+collapses onto a project module.
 
 ## WASM constraints
 
@@ -291,8 +310,8 @@ the concrete fs, so no `dyn` is needed — each binding monomorphizes over its o
 
 ## What this leaves for later
 
-- **`pandacss_discover` crate.** When file discovery moves into Rust (currently JS does it), this crate would consume
-  `pandacss_fs` for the walk + `ignore` for `.gitignore` semantics. Out of scope for Phase A/B.
+- **`.gitignore` semantics.** Source discovery already runs through `pandacss_fs`. Supporting `.gitignore` would require
+  an additional filtering layer; it remains out of scope for Phase A/B.
 - **Native file watching.** `notify-debouncer-full` style. Stays out of v2.x per
   [scope-and-boundaries](./scope-and-boundaries.md).
 - **Persistent cache.** Add a crate only when cache behavior is implemented; it should use `pandacss_fs` for persistence
@@ -304,4 +323,4 @@ the concrete fs, so no `dyn` is needed — each binding monomorphizes over its o
 - [cross-file-resolution](./cross-file-resolution.md) — first consumer; gets the injection seam.
 - [project-lifecycle](./project-lifecycle.md) — `Project::with_fs` constructor.
 - [bindings](./bindings.md) — both NAPI and WASM cdylibs that consume `pandacss_fs`.
-- [scope-and-boundaries](./scope-and-boundaries.md) — revised: glob is now in Rust, file discovery still isn't.
+- [scope-and-boundaries](./scope-and-boundaries.md) — host watching stays outside Rust.

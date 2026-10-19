@@ -1,0 +1,457 @@
+---
+title: Migrating from vanilla-extract
+description:
+  Migrate your project from vanilla-extract to Panda and see how style, recipes, sprinkles, and themes map across.
+---
+
+vanilla-extract and Panda share the same model: typed style objects, compiled to static CSS at build time, with no
+runtime. The difference is where styles live and how much you build yourself:
+
+- **vanilla-extract keeps styles in `.css.ts` files.** Every class is a named export you import into the component.
+  Tokens, utilities, and variants come from separate packages you wire up: `createTheme`, Sprinkles, Recipes.
+- **Panda lets styles live next to the component, or in their own files.** Tokens, utilities, responsive values, and
+  recipes are built in, and styles are extracted from any file Panda scans.
+
+Install Panda through your [framework guide](/docs/get-started/framework-guides).
+
+## Keep separate style files
+
+Styles can stay in their own files. `css()` returns a class name like `style()`, and `cva()` returns a function like
+`recipe()`, so you can convert each `.css.ts` file in place. Keep the file names, and every component that uses them
+stays the same.
+
+```ts filename="button.css.ts"
+import { css, cva } from '../styled-system/css'
+
+export const root = css({ display: 'flex', gap: '3' })
+
+export const button = cva({
+  variants: { size: { small: { padding: '12px' }, large: { padding: '24px' } } }
+})
+```
+
+```tsx filename="button.tsx"
+import * as styles from './button.css'
+
+export const Button = () => (
+  <div className={styles.root}>
+    <button className={styles.button({ size: 'large' })} />
+  </div>
+)
+```
+
+Point `include` at your style files. Add your components too once you write styles inline or use
+[JSX style props](/docs/styling/style-props):
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  include: ['./src/**/*.css.ts', './src/**/*.tsx']
+})
+```
+
+Migrating one file at a time? The vanilla-extract plugin still compiles every `.css.ts` file until you remove it. Files
+that only export `css()` class names are fine, but a file that exports a `cva()` recipe fails its build. Give those
+files another suffix, like `.styles.ts`, until the migration is complete.
+
+## Run both during the migration
+
+Panda's CSS ships inside cascade layers, and vanilla-extract's output is unlayered unless you use its `layer()` API. So
+vanilla-extract styles win over converted components by default. See
+[Migrating alongside unlayered CSS](/docs/styling/cascade-layers#migrating-alongside-unlayered-css) for the two ways to
+control which side wins.
+
+## Theme to tokens
+
+`createTheme` and `createGlobalTheme` become tokens in config, referenced by name instead of through the `vars`
+contract:
+
+```ts filename="theme.css.ts"
+import { createGlobalTheme } from '@vanilla-extract/css'
+
+// before
+export const vars = createGlobalTheme(':root', {
+  color: { brand: '#0ea5e9' },
+  space: { small: '4px', medium: '8px' }
+})
+```
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+// after
+export default defineConfig({
+  // the selector you passed to createGlobalTheme; defaults to :where(:root, :host)
+  cssVarRoot: ':root',
+  theme: {
+    extend: {
+      tokens: {
+        colors: { brand: { value: '#0ea5e9' } },
+        spacing: { small: { value: '4px' }, medium: { value: '8px' } }
+      }
+    }
+  }
+})
+```
+
+```tsx
+// before: style({ color: vars.color.brand, padding: vars.space.small })
+css({ color: 'brand', padding: 'small' })
+```
+
+Outside of styles, where you'd read `vars.color.brand` in JavaScript, use [`token()`](/docs/theming/tokens).
+`vars.color.brand` is a CSS variable reference, and so is `token.var()`. `token()` returns the raw value:
+
+```ts
+import { token } from '../styled-system/tokens'
+
+// before: vars.color.brand → 'var(--color-brand__1fx8k3)'
+token.var('colors.brand') // 'var(--colors-brand)'
+token('colors.brand') // '#0ea5e9'
+```
+
+### Alternative themes
+
+`createTheme(vars, { … })` maps to Panda's [themes](/docs/theming/multiple-themes): alternative values for the same
+tokens, scoped by an attribute instead of a class. A theme contract maps across too:
+
+```ts filename="theme.css.ts"
+// before
+export const vars = createThemeContract({ color: { accent: '' } })
+export const brandTheme = createTheme(vars, { color: { accent: 'purple' } })
+```
+
+```ts filename="panda.config.ts"
+import { defineConfig, defineThemeContract } from '@pandacss/dev'
+
+// after
+const defineTheme = defineThemeContract({
+  semanticTokens: { colors: { accent: { value: '' } } }
+})
+
+export default defineConfig({
+  themes: {
+    brand: defineTheme({ semanticTokens: { colors: { accent: { value: '{colors.purple.600}' } } } })
+  },
+  staticCss: { themes: ['brand'] }
+})
+```
+
+```tsx
+// before: <div className={brandTheme}>
+<div data-panda-theme="brand">…</div>
+```
+
+Like a theme class, the attribute works on any element and nests. Code-split themes become
+[on-demand themes](/docs/theming/multiple-themes#on-demand), loaded with `getTheme()`. If the alternative theme is only
+dark mode, use a semantic token with a `_dark` value instead.
+
+## style() to css()
+
+`style()` becomes `css()`. Both return a class name:
+
+```ts
+import { style } from '@vanilla-extract/css'
+
+// before
+export const button = style({ display: 'flex', paddingTop: '3px' })
+```
+
+```ts
+import { css } from '../styled-system/css'
+
+// after
+export const button = css({ display: 'flex', paddingTop: '3px' })
+```
+
+You can also write it inline, next to the markup: `<button className={css({ display: 'flex' })} />`.
+
+## Selectors and at-rules
+
+Pseudo selectors become [conditions](/docs/styling/conditional-styles). Complex selectors keep their `&` syntax, without
+the `selectors` wrapper:
+
+```ts
+// before
+style({
+  ':hover': { color: 'pink' },
+  selectors: {
+    '&:hover:not(:active)': { borderColor: 'aquamarine' },
+    'nav li > &': { textDecoration: 'underline' }
+  }
+})
+```
+
+```ts
+// after
+css({
+  _hover: { color: 'pink' },
+  '&:hover:not(:active)': { borderColor: 'aquamarine' },
+  'nav li > &': { textDecoration: 'underline' }
+})
+```
+
+A parent class selector (``[`${parent}:focus &`]``) becomes a group condition. Mark the parent with `group`:
+
+```tsx
+<div className="group">
+  <span className={css({ _groupFocus: { bg: 'gray.100' } })} />
+</div>
+```
+
+`@media`, `@container`, and `@supports` objects become plain keys, or
+[responsive values](/docs/styling/responsive-design) for your breakpoints:
+
+```ts
+// before
+style({
+  '@media': { 'screen and (min-width: 768px)': { padding: 10 } },
+  '@supports': { '(display: grid)': { display: 'grid' } }
+})
+```
+
+```ts
+// after
+css({
+  padding: { base: '2', md: '10px' },
+  '@supports (display: grid)': { display: 'grid' }
+})
+```
+
+## Composition
+
+`style([base, { … }])` becomes `css(base, { … })`. Keep the shared part as a plain object with
+[`css.raw()`](/docs/styling/merging-styles):
+
+```ts
+// before
+const base = style({ padding: 12 })
+const primary = style([base, { background: 'blue' }])
+```
+
+```ts
+// after
+const base = css.raw({ padding: '12px' })
+const primary = css(base, { background: 'blue' })
+```
+
+Later objects win, so an override always beats the base.
+
+## styleVariants to style maps
+
+`styleVariants` returns an object of class names. A plain object of `css()` calls has the same shape, so
+`background[variant]` keeps working:
+
+```ts
+// before
+export const background = styleVariants({
+  primary: { background: 'blue' },
+  secondary: { background: 'aqua' }
+})
+```
+
+```ts
+// after
+export const background = {
+  primary: css({ background: 'blue' }),
+  secondary: css({ background: 'aqua' })
+}
+```
+
+`styleVariants(palette, mapFn)` builds the map from data. Panda doesn't run
+[built-ins like `.map`](/docs/styling/dynamic-styling#unsupported-expressions) during extraction, so write the map out.
+To pick a variant with a typed prop, put the map in a [recipe](/docs/recipes/atomic-recipe), with the shared style as
+its `base`:
+
+```ts
+// before
+const base = style({ padding: 12 })
+const palette = { primary: 'blue', secondary: 'aqua' }
+
+export const variant = styleVariants(palette, color => [base, { background: color }])
+```
+
+```ts
+// after
+export const variant = cva({
+  base: { padding: '12px' },
+  variants: {
+    tone: {
+      primary: { background: 'blue' },
+      secondary: { background: 'aqua' }
+    }
+  }
+})
+```
+
+## recipe() to cva()
+
+A [recipe](/docs/recipes/atomic-recipe) moves over almost unchanged. Only compound variants change shape: the conditions
+sit at the top level and `style` becomes `css`.
+
+```ts
+import { recipe } from '@vanilla-extract/recipes'
+
+// before
+export const button = recipe({
+  base: { borderRadius: 6 },
+  variants: {
+    color: { neutral: { background: 'whitesmoke' }, brand: { background: 'blueviolet' } },
+    size: { small: { padding: 12 }, large: { padding: 24 } }
+  },
+  compoundVariants: [{ variants: { color: 'neutral', size: 'large' }, style: { background: 'ghostwhite' } }],
+  defaultVariants: { color: 'brand', size: 'small' }
+})
+```
+
+```ts
+import { cva } from '../styled-system/css'
+
+// after
+export const button = cva({
+  base: { borderRadius: '6px' },
+  variants: {
+    color: { neutral: { background: 'whitesmoke' }, brand: { background: 'blueviolet' } },
+    size: { small: { padding: '12px' }, large: { padding: '24px' } }
+  },
+  compoundVariants: [{ color: 'neutral', size: 'large', css: { background: 'ghostwhite' } }],
+  defaultVariants: { color: 'brand', size: 'small' }
+})
+```
+
+`RecipeVariants<typeof button>` becomes `RecipeVariantProps<typeof button>`. For components with several parts, use
+[slot recipes](/docs/recipes/slot-recipes).
+
+## Sprinkles to utilities
+
+A Sprinkles setup, `defineProperties` plus `createSprinkles`, maps to Panda's config:
+
+```ts filename="sprinkles.css.ts"
+import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles'
+
+// before
+const space = { none: 0, small: '4px', medium: '8px', large: '16px' }
+
+const responsiveProperties = defineProperties({
+  conditions: {
+    mobile: {},
+    tablet: { '@media': 'screen and (min-width: 768px)' },
+    desktop: { '@media': 'screen and (min-width: 1024px)' }
+  },
+  defaultCondition: 'mobile',
+  properties: {
+    display: ['none', 'flex', 'block', 'inline'],
+    flexDirection: ['row', 'column'],
+    paddingLeft: space,
+    paddingRight: space
+  },
+  shorthands: { paddingX: ['paddingLeft', 'paddingRight'] }
+})
+
+export const sprinkles = createSprinkles(responsiveProperties)
+```
+
+```ts filename="panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+
+// after
+export default defineConfig({
+  theme: {
+    extend: {
+      tokens: {
+        spacing: {
+          none: { value: '0' },
+          small: { value: '4px' },
+          medium: { value: '8px' },
+          large: { value: '16px' }
+        }
+      },
+      breakpoints: { tablet: '48rem', desktop: '64rem' }
+    }
+  }
+})
+```
+
+- The `space` scale becomes `spacing` tokens.
+- `conditions` become `breakpoints`. Keep the names, and call sites keep them too. `defaultCondition` becomes `base`.
+- `properties` and `shorthands` need no config. `@pandacss/preset-base` ships a utility for every CSS property, with
+  shorthands like `paddingX` and `px`.
+- `createSprinkles` needs nothing: `css()` is your sprinkles function.
+
+```ts
+// before
+sprinkles({ display: 'flex', paddingX: 'small', flexDirection: { mobile: 'column', desktop: 'row' } })
+```
+
+```ts
+// after
+css({ display: 'flex', paddingX: 'small', flexDirection: { base: 'column', desktop: 'row' } })
+```
+
+Sprinkles only accepts the values you list. Panda accepts any CSS value. Turn on
+[`strictTokens`](/docs/reference/config#stricttokens) to allow only your tokens.
+
+For a property your Sprinkles setup defined that the preset doesn't have, add a [utility](/docs/theming/utilities):
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  utilities: {
+    extend: {
+      gutter: {
+        values: 'spacing',
+        transform: value => ({ paddingInline: value })
+      }
+    }
+  }
+})
+```
+
+```ts
+css({ gutter: 'small' })
+```
+
+The same props work on [JSX components](/docs/styling/style-props): `<Box display="flex" px="small" />`.
+
+## Variables and dynamic values
+
+`createVar()` plus `vars: { [myVar]: … }` becomes a custom property key:
+
+```ts
+// before
+const accent = createVar()
+style({ vars: { [accent]: 'purple' }, color: accent })
+```
+
+```ts
+// after
+css({ '--accent': 'purple', color: 'var(--accent)' })
+```
+
+`assignInlineVars` for runtime values becomes a plain `style` prop setting the same variable:
+
+```tsx
+<section className={css({ color: 'var(--accent)' })} style={{ '--accent': props.color } as React.CSSProperties} />
+```
+
+See [Dynamic styling](/docs/styling/dynamic-styling) for the other runtime patterns.
+
+## Global styles, fonts, and keyframes
+
+These move into config, or stay as one-to-one functions:
+
+- `globalStyle('body', { margin: 0 })` becomes [`globalCss`](/docs/styling/global-styles): `body: { margin: 0 }`.
+- `fontFace` becomes [`globalFontface`](/docs/theming/fonts).
+- `keyframes` maps to Panda's [`keyframes()`](/docs/styling/keyframes), or to `theme.keyframes` for shared animations
+  referenced by name.
+
+## After migrating
+
+- **Remove the build plugin.** Drop the vanilla-extract bundler plugin and the `.css.ts` files.
+- **Keep the zero-runtime output.** [Source transforms](/docs/styling/source-transforms) rewrite static `css()` and
+  `cva()` calls to plain class strings.
+- **Enforce tokens.** The [lint rules](/docs/get-started/linting) flag raw values where a token exists, the guarantee a
+  typed `vars` contract gave you.
+
+## See also
+
+- [Writing Styles](/docs/styling/writing-styles) for the full `css()` model this guide maps onto.
+- [Recipes](/docs/recipes/atomic-recipe) for variants beyond what `recipe()` covers.

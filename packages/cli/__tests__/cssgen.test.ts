@@ -11,6 +11,13 @@ import {
   writeSyntaxError,
   writeWarningSource,
 } from './helpers'
+import { runCli } from './cli-runner'
+
+const NO_MATCH_CONFIG = `export default {
+  outdir: 'styled-system',
+  include: ['no-match/**/*.tsx'],
+  importMap: { css: ['@panda/css'] },
+}`
 
 const RED_TOKEN_AND_COLOR_UTILITY = [
   "theme: { tokens: { colors: { red: { value: '#f00' } } } },",
@@ -96,16 +103,28 @@ describe('cssgen command', () => {
     expect(result.parsed).toEqual([])
   })
 
-  it('--include accepts a comma-separated glob list', async () => {
-    dir = createFixture(`export default {
-      outdir: 'styled-system',
-      include: ['no-match/**/*.tsx'],
-      importMap: { css: ['@panda/css'] },
-    }`)
+  it('--include on the command line keeps a brace glob whole', () => {
+    dir = createFixture(NO_MATCH_CONFIG)
 
-    const result = await runCssgen({ cwd: dir, include: 'missing/**/*.tsx,**/*.tsx', logLevel: 'silent' })
+    const result = runCli(['cssgen', '--cwd', dir, '--include', '**/*.{tsx,jsx}'])
 
-    expect(result.parsed).toHaveLength(1)
+    expect(result.stdout).toContain('parsed 1 files')
+  })
+
+  it('--include on the command line scans every repeated glob', () => {
+    dir = createFixture(NO_MATCH_CONFIG)
+
+    const result = runCli(['cssgen', '--cwd', dir, '--include', '**/*.tsx', '--include=missing/**/*.tsx'])
+
+    expect(result.stdout).toContain('parsed 1 files')
+  })
+
+  it('--include on the command line treats a comma as part of the glob', () => {
+    dir = createFixture(NO_MATCH_CONFIG)
+
+    const result = runCli(['cssgen', '--cwd', dir, '--include', 'missing/**/*.tsx,**/*.tsx'])
+
+    expect(result.stdout).toContain('parsed 0 files')
   })
 
   it('renders human diagnostics with severity, code, and message', async () => {
@@ -166,7 +185,7 @@ describe('cssgen command', () => {
     )
 
     expect(normalizeOutput(logs.join('\n'), dir)).toMatchInlineSnapshot(`
-      "cssgen: parsed 1 files, wrote 274 bytes to <cwd>/styled-system/styles.css, diagnostics: 1
+      "cssgen: parsed 1 files, wrote 244 bytes to <cwd>/styled-system/styles.css, diagnostics: 1
       warning js_parse_error: Unexpected token. Panda could not fully parse this file; some styles may be missing.
         ┌─ App.tsx:1:48
         │

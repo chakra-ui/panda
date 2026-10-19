@@ -4,6 +4,74 @@ use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 use crate::common::{compile_output, config};
 
 #[test]
+fn recipe_shorthand_conflicts_follow_authored_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "color": { "className": "c", "shorthand": "tone" } },
+        "theme": { "recipes": {
+            "swatch": { "className": "swatch", "base": { "color": "red", "tone": "green" } },
+            "reverse": { "className": "reverse", "base": { "tone": "green", "color": "red" } }
+        } }
+    }));
+    let css = compile_output(
+        &config,
+        "import { swatch, reverse } from '@panda/recipes'; swatch(); reverse();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .reverse {
+          color: red;
+        }
+        .swatch {
+          color: green;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn same_depth_compositions_follow_authored_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "textStyles": { "reset": { "value": { "color": "initial", "_hover": { "color": "initial" } } } },
+            "layerStyles": { "tone": { "value": { "color": "green", "_hover": { "color": "red" } } } },
+            "recipes": {
+                "swatch": { "className": "swatch", "base": { "textStyle": "reset", "layerStyle": "tone" } },
+                "reverse": { "className": "reverse", "base": { "layerStyle": "tone", "textStyle": "reset" } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { swatch, reverse } from '@panda/recipes'; swatch(); reverse();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .reverse, .reverse:hover {
+          color: initial;
+        }
+        .swatch {
+          color: green;
+        }
+        .swatch:hover {
+          color: red;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
 fn emits_config_recipe_css() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
@@ -194,8 +262,8 @@ fn emits_config_recipe_css_with_nested_conditions() {
     @layer recipes {
       @layer base {
         .btn {
-          color: red;
           display: inline-flex;
+          color: red;
         }
         .btn:disabled:hover {
           background-color: initial;
@@ -601,19 +669,19 @@ fn prefixes_unhashed_recipe_class_names() {
     assert_snapshot!(css, @"
     @layer recipes.slots {
       @layer base {
-        .pd-checkbox__control {
-          display: inline-flex;
-        }
         .pd-checkbox__root {
           display: flex;
         }
+        .pd-checkbox__control {
+          display: inline-flex;
+        }
       }
       @layer variants {
-        .pd-checkbox__control--size_sm {
-          padding: 2px;
-        }
         .pd-checkbox__root--size_sm {
           padding: 4px;
+        }
+        .pd-checkbox__control--size_sm {
+          padding: 2px;
         }
       }
     }
@@ -658,19 +726,19 @@ fn emits_config_slot_recipe_css_in_slots_layer() {
     assert_snapshot!(css, @"
     @layer recipes.slots {
       @layer base {
-        .checkbox__control {
-          display: inline-flex;
-        }
         .checkbox__root {
           display: flex;
         }
+        .checkbox__control {
+          display: inline-flex;
+        }
       }
       @layer variants {
-        .checkbox__control--size_sm {
-          padding: 2px;
-        }
         .checkbox__root--size_sm {
           padding: 4px;
+        }
+        .checkbox__control--size_sm {
+          padding: 2px;
         }
       }
     }
@@ -786,6 +854,40 @@ fn emits_config_slot_recipe_css_with_responsive_then_condition_variant_order() {
 }
 
 #[test]
+fn recipe_base_text_style_uses_the_nested_default() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "textStyles": {
+                "body": {
+                    "DEFAULT": { "value": { "fontSize": "16px", "lineHeight": "1.6" } },
+                    "compact": { "value": { "fontSize": "14px" } }
+                }
+            },
+            "recipes": {
+                "prose": { "className": "prose", "base": { "textStyle": "body" } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { prose } from '@panda/recipes'; prose()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer base {
+        .prose {
+          font-size: 16px;
+          line-height: 1.6;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
 fn composition_with_conditional_values_in_recipe_base_keeps_responsive_props() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
@@ -826,46 +928,806 @@ fn composition_with_conditional_values_in_recipe_base_keeps_responsive_props() {
         StylesheetOptions::default(),
     )
     .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .inlined, .viaTextStyle {
+          font-family: Montserrat, sans-serif;
+          font-size: 14px;
+          font-style: normal;
+          font-weight: 500;
+          line-height: 18px;
+        }
+        @media (width >= 30rem) {
+          .inlined, .viaTextStyle {
+            font-size: 16px;
+            line-height: 20px;
+          }
+        }
+        @media (width >= 80rem) {
+          .inlined, .viaTextStyle {
+            font-size: 20px;
+            line-height: 26px;
+          }
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn text_style_expands_in_place_so_the_later_key_wins() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": {
+            "fontWeight": { "className": "fw", "values": "fontWeights" }
+        },
+        "theme": {
+            "tokens": {
+                "fontWeights": {
+                    "normal": { "value": "400" },
+                    "medium": { "value": "500" },
+                    "semibold": { "value": "600" }
+                }
+            },
+            "textStyles": {
+                "body": { "value": { "fontWeight": "normal" } }
+            },
+            "recipes": {
+                "propertyAfter": {
+                    "className": "property-after",
+                    "base": { "textStyle": "body", "fontWeight": "medium" }
+                },
+                "propertyBefore": {
+                    "className": "property-before",
+                    "base": { "fontWeight": "semibold", "textStyle": "body" }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { propertyAfter, propertyBefore } from '@panda/recipes'; propertyAfter(); propertyBefore();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .property-after {
+          font-weight: var(--font-weights-medium);
+        }
+        .property-before {
+          font-weight: var(--font-weights-normal);
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn explicit_recipe_variant_properties_override_matching_composition_conditions() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "fontWeight": {}, "lineHeight": {} },
+        "theme": {
+            "breakpoints": { "md": "768px" },
+            "textStyles": {
+                "body": {
+                    "value": {
+                        "fontWeight": "600",
+                        "lineHeight": "1.5",
+                        "_hover": { "fontWeight": "700" },
+                        "md": { "fontWeight": "800" }
+                    }
+                }
+            },
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "size": {
+                            "sm": {
+                                "textStyle": "body",
+                                "fontWeight": { "base": "400", "_hover": "500", "md": "600" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { button } from '@panda/recipes'; button({ size: 'sm' });",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer variants {
+        .button--size_sm {
+          font-weight: 400;
+          line-height: 1.5;
+        }
+        .button--size_sm:hover {
+          font-weight: 500;
+        }
+        @media (width >= 48rem) {
+          .button--size_sm {
+            font-weight: 600;
+          }
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn explicit_slot_recipe_properties_override_layer_and_animation_styles() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "opacity": {}, "animationDuration": {}, "animationName": {} },
+        "theme": {
+            "layerStyles": { "dim": { "value": { "opacity": "0.9" } } },
+            "animationStyles": {
+                "enter": {
+                    "value": { "animationDuration": "900ms", "animationName": "fade" }
+                }
+            },
+            "slotRecipes": {
+                "card": {
+                    "className": "card",
+                    "slots": ["root", "label"],
+                    "base": {
+                        "root": { "layerStyle": "dim", "opacity": "0.4" }
+                    },
+                    "variants": {
+                        "size": {
+                            "sm": {
+                                "label": { "animationStyle": "enter", "animationDuration": "400ms" }
+                            }
+                        }
+                    },
+                    "compoundVariants": [{
+                        "size": "sm",
+                        "css": { "root": { "layerStyle": "dim", "opacity": "0.2" } }
+                    }]
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { card } from '@panda/recipes'; card({ size: 'sm' });",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+
+    assert_snapshot!(css, @r"
+    @layer recipes.slots {
+      @layer base {
+        .card__root {
+          opacity: 0.4;
+        }
+      }
+      @layer variants {
+        .card__label--size_sm {
+          animation-duration: 400ms;
+          animation-name: fade;
+        }
+      }
+      @layer compound_variants {
+        .card__root--compound__size_sm {
+          opacity: 0.2;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn recipe_composition_overrides_preserve_important_and_unmatched_conditions() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "fontWeight": {} },
+        "theme": {
+            "textStyles": {
+                "strong": {
+                    "value": {
+                        "fontWeight": "700 !important",
+                        "_hover": { "fontWeight": "800" }
+                    }
+                }
+            },
+            "recipes": {
+                "message": {
+                    "className": "message",
+                    "base": { "textStyle": "strong", "fontWeight": "400" }
+                },
+                "alert": {
+                    "className": "alert",
+                    "base": { "textStyle": "strong", "fontWeight": "500 !important" }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { message, alert } from '@panda/recipes'; message(); alert();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+
     assert_snapshot!(css, @r"
     @layer recipes {
       @layer base {
-        .inlined {
-          font-family: Montserrat, sans-serif;
-          font-size: 14px;
-          font-style: normal;
+        .alert {
+          font-weight: 500 !important;
+        }
+        .alert:hover {
+          font-weight: 800;
+        }
+        .message {
+          font-weight: 700 !important;
+        }
+        .message:hover {
+          font-weight: 800;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn matching_recipe_composition_and_explicit_values_do_not_drop_the_property() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "fontWeight": {} },
+        "theme": {
+            "textStyles": { "body": { "value": { "fontWeight": "400" } } },
+            "recipes": {
+                "message": {
+                    "className": "message",
+                    "base": { "textStyle": "body", "fontWeight": "400" }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { message } from '@panda/recipes'; message();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer base {
+        .message {
+          font-weight: 400;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn nested_compositions_keep_properties_from_the_nearer_scope() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "fontWeight": {}, "lineHeight": {} },
+        "theme": {
+            "textStyles": {
+                "body": { "value": { "fontWeight": "700", "lineHeight": "1.5" } },
+                "heading": { "value": { "textStyle": "body", "fontWeight": "500" } }
+            },
+            "recipes": {
+                "message": { "className": "message", "base": { "textStyle": "heading" } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { message } from '@panda/recipes'; message();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer base {
+        .message {
           font-weight: 500;
-          line-height: 18px;
+          line-height: 1.5;
         }
-        @media (width >= 30rem) {
-          .inlined {
-            font-size: 16px;
-            line-height: 20px;
-          }
+      }
+    }
+    ");
+}
+
+#[test]
+fn composition_overrides_merge_each_branch_of_a_block_condition() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "conditions": {
+            "active": { "&:hover": "@slot", "&:focus": "@slot" }
+        },
+        "utilities": { "fontWeight": {} },
+        "theme": {
+            "textStyles": { "body": { "value": { "fontWeight": "700" } } },
+            "recipes": {
+                "message": {
+                    "className": "message",
+                    "base": { "_active": { "textStyle": "body", "fontWeight": "400" } }
+                }
+            }
         }
-        @media (width >= 80rem) {
-          .inlined {
-            font-size: 20px;
-            line-height: 26px;
-          }
+    }));
+    let css = compile_output(
+        &config,
+        "import { message } from '@panda/recipes'; message();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .message:focus, .message:hover {
+          font-weight: 400;
         }
-        .viaTextStyle {
-          font-family: Montserrat, sans-serif;
+      }
+    }
+    ");
+}
+
+#[test]
+fn composition_overrides_preserve_the_whole_explicit_fallback_run() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "color": {} },
+        "theme": {
+            "textStyles": { "body": { "value": { "color": "red" } } },
+            "recipes": {
+                "message": {
+                    "className": "message",
+                    "base": {
+                        "textStyle": "body",
+                        "color": "firstThatWorks(oklch(55% 0.18 250), blue)"
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { message } from '@panda/recipes'; message();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+
+    assert_snapshot!(css, @r"
+    @layer recipes {
+      @layer base {
+        .message {
+          color: blue;
+          color: oklch(55% 0.18 250);
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn text_style_written_after_a_property_overrides_it() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "textStyles": { "body": { "value": { "color": "gray", "fontSize": "14px" } } },
+            "recipes": {
+                "styleLast": { "className": "style-last", "base": { "color": "blue", "textStyle": "body" } },
+                "styleFirst": { "className": "style-first", "base": { "textStyle": "body", "color": "blue" } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { styleLast, styleFirst } from '@panda/recipes'; styleLast(); styleFirst();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .style-first {
+          color: blue;
           font-size: 14px;
-          font-style: normal;
-          font-weight: 500;
-          line-height: 18px;
         }
-        @media (width >= 30rem) {
-          .viaTextStyle {
-            font-size: 16px;
-            line-height: 20px;
+        .style-last {
+          color: gray;
+          font-size: 14px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn nested_compositions_expand_in_place() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "textStyles": { "body": { "value": { "color": "gray" } } },
+            "layerStyles": {
+                "ownColorLast": { "value": { "textStyle": "body", "color": "red" } },
+                "ownColorFirst": { "value": { "color": "red", "textStyle": "body" } }
+            },
+            "recipes": {
+                "last": { "className": "last", "base": { "layerStyle": "ownColorLast" } },
+                "first": { "className": "first", "base": { "layerStyle": "ownColorFirst" } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { last, first } from '@panda/recipes'; last(); first();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .first {
+          color: gray;
+        }
+        .last {
+          color: red;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn animation_style_expands_in_place() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "theme": {
+            "animationStyles": {
+                "fadeIn": { "value": { "animationDuration": "300ms", "animationName": "fade" } }
+            },
+            "recipes": {
+                "styleLast": {
+                    "className": "style-last",
+                    "base": { "animationDuration": "1s", "animationStyle": "fadeIn" }
+                },
+                "styleFirst": {
+                    "className": "style-first",
+                    "base": { "animationStyle": "fadeIn", "animationDuration": "1s" }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { styleLast, styleFirst } from '@panda/recipes'; styleLast(); styleFirst();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .style-first {
+          animation-duration: 1s;
+          animation-name: fade;
+        }
+        .style-last {
+          animation-duration: 300ms;
+          animation-name: fade;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn compositions_expand_in_place_inside_conditions() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "breakpoints": { "md": "768px" },
+            "textStyles": {
+                "body": { "value": { "color": "gray" } },
+                "link": { "value": { "color": "gray", "_hover": { "color": "navy" } } }
+            },
+            "recipes": {
+                "hoverStyleLast": { "className": "hover-style-last", "base": { "_hover": { "color": "blue", "textStyle": "body" } } },
+                "hoverStyleFirst": { "className": "hover-style-first", "base": { "_hover": { "textStyle": "body", "color": "blue" } } },
+                "mdStyleLast": { "className": "md-style-last", "base": { "md": { "color": "blue", "textStyle": "body" } } },
+                "mdStyleFirst": { "className": "md-style-first", "base": { "md": { "textStyle": "body", "color": "blue" } } },
+                "ownHoverLast": { "className": "own-hover-last", "base": { "_hover": { "color": "blue" }, "textStyle": "link" } },
+                "ownHoverFirst": { "className": "own-hover-first", "base": { "textStyle": "link", "_hover": { "color": "blue" } } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { hoverStyleLast, hoverStyleFirst, mdStyleLast, mdStyleFirst, ownHoverLast, ownHoverFirst } from '@panda/recipes'; hoverStyleLast(); hoverStyleFirst(); mdStyleLast(); mdStyleFirst(); ownHoverLast(); ownHoverFirst();",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .hover-style-first:hover {
+          color: blue;
+        }
+        .hover-style-last:hover, .own-hover-first {
+          color: gray;
+        }
+        .own-hover-first:hover {
+          color: blue;
+        }
+        .own-hover-last {
+          color: gray;
+        }
+        .own-hover-last:hover {
+          color: navy;
+        }
+        @media (width >= 48rem) {
+          .md-style-first {
+            color: blue;
+          }
+          .md-style-last {
+            color: gray;
           }
         }
-        @media (width >= 80rem) {
-          .viaTextStyle {
-            font-size: 20px;
-            line-height: 26px;
+      }
+    }
+    ");
+}
+
+#[test]
+fn recipes_on_the_same_breakpoint_share_one_media_block_after_plain_rules() {
+    let config = config(serde_json::json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "padding": { "className": "p" } },
+        "theme": {
+            "breakpoints": { "md": "768px" },
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "size": { "sm": { "padding": "4px", "md": { "padding": "8px" } } },
+                        "variant": { "solid": { "padding": "2px" } }
+                    }
+                },
+                "badge": {
+                    "className": "badge",
+                    "variants": { "size": { "sm": { "md": { "padding": "8px" } } } }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { button, badge } from '@panda/recipes'; button({ size: 'sm', variant: 'solid' }); badge({ size: 'sm' });",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer variants {
+        .button--size_sm {
+          padding: 4px;
+        }
+        .button--variant_solid {
+          padding: 2px;
+        }
+        @media (width >= 48rem) {
+          .badge--size_sm, .button--size_sm {
+            padding: 8px;
           }
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn later_variants_in_the_config_override_earlier_ones() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "padding": { "className": "p" }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "visual": { "solid": { "padding": "1px" }, "outline": { "padding": "2px" } },
+                        "size": { "sm": { "padding": "3px" }, "lg": { "padding": "5px" }, "md": { "padding": "4px" } }
+                    },
+                    "compoundVariants": [
+                        { "visual": "outline", "size": "sm", "css": { "padding": "7px" } },
+                        { "visual": "solid", "size": "lg", "css": { "padding": "6px" } }
+                    ],
+                    "staticCss": ["*"]
+                }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer variants {
+        .button--visual_solid {
+          padding: 1px;
+        }
+        .button--visual_outline {
+          padding: 2px;
+        }
+        .button--size_sm {
+          padding: 3px;
+        }
+        .button--size_lg {
+          padding: 5px;
+        }
+        .button--size_md {
+          padding: 4px;
+        }
+      }
+      @layer compound_variants {
+        .button--compound__size_sm__visual_outline {
+          padding: 7px;
+        }
+        .button--compound__size_lg__visual_solid {
+          padding: 6px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn static_css_variants_keep_config_order_next_to_used_ones() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "padding": { "className": "p" }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "visual": { "solid": { "padding": "1px" }, "outline": { "padding": "2px" } },
+                        "size": { "sm": { "padding": "3px" }, "md": { "padding": "4px" } }
+                    },
+                    "staticCss": ["*"]
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { button } from '@panda/recipes'; export const App = ({ visual }) => button({ size: 'sm', visual })",
+        StylesheetOptions::default(),
+    )
+        .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer variants {
+        .button--visual_solid {
+          padding: 1px;
+        }
+        .button--visual_outline {
+          padding: 2px;
+        }
+        .button--size_sm {
+          padding: 3px;
+        }
+        .button--size_md {
+          padding: 4px;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn recipe_styles_keep_authored_order_after_shorthands() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "zIndex": { "className": "z" },
+            "color": { "className": "c" },
+            "borderColor": { "className": "bdc" },
+            "border": { "className": "bd" }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "base": { "zIndex": "1", "color": "red", "borderColor": "blue", "border": "1px solid" }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { button } from '@panda/recipes'; button()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .button {
+          border: 1px solid;
+          border-color: blue;
+          z-index: 1;
+          color: red;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn slot_recipe_slots_emit_in_config_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": {
+            "color": { "className": "c" },
+            "padding": { "className": "p" }
+        },
+        "theme": {
+            "slotRecipes": {
+                "card": {
+                    "className": "card",
+                    "slots": ["root", "body", "aside"],
+                    "base": { "aside": { "color": "green" }, "root": { "color": "red" }, "body": { "color": "blue" } },
+                    "variants": {
+                        "size": { "sm": { "body": { "padding": "1px" }, "root": { "padding": "2px" } } }
+                    },
+                    "staticCss": ["*"]
+                }
+            }
+        }
+    }));
+    let css = compile_output(&config, "", StylesheetOptions::default())
+        .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes.slots {
+      @layer base {
+        .card__root {
+          color: red;
+        }
+        .card__body {
+          color: blue;
+        }
+        .card__aside {
+          color: green;
+        }
+      }
+      @layer variants {
+        .card__root--size_sm {
+          padding: 2px;
+        }
+        .card__body--size_sm {
+          padding: 1px;
         }
       }
     }

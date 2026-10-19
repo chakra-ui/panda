@@ -6,12 +6,12 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value;
 
 use pandacss_config::{
-    CompoundVariantConfig, ImportMap, JsxFramework, JsxSpecifier, JsxStylePropsConfig,
-    PatternConfig, RecipeConfig, VariantSelection,
+    CompoundVariantConfig, ImportMap, JsxFramework, JsxMatchTagRule, JsxSpecifier,
+    JsxStylePropsConfig, PatternConfig, RecipeConfig, VariantSelection,
 };
 use pandacss_extractor::{
-    ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, Matcher as ExtractorMatcher,
-    Matchers, NameMatcher as ExtractorNameMatcher,
+    ExtractorConfig, JsxExtractionConfig, JsxKind, JsxStyleProps, JsxTagAction, JsxTagRule,
+    Matcher as ExtractorMatcher, Matchers, NameMatcher as ExtractorNameMatcher, NamePattern,
 };
 use pandacss_literal::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
@@ -57,8 +57,9 @@ pub(crate) fn compile_system(
 
     let conditions =
         ProjectConditionMatcher::from_names(entries.condition_names.iter().map(String::as_str));
+    let tag_rules = jsx_tag_rules(&config.jsx_match_tag)?;
     let mut extractor_config = ExtractorConfig::new(matchers_from_definitions(&entries)).with_jsx(
-        jsx_extraction_config_from_definitions(config, &entries, &utility),
+        jsx_extraction_config_from_definitions(config, &entries, &utility, tag_rules),
     );
     extractor_config.has_jsx_framework = config.jsx_framework.is_some();
     extractor_config.class_attribute = class_attribute_for_framework(config.jsx_framework.as_ref());
@@ -177,6 +178,7 @@ pub(crate) struct PatternDefinition {
     pub(crate) jsx_names: Vec<String>,
     pub(crate) jsx_regexes: Vec<Regex>,
     pub(crate) props: Vec<String>,
+    pub(crate) property_styles: FxHashMap<String, bool>,
     pub(crate) default_values: Option<Literal>,
     pub(crate) requires_transform: bool,
     strict: bool,
@@ -247,6 +249,16 @@ fn pattern_definitions_from_config(
                 jsx_names,
                 jsx_regexes: jsx_regexes(&config.jsx, &format!("patterns.{name}.jsx"))?,
                 props: config.properties.keys().cloned().collect(),
+                property_styles: config
+                    .properties
+                    .iter()
+                    .map(|(name, property)| {
+                        (
+                            name.clone(),
+                            matches!(property.r#type.as_deref(), Some("property" | "token")),
+                        )
+                    })
+                    .collect(),
                 default_values: config
                     .default_values
                     .as_ref()
@@ -402,6 +414,7 @@ fn jsx_extraction_config_from_definitions(
     config: &pandacss_config::UserConfig,
     entries: &ConfigDefinitions,
     utility: &Utility,
+    tag_rules: Vec<JsxTagRule>,
 ) -> JsxExtractionConfig {
     let mut component_names = FxHashSet::default();
     let mut component_regexes = Vec::new();
@@ -469,6 +482,8 @@ fn jsx_extraction_config_from_definitions(
         component_regex_blocklist,
         component_regex_blocklist_set: None,
         valid_style_props,
+        condition_names: entries.condition_names.iter().cloned().collect(),
+        tag_rules,
     }
     .with_regex_sets()
 }
@@ -595,6 +610,60 @@ fn collect_jsx_strings(items: &[JsxSpecifier], names: &mut Vec<String>) {
             .filter_map(JsxSpecifier::as_string)
             .map(str::to_owned),
     );
+}
+
+fn jsx_tag_rules(rules: &[JsxMatchTagRule]) -> Result<Vec<JsxTagRule>> {
+    rules
+        .iter()
+        .enumerate()
+        .map(|(index, rule)| {
+            let path = format!("jsxMatchTag[{index}]");
+            if rule.tag.is_none() && rule.from.is_none() {
+                return Err(SystemError::config(format!("{path} needs `tag` or `from`")));
+            }
+            let action = match (&rule.props, rule.ignore) {
+                (Some(_), true) => {
+                    return Err(SystemError::config(format!(
+                        "{path} can't set both `props` and `ignore`"
+                    )));
+                }
+                (_, true) => JsxTagAction::Ignore,
+                (props, false) => JsxTagAction::Include(
+                    props
+                        .as_ref()
+                        .map(|props| Arc::new(props.iter().cloned().collect())),
+                ),
+            };
+            Ok(JsxTagRule {
+                tag: rule
+                    .tag
+                    .as_ref()
+                    .map(|tag| name_pattern(tag, index))
+                    .transpose()?,
+                from: rule
+                    .from
+                    .as_ref()
+                    .map(|from| name_pattern(from, index))
+                    .transpose()?,
+                action,
+            })
+        })
+        .collect()
+}
+
+fn name_pattern(specifier: &JsxSpecifier, index: usize) -> Result<NamePattern> {
+    match specifier {
+        JsxSpecifier::String(name) => Ok(NamePattern::Exact(name.clone())),
+        JsxSpecifier::Regex(regex) => compile_js_regex(&regex.source, &regex.flags)
+            .map(NamePattern::Regex)
+            .ok_or_else(|| {
+                SystemError::regex(
+                    "jsxMatchTag",
+                    index,
+                    format!("/{}/{}", regex.source, regex.flags),
+                )
+            }),
+    }
 }
 
 fn jsx_regexes(items: &[JsxSpecifier], path: &str) -> Result<Vec<Regex>> {

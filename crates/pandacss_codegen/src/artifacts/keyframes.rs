@@ -69,7 +69,7 @@ fn module(ctx: CodegenContext<'_>) -> Module {
 
 const KEYFRAMES_IMPL: &str = r"(keyframe) => {
   const prefix = __PREFIX__
-  const wrap = (base) => (prefix ? prefix + '-' + base : base)
+  const wrap = (base: string) => (prefix ? prefix + '-' + base : base)
   const block = keyframe && typeof keyframe === 'object' ? keyframe : {}
   return wrap('kf_' + toHash(stableStringify(block)))
 }";

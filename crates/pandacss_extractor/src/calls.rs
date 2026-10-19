@@ -18,7 +18,7 @@ use oxc_ast::ast::{Argument, CallExpression, Expression, IdentifierReference};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_semantic::SymbolId;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::GetSpan;
 use rustc_hash::FxHashSet;
 use serde::Serialize;
 use std::borrow::Cow;
@@ -28,6 +28,32 @@ pub enum CallCalleeKind {
     #[default]
     Direct,
     StaticMember,
+}
+
+/// Argument layout of a styled factory call, derived from its Oxc callee.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JsxFactoryCallKind {
+    /// `styled(tag, styles, options)`.
+    Direct,
+    /// `styled.div(styles, options)`.
+    Member,
+}
+
+impl JsxFactoryCallKind {
+    /// Position of the style object or recipe argument.
+    #[must_use]
+    pub const fn style_arg_index(self) -> usize {
+        match self {
+            Self::Direct => 1,
+            Self::Member => 0,
+        }
+    }
+
+    /// Position of the factory options argument.
+    #[must_use]
+    pub const fn options_arg_index(self) -> usize {
+        self.style_arg_index() + 1
+    }
 }
 
 /// Oxc-derived source facts consumed by the project transformer.
@@ -75,6 +101,9 @@ pub struct ExtractedCall {
     /// argument is intentionally non-literal but still names a config recipe.
     #[serde(skip)]
     pub jsx_recipe_ident: Option<String>,
+    /// Styled factory argument layout; ignored for other call categories.
+    #[serde(skip)]
+    pub jsx_factory_kind: JsxFactoryCallKind,
     pub span: Span,
     /// Source span of each argument, from the AST — lets the transform locate an
     /// argument to rewrite without re-scanning the call for commas/parens.
@@ -109,12 +138,10 @@ pub fn extract_calls(
     config: &ExtractorConfig,
 ) -> ExtractedCallsResult {
     let allocator = Allocator::default();
-    let format = crate::adapter::SfcFormat::from_path(path);
-    let source = crate::adapt_source(source, format);
-    let source = source.as_ref();
-    let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
-    let parser_return = Parser::new(&allocator, source, source_type)
-        .with_options(crate::adapter::parse_options_for(format))
+    let adapted = crate::adapter::AdaptedSource::new(source, path);
+    let source = adapted.code.as_ref();
+    let parser_return = Parser::new(&allocator, source, adapted.source_type(path))
+        .with_options(adapted.parse_options())
         .parse();
 
     let cross_file = config
@@ -140,10 +167,7 @@ pub fn extract_calls(
     let line_index = crate::LineIndex::new(source);
     let (calls, diagnostics) = collect_calls_inner(&parser_return.program, &ctx, Some(&line_index));
     let mut diagnostics = diagnostics;
-    diagnostics.extend(crate::collect_parser_diagnostics(
-        &parser_return.errors,
-        source,
-    ));
+    diagnostics.extend(adapted.parse_diagnostics(&parser_return.errors));
     ExtractedCallsResult { calls, diagnostics }
 }
 
@@ -233,6 +257,7 @@ struct ResolvedCallee<'a> {
     name: Cow<'a, str>,
     alias: &'a str,
     raw: bool,
+    jsx_factory_kind: JsxFactoryCallKind,
 }
 
 impl Extractor<'_, '_, '_> {
@@ -264,6 +289,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Borrowed(&matched.name),
                     alias: &matched.alias,
                     raw: false,
+                    jsx_factory_kind: JsxFactoryCallKind::Direct,
                 })
             }
             Expression::StaticMemberExpression(_) => {
@@ -287,6 +313,7 @@ impl Extractor<'_, '_, '_> {
                             name: Cow::Owned(member_display(&matched.name, &path)),
                             alias: &matched.alias,
                             raw: false,
+                            jsx_factory_kind: JsxFactoryCallKind::Member,
                         });
                     }
                     if path.as_slice() != ["raw"] || !matched.category.supports_raw() {
@@ -297,6 +324,7 @@ impl Extractor<'_, '_, '_> {
                         name: Cow::Borrowed(&matched.name),
                         alias: &matched.alias,
                         raw: true,
+                        jsx_factory_kind: JsxFactoryCallKind::Direct,
                     });
                 }
 
@@ -324,6 +352,7 @@ impl Extractor<'_, '_, '_> {
                     name: Cow::Borrowed(property),
                     alias: &matched.alias,
                     raw: raw_tail == ["raw"],
+                    jsx_factory_kind: JsxFactoryCallKind::Direct,
                 })
             }
             _ => None,
@@ -407,8 +436,9 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             let raw = resolved.raw;
             let name = resolved.name.into_owned();
             let alias = resolved.alias.to_owned();
+            let jsx_factory_kind = resolved.jsx_factory_kind;
             let jsx_recipe_ident = (category == MatchCategory::Jsx)
-                .then(|| self.jsx_recipe_identifier(call))
+                .then(|| self.jsx_recipe_identifier(call, jsx_factory_kind))
                 .flatten();
 
             let style_args: Vec<Option<StyleTree>> = call
@@ -447,6 +477,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     );
                 }
                 self.out.push(ExtractedCall {
+                    jsx_factory_kind,
                     category,
                     name,
                     alias,
@@ -537,8 +568,15 @@ fn collect_call_style_source_refs(
 }
 
 impl Extractor<'_, '_, '_> {
-    fn jsx_recipe_identifier(&self, call: &CallExpression<'_>) -> Option<String> {
-        let arg = call.arguments.get(1)?.as_expression()?;
+    fn jsx_recipe_identifier(
+        &self,
+        call: &CallExpression<'_>,
+        kind: JsxFactoryCallKind,
+    ) -> Option<String> {
+        let arg = call
+            .arguments
+            .get(kind.style_arg_index())?
+            .as_expression()?;
         self.recipe_name_from_expr(arg, &mut FxHashSet::default())
     }
 

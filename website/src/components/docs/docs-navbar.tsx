@@ -39,27 +39,33 @@ export function DocsNavbar() {
 
       <HStack
         h="var(--navbar-height, 4rem)"
-        px={{ base: '4', md: '6' }}
-        gap={{ base: '1', md: '4' }}
+        px={{ base: '4', md: '6', xl: '8' }}
+        gap={{ base: '1', md: '6' }}
         // Below `md` the bar is a row with the search collapsed to an icon on
-        // the right; above it, `1fr auto 1fr` centres the search whatever the
-        // two sides happen to contain.
+        // the right; above it, the search is centred and gives up width before
+        // either side's content does.
         display={{ base: 'flex', md: 'grid' }}
-        gridTemplateColumns={{ md: '1fr auto 1fr' }}
+        gridTemplateColumns={{
+          md: 'minmax(max-content, 1fr) minmax(12rem, 28rem) minmax(max-content, 1fr)'
+        }}
         alignItems="center"
       >
-        <HStack gap={{ base: '1', md: '4' }} minW="0" flexShrink="0">
-          <Anchor
-            href="/"
-            aria-label="Panda CSS home"
-            className={css({
-              flexShrink: '0',
-              display: 'flex',
-              _hover: { opacity: 0.75 }
-            })}
-          >
-            <Icon icon="LogoWithText" />
-          </Anchor>
+        <HStack gap={{ base: '1', md: '6' }} minW="0" flexShrink="0">
+          <HStack gap="3" flexShrink="0">
+            <Anchor
+              href="/"
+              aria-label="Panda CSS home"
+              className={css({
+                flexShrink: '0',
+                display: 'flex',
+                _hover: { opacity: 0.75 }
+              })}
+            >
+              <Icon icon="LogoWithText" />
+            </Anchor>
+
+            <VersionSwitcher />
+          </HStack>
 
           <HStack gap="1" flexShrink="0" display={{ base: 'none', lg: 'flex' }}>
             {siteLinks.map(link => {
@@ -95,8 +101,7 @@ export function DocsNavbar() {
           ml={{ base: 'auto', md: '0' }}
           display="flex"
           justifyContent="center"
-          w={{ md: '28rem' }}
-          maxW={{ base: 'none', md: '32rem' }}
+          w={{ md: 'full' }}
         >
           <CommandMenu
             trigger={
@@ -119,8 +124,6 @@ export function DocsNavbar() {
           flexShrink="0"
           justifySelf="end"
         >
-          <VersionSwitcher />
-
           <Anchor
             href="https://play.panda-css.com/"
             newWindow

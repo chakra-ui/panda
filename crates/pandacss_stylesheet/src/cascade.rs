@@ -106,11 +106,27 @@ impl CascadePlan {
             .collect()
     }
 
-    pub(crate) fn internal_declarations(layers: &CascadeLayers) -> [Vec<String>; 2] {
+    /// Nested, not dotted: Lightning CSS's minifier reorders dotted `@layer` statements.
+    pub(crate) fn internal_declarations(layers: &CascadeLayers, minify: bool) -> [String; 2] {
+        let slots = format!("{}.slots", layers.recipes);
         [
-            layers.recipe_declaration_names(),
-            layers.slot_recipe_declaration_names(),
+            nested_declaration(&layers.recipes, &layers.recipe_declaration_names(), minify),
+            nested_declaration(&slots, &layers.slot_recipe_declaration_names(), minify),
         ]
+    }
+}
+
+fn nested_declaration(parent: &str, names: &[String], minify: bool) -> String {
+    let prefix = format!("{parent}.");
+    let children = names
+        .iter()
+        .filter_map(|name| name.strip_prefix(&prefix))
+        .collect::<Vec<_>>()
+        .join(", ");
+    if minify {
+        format!("@layer {parent}{{@layer {children};}}")
+    } else {
+        format!("@layer {parent} {{ @layer {children}; }}")
     }
 }
 

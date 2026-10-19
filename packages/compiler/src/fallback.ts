@@ -155,6 +155,9 @@ class FallbackCompiler implements Compiler {
   isSourceFile() {
     return false
   }
+  resolveSourcePath(path: string) {
+    return path
+  }
   parseFiles(_paths: string[]) {
     return []
   }
@@ -198,6 +201,9 @@ class FallbackCompiler implements Compiler {
   }
   inspectFile(input: SourceFileInput): FileInspectionResult {
     return { ...this.inspectFileSource(input.path, input.source), path: input.path }
+  }
+  inspectUsageRequirements() {
+    return { requirements: [], diagnostics: [] }
   }
   inspectFiles(files: SourceFileInput[]): FileInspectionBatch {
     return { sourceCount: files.length, files: files.map((file) => this.inspectFile(file)) }

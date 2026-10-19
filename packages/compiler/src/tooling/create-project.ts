@@ -45,7 +45,7 @@ export function createProjectFromLoadedConfig(loaded: LoadConfigResult): Project
   const designSystemDiagnostics = [
     ...hydrated.diagnostics,
     ...artifactConflictDiagnostics(loaded.metadata),
-    ...collectExportMissingDiagnostics(loaded.metadata),
+    ...collectExportMissingDiagnostics(loaded.metadata, loaded.config.jsxFramework as string | undefined),
     ...collectNameCollisionDiagnostics(loaded.metadata),
   ]
   return {

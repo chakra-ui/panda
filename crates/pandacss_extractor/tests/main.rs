@@ -6,6 +6,7 @@ mod css_property;
 mod extract;
 mod first_that_works_calls;
 mod framework_astro;
+mod framework_mdx;
 mod framework_svelte;
 mod framework_vue;
 mod import_map;

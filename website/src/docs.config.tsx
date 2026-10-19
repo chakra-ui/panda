@@ -141,6 +141,7 @@ export const docsTabs: TabItem[] = [
           { title: 'Tailwind CSS', url: 'tailwind' },
           { title: 'Styled Components', url: 'styled-components' },
           { title: 'Emotion', url: 'emotion' },
+          { title: 'vanilla-extract', url: 'vanilla-extract' },
           { title: 'Chakra UI', url: 'chakra-ui' }
         ]
       },

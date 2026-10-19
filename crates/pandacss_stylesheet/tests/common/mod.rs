@@ -96,7 +96,7 @@ pub fn split_result(
     pandacss_stylesheet::split_css(&project_input(config, &snapshots), &with_static(options))
 }
 
-fn project_with_source(config: &UserConfig, source: &str) -> Project {
+pub fn project_with_source(config: &UserConfig, source: &str) -> Project {
     project_with_file(config, "/style.ts", source)
 }
 

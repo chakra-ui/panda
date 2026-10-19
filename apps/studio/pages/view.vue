@@ -4,6 +4,7 @@ import * as s from "./view.styles";
 import { index, parseSpec, type DesignSystemIndex } from "~/utils/design-system";
 import { loadTokens, loadUsage, saveUsage, clearTokens } from "~/utils/idb";
 import { droppedFiles } from "~/utils/dropped";
+import { linkPending } from "~/utils/spec-link-state";
 import { useAnalyze } from "~/composables/useAnalyze";
 
 useHead({
@@ -18,6 +19,7 @@ const usage = ref<unknown>(null);
 const analyze = useAnalyze();
 
 onMounted(async () => {
+  if (linkPending.value && !(await linkPending.value)) return;
   const raw = await loadTokens();
   const result = raw ? parseSpec(raw) : null;
   if (!result?.ok) {
@@ -54,7 +56,6 @@ async function reset() {
     v-if="ready && ds"
     :ds="ds"
     :usage="usage"
-    :analyze-href="'/analyze'"
     @reset="reset"
   />
   <div v-else :class="s.loading">

@@ -2,20 +2,29 @@
 //! resolution into CSS vars or raw token values.
 
 use std::borrow::Cow;
+use std::ops::Range;
 
 use pandacss_shared::{css_escape, find_matching_paren};
-use pandacss_tokens::TokenDictionary;
+use pandacss_tokens::{Token, TokenDictionary};
 
 use crate::split_top_level_slash;
 
 #[must_use]
 pub fn expand_token_references_to_vars(value: &str, tokens: &TokenDictionary) -> String {
-    expand_token_references(value, tokens, TokenReferenceResolution::CssVar)
+    expand_token_references(value, tokens, TokenReferenceResolution::CssVar, None)
+}
+
+pub(crate) fn expand_token_references_to_vars_recording<'t>(
+    value: &str,
+    tokens: &'t TokenDictionary,
+    refs: &mut Vec<&'t Token>,
+) -> String {
+    expand_token_references(value, tokens, TokenReferenceResolution::CssVar, Some(refs))
 }
 
 #[must_use]
 pub fn expand_token_references_to_values(value: &str, tokens: &TokenDictionary) -> String {
-    expand_token_references(value, tokens, TokenReferenceResolution::Value)
+    expand_token_references(value, tokens, TokenReferenceResolution::Value, None)
 }
 
 #[derive(Clone, Copy)]
@@ -24,23 +33,40 @@ enum TokenReferenceResolution {
     Value,
 }
 
-fn expand_token_references(
+fn expand_token_references<'t>(
     value: &str,
-    tokens: &TokenDictionary,
+    tokens: &'t TokenDictionary,
     resolution: TokenReferenceResolution,
+    mut refs: Option<&mut Vec<&'t Token>>,
 ) -> String {
-    let with_braces = replace_wrapped_references(value, '{', '}', tokens, resolution);
-    replace_token_functions(&with_braces, tokens, resolution)
+    let with_braces =
+        replace_wrapped_references(value, '{', '}', tokens, resolution, refs.as_deref_mut());
+    replace_token_functions(&with_braces, tokens, resolution, refs)
+}
+
+fn record_reference<'t>(
+    path: &str,
+    tokens: &'t TokenDictionary,
+    refs: Option<&mut Vec<&'t Token>>,
+) {
+    let Some(refs) = refs else { return };
+    let path = split_top_level_slash(path).map_or(path, |(path, _)| path.trim_end());
+    if let Some(token) = tokens.token(path)
+        && !refs.iter().any(|seen| seen.path == token.path)
+    {
+        refs.push(token);
+    }
 }
 
 /// Replaces each `{token.path}` with its CSS-var form. An unterminated `{`
 /// (no closing brace) and the rest of the string pass through verbatim.
-fn replace_wrapped_references(
+fn replace_wrapped_references<'t>(
     value: &str,
     open: char,
     close: char,
-    tokens: &TokenDictionary,
+    tokens: &'t TokenDictionary,
     resolution: TokenReferenceResolution,
+    mut refs: Option<&mut Vec<&'t Token>>,
 ) -> String {
     let mut out = String::with_capacity(value.len());
     let mut rest = value;
@@ -59,6 +85,7 @@ fn replace_wrapped_references(
 
         if let Some(value) = resolved_token_reference(path, tokens, resolution) {
             out.push_str(value.as_ref());
+            record_reference(path, tokens, refs.as_deref_mut());
         } else {
             out.push_str(&unresolved_wrapped_reference(path));
         }
@@ -72,15 +99,16 @@ fn replace_wrapped_references(
 
 /// Replaces each `token(path, fallback?)` with the resolved var, or the
 /// fallback/raw path when unknown. Paren-matched so nested calls don't truncate early.
-fn replace_token_functions(
+fn replace_token_functions<'t>(
     value: &str,
-    tokens: &TokenDictionary,
+    tokens: &'t TokenDictionary,
     resolution: TokenReferenceResolution,
+    mut refs: Option<&mut Vec<&'t Token>>,
 ) -> String {
     let mut out = String::with_capacity(value.len());
     let mut rest = value;
 
-    while let Some(start) = rest.find("token(") {
+    while let Some(start) = find_token_call(rest) {
         out.push_str(&rest[..start]);
 
         let after_open = &rest[start + "token(".len()..];
@@ -94,10 +122,12 @@ fn replace_token_functions(
         let (path, fallback) = split_token_args(args);
         let path = path.trim();
 
-        let fallback =
-            fallback.map(|value| expand_token_fallback(value.trim(), tokens, resolution));
+        let fallback = fallback.map(|value| {
+            expand_token_fallback(value.trim(), tokens, resolution, refs.as_deref_mut())
+        });
 
         if let Some(value) = resolved_token_reference(path, tokens, resolution) {
+            record_reference(path, tokens, refs.as_deref_mut());
             let value = match (resolution, fallback) {
                 (TokenReferenceResolution::CssVar, Some(fallback)) => {
                     css_var_with_fallback(value.as_ref(), &fallback)
@@ -117,6 +147,86 @@ fn replace_token_functions(
 
     out.push_str(rest);
     out
+}
+
+#[must_use]
+pub fn token_references<'a>(
+    value: &'a str,
+    tokens: &TokenDictionary,
+) -> Vec<(&'a str, Range<usize>)> {
+    if !value.contains('{') && !value.contains("token(") {
+        return Vec::new();
+    }
+    let mut out = Vec::new();
+    collect_wrapped_references(value, tokens, &mut out);
+    collect_function_references(value, 0..value.len(), &mut out);
+    out.sort_by_key(|(_, range)| range.start);
+    out
+}
+
+fn collect_wrapped_references<'a>(
+    value: &'a str,
+    tokens: &TokenDictionary,
+    out: &mut Vec<(&'a str, Range<usize>)>,
+) {
+    let mut cursor = 0;
+    while let Some(open) = value[cursor..].find('{') {
+        let start = cursor + open + 1;
+        let Some(len) = value[start..].find('}') else {
+            return;
+        };
+        let end = start + len;
+        if let Some((path, range)) = reference_in(value, start..end)
+            && (tokens.token(path).is_some() || is_token_path_like(&value[start..end]))
+        {
+            out.push((path, range));
+        }
+        cursor = end + 1;
+    }
+}
+
+fn collect_function_references<'a>(
+    value: &'a str,
+    within: Range<usize>,
+    out: &mut Vec<(&'a str, Range<usize>)>,
+) {
+    let mut cursor = within.start;
+    while let Some(found) = find_token_call(&value[cursor..within.end]) {
+        let start = cursor + found + "token(".len();
+        let Some(len) = find_matching_paren(&value[start..within.end]) else {
+            return;
+        };
+        let end = start + len;
+        let (path, fallback) = split_token_args(&value[start..end]);
+        out.extend(reference_in(value, start..start + path.len()));
+        if let Some(fallback) = fallback {
+            collect_function_references(value, end - fallback.len()..end, out);
+        }
+        cursor = end + 1;
+    }
+}
+
+fn find_token_call(value: &str) -> Option<usize> {
+    value
+        .match_indices("token(")
+        .map(|(index, _)| index)
+        .find(|&index| {
+            !value[..index]
+                .bytes()
+                .next_back()
+                .is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-'))
+        })
+}
+
+fn reference_in(value: &str, range: Range<usize>) -> Option<(&str, Range<usize>)> {
+    let raw = &value[range.clone()];
+    let raw = split_top_level_slash(raw).map_or(raw, |(path, _)| path);
+    let path = raw.trim();
+    if path.is_empty() {
+        return None;
+    }
+    let start = range.start + (raw.len() - raw.trim_start().len());
+    Some((path, start..start + path.len()))
 }
 
 fn unresolved_wrapped_reference(path: &str) -> String {
@@ -174,14 +284,17 @@ fn resolved_token_reference<'a>(
     }
 }
 
-fn expand_token_fallback(
+fn expand_token_fallback<'t>(
     value: &str,
-    tokens: &TokenDictionary,
+    tokens: &'t TokenDictionary,
     resolution: TokenReferenceResolution,
+    refs: Option<&mut Vec<&'t Token>>,
 ) -> String {
-    resolved_token_reference(value, tokens, resolution)
-        .unwrap_or_else(|| Cow::Owned(expand_token_references(value, tokens, resolution)))
-        .into_owned()
+    if let Some(resolved) = resolved_token_reference(value, tokens, resolution) {
+        record_reference(value, tokens, refs);
+        return resolved.into_owned();
+    }
+    expand_token_references(value, tokens, resolution, refs)
 }
 
 fn css_var_with_fallback(value: &str, fallback: &str) -> Option<String> {

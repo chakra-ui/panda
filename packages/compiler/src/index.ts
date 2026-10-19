@@ -27,11 +27,19 @@ import type { CompileInput, NativeCompilerOptions, NativeCompiler, RawCompiler, 
 export type * from '@pandacss/compiler-shared'
 export type * from './types'
 
-export { createUsageReport } from '@pandacss/compiler-shared'
+export { analyzeSources, createUsageReport } from '@pandacss/compiler-shared'
 export { NodeDriver, createNodeDriver } from './driver'
 export type { NodeDriverOptions, WriteDesignSystemLibOptions, WriteDesignSystemLibResult } from './driver'
 
 const binding = loadNativeBinding() ?? fallback
+
+// Nothing else stops env-started tracing; finish the trace on exit.
+if (process.env.PANDA_TRACE?.trim()) {
+  process.once('exit', () => {
+    binding.flushTracing?.()
+    binding.shutdownTracing?.()
+  })
+}
 const nativeCompilerFromConfig =
   'fromConfig' in binding.Compiler && typeof binding.Compiler.fromConfig === 'function'
     ? binding.Compiler.fromConfig.bind(binding.Compiler)
@@ -112,8 +120,12 @@ function build(config: SerializedConfig, callbacks: ProjectCallbacks, options?: 
   assertNativeBinding(callbacks, options?.hooks)
 
   const prepared = prepareCompilerConfig(config)
-  const compiler = nativeCompilerFromConfig(prepared, toNativeOptions(options), createUtilityValuesCallbacks(callbacks))
-  registerCallbacks(compiler, callbacks, options?.hooks, compiler.tokenDictionary?.())
+  const compiler = nativeCompilerFromConfig(
+    JSON.stringify(prepared),
+    toNativeOptions(options),
+    createUtilityValuesCallbacks(callbacks),
+  )
+  registerCallbacks(compiler, prepared, callbacks, options?.hooks, compiler.tokenDictionary?.())
   attachFileSystem(compiler)
   attachPathSystem(compiler)
   attachBuildInfo(compiler)

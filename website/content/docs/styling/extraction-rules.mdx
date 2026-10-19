@@ -26,10 +26,34 @@ export function Random(props) {
 <Random size="lg" />
 ```
 
-Extract sees `Random`, not `Button`. Export it as `Button`, or set `jsx: ['Random']`. That is
+Panda sees `Random`, not `Button`. Export it as `Button`, set `jsx: ['Random']`, or
+[pregenerate its variants with `staticCss`](/docs/recipes/jsx-tracking#skip-tracking-with-staticcss). That is
 [Tracking JSX](/docs/recipes/jsx-tracking).
 
 `cva` and `sva` do not need a matching tag. Defining them already emits every variant.
+
+### Choosing which components Panda reads
+
+Panda reads style props from every capitalized component, so your own wrappers like `<Card px="4">` work. A prop whose
+value can't be a style, such as `columns={[{ header: 'Name' }]}`, is skipped.
+
+Use `jsxMatchTag` to skip components, or to limit the props Panda reads from them. The last rule that matches a
+component wins.
+
+```ts
+export default defineConfig({
+  jsxMatchTag: [
+    // Never read props from a third-party package
+    { from: '@tanstack/react-table', ignore: true },
+    // Read only `color` from components ending in Button
+    { tag: /Button$/, props: ['color'] },
+  ],
+})
+```
+
+- `tag` matches the name as written, such as `Button` or `UI.Button`.
+- `from` matches the import path as written. Aliases and re-exports aren't followed.
+- A rule needs `tag`, `from`, or both.
 
 ## Matching the prop
 
@@ -47,7 +71,7 @@ function Carousel({ elementWidth, ...props }) {
 <Carousel elementWidth="300px" />
 ```
 
-Extract sees `elementWidth`, not `width`. Use a utility name, `css`, or a `*Css` prop at the call site:
+Panda sees `elementWidth`, not `width`. Use a utility name, `css`, or a `*Css` prop at the call site:
 
 ```tsx
 <Carousel width="300px" />
@@ -84,7 +108,7 @@ function Button({ buttonSize, children }) {
 <Button buttonSize="lg" />
 ```
 
-Extract sees `circleSize` / `buttonSize`, not `size`. Keep the key at the call site.
+Panda sees `circleSize` / `buttonSize`, not `size`. Keep the key at the call site.
 
 `cva` and `sva` already emit every variant, so a rename there is a value problem, not a missing class. See
 [Matching the value](#matching-the-value).
@@ -101,7 +125,7 @@ function Button({ size, ...props }) {
 <Button size={size} />
 ```
 
-The wrapper looks correct. Extract sees `size={size}`, not `size="lg"`. You get `defaultVariants` only.
+The wrapper looks correct. Panda sees `size={size}`, not `size="lg"`. You get `defaultVariants` only.
 
 ```tsx
 <Button size="lg" />
@@ -153,7 +177,7 @@ function Card({ className, ...props }) {
 <Card className={css({ bg: 'blue' })} />
 ```
 
-Extract sees the `css()` at the call site. The wrapper never has to know `bg`.
+Panda sees the `css()` at the call site. The wrapper never has to know `bg`.
 
 Use `css` / `*Css` when the wrapper should merge style objects. Use `className` when the consumer already has a class
 (a recipe, `css()`, or something external).

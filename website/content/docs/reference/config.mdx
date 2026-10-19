@@ -889,7 +889,7 @@ Ex:
 The style props allowed on generated JSX components
 
 - When set to 'all', all style props are allowed.
-- When set to 'minimal', only the `css` prop is allowed.
+- When set to 'minimal', only the `css` prop, props ending in `Css`, and a pattern's or recipe's own props are allowed. Generic style props like `bg` or `px` are not.
 - When set to 'none', no style props are allowed and therefore the `jsxFactory` will not be usable as a component:
   - `<styled.div />` and `styled("div")` aren't valid
   - but the recipe usage is still valid `styled("div", { base: { color: "red.300" }, variants: { ...} })`
@@ -904,6 +904,7 @@ Ex with 'minimal':
 
 ```jsx
 <styled.button css={{ marginTop: '40px' }}>Click me</styled.button>
+<HStack gap="4">...</HStack>
 ```
 
 Ex with 'none':
@@ -911,6 +912,29 @@ Ex with 'none':
 ```jsx
 <button className={css({ marginTop: '40px' })}>Click me</button>
 ```
+
+### jsxMatchTag
+
+**Type**: `Array<{ tag?: string | RegExp; from?: string | RegExp; props?: string[]; ignore?: boolean }>`
+
+Rules for which JSX components Panda reads style props from. The last rule that matches a component wins, over Panda's
+own detection.
+
+- `tag`: the component name as written, such as `Button` or `UI.Button`
+- `from`: the import path as written
+- `props`: read only these style props
+- `ignore`: never read style props from the component
+
+```js
+{
+  jsxMatchTag: [
+    { from: '@tanstack/react-table', ignore: true },
+    { tag: /Button$/, props: ['color'] }
+  ]
+}
+```
+
+See [extraction rules](/docs/styling/extraction-rules#choosing-which-components-panda-reads).
 
 ## Documentation options
 

@@ -21,6 +21,8 @@ napi-derive = "3.3.0"
 oxc_allocator = "0.130.0"
 oxc_ast = "0.130.0"
 oxc_ast_visit = "0.130.0"
+oxc_codegen = "0.130.0"
+oxc_isolated_declarations = "0.130.0"
 oxc_diagnostics = "0.130.0"
 oxc_parser = "0.130.0"
 oxc_resolver = "11.19.1"
@@ -28,6 +30,7 @@ oxc_semantic = "0.130.0"
 oxc_span = "0.130.0"
 oxc_syntax = "0.130.0"
 pandacss_config = { path = "crates/pandacss_config" }
+pandacss_sfc = { path = "crates/pandacss_sfc" }
 pandacss_compiler = { path = "crates/pandacss_compiler" }
 pandacss_codegen = { path = "crates/pandacss_codegen" }
 pandacss_encoder = { path = "crates/pandacss_encoder" }
@@ -47,6 +50,7 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.145", features = ["preserve_order"] }
 thiserror = "2.0.17"
 insta = { version = "1.47.2", features = ["yaml"] }
+dunce = "1.0.5"
 fast-glob = "1"
 lru = "0.18.4"
 indoc = "2.0.7"

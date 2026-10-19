@@ -64,61 +64,14 @@ impl Compiler {
         source: &str,
         batch: Option<&pandacss_project::ParseBatch>,
     ) -> pandacss_project::ParseFileReport {
-        let has_source_transforms = self.callbacks.has_source_transforms();
-        let has_pattern_transforms = self.callbacks.has_pattern_transforms();
-        let has_utility_transforms = self.callbacks.has_utility_transforms();
-        if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
-            return match batch {
-                Some(batch) => self.inner.parse_file_in_batch(
-                    path,
-                    source,
-                    batch,
-                    pandacss_system::ParseTransforms::default(),
-                ),
-                None => self.inner.parse_file(path, source),
-            };
-        }
-        let Compiler {
-            inner, callbacks, ..
-        } = self;
-        let pattern_cache = &mut callbacks.transform_cache.pattern;
-        let utility_cache = &mut callbacks.transform_cache.utility;
-        let mut transform = |name: &str, styles: &Literal| {
-            apply_pattern_transform(
-                name,
-                styles,
-                &callbacks.pattern_transform_refs,
-                &callbacks.pattern_transforms,
-                pattern_cache,
-                env,
-            )
-        };
-        let mut utility_transform = |prop: &str, resolved: &AtomValue, original: &AtomValue| {
-            apply_utility_transform(
-                prop,
-                resolved,
-                original,
-                &callbacks.utility_transform_refs,
-                &callbacks.utility_transforms,
-                utility_cache,
-                env,
-            )
-        };
-        let mut source_transform = |path: &str, source: &str| {
-            apply_source_transforms(path, source, &callbacks.source_transforms, env)
-        };
-        let transforms = pandacss_system::ParseTransforms {
-            source: has_source_transforms
-                .then_some(&mut source_transform as &mut pandacss_system::SourceTransformFn<'_>),
-            pattern: has_pattern_transforms
-                .then_some(&mut transform as &mut pandacss_system::PatternTransformFn<'_>),
-            utility: has_utility_transforms
-                .then_some(&mut utility_transform as &mut pandacss_system::UtilityTransformFn<'_>),
-        };
-        match batch {
-            Some(batch) => inner.parse_file_in_batch(path, source, batch, transforms),
-            None => inner.parse_file_with(path, source, transforms),
-        }
+        parse_project_source(
+            &mut self.inner,
+            &mut self.callbacks,
+            env,
+            path,
+            source,
+            batch,
+        )
     }
 
     /// Source paths matching the config's `include`/`exclude` (overridable via
@@ -219,7 +172,7 @@ impl Compiler {
     #[must_use]
     pub fn is_source_file(&self, path: String) -> bool {
         let opts = glob_options(&self.user_config, None);
-        pandacss_fs::matches_globs(std::path::Path::new(&path), &opts)
+        pandacss_fs::matches_globs_in(&self.fs, std::path::Path::new(&path), &opts)
     }
 
     /// Read + parse source paths from `scan()`. One report per requested path;
@@ -400,6 +353,18 @@ impl Compiler {
             .collect()
     }
 
+    /// The tracked path for `path`, following symlinks.
+    #[napi(js_name = resolveSourcePath)]
+    #[must_use]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "NAPI requires owned arguments"
+    )]
+    pub fn resolve_source_path(&self, path: String) -> String {
+        let opts = glob_options(&self.user_config, None);
+        resolve_tracked_path(&self.inner, &self.fs, &opts, path)
+    }
+
     /// Per-file view; returns `null` when `path` isn't known.
     #[napi(js_name = getFile)]
     #[must_use]
@@ -467,5 +432,83 @@ impl Compiler {
     #[must_use]
     pub fn dirname(&self, path: String) -> String {
         self.paths.dirname(&path)
+    }
+}
+
+fn resolve_tracked_path(
+    project: &pandacss_project::Project,
+    fs: &impl pandacss_fs::FileSystem,
+    opts: &pandacss_fs::GlobOptions,
+    path: String,
+) -> String {
+    if project.get_file(&path).is_some() {
+        return path;
+    }
+    pandacss_fs::path_aliases(fs, std::path::Path::new(&path), opts)
+        .into_iter()
+        .map(|alias| alias.to_string_lossy().into_owned())
+        .find(|alias| project.get_file(alias).is_some())
+        .unwrap_or(path)
+}
+
+pub(super) fn parse_project_source(
+    inner: &mut pandacss_project::Project,
+    callbacks: &mut super::CallbackHost,
+    env: &Env,
+    path: &str,
+    source: &str,
+    batch: Option<&pandacss_project::ParseBatch>,
+) -> pandacss_project::ParseFileReport {
+    let has_source_transforms = callbacks.has_source_transforms();
+    let has_pattern_transforms = callbacks.has_pattern_transforms();
+    let has_utility_transforms = callbacks.has_utility_transforms();
+    if !has_source_transforms && !has_pattern_transforms && !has_utility_transforms {
+        return match batch {
+            Some(batch) => inner.parse_file_in_batch(
+                path,
+                source,
+                batch,
+                pandacss_system::ParseTransforms::default(),
+            ),
+            None => inner.parse_file(path, source),
+        };
+    }
+    let pattern_cache = &mut callbacks.transform_cache.pattern;
+    let utility_cache = &mut callbacks.transform_cache.utility;
+    let mut transform = |name: &str, styles: &Literal| {
+        apply_pattern_transform(
+            name,
+            styles,
+            &callbacks.pattern_transform_refs,
+            &callbacks.pattern_transforms,
+            pattern_cache,
+            env,
+        )
+    };
+    let mut utility_transform = |prop: &str, resolved: &AtomValue, original: &AtomValue| {
+        apply_utility_transform(
+            prop,
+            resolved,
+            original,
+            &callbacks.utility_transform_refs,
+            &callbacks.utility_transforms,
+            utility_cache,
+            env,
+        )
+    };
+    let mut source_transform = |path: &str, source: &str| {
+        apply_source_transforms(path, source, &callbacks.source_transforms, env)
+    };
+    let transforms = pandacss_system::ParseTransforms {
+        source: has_source_transforms
+            .then_some(&mut source_transform as &mut pandacss_system::SourceTransformFn<'_>),
+        pattern: has_pattern_transforms
+            .then_some(&mut transform as &mut pandacss_system::PatternTransformFn<'_>),
+        utility: has_utility_transforms
+            .then_some(&mut utility_transform as &mut pandacss_system::UtilityTransformFn<'_>),
+    };
+    match batch {
+        Some(batch) => inner.parse_file_in_batch(path, source, batch, transforms),
+        None => inner.parse_file_with(path, source, transforms),
     }
 }

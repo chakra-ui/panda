@@ -252,6 +252,24 @@ describe('compiler.transformSource: css', () => {
   })
 
   describe('nested styles and spreads', () => {
+    test('reports a static nested property when source is unchanged', () => {
+      const source = lines("import { css } from '@panda/css'", "const cls = css({ has: { svg: { color: 'red' } } })")
+      const result = compiler.transformSource({ path: 'src/button.ts', source })
+
+      expect(result.changed).toBe(false)
+      expect(result.code).toBe(source)
+      expect(result.diagnostics).toEqual([
+        expect.objectContaining({
+          code: 'nested_property',
+          severity: 'warning',
+          file: 'src/button.ts',
+          message: expect.stringContaining("'&:has(svg)'"),
+          span: expect.any(Object),
+          location: expect.any(Object),
+        }),
+      ])
+    })
+
     test('merges hover declarations across arguments', () => {
       const source = lines(
         "import { css } from '@panda/css'",

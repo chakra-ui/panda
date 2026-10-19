@@ -1,5 +1,391 @@
 # @pandacss/compiler
 
+## 2.2.0
+
+### Minor Changes
+
+- da7c333: Add `PropsProvider` and `usePropsContext` to `createSlotRecipeContext`. A group component can now set variant
+  props once for every compound component inside it. `PropsProvider` is typed to take a `value` in every framework.
+
+  ```tsx
+  const { PropsProvider } = createSlotRecipeContext(card)
+
+  function CardGroup(props) {
+    const [variantProps, restProps] = card.splitVariantProps(props)
+    return (
+      <PropsProvider value={variantProps}>
+        <div {...restProps} />
+      </PropsProvider>
+    )
+  }
+  ```
+
+  ```tsx
+  <CardGroup size="lg">
+    <Card.Root>...</Card.Root>
+    <Card.Root>...</Card.Root>
+  </CardGroup>
+  ```
+
+### Patch Changes
+
+- 0a95d5d: Convert v1 array conditions (`hover: ['@media (hover: hover)', '&:hover']`) to the `@slot` object form with a
+  warning, instead of failing to load the config.
+- e71a5ed: Fix tokens in custom categories (like `theme.tokens.iconSizes`) being dropped. They now emit CSS variables
+  and work with `{iconSizes.sm}`, `token()` and custom utilities, as in v1.
+- 4bc239a: Fix a prop passed as `undefined` overriding its value from `defaultProps` or `PropsProvider`.
+- e899f53: Fix `Unexpected JSX expression` warnings for JSX inside `.js`, `.mjs` and `.cjs` files. Styles in those files
+  are now extracted.
+- 9d5077d: Fix `prefer-token` reporting negative spacing tokens (`marginTop: '-2'`) and color opacity modifiers
+  (`red.500/40`) as hardcoded values. `resolveUtilityValue()` now returns the `tokens` a value references.
+- d5fb171: Remove `pure_helper_unevaluated` warnings, which could fail builds even when the selected styles were fully
+  extracted. Fix duplicate `deprecated_token_used` warnings for the same token call.
+- 1744ddd: Fix `staticCss` ignoring a custom utility's `transform`. Values generated through `staticCss.css` or
+  `staticCss.patterns` now emit the transformed styles instead of `example: b`.
+- Updated dependencies [e9d19e3]
+  - @pandacss/config@2.2.0
+  - @pandacss/compiler-shared@2.2.0
+  - @pandacss/types@2.2.0
+
+## 2.1.2
+
+### Patch Changes
+
+- 7f36e78: Fixed styles going missing in Astro, Svelte and Vue files when the markup uses syntax Panda didn't read
+  correctly, such as a regex or comment inside an expression. `css()` calls in Astro client `<script>` blocks now get
+  their CSS too.
+- d941e4a: Fixed a boolean utility's `false` value, like `md: { srOnly: false }`, missing from the stylesheet.
+- b8e2b5b: Fixed recipe rules being emitted twice when both your app and a `designSystem` package use the same recipe.
+- db5d9b7: Fixed issue where `panda codegen` failed with `design_system_export_missing` for `./jsx` when using a
+  `designSystem` without `jsxFramework`.
+- 30465d3: `panda` starts faster. Installed presets load with Node instead of being re-bundled on every run, and a build
+  no longer loads the code for `init` and `debug`.
+
+  - `@pandacss/preset-base`, `@pandacss/preset-panda` and `@pandacss/preset-typography` are now ESM-only, like the rest
+    of v2.
+  - Generated `styled-system/patterns` files are reformatted once.
+
+- d8c494c: Fix `token.var()` references for token keys containing dots, such as `spacing.1.5`, so they match the emitted
+  CSS variables, including when hashing is enabled.
+
+  Restore v1 behavior for negative spacing: `token.var()` returns the original positive variable, while `token()` keeps
+  returning the negated value.
+
+  Emoji in token keys are no longer escaped in CSS variable names, matching v1.
+
+- e3fd924: File discovery no longer walks into directories that no `include` pattern can match, and enters each real
+  directory once however many symlinks lead to it. In pnpm workspaces, `../*/src/*.ts` and `../**/src/*.ts` includes no
+  longer hang following linked packages, and each file is scanned once instead of once per link path.
+- b806435: Generated pattern and style helpers no longer recreate their regular expressions on every call.
+- 645d370: Fixed generated code failing to type-check with `outExtension: 'ts'`. `styled-system` now passes a strict
+  type check for React, Preact, Solid, and Vue, and the JSX declarations use far fewer `any` types.
+- ddc34f9: `panda lib` now exports `./types`, so packages built on a design system can annotate their recipes and emit
+  `.d.ts` files.
+- 4842f3c: Add style extraction for `.mdx` files in `include`. Panda now extracts JSX style props and `css()` calls from
+  MDX while skipping code examples in Markdown.
+- 145f6d2: Fixed an issue where a color with an opacity modifier and `!important` or `!`, like
+  `brand.500/60 !important`, warned about an invalid opacity modifier.
+- 85fb637: Fixed trace files written with the `PANDA_TRACE` environment variable being cut short. The trace now finishes
+  when the process exits, including in the Vite and PostCSS plugins.
+- 164508e: Style helpers can now destructure their parameters, declare local `const` / `let` values, spread objects, and
+  call other helpers, and Panda still extracts their styles. A helper Panda can't evaluate now warns with
+  `pure_helper_unevaluated` instead of silently skipping its styles.
+
+  Default values of parameters and destructured props, like `function Button({ size = 'md' })`, generate CSS again.
+
+- 43cfcc1: Fixed issue where `css.raw()`, `cva().raw()`, `sva().raw()`, and `splitCssProps()` returned null-prototype
+  objects, which broke `toStrictEqual`, `hasOwnProperty`, and string coercion.
+- 42ff936: Fixed config recipes throwing `TypeError: v.charCodeAt is not a function` when `hash: true` is set.
+- b8e2b5b: Recipe CSS is now grouped like atomic CSS, with shared media queries and merged rules, for smaller output
+  that matches v1's ordering.
+- 802eb61: Fixed slot recipes overriding recipe variants in minified production builds, like Vite 8's default build.
+- 3f41f62: In recipes and `globalCss`, the later key now wins when two keys set the same CSS property, as in v1.
+
+  - Shorthands and utilities follow key order: `{ bgColor: 'red', backgroundColor: 'blue' }` gives `blue`.
+  - `textStyle`, `layerStyle` and `animationStyle` expand in place, so a property must come after them to override them:
+
+    ```ts
+    { color: 'blue', textStyle: 'body' } // the text style's color
+    { textStyle: 'body', color: 'blue' } // blue
+    ```
+
+  - Design systems need to rerun `panda lib` to regenerate their build info.
+
+- a1c495c: Fixed a TypeScript error when passing `css` or style props in the `styled` factory's `defaultProps`. The
+  styles were already applied at runtime, only the types rejected them.
+- 22ba83d: You can pass a readonly `slots` array to `sva()` again. A `slots` array declared `as const` no longer fails
+  with TS4104, so you can reuse it in your own types:
+
+  ```ts
+  const slots = ['root', 'label'] as const
+  type Slot = (typeof slots)[number]
+
+  const field = sva({ slots, base: { root: { color: 'red' }, label: { color: 'blue' } } })
+  ```
+
+- f33fb6c: Fixed issue where a nested `DEFAULT` in `textStyles`, `layerStyles`, or `animationStyles` wasn't reachable
+  through its parent key, so `textStyle: 'body'` emitted no CSS and the type listed `"body.DEFAULT"` instead of
+  `"body"`.
+- Updated dependencies [69ccc9f]
+- Updated dependencies [db5d9b7]
+- Updated dependencies [30465d3]
+  - @pandacss/config@2.1.2
+  - @pandacss/compiler-shared@2.1.2
+  - @pandacss/types@2.1.2
+
+## 2.1.1
+
+### Patch Changes
+
+- 576c72a: `colorPalette.include` and `exclude` now pick palettes by name, and each palette keeps all of its tokens.
+  Themes with many nested groups can drop nested palettes from the `strictTokens` union without losing any virtual
+  token:
+
+  ```ts
+  export default defineConfig({
+    theme: {
+      // `gray` stays a palette with colorPalette.1 and colorPalette.solid.bg; `gray.solid` is dropped
+      colorPalette: { exclude: ['*.*'] },
+    },
+  })
+  ```
+
+- a63cb20: With the Vite, PostCSS, webpack, or Bun plugins, your stylesheet only needs the top-level layer order. Slot
+  recipes no longer override recipe variants:
+
+  ```css
+  @layer reset, base, tokens, recipes, utilities;
+  ```
+
+  If you added `@layer recipes.base, …` lines as a workaround, you can remove them.
+
+- 24718f4: Fix dev and watch mode ignoring edits and new files matched by an `include` glob outside the project root,
+  such as a sibling package in a monorepo:
+
+  ```ts
+  include: ['./src/**/*.tsx', '../../packages/ui/src/**/*.tsx']
+  ```
+
+- b220f62: `strictTokens` now accepts common CSS keywords that have no token to replace them, like `maxWidth: 'none'`,
+  `filter: 'none'`, `fill: 'none'` and `float: 'left'`. `transitionProperty` also accepts any property name or list,
+  like `'opacity, transform'`.
+- 24718f4: Fix watch mode ignoring changes when a file is reported through a symlink, such as a symlinked project folder
+  or a pnpm workspace package.
+- 8b6f7e0: `forwardProps` now types a forwarded prop from the wrapped component when it shares a name with a style prop,
+  so a component's own `position` or `translate` prop no longer conflicts with the CSS one:
+
+  ```tsx
+  const Handle = withContext(ImageCropper.Handle, 'handle', { forwardProps: ['position'] })
+
+  <Handle position="ne" /> // typed as the component's `position`, not CSS `position`
+  ```
+
+  - @pandacss/compiler-shared@2.1.1
+  - @pandacss/config@2.1.1
+  - @pandacss/types@2.1.1
+
+## 2.1.0
+
+### Minor Changes
+
+- cd08564: Add `get_usage_report` to the MCP server for auditing tokens, recipes, utilities, patterns, and keyframes.
+  Add `analyzeSources` to share source analysis between the CLI and MCP server.
+
+### Patch Changes
+
+- 5da09d9: Fix missing styles when a ternary tests a runtime value initialized with `??`, `||`, or `&&`. Keep both
+  reachable style branches instead of treating the fallback as a constant.
+- ee5c50b: Fix `prefer-token` false positives for token-valued ternaries and utilities such as `flex`. Report unknown
+  condition warnings through `extraction-diagnostics` in ESLint and Oxlint.
+- ba062cd: Fix generated types rejecting `undefined` under `exactOptionalPropertyTypes`: recipe variant props and style
+  props like `css({ color: isActive ? 'red' : undefined })` now type-check, and Preact styled components work as JSX
+  elements with that option on.
+- ea34d1e: Fix recipe components like `<Card.Root>` getting no CSS when rendered in the same file that defines `Card`,
+  such as one built with `createSlotRecipeContext`.
+- 76c5e6a: Fix token references in values, as in 1.x:
+
+  - `css({ '--offset': '{spacing.-2}' })` now emits `calc(var(--spacing-2) * -1)` instead of an empty rule.
+  - References like `{colors.red}` resolve even when the config has no utilities (no preset).
+
+- bd891e8: Fix nested conditions applying in the wrong order. Hovering a button now recolors its icon again:
+
+  ```ts
+  css({ _hover: { _icon: { color: 'red' } } })
+  // before: .x :where(svg):hover  (only when the icon itself is hovered)
+  // after:  .x:hover :where(svg)
+  ```
+
+- 1469790: Warn when styles are nested under a key that isn't a condition or selector, like
+  `css({ has: { svg: { color: 'red' } } })`. These styles never applied; the new `nested_property` warning suggests a
+  fix, such as `'&:has(svg)'`.
+- 702ee2a: Fix `polyfill: true` producing broken CSS for class names with escaped characters such as `:`, `,`, `"`, or
+  `#`:
+
+  ```ts
+  css({ animation: 'fadeIn 1s, slideUp 1s' })
+  // before: .animation_fadeIn_1s\:not(#\#),_slideUp_1s:not(#\#)
+  // after:  .animation_fadeIn_1s\,_slideUp_1s:not(#\#)
+  ```
+
+- 4a781a0: Fix `polyfill: true` letting unlayered `!important` CSS override Panda's `!important` utilities. Every
+  layered `!important` rule now outranks unlayered ones, as native cascade layers do.
+- e5a80ea: Fix recipe properties being overridden by a `textStyle`, `layerStyle`, or `animationStyle` in the same
+  recipe. The property you set directly now always wins:
+
+  ```ts
+  // textStyles.body sets fontWeight: 'normal'
+  base: { textStyle: 'body', fontWeight: 'medium' } // now medium, was normal
+  ```
+
+- 916c77c: Fix two recipe type regressions: slot recipe calls like `card().root` are typed as `string` again, and
+  `variantMap` arrays no longer include `undefined`.
+- a37c416: Fix Solid components built with `createRecipeContext` / `createSlotRecipeContext` losing their prop types,
+  and remove type errors from the generated `jsx` types for Solid, Preact and Vue. `ComponentPropsOf` is now
+  `ComponentProps` in every framework.
+- b44b8e2: Fix `styled()` emitting component defaults such as `srcDoc` as CSS, which could break Storybook and other CSS
+  builds.
+
+  Restore extraction for `styled.tag()` options, conditional recipe defaults, and custom CSS keys in JSX spreads.
+
+- f4e1418: Fix `styled()` and recipe context components not being assignable to `ComponentType<Props>` when `Props` is
+  an interface, as in 1.x. `data-*` attributes still work in JSX and `defaultProps`.
+
+  ```tsx
+  interface IconProps {
+    size?: number
+  }
+  const RedIcon: ComponentType<IconProps> = styled(Icon, { base: { color: 'red.500' } })
+  ```
+
+- b198b21: Fix `createSlotRecipeContext` dropping `sva()` slot classes in React, Preact, and Vue. Parts of an
+  `sva({ className: 'card' })` recipe get `card__root`, `card__title`, … again, as in Solid and 1.x.
+- 0acc0dc: Fix styles in a Vue template being ignored when they came after a nested `<template>`, such as a `v-if` group
+  or a slot.
+- Updated dependencies [cd08564]
+- Updated dependencies [1469790]
+  - @pandacss/compiler-shared@2.1.0
+  - @pandacss/config@2.1.0
+  - @pandacss/types@2.1.0
+
+## 2.0.1
+
+### Patch Changes
+
+- 0ad1e26: Fix ternary values in pattern props, like `<Box bg={on ? 'green.500' : 'red.500'} />` or
+  `hstack({ gap: on ? '1' : '3' })`. Each branch now gets its own CSS instead of a broken `bg_conditional` rule and a
+  breakpoint-only second branch.
+- f9459ce: Fix `pandacss({ transform: true })` to compile static style calls in `.svelte`, `.vue`, and `.astro` files
+  during Vite builds.
+  - @pandacss/compiler-shared@2.0.1
+  - @pandacss/config@2.0.1
+  - @pandacss/types@2.0.1
+
+## 2.0.0
+
+### Major Changes
+
+- bb3d117: Panda 2.0 replaces the compiler with a Rust engine built on [Oxc](https://oxc.rs). You write the same
+  `css()`, recipes, patterns, tokens, and JSX props.
+
+  #### Improvements
+
+  - [New Rust engine](https://panda-css.com/blog/panda-css-v2#inside-the-new-engine): one parse per file, cross-file
+    value resolution, and native CSS output. No more `ts-morph` or PostCSS in the build.
+  - [Much faster builds](https://panda-css.com/blog/panda-css-v2#how-much-faster-is-panda-20): extraction is 15–37×
+    faster, watch mode ~360×, and `staticCss` ~85×.
+  - [Lighter generated types](https://panda-css.com/blog/panda-css-v2#generated-types-are-lighter): ~99% fewer
+    TypeScript type instantiations, so your editor and CI do less work.
+  - [Faster runtime](https://panda-css.com/blog/panda-css-v2#runtime-is-4-faster): `css()` and recipes memoize repeated
+    styles, up to ~4× faster.
+  - [One engine for Node and the browser](https://panda-css.com/blog/panda-css-v2#one-engine-for-node-and-browser):
+    `@pandacss/compiler-wasm` runs the same engine in the browser and produces the same CSS.
+  - [Bundler plugins](https://panda-css.com/docs/styling/source-transforms#enabling-it): `@pandacss/vite`,
+    `@pandacss/webpack`, `@pandacss/rollup`, and `@pandacss/bun` run Panda inside your build.
+  - [Source transforms](https://panda-css.com/docs/styling/source-transforms): with `transform: true`, the bundler
+    rewrites static `css()`, recipe, pattern, and `styled()` calls to class strings, so the styling runtime drops out of
+    your bundle.
+  - [Smaller CSS with `optimize`](https://panda-css.com/docs/styling/optimization): opt in to removing unused tokens and
+    keyframes, emitting only the compound variants you use, and tree-shaking design systems.
+
+  #### New features
+
+  - [Publishable design systems](https://panda-css.com/blog/panda-css-v2#publishable-design-systems): author with
+    `panda lib`, consume with `designSystem`, with no re-extraction in the app.
+  - [View transitions](https://panda-css.com/blog/panda-css-v2#view-transitions): `viewTransition()` styles the View
+    Transitions API and gives you a stable class.
+  - [Value fallbacks, local keyframes, and anchor fallbacks](https://panda-css.com/blog/panda-css-v2#ordered-value-fallbacks):
+    `firstThatWorks()`, `keyframes()`, and `positionTry()`, tree-shaken to what you use.
+  - [New utilities](https://panda-css.com/blog/panda-css-v2#new-base-preset-utilities): masks, scrollbars, and pointer
+    and validity conditions.
+  - [Variables via `@property`](https://panda-css.com/blog/panda-css-v2#variables-via-property): no more 34-variable
+    reset on every element.
+  - [A rebuilt CLI](https://panda-css.com/blog/panda-css-v2#a-better-cli): `panda` runs codegen and CSS together, and
+    `panda doctor`, `panda analyze`, `panda debug`, and `--profile` help you inspect a project.
+  - [ESLint and oxlint plugin](https://panda-css.com/blog/panda-css-v2#eslint-plugin): lints against the same extraction
+    your build uses.
+  - [Typography preset](https://panda-css.com/blog/panda-css-v2#a-typography-preset): `@pandacss/preset-typography` adds
+    a `prose` recipe for Markdown and CMS content.
+
+  Panda 2.0 is ESM-only and needs Node 22 or newer. To move an existing project, follow the
+  [upgrade guide](https://panda-css.com/docs/get-started/upgrading-to-v2). For the full story,
+  [read the announcement post](https://panda-css.com/blog/panda-css-v2).
+
+### Patch Changes
+
+- Updated dependencies [bb3d117]
+  - @pandacss/compiler-shared@2.0.0
+  - @pandacss/config@2.0.0
+  - @pandacss/types@2.0.0
+
+## 2.0.0-beta.20
+
+### Major Changes
+
+- 9e45720: Remove Qwik JSX support:
+
+  - `jsxFramework: 'qwik'` no longer generates `styled`, `Box`, or pattern components.
+  - To migrate, remove `jsxFramework` and style Qwik components with `css()`, `cva()`, and pattern functions on the
+    `class` attribute.
+
+### Patch Changes
+
+- 882730a: Follow `export * from` barrel files:
+
+  - Tokens, style values, and recipes imported through a barrel are extracted and folded like direct imports.
+  - Large `export { … } from` barrels process much faster.
+
+  ```ts
+  // components/index.ts
+  export * from './button'
+  export * from './tokens'
+
+  // app.tsx
+  import { button, brand } from './components'
+
+  button({ size: 'lg' }) // folds to its class string
+  css({ color: brand }) // extracts the `brand` color
+  ```
+
+- 883ecd6: Ship less recipe code with `transform: true`:
+
+  - Static `cva` and `sva` calls, including imported ones, compile into small per-recipe functions. Fully compiled
+    recipes drop out of the bundle.
+  - Compiled recipes keep their API and work with `styled` and `createSlotRecipeContext`. With hashed class names they
+    stay on the runtime.
+  - Fix transformed classes not matching the runtime for nested conditions (`md: { _hover: … }`), projects without a
+    preset, compound variants, and `splitVariantProps` order.
+
+- 882730a: Shrink generated styled-system output:
+
+  - Bundlers can drop the condition list and `normalizeHTMLProps` when nothing uses them, about 2.7 KB with the full
+    preset.
+
+- Updated dependencies [9e45720]
+- Updated dependencies [883ecd6]
+  - @pandacss/types@2.0.0-beta.20
+  - @pandacss/compiler-shared@2.0.0-beta.20
+  - @pandacss/config@2.0.0-beta.20
+
 ## 2.0.0-beta.19
 
 ### Patch Changes

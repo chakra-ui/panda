@@ -1,7 +1,39 @@
 use insta::assert_snapshot;
 use pandacss_stylesheet::{StylesheetLayer, StylesheetOptions};
 
-use crate::common::{compile_layer_css, compile_output, config};
+use crate::common::{compile_layer_css, compile_output, compile_tsx_layer_css, config};
+
+#[test]
+fn emits_both_jsx_branches_after_a_dynamic_nullish_default() {
+    let config = config(serde_json::json!({
+        "jsxFramework": "react",
+        "importMap": { "jsx": ["@panda/jsx"] },
+        "utilities": {
+            "backgroundColor": { "className": "bg", "shorthand": "bg" }
+        }
+    }));
+    let source = indoc::indoc! {r"
+        import { styled } from '@panda/jsx';
+
+        export function Badge({ data }: { data: { count?: number } }) {
+          const count = data.count ?? 0;
+
+          return <styled.span css={{ bg: count > 0 ? 'green' : 'gray' }} />;
+        }
+    "};
+    let css = compile_tsx_layer_css(&config, source, &[StylesheetLayer::Utilities]);
+
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .bg_gray {
+        background-color: gray;
+      }
+      .bg_green {
+        background-color: green;
+      }
+    }
+    ");
+}
 
 #[test]
 fn emits_dynamic_atomic_css() {
@@ -408,6 +440,119 @@ fn emits_generated_color_palette_utility() {
 ");
 }
 
+fn nested_palette_config(color_palette: &serde_json::Value) -> pandacss_config::UserConfig {
+    config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "theme": {
+            "colorPalette": color_palette,
+            "semanticTokens": {
+                "colors": {
+                    "button": {
+                        "dark": { "value": "navy" },
+                        "light": {
+                            "DEFAULT": { "value": "skyblue" },
+                            "accent": {
+                                "DEFAULT": { "value": "cyan" },
+                                "secondary": { "value": "blue" }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c", "values": "colors" },
+            "background": { "className": "bg", "values": "colors" }
+        }
+    }))
+}
+
+#[test]
+fn emits_nested_color_palettes() {
+    let css = compile_layer_css(
+        &nested_palette_config(&serde_json::json!({})),
+        "import { css } from '@panda/css'
+css({ colorPalette: 'button', color: 'colorPalette.light', background: 'colorPalette.light.accent.secondary' })
+css({ colorPalette: 'button.light', color: 'colorPalette.accent' })
+css({ colorPalette: 'button.light.accent', color: 'colorPalette.secondary' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .bg_colorPalette\.light\.accent\.secondary {
+        background: var(--colors-color-palette-light-accent-secondary);
+      }
+      .c_colorPalette\.accent {
+        color: var(--colors-color-palette-accent);
+      }
+      .c_colorPalette\.light {
+        color: var(--colors-color-palette-light);
+      }
+      .c_colorPalette\.secondary {
+        color: var(--colors-color-palette-secondary);
+      }
+      .color-palette_button {
+        --colors-color-palette-dark: var(--colors-button-dark);
+        --colors-color-palette-light: var(--colors-button-light);
+        --colors-color-palette-light-accent: var(--colors-button-light-accent);
+        --colors-color-palette-light-accent-secondary: var(--colors-button-light-accent-secondary);
+      }
+      .color-palette_button\.light {
+        --colors-color-palette: var(--colors-button-light);
+        --colors-color-palette-accent: var(--colors-button-light-accent);
+        --colors-color-palette-accent-secondary: var(--colors-button-light-accent-secondary);
+      }
+      .color-palette_button\.light\.accent {
+        --colors-color-palette: var(--colors-button-light-accent);
+        --colors-color-palette-secondary: var(--colors-button-light-accent-secondary);
+      }
+    }
+    ");
+}
+
+#[test]
+fn emits_default_color_palette_for_bare_color_palette_token() {
+    let css = compile_layer_css(
+        &nested_palette_config(&serde_json::json!({})),
+        "import { css } from '@panda/css'; css({ colorPalette: 'button.light', background: 'colorPalette' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .bg_colorPalette {
+        background: var(--colors-color-palette);
+      }
+      .color-palette_button\.light {
+        --colors-color-palette: var(--colors-button-light);
+        --colors-color-palette-accent: var(--colors-button-light-accent);
+        --colors-color-palette-accent-secondary: var(--colors-button-light-accent-secondary);
+      }
+    }
+    ");
+}
+
+#[test]
+fn included_color_palette_emits_its_nested_tokens() {
+    let css = compile_layer_css(
+        &nested_palette_config(&serde_json::json!({ "include": ["button"] })),
+        "import { css } from '@panda/css'; css({ colorPalette: 'button', color: 'colorPalette.light.accent.secondary' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .c_colorPalette\.light\.accent\.secondary {
+        color: var(--colors-color-palette-light-accent-secondary);
+      }
+      .color-palette_button {
+        --colors-color-palette-dark: var(--colors-button-dark);
+        --colors-color-palette-light: var(--colors-button-light);
+        --colors-color-palette-light-accent: var(--colors-button-light-accent);
+        --colors-color-palette-light-accent-secondary: var(--colors-button-light-accent-secondary);
+      }
+    }
+    ");
+}
+
 #[test]
 fn resolves_negative_spacing_category_values_to_calc_values() {
     let config = config(serde_json::json!({
@@ -658,6 +803,150 @@ fn nested_pseudo_then_descendant_keeps_the_pseudo_on_the_parent() {
 ");
 }
 
+fn nesting_config() -> pandacss_config::UserConfig {
+    config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "hover": "&:is(:hover, [data-hover])",
+            "focus": "&:is(:focus, [data-focus])",
+            "open": "&:is([open], [data-state=open])",
+            "before": "&::before",
+            "icon": "& :where(svg)",
+            "childIcon": "& > :is(svg, .lucide)",
+            "inB": "[data-b] &"
+        },
+        "utilities": { "color": { "className": "c" } }
+    }))
+}
+
+#[test]
+fn state_around_icon_keeps_the_state_on_the_parent() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _hover: { _icon: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .hover\:icon\:c_red:is(:hover, [data-hover]) :where(svg) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn icon_around_state_puts_the_state_on_the_icon() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _icon: { _hover: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .icon\:hover\:c_red :where(svg):is(:hover, [data-hover]) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn state_around_custom_child_condition_keeps_the_state_on_the_parent() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _open: { _childIcon: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .open\:childIcon\:c_red:is([open], [data-state=open]) > :is(svg, .lucide) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn raw_ancestor_around_registered_ancestor_nests_in_author_order() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ '[data-a] &': { _inB: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      [data-b] :is([data-a] .\[\[data-a\]_\&\]\:inB\:c_red) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn registered_ancestor_around_raw_ancestor_nests_in_author_order() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _inB: { '[data-a] &': { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      [data-a] :is([data-b] .inB\:\[\[data-a\]_\&\]\:c_red) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn states_on_one_element_keep_their_canonical_order() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _focus: { _hover: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .focus\:hover\:c_red:is(:hover, [data-hover]):is(:focus, [data-focus]) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn states_on_both_sides_of_icon_stay_on_their_element() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _hover: { _icon: { _focus: { color: 'red' } } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .hover\:icon\:focus\:c_red:is(:hover, [data-hover]) :where(svg):is(:focus, [data-focus]) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn pseudo_element_stays_last_under_a_state() {
+    let css = compile_layer_css(
+        &nesting_config(),
+        "import { css } from '@panda/css'; css({ _before: { _hover: { color: 'red' } } })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .before\:hover\:c_red:is(:hover, [data-hover])::before {
+        color: red;
+      }
+    }
+    ");
+}
+
 #[test]
 fn escapes_leading_double_dash_class_names() {
     let config = config(serde_json::json!({
@@ -792,6 +1081,64 @@ fn resolves_token_references_interpolated_in_longhand_values() {
       }
       .border_3px_solid_token\(colors\.red\.300\,_blue\) {
         border: 3px solid var(--colors-red-300, blue);
+      }
+    }
+    ");
+}
+
+#[test]
+fn resolves_negative_spacing_token_references_in_custom_properties() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": { "tokens": { "spacing": { "2": { "value": "0.5rem" } } } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        concat!(
+            "import { css } from '@panda/css'\n",
+            "css({ '--offset': '{spacing.-2}' })\n",
+            "css({ '--gap': 'token(spacing.-2)' })\n",
+            "css({ '--inset': 'spacing.-2' })\n",
+            "css({ '--pos': '{spacing.2}' })",
+        ),
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .\--gap_token\(spacing\.-2\) {
+        --gap: calc(var(--spacing-2) * -1);
+      }
+      .\--inset_spacing\.-2 {
+        --inset: calc(var(--spacing-2) * -1);
+      }
+      .\--offset_\{spacing\.-2\} {
+        --offset: calc(var(--spacing-2) * -1);
+      }
+      .\--pos_\{spacing\.2\} {
+        --pos: var(--spacing-2);
+      }
+    }
+    ");
+}
+
+#[test]
+fn resolves_token_references_without_any_utilities() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": ["@panda/tokens"] },
+        "theme": { "tokens": { "colors": { "red": { "value": "#f00" } } } }
+    }));
+    let css = compile_layer_css(
+        &config,
+        "import { css } from '@panda/css'\ncss({ '--accent': '{colors.red}', color: '{colors.red}' })",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .\--accent_\{colors\.red\} {
+        --accent: var(--colors-red);
+      }
+      .color_\{colors\.red\} {
+        color: var(--colors-red);
       }
     }
     ");
@@ -1326,17 +1673,17 @@ fn nested_child_selector_stacks_theme_and_direction_conditions() {
       .\[\&_\>_p\]\:left_20px > p {
         left: 20px;
       }
-      [data-theme=dark] .\[\&_\>_p\]\:dark\:bg_green500 > p, .dark .\[\&_\>_p\]\:dark\:bg_green500 > p, .\[\&_\>_p\]\:dark\:bg_green500 > p.dark, .\[\&_\>_p\]\:dark\:bg_green500 > p[data-theme=dark] {
+      [data-theme=dark] :is(.\[\&_\>_p\]\:dark\:bg_green500 > p), .dark :is(.\[\&_\>_p\]\:dark\:bg_green500 > p), .\[\&_\>_p\]\:dark\:bg_green500 > p.dark, .\[\&_\>_p\]\:dark\:bg_green500 > p[data-theme=dark] {
         bg: green500;
       }
-      [data-theme=light] .\[\&_\>_p\]\:light\:bg_red400 > p, .light .\[\&_\>_p\]\:light\:bg_red400 > p, .\[\&_\>_p\]\:light\:bg_red400 > p.light, .\[\&_\>_p\]\:light\:bg_red400 > p[data-theme=light] {
+      [data-theme=light] :is(.\[\&_\>_p\]\:light\:bg_red400 > p), .light :is(.\[\&_\>_p\]\:light\:bg_red400 > p), .\[\&_\>_p\]\:light\:bg_red400 > p.light, .\[\&_\>_p\]\:light\:bg_red400 > p[data-theme=light] {
         bg: red400;
       }
-      :where([dir=rtl], :dir(rtl)) .\[\&_\>_p\]\:rtl\:font_sans > p {
+      :where([dir=rtl], :dir(rtl)) :is(.\[\&_\>_p\]\:rtl\:font_sans > p) {
         font: sans;
       }
       @media (width >= 40rem) {
-        :where([dir=ltr], :dir(ltr)) [data-theme=dark] .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p:hover, :where([dir=ltr], :dir(ltr)) .dark .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p:hover, :where([dir=ltr], :dir(ltr)) .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p.dark:hover, :where([dir=ltr], :dir(ltr)) .\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p[data-theme=dark]:hover {
+        [data-theme=dark] :is(:where([dir=ltr], :dir(ltr)) :is(.\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p)):hover, .dark :is(:where([dir=ltr], :dir(ltr)) :is(.\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p)):hover, :where([dir=ltr], :dir(ltr)) :is(.\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p).dark:hover, :where([dir=ltr], :dir(ltr)) :is(.\[\&_\>_p\]\:ltr\:dark\:sm\:hover\:font_serif > p)[data-theme=dark]:hover {
           font: serif;
         }
       }

@@ -7,6 +7,7 @@
     "barrel-cross-file": "tsx src/barrel-cross-file.ts",
     "baseline": "tsx src/baseline.ts",
     "binding-boundary": "tsx src/binding-boundary.ts",
+    "cold-start": "tsx src/cold-start.ts",
     "extract-compare": "tsx src/extract-compare.ts",
     "generated-types-perf": "tsx src/generated-types-perf.ts",
     "jsx-heavy-compare": "tsx src/jsx-heavy-compare.ts",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "ts-morph": "28.0.0"
   }
 }

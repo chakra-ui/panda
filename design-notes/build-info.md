@@ -31,7 +31,7 @@ recomputed on hydrate.
 
 ```jsonc
 {
-  "schemaVersion": 5,
+  "schemaVersion": 7,
   "panda": "^2.0.0",                               // peer range (collision guard); author-supplied
   "configFingerprint": "cfg1-…",                          // engine fingerprint of output-affecting config
   "strings": ["color", "red", "padding", "4px", "colors.brand", "vt_xxx"], // intern table
@@ -51,6 +51,11 @@ A value is a bare index (string), `{ t, v }` (token path + resolved value), or `
 px-driving type tag). Full atom/recipe data is kept (not pre-built CSS) so the consumer re-emits with **token identity**
 preserved instead of reducing tokens to opaque CSS values. Top-level `tokenRefs` entries point into `strings`; each
 module's `tokenRefs` entries point into that top-level array, preserving import-based tree-shaking.
+
+Recipe `entries` arrays carry authored leaf order. Hydration assigns local order from each array's position so utilities
+that expand to the same CSS property resolve exactly as in the producer, without redundant wire metadata. Atomic entries
+keep their existing identity and sorting. This ordering contract bumped `SCHEMA_VERSION` from 6 to 7; older artifacts
+must be regenerated or fall back to source extraction rather than silently reuse the former sorted order.
 
 **Token definitions are not in build info.** The artifact carries token _usage_ (path + producer-resolved value at
 extraction time); the consumer's **tokens layer** still comes from its own config (typically the lib preset merged in
@@ -290,6 +295,9 @@ Under the hood:
 - Atoms attach to synthetic files `buildinfo:{name}` (re-hydrating the same `name` replaces that layer).
 - Recipe snapshots store in `hydrated_recipes` keyed by `name` and **merge** into the emit snapshot at CSS generation.
 - Atom dedup is content-addressed — identical atoms from two libs collapse to one utility class.
+- Identical recipe groups (same recipe, slot, class, conditions, and declarations in authored order) collapse to their
+  last position. Build info and the app number and sort entries differently, so the comparison ignores both. What should
+  happen when a design system and the app disagree about one recipe isn't designed yet.
 
 Tree-shaking is **per artifact, per module key**: `modulesFor(uiInfo, ['Card'])` → ui module keys; base modules need a
 separate `modulesFor(baseInfo, …)` pass when the app imports base components directly or via re-exports ui does not

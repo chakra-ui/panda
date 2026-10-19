@@ -72,7 +72,15 @@ export interface TokenRefSite {
   token?: TokenValueRef
 }
 
-export type UsageKind = 'token' | 'property' | 'recipe' | 'pattern' | 'keyframe' | 'view-transition' | 'position-try'
+export type UsageKind =
+  | 'token'
+  | 'property'
+  | 'recipe'
+  | 'pattern'
+  | 'keyframe'
+  | 'composition'
+  | 'view-transition'
+  | 'position-try'
 
 export interface UsageSite {
   kind: UsageKind
@@ -178,7 +186,7 @@ export interface FileInspectionBatch {
   files: FileInspectionResult[]
 }
 
-export type UsageReportScope = 'tokens' | 'recipes' | 'utilities' | 'patterns' | 'keyframes'
+export type UsageReportScope = 'tokens' | 'recipes' | 'utilities' | 'patterns' | 'keyframes' | 'compositions'
 
 export type UsageReportScopeOption = UsageReportScope | 'all'
 
@@ -188,8 +196,12 @@ export type UsageReportSummary = Record<UsageReportScope, { used: number; unique
 
 export interface TokenUsageItem {
   name: string
+  /** Source sites plus config places. */
   uses: number
+  /** Source files only. */
   files: number
+  /** Config places that use it: `globalCss`, `recipes.button`, `via colors.brand`. */
+  config?: string[]
 }
 
 export interface TokenRawValueUsage {
@@ -232,6 +244,8 @@ export interface RecipeUsageItem {
   files: number
   top: RecipeVariantUsage[]
   usedAs: { jsx: number; fn: number }
+  /** Config places that use it, such as `staticCss.recipes.button`. */
+  config?: string[]
 }
 
 export interface RecipeUsageReport {
@@ -242,12 +256,16 @@ export interface RecipeUsageReport {
 
 export interface NamedUsageItem {
   name: string
+  /** Source sites plus config places. */
   uses: number
+  /** Source files only. */
   files: number
+  /** Config places that use it: `globalCss`, `recipes.button`, `via keyframes.spin`. */
+  config?: string[]
 }
 
 /**
- * Ranked usage of one named surface (utilities, patterns, keyframes) against
+ * Ranked usage of one named surface (utilities, patterns, keyframes, compositions) against
  * what the config declares. `unused` is "unused in scanned sources".
  */
 export interface NamedUsageReport {
@@ -338,6 +356,8 @@ export interface UsageReportViews {
   utilities: NamedUsageReport
   patterns: NamedUsageReport
   keyframes: NamedUsageReport
+  /** `textStyles.*`, `layerStyles.*`, and `animationStyles.*`. */
+  compositions: NamedUsageReport
 }
 
 export interface UsageReportFile {
@@ -347,7 +367,7 @@ export interface UsageReportFile {
   sourceUsages: number
 }
 
-export type UsageReportUsageKind = 'token' | 'recipe' | 'utility' | 'pattern' | 'keyframe'
+export type UsageReportUsageKind = 'token' | 'recipe' | 'utility' | 'pattern' | 'keyframe' | 'composition'
 
 /**
  * One usage site, denormalized for scripts: no ids to join.
@@ -358,6 +378,17 @@ export interface UsageReportUsage {
   file: string
   line: number
   column: number
+}
+
+export interface UsageRequirement {
+  kind: UsageReportUsageKind
+  name: string
+  reasons: string[]
+}
+
+export interface UsageRequirements {
+  requirements: UsageRequirement[]
+  diagnostics: Diagnostic[]
 }
 
 export interface UsageReport {
@@ -392,6 +423,8 @@ export interface ResolvedUtilityValue {
   cssValue: UtilityResolvedScalar
   important: boolean
   source: UtilityValueSource
+  /** Tokens Panda resolved for the value; handwritten `var(--…)` isn't counted. */
+  tokens: string[]
 }
 
 export interface TokenSuggestion {

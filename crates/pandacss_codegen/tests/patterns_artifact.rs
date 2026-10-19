@@ -145,20 +145,25 @@ fn emits_ts_source() {
     );
     assert_snapshot!(file(patterns, "patterns/runtime.ts"), @r#"
     import { mapObject, withDefaults } from '../helpers';
+    import type { PatternHelpers } from '../types/pattern';
+
+    const CSS_FUNCTION_REGEX = /^(min|max|clamp|calc)\(.*\)/
+    const CSS_VAR_REGEX = /^var\(--.+\)$/
+    const CSS_UNIT_REGEX = /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/
 
     export function isCssFunction(v: unknown): boolean {
-      return typeof v === "string" && /^(min|max|clamp|calc)\(.*\)/.test(v)
+      return typeof v === "string" && CSS_FUNCTION_REGEX.test(v)
     }
 
     export function isCssVar(v: unknown): boolean {
-      return typeof v === "string" && /^var\(--.+\)$/.test(v)
+      return typeof v === "string" && CSS_VAR_REGEX.test(v)
     }
 
     export function isCssUnit(v: unknown): boolean {
-      return typeof v === "string" && /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/.test(v)
+      return typeof v === "string" && CSS_UNIT_REGEX.test(v)
     }
 
-    export const patternFns: Record<string, (...args: any[]) => any> = { map: mapObject, isCssFunction, isCssVar, isCssUnit }
+    export const patternFns: PatternHelpers = { map: mapObject, isCssFunction, isCssVar, isCssUnit }
 
     export function getPatternStyles(pattern: Record<string, any>, styles: Record<string, any>): Record<string, any> {
       if (!pattern?.defaultValues) return styles
@@ -169,6 +174,7 @@ fn emits_ts_source() {
     assert_eq!(
         file(patterns, "patterns/stack.ts"),
         indoc! {r#"
+        // @ts-nocheck
         import { getPatternStyles, patternFns } from './runtime';
         import { memo } from '../helpers';
         import { css } from '../css/index';
@@ -182,10 +188,10 @@ fn emits_ts_source() {
               gap: props.gap,
               alignItems: props.align,
               flexDirection: props.direction,
-              justifyContent: props.justify,
-            }
+              justifyContent: props.justify
+            };
           },
-          defaultValues: {"gap":"4"}
+          defaultValues: { "gap": "4" }
         }
 
         export interface StackProperties {
@@ -215,7 +221,7 @@ fn emits_ts_source() {
 
         export const stack: StackPatternFn = /* @__PURE__ */ Object.assign(/* @__PURE__ */ memo(function stack(styles = {}) {
           return css(stackRaw(styles))
-        }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] })
+        }), { raw: stackRaw, propKeys: ["align","direction","gap","justify"] as Array<keyof StackProperties> })
         "#}
         .trim()
     );
@@ -253,16 +259,20 @@ fn emits_js_runtime_and_declarations() {
     assert_snapshot!(file(patterns, "patterns/runtime.js"), @r#"
     import { mapObject, withDefaults } from '../helpers';
 
+    const CSS_FUNCTION_REGEX = /^(min|max|clamp|calc)\(.*\)/
+    const CSS_VAR_REGEX = /^var\(--.+\)$/
+    const CSS_UNIT_REGEX = /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/
+
     export function isCssFunction(v) {
-      return typeof v === "string" && /^(min|max|clamp|calc)\(.*\)/.test(v)
+      return typeof v === "string" && CSS_FUNCTION_REGEX.test(v)
     }
 
     export function isCssVar(v) {
-      return typeof v === "string" && /^var\(--.+\)$/.test(v)
+      return typeof v === "string" && CSS_VAR_REGEX.test(v)
     }
 
     export function isCssUnit(v) {
-      return typeof v === "string" && /^[+-]?[0-9]*.?[0-9]+(?:[eE][+-]?[0-9]+)?(?:cm|mm|Q|in|pc|pt|px|em|ex|ch|rem|lh|rlh|vw|vh|vmin|vmax|vb|vi|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|cqi|cqb|cqmin|cqmax|%)$/.test(v)
+      return typeof v === "string" && CSS_UNIT_REGEX.test(v)
     }
 
     export const patternFns = { map: mapObject, isCssFunction, isCssVar, isCssUnit }
@@ -287,10 +297,10 @@ fn emits_js_runtime_and_declarations() {
               gap: props.gap,
               alignItems: props.align,
               flexDirection: props.direction,
-              justifyContent: props.justify,
-            }
+              justifyContent: props.justify
+            };
           },
-          defaultValues: {"gap":"4"}
+          defaultValues: { "gap": "4" }
         }
 
         export function stackRaw(styles) {
@@ -307,7 +317,6 @@ fn emits_js_runtime_and_declarations() {
     assert_eq!(
         file(patterns, "patterns/stack.d.ts"),
         indoc! {r#"
-        import type { PatternRuntimeConfig } from '../types/pattern';
         import type { SystemProperties, SystemStyleObject } from '../types/system';
 
         export interface StackProperties {
@@ -364,10 +373,10 @@ fn can_emit_import_extensions() {
               gap: props.gap,
               alignItems: props.align,
               flexDirection: props.direction,
-              justifyContent: props.justify,
-            }
+              justifyContent: props.justify
+            };
           },
-          defaultValues: {"gap":"4"}
+          defaultValues: { "gap": "4" }
         }
 
         export function stackRaw(styles) {
@@ -395,4 +404,34 @@ fn can_emit_import_extensions() {
         "}
         .trim()
     );
+}
+
+fn stack_js(config_source: &str) -> String {
+    let mut input = input();
+    input.patterns.insert(
+        "stack".into(),
+        PatternCodegenMeta {
+            config_source: config_source.into(),
+        },
+    );
+    let artifacts = ArtifactGraph.generate_all(
+        &input,
+        GenerateOptions {
+            format: CodegenFormat::Js,
+            import_extensions: false,
+        },
+    );
+    file(
+        artifact(&artifacts, ArtifactId::Patterns),
+        "patterns/stack.js",
+    )
+    .to_owned()
+}
+
+#[test]
+fn prints_the_transform_the_same_however_the_preset_was_loaded() {
+    let bundled = "{transform(props) {\n\t\treturn { content: \"\\\"\\\"\", ...props };\n\t}}";
+    let imported = "{\n  transform(props) {\n    return { content: '\"\"', ...props }\n  }\n}";
+
+    assert_eq!(stack_js(bundled), stack_js(imported));
 }

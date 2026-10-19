@@ -2,9 +2,13 @@ import type { DesignSystemManifest } from '@pandacss/compiler-shared'
 import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { readPandaVersion } from '@pandacss/config'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runCodegen, runLib } from '../src'
 import { CONFIG, CONFIG_WITH_TOKENS, pandaConfig } from './helpers'
+
+/** What `lib` publishes for a package-manager peer range: the running Panda version. */
+const RUNNING_PANDA_RANGE = `^${readPandaVersion()}`
 
 const DS_PACKAGE_JSON = { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': '^2.0.0' } }
 
@@ -121,7 +125,7 @@ describe('lib command', () => {
     expect(result.exportsChanged).toBe(true)
   })
 
-  it('replaces an unpublishable catalog: peer range with the running major', async () => {
+  it('replaces an unpublishable catalog: peer range with the running version', async () => {
     dir = createLibFixture({
       packageJson: { name: '@acme/ds', version: '1.2.3', peerDependencies: { '@pandacss/dev': 'catalog:' } },
     })
@@ -131,7 +135,7 @@ describe('lib command', () => {
 
     const manifest = readManifest(dir)
     expect(manifest.panda).not.toBe('catalog:')
-    expect(manifest.panda).toMatch(/^\^\d+\.0\.0$/)
+    expect(manifest.panda).toBe(RUNNING_PANDA_RANGE)
   })
 
   it('honors an explicit --panda range over an unpublishable peer', async () => {
@@ -153,7 +157,7 @@ describe('lib command', () => {
 
     const manifest = readManifest(dir)
     expect(manifest.panda).not.toBe('catalog:')
-    expect(manifest.panda).toMatch(/^\^\d+\.0\.0$/)
+    expect(manifest.panda).toBe(RUNNING_PANDA_RANGE)
   })
 
   it('syncs styled-system subpath exports for categories the codegen emitted', async () => {
@@ -185,7 +189,7 @@ describe('lib command', () => {
     const result = await runLib({ cwd: dir, logLevel: 'silent' })
 
     expect(result.ok).toBe(true)
-    expect(readManifest(dir).panda).toBe('^2.0.0')
+    expect(readManifest(dir).panda).toBe(RUNNING_PANDA_RANGE)
   })
 
   it('publishes a portable Panda range when the peer uses workspace:^', async () => {
@@ -196,7 +200,7 @@ describe('lib command', () => {
     const result = await runLib({ cwd: dir, logLevel: 'silent' })
 
     expect(result.ok).toBe(true)
-    expect(readManifest(dir).panda).toBe('^2.0.0')
+    expect(readManifest(dir).panda).toBe(RUNNING_PANDA_RANGE)
   })
 
   it('publishes a portable Panda range when the peer uses a pnpm catalog', async () => {
@@ -207,7 +211,7 @@ describe('lib command', () => {
     const result = await runLib({ cwd: dir, logLevel: 'silent' })
 
     expect(result.ok).toBe(true)
-    expect(readManifest(dir).panda).toBe('^2.0.0')
+    expect(readManifest(dir).panda).toBe(RUNNING_PANDA_RANGE)
   })
 
   it('publishes a portable Panda range when the peer is an npm: alias', async () => {

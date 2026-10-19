@@ -134,7 +134,10 @@ export function collectArtifactConflicts(metadata: DesignSystemMetadata | undefi
     .filter((entry) => entry.recipes.length > 0 || entry.patterns.length > 0)
 }
 
-export function collectExportMissingDiagnostics(metadata: DesignSystemMetadata | undefined): Diagnostic[] {
+export function collectExportMissingDiagnostics(
+  metadata: DesignSystemMetadata | undefined,
+  jsxFramework?: string,
+): Diagnostic[] {
   const overlay = buildCodegenOverlay(metadata)
   if (!overlay) return []
 
@@ -150,9 +153,9 @@ export function collectExportMissingDiagnostics(metadata: DesignSystemMetadata |
   if (overlay.ownedPatterns.length > 0) {
     required.push('./patterns', './patterns/*')
   }
-  const appPatterns = metadata?.userPatternNames?.length ?? 0
-  const dsPatterns = ds.patternNames?.length ?? 0
-  if (overlay.ownedPatterns.length > 0 || (overlay.virtualizeCss && (appPatterns > 0 || dsPatterns > 0))) {
+  // The jsx runtime (factory, helper, …) re-exports with css; owned patterns re-export on their own.
+  const reexportsJsx = overlay.virtualizeCss || overlay.ownedPatterns.length > 0
+  if (generatesJsx(jsxFramework) && reexportsJsx) {
     required.push('./jsx', './jsx/*')
   }
 
@@ -209,6 +212,12 @@ function identCollisions(kind: 'recipe' | 'pattern', names: string[]): Diagnosti
     collisions.push(createConfigDiagnostic('design_system_name_collision', message))
   }
   return collisions
+}
+
+const JSX_FRAMEWORKS = new Set(['react', 'preact', 'solid', 'vue'])
+
+function generatesJsx(jsxFramework: string | undefined): boolean {
+  return jsxFramework !== undefined && JSX_FRAMEWORKS.has(jsxFramework)
 }
 
 function hasExport(packageExports: Record<string, unknown> | undefined, subpath: string): boolean {

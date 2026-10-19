@@ -586,6 +586,13 @@ If a site cannot be rewritten without changing runtime behavior, the transformer
 
 Do not partially rewrite a site unless the residual runtime semantics are still correct.
 
+When a static style nests a property under a key that is neither a condition nor a selector, the encoder records the
+first invalid path. Project parsing and source transformation use the compiled `System` to describe it as a
+`nested_property` warning. The transform result carries this warning even if no rewrite lands, and only re-checks
+sites it didn't rewrite. Hosts print it through `createDiagnosticLog` with `onlyNew`, so a warning that parsing or the
+stylesheet build already printed isn't repeated.
+Open-ended dynamic values remain silent under this diagnostic.
+
 ### Rule 2: distinguish finite dynamic from open-ended dynamic
 
 There are two different kinds of "dynamic":

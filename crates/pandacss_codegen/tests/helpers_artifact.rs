@@ -120,7 +120,7 @@ fn ts_helpers_include_memo_and_style_serializer() {
             hasLast && lastHash === void 0 && composedKey === lastKey ? lastValue : stringCache.get(composedKey)
           if (composedOut === void 0) {
             composedOut = fn(...args)
-            stringCache.set(composedKey, composedOut)
+            stringCache.set(composedKey, composedOut!)
             if (stringCache.size > 500) stringCache.delete(stringCache.keys().next().value as string)
           }
 
@@ -137,7 +137,7 @@ fn ts_helpers_include_memo_and_style_serializer() {
           }
           lastHash = void 0
           lastKey = composedKey
-          lastValue = composedOut
+          lastValue = composedOut!
           hasLast = true
           return composedOut
         }
@@ -249,14 +249,14 @@ fn css_var_prefix_is_used_by_to_css_var_and_color_mix() {
       let out = ""
       for (const ch of path.replaceAll(".", "-")) {
         if (ch >= "A" && ch <= "Z") out += "-" + ch.toLowerCase()
-        else if (/[a-z0-9_-]/.test(ch) || ch >= "\u0081") out += ch
+        else if (CSS_VAR_CHAR_REGEX.test(ch) || ch >= "\u0081") out += ch
         else out += "\\" + ch
       }
       return "var(--pd-" + out + ")"
     }
     "#);
     assert_snapshot!(function_block(source, "colorMix"), @r#"
-    export function colorMix(tokens: Record<string, string>, path: string): string | undefined {
+    export function colorMix(tokens: Record<string, string>, path: string, resolveVar?: (path: string) => string): string | undefined {
       const colorPrefix = "colors."
       if (!path.startsWith(colorPrefix)) return
 
@@ -271,7 +271,7 @@ fn css_var_prefix_is_used_by_to_css_var_and_color_mix() {
       const percent = opacity === undefined ? Number(rawOpacity) : Number(opacity) * 100
       if (Number.isNaN(percent)) return
 
-      return "color-mix(in oklab, " + toCssVar(colorPath) + " " + percent + "%, transparent)"
+      return "color-mix(in oklab, " + (resolveVar || toCssVar)(colorPath) + " " + percent + "%, transparent)"
     }
     "#);
 }
@@ -606,4 +606,13 @@ fn declarations_type_the_style_serializer_factories() {
     export declare function createSerializeCssArgs(serializeCss: (...styles: any[]) => string, mergeCss: (...styles: any[]) => any): (...styles: any[]) => string;
     export declare function createAssignCss(context: Record<string, any>): (...styles: any[]) => any;
     ");
+}
+
+#[test]
+fn declarations_type_normalize_html_props_loosely() {
+    let helpers = generate_helpers(&UserConfig::default(), CodegenFormat::Js);
+
+    assert!(file(&helpers, "helpers.d.ts").contains(
+        "export declare const normalizeHTMLProps: ((props: Record<string, any>) => Record<string, any>) & {"
+    ));
 }

@@ -1,3 +1,4 @@
+mod animation;
 mod cascade;
 mod conditions;
 mod css_syntax;
@@ -8,6 +9,7 @@ mod numeric_value;
 mod polyfill;
 mod preflight;
 mod selector;
+mod selector_parts;
 mod sort;
 mod split_names;
 mod static_css;
@@ -15,7 +17,8 @@ mod static_css_diagnostics;
 mod style_rules;
 mod writer;
 
-pub use emitter::UtilityStyleOverrides;
+pub use animation::visit_animation_names;
+pub use emitter::{StyleReference, StyleReferences, UtilityStyleOverrides};
 pub use layers::{has_layer_declaration, strip_layer_order_statements};
 pub use pandacss_shared::{InlineKeyframe, PositionTryStyle, ViewTransitionStyle};
 pub use selector::{PREFLIGHT_ROOT, ScopeMode, scope_selector, split_selector_list};
@@ -162,6 +165,43 @@ pub struct StylesheetInput<'a> {
     pub view_transitions: &'a [ViewTransitionStyle],
     pub position_try: &'a [PositionTryStyle],
     pub inline_keyframes: &'a [InlineKeyframe],
+}
+
+/// An asset required by a selected style root, without a fabricated source location.
+pub struct StyleRequirement {
+    pub kind: &'static str,
+    pub name: String,
+    pub reason: String,
+}
+
+/// Dependencies of selected styles, collected without writing CSS.
+pub struct StyleRequirements {
+    pub requirements: Vec<StyleRequirement>,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+/// Collects dependencies using the same static expansion and declaration lowering as emission.
+#[must_use]
+pub fn collect_style_requirements(input: &StylesheetInput<'_>) -> StyleRequirements {
+    let mut diagnostics = Vec::new();
+    let dictionary = resolve_token_dictionary(
+        input.config,
+        input.token_dictionary.clone(),
+        &mut diagnostics,
+    );
+    let utility = utility_from_config(input.config, dictionary.clone());
+    let generated = static_css::expand(
+        input.config,
+        &utility,
+        dictionary.as_deref(),
+        &mut diagnostics,
+    );
+    let requirements =
+        emitter::collect_style_requirements(input, &utility, dictionary.as_deref(), &generated);
+    StyleRequirements {
+        requirements,
+        diagnostics,
+    }
 }
 
 /// Whether the config requests any static CSS: top-level `staticCss.*` or
@@ -516,14 +556,12 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Sp
     if !index.is_empty() {
         index.push('\n');
     }
-    if options.emit_layer_declaration
-        && !options.polyfill
-        && layer_selected(StylesheetLayer::Recipes)
-    {
-        for declaration in cascade::CascadePlan::internal_declarations(&input.config.layers) {
-            index.push_str("@layer ");
-            index.push_str(&declaration.join(", "));
-            index.push_str(";\n");
+    if !options.polyfill && layer_selected(StylesheetLayer::Recipes) {
+        for declaration in
+            cascade::CascadePlan::internal_declarations(&input.config.layers, options.minify)
+        {
+            index.push_str(&declaration);
+            index.push('\n');
         }
     }
     if !imports.is_empty() {
@@ -754,9 +792,10 @@ fn extend_recipe_groups(
             if index < target_len {
                 merges.push((index, group.entries.clone()));
             } else {
-                additions[index - target_len]
-                    .entries
-                    .extend(group.entries.iter().cloned());
+                pandacss_encoder::append_in_authored_order(
+                    &mut additions[index - target_len].entries,
+                    group.entries.clone(),
+                );
             }
         } else {
             indexes.insert(key, target_len + additions.len());
@@ -766,9 +805,54 @@ fn extend_recipe_groups(
 
     drop(indexes);
     for (index, entries) in merges {
-        target[index].entries.extend(entries);
+        pandacss_encoder::append_in_authored_order(&mut target[index].entries, entries);
     }
-    target.extend(additions);
+    insert_in_config_order(target, additions);
+}
+
+/// Places each new group before the first group of its recipe and conditions
+/// that comes later in the config, so later variants still win.
+fn insert_in_config_order(
+    target: &mut Vec<RecipeStyleGroupSnapshot>,
+    additions: Vec<RecipeStyleGroupSnapshot>,
+) {
+    if additions.is_empty() {
+        return;
+    }
+    let mut runs: FxHashMap<(&str, &[Box<str>]), Vec<usize>> = FxHashMap::default();
+    for (index, group) in target.iter().enumerate() {
+        runs.entry((&group.recipe, &group.conditions))
+            .or_default()
+            .push(index);
+    }
+    let mut slots = additions
+        .into_iter()
+        .map(|group| {
+            let slot =
+                runs.get(&(&*group.recipe, &*group.conditions))
+                    .map_or(target.len(), |indexes| {
+                        indexes
+                            .iter()
+                            .copied()
+                            .find(|&index| target[index].position > group.position)
+                            .unwrap_or_else(|| indexes[indexes.len() - 1] + 1)
+                    });
+            (slot, group)
+        })
+        .collect::<Vec<_>>();
+    drop(runs);
+    slots.sort_by_key(|(slot, _)| *slot);
+
+    let mut slots = slots.into_iter().peekable();
+    let mut merged = Vec::with_capacity(target.len() + slots.len());
+    for (index, group) in std::mem::take(target).into_iter().enumerate() {
+        while let Some((_, addition)) = slots.next_if(|(slot, _)| *slot == index) {
+            merged.push(addition);
+        }
+        merged.push(group);
+    }
+    merged.extend(slots.map(|(_, addition)| addition));
+    *target = merged;
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]

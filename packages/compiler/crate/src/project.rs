@@ -142,6 +142,7 @@ pub struct ResolvedUtilityValue {
     pub css_value: serde_json::Value,
     pub important: bool,
     pub source: serde_json::Value,
+    pub tokens: Vec<String>,
 }
 
 #[napi(object)]
@@ -287,7 +288,7 @@ impl CallbackHost {
 
 #[napi]
 impl Compiler {
-    /// Construct a compiler from the resolved, JSON-safe Panda config snapshot.
+    /// Construct a compiler from the resolved Panda config snapshot, serialized as JSON.
     #[napi(factory)]
     #[allow(
         clippy::needless_pass_by_value,
@@ -295,11 +296,13 @@ impl Compiler {
     )]
     pub fn from_config(
         env: Env,
-        config: serde_json::Value,
+        config: String,
         options: Option<ProjectOptions>,
         utility_values_callbacks: Option<UtilityValueCallbacks>,
     ) -> napi::Result<Self> {
         crate::init_tracing();
+        let config: serde_json::Value = serde_json::from_str(&config)
+            .map_err(|err| napi::Error::from_reason(format!("invalid config JSON: {err}")))?;
         let opts = options.unwrap_or(ProjectOptions { cross_file: None });
         let LoadedSystem {
             system,

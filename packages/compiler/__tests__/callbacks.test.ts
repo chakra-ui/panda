@@ -1157,6 +1157,166 @@ describe('Compiler callbacks', () => {
     `)
   })
 
+  describe('ternary pattern props', () => {
+    function createStackCompiler() {
+      const received: unknown[] = []
+      const compiler = createCallbackCompiler({
+        config: {
+          jsxFramework: 'react',
+          conditions: { hover: '&:hover' },
+          theme: { breakpoints: { sm: '640px' } },
+          patterns: {
+            stack: {
+              jsxName: 'Stack',
+              properties: { gap: {}, color: {}, align: {} },
+              transform: { kind: 'js-callback', id: 'patterns.stack.transform' },
+            },
+          },
+        },
+        callbacks: {
+          'pattern.transform': {
+            'patterns.stack.transform': (props) => {
+              received.push(props)
+              return { display: 'flex', gap: props.gap, color: props.color, alignItems: props.align }
+            },
+          },
+        },
+      })
+      const atoms = (source: string) => {
+        compiler.parseFileSource(
+          '/virtual/Stack.tsx',
+          `import { Stack } from '@panda/jsx'\nimport { stack } from '@panda/patterns'\n${source}`,
+        )
+        return compiler
+          .atoms()
+          .map((atom) => [atom.prop, atom.value, ...atom.conditions].join(':'))
+          .sort()
+      }
+      return { atoms, received }
+    }
+
+    it('runs the transform once per branch of a JSX prop', () => {
+      const { atoms, received } = createStackCompiler()
+
+      expect(atoms(`const el = <Stack gap={on ? '1px' : '3px'} />`)).toMatchInlineSnapshot(`
+        [
+          "display:flex",
+          "gap:1px",
+          "gap:3px",
+        ]
+      `)
+      expect(received).toMatchInlineSnapshot(`
+        [
+          {
+            "gap": "1px",
+          },
+          {
+            "gap": "3px",
+          },
+        ]
+      `)
+    })
+
+    it('runs the transform once per branch of a pattern call', () => {
+      const { atoms, received } = createStackCompiler()
+
+      expect(atoms(`const cls = stack({ gap: on ? '1px' : '3px' })`)).toMatchInlineSnapshot(`
+        [
+          "display:flex",
+          "gap:1px",
+          "gap:3px",
+        ]
+      `)
+      expect(JSON.stringify(received)).not.toContain('conditional')
+    })
+
+    it('keeps static props next to each branch', () => {
+      const { atoms, received } = createStackCompiler()
+
+      expect(atoms(`const el = <Stack align="center" gap={a ? '1px' : '2px'} color={b ? 'red' : 'blue'} />`))
+        .toMatchInlineSnapshot(`
+        [
+          "alignItems:center",
+          "color:blue",
+          "color:red",
+          "display:flex",
+          "gap:1px",
+          "gap:2px",
+        ]
+      `)
+      expect(received).toMatchInlineSnapshot(`
+        [
+          {
+            "align": "center",
+            "gap": "1px",
+            "color": "red",
+          },
+          {
+            "align": "center",
+            "gap": "2px",
+            "color": "red",
+          },
+          {
+            "align": "center",
+            "gap": "1px",
+            "color": "blue",
+          },
+        ]
+      `)
+    })
+
+    it('splits ternaries inside responsive arrays and condition objects', () => {
+      const { atoms, received } = createStackCompiler()
+
+      expect(
+        atoms(`const el = <>
+          <Stack gap={[on ? '1px' : '2px', '3px']} />
+          <Stack color={{ base: 'red', _hover: on ? 'green' : 'blue' }} />
+        </>`),
+      ).toMatchInlineSnapshot(`
+        [
+          "color:blue:_hover",
+          "color:green:_hover",
+          "color:red",
+          "display:flex",
+          "gap:1px",
+          "gap:2px",
+          "gap:3px:sm",
+        ]
+      `)
+      expect(JSON.stringify(received)).not.toContain('conditional')
+    })
+
+    it('splits nested ternaries', () => {
+      const { atoms, received } = createStackCompiler()
+
+      expect(atoms(`const el = <Stack gap={a ? '1px' : b ? '2px' : '3px'} />`)).toMatchInlineSnapshot(`
+        [
+          "display:flex",
+          "gap:1px",
+          "gap:2px",
+          "gap:3px",
+        ]
+      `)
+      expect(JSON.stringify(received)).not.toContain('conditional')
+    })
+
+    it('extracts logical pattern props and ternary branches', () => {
+      const { atoms, received } = createStackCompiler()
+
+      expect(
+        atoms(`
+          const el = <>
+            <Stack gap={on && (flag ? '1px' : '3px')} />
+            <Stack gap={on || '4px'} />
+          </>
+          const cls = stack({ gap: on ?? '5px' })
+        `),
+      ).toEqual(['display:flex', 'gap:1px', 'gap:3px', 'gap:4px', 'gap:5px'])
+      expect(received.map((props) => (props as { gap: string }).gap).sort()).toEqual(['1px', '3px', '4px', '5px'])
+    })
+  })
+
   it('caches pattern transform callback results across function calls and JSX components', () => {
     let calls = 0
     const compiler = createCallbackCompiler({
@@ -1783,20 +1943,20 @@ describe('Compiler callbacks', () => {
       "@layer utilities {
         .gradient-border_linear-gradient\\(to_right\\,_red\\,_blue\\) {
           --after-inset: calc(var(--gradient-border-width, 2px) + var(--gradient-border-offset, 0px) + 1px);
-          --gradient-border-end: calc(var(--gradient-border-start) + var(--gradient-border-width, 2px));
           --gradient-border-start: calc(var(--parent-h, 48px) / 2 + var(--gradient-border-offset, 0px));
+          --gradient-border-end: calc(var(--gradient-border-start) + var(--gradient-border-width, 2px));
         }
         .gradient-border_linear-gradient\\(to_right\\,_red\\,_blue\\)::after {
           inset: calc(var(--after-inset) * -1);
           background-position: center;
-          background-image: linear-gradient(to right, red, blue);
-          background-repeat: no-repeat;
-          background-size: cover;
           content: "";
           display: inline-block;
-          mask-image: radial-gradient(transparent calc(var(--gradient-border-start) - 1px), black var(--gradient-border-start), black var(--gradient-border-end), transparent calc(var(--gradient-border-end) + 1px));
-          pointer-events: none;
           position: absolute;
+          pointer-events: none;
+          background-image: linear-gradient(to right, red, blue);
+          mask-image: radial-gradient(transparent calc(var(--gradient-border-start) - 1px), black var(--gradient-border-start), black var(--gradient-border-end), transparent calc(var(--gradient-border-end) + 1px));
+          background-size: cover;
+          background-repeat: no-repeat;
         }
       }
       "

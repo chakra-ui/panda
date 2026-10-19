@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use insta::assert_debug_snapshot;
+use insta::{assert_debug_snapshot, assert_snapshot};
 use pandacss_literal::Literal;
 use pandacss_tokens::{Token, TokenCategory, TokenDictionary};
 use pandacss_utility::{Utility, UtilityOptions};
@@ -185,5 +185,91 @@ fn transform_resolves_token_function_fallbacks() {
                     .into()
             )
         )]),
+    );
+}
+
+#[test]
+fn token_references_report_each_reference_with_its_source_range() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.red.500",
+            "#f00",
+            "var(--colors-red-500)",
+            TokenCategory::Colors,
+        ))
+        .build();
+
+    let values = [
+        "0 0 0 1px {colors.missing}",
+        "1px solid token(colors.missing)",
+        "calc(token( sizes.missing ) + 2px)",
+        "token(colors.missing, red)",
+        "1px solid token(colors.red.500, {colors.missing})",
+        "token(colors.red.500, token(colors.missing))",
+        "{colors.red.500/50} {colors.missing/50}",
+        "{colors.red.500} {colors.missing}",
+        "\"{ hello }\"",
+        "\"{\" \"}\"",
+        "{nodot}",
+        "{colors.missing",
+        "var(--colors-red-500)",
+        "url(/img.v2.png)",
+        "url(/a/mytoken(1).png)",
+        "my-token(colors.missing) (token(colors.missing))",
+    ];
+
+    let found = values
+        .iter()
+        .map(|value| {
+            let refs = pandacss_utility::token_references(value, &tokens)
+                .into_iter()
+                .map(|(path, range)| {
+                    assert_eq!(&value[range], path);
+                    format!("{path} resolved={}", tokens.token(path).is_some())
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("{value} -> [{refs}]")
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    assert_snapshot!(found, @r#"
+    0 0 0 1px {colors.missing} -> [colors.missing resolved=false]
+    1px solid token(colors.missing) -> [colors.missing resolved=false]
+    calc(token( sizes.missing ) + 2px) -> [sizes.missing resolved=false]
+    token(colors.missing, red) -> [colors.missing resolved=false]
+    1px solid token(colors.red.500, {colors.missing}) -> [colors.red.500 resolved=true, colors.missing resolved=false]
+    token(colors.red.500, token(colors.missing)) -> [colors.red.500 resolved=true, colors.missing resolved=false]
+    {colors.red.500/50} {colors.missing/50} -> [colors.red.500 resolved=true, colors.missing resolved=false]
+    {colors.red.500} {colors.missing} -> [colors.red.500 resolved=true, colors.missing resolved=false]
+    "{ hello }" -> []
+    "{" "}" -> []
+    {nodot} -> []
+    {colors.missing -> []
+    var(--colors-red-500) -> []
+    url(/img.v2.png) -> []
+    url(/a/mytoken(1).png) -> []
+    my-token(colors.missing) (token(colors.missing)) -> [colors.missing resolved=false]
+    "#);
+}
+
+#[test]
+fn token_function_inside_a_longer_name_is_left_alone() {
+    let tokens = TokenDictionary::builder()
+        .insert(Token::new(
+            "colors.red.500",
+            "#f00",
+            "var(--colors-red-500)",
+            TokenCategory::Colors,
+        ))
+        .build();
+
+    assert_eq!(
+        pandacss_utility::expand_token_references_to_vars(
+            "url(/a/mytoken(1).png) my-token(colors.red.500) token(colors.red.500)",
+            &tokens,
+        ),
+        "url(/a/mytoken(1).png) my-token(colors.red.500) var(--colors-red-500)",
     );
 }

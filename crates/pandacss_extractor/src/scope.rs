@@ -34,6 +34,7 @@ use crate::pure_fn::{
 };
 use crate::style_tree::{
     StyleTree, expression_to_style_tree, literal_to_style_tree, project_literal,
+    style_tree_has_open_value, style_tree_has_runtime_branch,
 };
 use crate::{
     ImportBindingFacts, ImportRecord, ImportSpecifierKind, ImportedRecipeFold,
@@ -368,7 +369,9 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         self.resolve_import_entry(symbol_id)
             .and_then(|entry| match entry {
                 ExportEntry::PureFn(func) => Some(func),
-                ExportEntry::Literal(_) | ExportEntry::Recipe(_) => None,
+                ExportEntry::Literal(_)
+                | ExportEntry::StyleFallback { .. }
+                | ExportEntry::Recipe(_) => None,
             })
     }
 
@@ -584,6 +587,12 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
     fn record_deprecated_token(&self, path: &str, span: oxc_span::Span) {
         let span = crate::span_from_oxc(span);
+        if self.diagnostics.borrow().iter().any(|diagnostic| {
+            diagnostic.code == crate::diagnostic_codes::DEPRECATED_TOKEN_USED
+                && diagnostic.span == Some(span)
+        }) {
+            return;
+        }
         let location = self
             .line_index
             .map(|idx| idx.locate_range(span.start, span.end));
@@ -613,6 +622,13 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     pub(crate) fn resolve_root_name(&self, name: &str) -> Option<Literal> {
         let symbol_id = self.semantic.scoping().get_root_binding(name.into())?;
         self.resolve_symbol(symbol_id)
+    }
+
+    /// Resolve a root binding while retaining dynamic style fallbacks.
+    #[must_use]
+    pub(crate) fn resolve_root_style_tree(&self, name: &str) -> Option<StyleTree> {
+        let symbol_id = self.semantic.scoping().get_root_binding(name.into())?;
+        self.resolve_symbol_style_tree(symbol_id)
     }
 
     fn resolve_symbol(&self, symbol_id: SymbolId) -> Option<Literal> {
@@ -659,9 +675,13 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
         if flags.contains(SymbolFlags::Import) {
             // Rehydrate from Literal (`Conditional` → `Branches`, no foreign spans).
-            return self
-                .resolve_import_symbol(symbol_id)
-                .map(literal_to_style_tree);
+            return match self.resolve_import_entry(symbol_id)? {
+                ExportEntry::Literal(value) => Some(literal_to_style_tree(value)),
+                ExportEntry::StyleFallback { style_value, .. } => Some(
+                    StyleTree::OpenWithFallback(Box::new(literal_to_style_tree(style_value))),
+                ),
+                ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
+            };
         }
         if scoping.symbol_is_mutated(symbol_id) {
             return None;
@@ -711,6 +731,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     fn resolve_import_symbol(&self, symbol_id: SymbolId) -> Option<Literal> {
         match self.resolve_import_entry(symbol_id)? {
             ExportEntry::Literal(lit) => Some(lit),
+            ExportEntry::StyleFallback { known_value, .. } => known_value,
             // A recipe is a function, not a value — only `.raw(props)` resolves it.
             ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
         }
@@ -1058,6 +1079,13 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 expression_to_literal(init, Some(self))
             }
             BindingPattern::ObjectPattern(_) | BindingPattern::ArrayPattern(_) => {
+                // A projected object may omit a dynamic member; that does not make it null.
+                if let Some(tree) = self.resolve_declarator_style_tree(declarator, target_symbol)
+                    && (style_tree_has_open_value(&tree) || style_tree_has_runtime_branch(&tree))
+                {
+                    return None;
+                }
+
                 let source = expression_to_literal(init, Some(self))?;
                 resolve_pattern_path(&declarator.id, &source, target_symbol, Some(self))
             }
@@ -1090,12 +1118,23 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                     return Some(tree);
                 }
                 // Spread-merged keys: Literal path (may become Open).
-                let source = expression_to_literal(init, Some(self))?;
-                resolve_pattern_path(&declarator.id, &source, target_symbol, Some(self))
+                expression_to_literal(init, Some(self))
+                    .and_then(|source| {
+                        resolve_pattern_path(&declarator.id, &source, target_symbol, Some(self))
+                    })
                     .map(literal_to_style_tree)
+                    .or_else(|| {
+                        self.default_style_tree(binding_default(&declarator.id, target_symbol)?)
+                    })
             }
             BindingPattern::AssignmentPattern(_) => None,
         }
+    }
+
+    /// A binding's default is one possible value, like `value ?? default`.
+    fn default_style_tree(&self, default: &Expression<'_>) -> Option<StyleTree> {
+        let tree = expression_to_style_tree(default, Some(self))?;
+        Some(StyleTree::OpenWithFallback(Box::new(tree)))
     }
 
     /// Resolve one symbol bound by a parameter against its `TSTypeLiteral`
@@ -1126,8 +1165,41 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         param: &oxc_ast::ast::FormalParameter<'a>,
         target_symbol: SymbolId,
     ) -> Option<StyleTree> {
-        self.resolve_param(param, target_symbol)
-            .map(literal_to_style_tree)
+        if let Some(value) = self.resolve_param(param, target_symbol) {
+            return Some(literal_to_style_tree(value));
+        }
+        let default = match &param.pattern {
+            BindingPattern::BindingIdentifier(id) if id.symbol_id.get() == Some(target_symbol) => {
+                param.initializer.as_deref()?
+            }
+            pattern => binding_default(pattern, target_symbol)?,
+        };
+        self.default_style_tree(default)
+    }
+}
+
+/// The default written for `target` in a binding pattern, at any depth: `{ size = 'md' }`.
+fn binding_default<'b>(
+    pattern: &'b BindingPattern<'b>,
+    target: SymbolId,
+) -> Option<&'b Expression<'b>> {
+    match pattern {
+        BindingPattern::BindingIdentifier(_) => None,
+        BindingPattern::AssignmentPattern(assignment) => match &assignment.left {
+            BindingPattern::BindingIdentifier(id) if id.symbol_id.get() == Some(target) => {
+                Some(&assignment.right)
+            }
+            left => binding_default(left, target),
+        },
+        BindingPattern::ObjectPattern(object) => object
+            .properties
+            .iter()
+            .find_map(|property| binding_default(&property.value, target)),
+        BindingPattern::ArrayPattern(array) => array
+            .elements
+            .iter()
+            .flatten()
+            .find_map(|element| binding_default(element, target)),
     }
 }
 
@@ -1138,7 +1210,7 @@ fn token_call_resolution(
     fallback: Option<&str>,
 ) -> Option<TokenCallResolution> {
     if is_var {
-        let value = dict.get_var(path, fallback)?;
+        let value = dict.runtime_var_str(path, fallback)?.to_owned();
         return Some(TokenCallResolution {
             value,
             ref_path: path.to_owned(),

@@ -206,11 +206,12 @@ Every style prop. This is the default.
 
 ### minimal
 
-The `css` prop and props that end in `Css`. `bg` and `px` no longer work.
+The `css` prop, props that end in `Css`, and a pattern's or recipe's own props (like `gap` on `HStack`). Generic style props like `bg` and `px` no longer work.
 
 ```tsx
 <styled.button css={{ bg: 'blue.500', px: '4' }}>Click me</styled.button>
 <Carousel trackCss={{ width: '300px' }} />
+<HStack gap="4" justify="space-between" />
 ```
 
 ### none

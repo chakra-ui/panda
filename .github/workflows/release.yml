@@ -35,15 +35,15 @@ jobs:
         include:
           - { target: aarch64-apple-darwin, runner: macos-latest }
           - { target: x86_64-apple-darwin, runner: macos-latest }
-          - { target: x86_64-unknown-linux-gnu, runner: ubuntu-latest, args: --use-napi-cross }
-          - { target: aarch64-unknown-linux-gnu, runner: ubuntu-latest, args: --use-napi-cross }
-          - { target: x86_64-unknown-linux-musl, runner: ubuntu-latest, zig: true, args: -x }
-          - { target: aarch64-unknown-linux-musl, runner: ubuntu-latest, zig: true, args: -x }
+          - { target: x86_64-unknown-linux-gnu, runner: ubuntu-24.04, args: --use-napi-cross }
+          - { target: aarch64-unknown-linux-gnu, runner: ubuntu-24.04, args: --use-napi-cross }
+          - { target: x86_64-unknown-linux-musl, runner: ubuntu-24.04, zig: true, args: -x }
+          - { target: aarch64-unknown-linux-musl, runner: ubuntu-24.04, zig: true, args: -x }
           - { target: x86_64-pc-windows-msvc, runner: windows-latest }
           - { target: aarch64-pc-windows-msvc, runner: windows-latest }
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         uses: ./.github/composite-actions/install
@@ -102,10 +102,10 @@ jobs:
   build-wasm:
     name: Build wasm artifacts
     if: ${{ github.repository == 'chakra-ui/panda' || github.event_name == 'workflow_dispatch' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         uses: ./.github/composite-actions/install
@@ -135,10 +135,10 @@ jobs:
   build-wasi:
     name: Build wasi artifact
     if: ${{ github.repository == 'chakra-ui/panda' || github.event_name == 'workflow_dispatch' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         uses: ./.github/composite-actions/install
@@ -173,14 +173,14 @@ jobs:
       - build-native
       - build-wasm
       - build-wasi
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       pull-requests: write
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -267,24 +267,13 @@ jobs:
         id: changesets
         if: >-
           ${{ github.repository == 'chakra-ui/panda' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
-        uses: changesets/action@v1
+        uses: changesets/action@v2.1.2
         with:
-          publish: pnpm release
+          publish-script: pnpm release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-
-      # changesets publishes packages without a stable release to `latest`, so
-      # the `beta` tag falls behind.
-      - name: Sync beta dist-tag
-        if: steps.changesets.outputs.published == 'true'
-        # Run with node, not pnpm: pre-publish just rewrote the compiler
-        # package.json and pnpm would refuse on the frozen lockfile.
-        run: node scripts/sync-beta-dist-tag.mjs --apply
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Send Slack notification
         if: steps.changesets.outputs.published == 'true'
@@ -294,7 +283,7 @@ jobs:
           payload: |
             {
               "package_name": "@pandacss/cli",
-              "changelog_url": "https://github.com/chakra-ui/panda/blob/v2/CHANGELOG.md"
+              "changelog_url": "https://github.com/chakra-ui/panda/blob/v2/packages/cli/CHANGELOG.md"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

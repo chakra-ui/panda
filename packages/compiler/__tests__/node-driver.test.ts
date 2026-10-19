@@ -232,6 +232,42 @@ describe('createNodeDriver', () => {
     }
   })
 
+  it('re-extracts an importer when its missing module arrives in a batch', async () => {
+    const watchDir = mkdtempSync(join(tmpdir(), 'panda-driver-cross-file-batch-'))
+    try {
+      writeFileTree(watchDir, {
+        'panda.config.ts': `export default {
+          include: ['**/*.tsx'],
+          importMap: { css: ['@panda/css'] },
+        }`,
+        'App.tsx': "import { brand } from './tokens'; import { css } from '@panda/css'; css({ color: brand })",
+      })
+      const driver = await createNodeDriver({ cwd: watchDir })
+      driver.parseFiles()
+
+      const other = join(watchDir, 'Other.tsx')
+      const tokens = join(watchDir, 'tokens.ts')
+      writeFileSync(other, "import { css } from '@panda/css'; css({ margin: '2px' })")
+      writeFileSync(tokens, "export const brand = 'red'")
+      expect(
+        driver.applyChanges([
+          { path: other, kind: 'add' },
+          { path: tokens, kind: 'add' },
+        ]),
+      ).toEqual([true, true])
+
+      const incrementalCss = driver.cssgen().css
+      expect(incrementalCss).toContain('color: red')
+      expect(incrementalCss).toContain('margin: 2px')
+
+      const cold = await createNodeDriver({ cwd: watchDir })
+      cold.parseFiles()
+      expect(incrementalCss).toBe(cold.cssgen().css)
+    } finally {
+      rmSync(watchDir, { recursive: true, force: true })
+    }
+  })
+
   it('re-extracts importers through the config pattern transform', async () => {
     const watchDir = mkdtempSync(join(tmpdir(), 'panda-driver-cross-file-pattern-'))
     try {
@@ -801,6 +837,21 @@ describe('NodeDriver writeDesignSystemLib', () => {
     )
   })
 
+  it('exports ./types so design systems can annotate exported recipes', async () => {
+    dir = createLibProject()
+
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.codegen()
+    await driver.writeDesignSystemLib()
+
+    const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+    expect(pkg.exports['./types']).toMatchInlineSnapshot(`
+      {
+        "types": "./styled-system/types/index.d.ts",
+      }
+    `)
+  })
+
   it('preserves an existing string root export', async () => {
     dir = createLibProject()
     writeFileTree(dir, {
@@ -1283,6 +1334,206 @@ describe('createNodeDriver reload', () => {
           ],
         }
       `)
+  })
+
+  it('watches the new preset after switching to one with the same values', async () => {
+    const presetDir = mkdtempSync(join(tmpdir(), 'panda-driver-reload-preset-'))
+    const preset = "export default { theme: { tokens: { colors: { brand: { value: 'red' } } } } }"
+    const config = (file: string) =>
+      [`import preset from './${file}'`, 'export default { presets: [preset], include: [] }'].join('\n')
+    writeFileTree(presetDir, {
+      'preset-a.ts': preset,
+      'preset-b.ts': preset,
+      'panda.config.ts': config('preset-a'),
+    })
+
+    try {
+      const driver = await createNodeDriver({ cwd: presetDir })
+      writeFileTree(presetDir, { 'panda.config.ts': config('preset-b') })
+      const diff = await driver.reload()
+
+      expect({ hasChanged: diff.hasChanged, dependencies: driver.configDependencies.sort() }).toMatchInlineSnapshot(`
+        {
+          "hasChanged": false,
+          "dependencies": [
+            "panda.config.ts",
+            "preset-b.ts",
+          ],
+        }
+      `)
+      expect(driver.isConfigFile(join(presetDir, 'preset-b.ts'))).toBe(true)
+      expect(driver.isConfigFile(join(presetDir, 'preset-a.ts'))).toBe(false)
+    } finally {
+      rmSync(presetDir, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('NodeDriver with sources outside cwd', () => {
+  let root: string
+
+  beforeAll(() => {
+    root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-driver-monorepo-')))
+  })
+
+  afterAll(() => {
+    rmSync(root, { recursive: true, force: true })
+  })
+
+  async function monorepoDriver(name: string, include: string) {
+    const dir = join(root, name)
+    writeFileTree(dir, {
+      'apps/demo/panda.config.ts': `export default {
+        include: ['./src/**/*.tsx', ${include.replace('<root>', dir)}],
+        importMap: { css: ['@panda/css'] },
+      }`,
+      'apps/demo/src/App.tsx': "import { css } from '@panda/css'; css({ color: 'red' })",
+      'packages/ui/src/Card.tsx': "import { css } from '@panda/css'; css({ color: 'chartreuse' })",
+      'packages/other/src/Other.tsx': "import { css } from '@panda/css'; css({ color: 'tomato' })",
+    })
+    const driver = await createNodeDriver({ cwd: join(dir, 'apps/demo') })
+    driver.parseFiles()
+    return { driver, ui: join(dir, 'packages/ui/src'), other: join(dir, 'packages/other/src') }
+  }
+
+  it('scans a ../ include into normalized paths', async () => {
+    const { driver, ui } = await monorepoDriver('scan-dotdot', "'../../packages/ui/src/**/*.tsx'")
+    expect(driver.scan()).toContain(join(ui, 'Card.tsx'))
+    expect(driver.scan().some((path) => path.includes('..'))).toBe(false)
+  })
+
+  it('treats files under a ../ include as sources', async () => {
+    const { driver, ui, other } = await monorepoDriver('source-dotdot', "'../../packages/ui/src/**/*.tsx'")
+    expect(driver.isSourceFile(join(ui, 'Card.tsx'))).toBe(true)
+    expect(driver.isSourceFile(join(ui, 'New.tsx'))).toBe(true)
+    expect(driver.isSourceFile(join(other, 'Other.tsx'))).toBe(false)
+  })
+
+  it('treats files under an absolute include outside cwd as sources', async () => {
+    const { driver, ui, other } = await monorepoDriver('source-absolute', "'<root>/packages/ui/src/**/*.tsx'")
+    expect(driver.isSourceFile(join(ui, 'Card.tsx'))).toBe(true)
+    expect(driver.isSourceFile(join(other, 'Other.tsx'))).toBe(false)
+  })
+
+  it('applies an edit to a sibling package file', async () => {
+    const { driver, ui } = await monorepoDriver('edit-dotdot', "'../../packages/ui/src/**/*.tsx'")
+    expect(driver.cssgen().css).toContain('chartreuse')
+
+    const card = join(ui, 'Card.tsx')
+    writeFileSync(card, "import { css } from '@panda/css'; css({ color: 'orchid' })")
+    expect(driver.applyChange({ path: card, kind: 'change' })).toBe(true)
+    expect(driver.cssgen().css).toContain('orchid')
+  })
+
+  it('adds a new sibling package file', async () => {
+    const { driver, ui } = await monorepoDriver('add-absolute', "'<root>/packages/ui/src/**/*.tsx'")
+    const created = join(ui, 'Created.tsx')
+    writeFileSync(created, "import { css } from '@panda/css'; css({ color: 'peru' })")
+    expect(driver.applyChange({ path: created, kind: 'add' })).toBe(true)
+    expect(driver.cssgen().css).toContain('peru')
+  })
+
+  it('ignores a new file in a package the config does not include', async () => {
+    const { driver, other } = await monorepoDriver('ignore-other', "'../../packages/ui/src/**/*.tsx'")
+    const created = join(other, 'Created.tsx')
+    writeFileSync(created, "import { css } from '@panda/css'; css({ color: 'sienna' })")
+    expect(driver.applyChange({ path: created, kind: 'add' })).toBe(false)
+    expect(driver.cssgen().css).not.toContain('sienna')
+  })
+
+  it('watches the normalized sibling package directory', async () => {
+    const { driver, ui } = await monorepoDriver('watch-dotdot', "'../../packages/ui/src/**/*.tsx'")
+    expect(driver.watchTargets().dirs.map((dir) => driver.resolvePath(dir))).toContain(ui)
+  })
+})
+
+describe('NodeDriver with symlinked paths', () => {
+  let root: string
+  let link: string
+
+  beforeAll(() => {
+    root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-driver-symlink-')))
+    link = `${root}-link`
+    symlinkSync(root, link, 'dir')
+  })
+
+  afterAll(() => {
+    unlinkSync(link)
+    rmSync(root, { recursive: true, force: true })
+  })
+
+  const card = (color: string) => `import { css } from '@panda/css'; css({ color: '${color}' })`
+
+  function writeMonorepo(name: string, { linkPackage = false } = {}) {
+    const dir = join(root, name)
+    writeFileTree(dir, {
+      'apps/demo/panda.config.ts': `export default {
+        include: ['./src/**/*.tsx', '../../packages/ui/src/**/*.tsx'],
+        importMap: { css: ['@panda/css'] },
+      }`,
+      'apps/demo/src/App.tsx': card('red'),
+      [`${linkPackage ? 'real-ui' : 'packages/ui'}/src/Card.tsx`]: card('chartreuse'),
+    })
+    if (linkPackage) {
+      mkdirSync(join(dir, 'packages'))
+      symlinkSync(join(dir, 'real-ui'), join(dir, 'packages/ui'), 'dir')
+    }
+    return dir
+  }
+
+  async function expectEditAndAdd(cwd: string, eventDir: string, diskDir: string) {
+    const driver = await createNodeDriver({ cwd })
+    driver.parseFiles()
+    expect(driver.cssgen().css).toContain('chartreuse')
+
+    writeFileSync(join(diskDir, 'Card.tsx'), card('orchid'))
+    expect(driver.isSourceFile(join(eventDir, 'Card.tsx'))).toBe(true)
+    expect(driver.applyChange({ path: join(eventDir, 'Card.tsx'), kind: 'change' })).toBe(true)
+    expect(driver.cssgen().css).toContain('orchid')
+
+    writeFileSync(join(diskDir, 'Created.tsx'), card('peru'))
+    expect(driver.applyChange({ path: join(eventDir, 'Created.tsx'), kind: 'add' })).toBe(true)
+    expect(driver.cssgen().css).toContain('peru')
+
+    rmSync(join(diskDir, 'Card.tsx'))
+    expect(driver.applyChange({ path: join(eventDir, 'Card.tsx'), kind: 'unlink' })).toBe(true)
+    expect(driver.cssgen().css).not.toContain('orchid')
+  }
+
+  it('matches real-path events when cwd is a symlink', async () => {
+    writeMonorepo('cwd-link')
+    await expectEditAndAdd(
+      join(link, 'cwd-link/apps/demo'),
+      join(root, 'cwd-link/packages/ui/src'),
+      join(root, 'cwd-link/packages/ui/src'),
+    )
+  })
+
+  it('matches symlinked events when cwd is the real path', async () => {
+    writeMonorepo('event-link')
+    await expectEditAndAdd(
+      join(root, 'event-link/apps/demo'),
+      join(link, 'event-link/packages/ui/src'),
+      join(root, 'event-link/packages/ui/src'),
+    )
+  })
+
+  it('matches events through a symlinked package directory', async () => {
+    const dir = writeMonorepo('package-link', { linkPackage: true })
+    await expectEditAndAdd(join(dir, 'apps/demo'), join(dir, 'packages/ui/src'), join(dir, 'real-ui/src'))
+  })
+
+  it('matches events at the target of a symlinked package directory', async () => {
+    const dir = writeMonorepo('package-target', { linkPackage: true })
+    await expectEditAndAdd(join(dir, 'apps/demo'), join(dir, 'real-ui/src'), join(dir, 'real-ui/src'))
+  })
+
+  it('scans files under the cwd as given when cwd is a symlink', async () => {
+    writeMonorepo('scan-link')
+    const driver = await createNodeDriver({ cwd: join(link, 'scan-link/apps/demo') })
+    expect(driver.scan().filter((path) => path.endsWith('Card.tsx'))).toEqual([
+      join(link, 'scan-link/packages/ui/src/Card.tsx'),
+    ])
   })
 })
 

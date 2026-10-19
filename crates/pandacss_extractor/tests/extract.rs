@@ -578,6 +578,48 @@ fn styled_with_imported_recipe_records_the_recipe_name() {
 }
 
 #[test]
+fn styled_calls_record_the_style_and_options_argument_positions() {
+    let source = indoc! {r"
+        import { styled } from '@panda/jsx';
+        import * as JSX from '@panda/jsx';
+        import { button } from '@panda/recipes';
+
+        styled('button', button, { defaultProps: { size: 'sm' } });
+        styled.button(button, { defaultProps: { size: 'sm' } });
+        JSX.styled('button', button, { defaultProps: { size: 'sm' } });
+    "};
+
+    let result = extract(source, "factory.tsx", &panda_jsx_config());
+    let layouts: Vec<_> = result
+        .calls
+        .iter()
+        .map(|call| {
+            (
+                &call.name,
+                call.jsx_factory_kind.style_arg_index(),
+                call.jsx_factory_kind.options_arg_index(),
+                &call.jsx_recipe_ident,
+            )
+        })
+        .collect();
+
+    assert_yaml_snapshot!(layouts, @r"
+    - - styled
+      - 1
+      - 2
+      - button
+    - - styled.button
+      - 0
+      - 1
+      - button
+    - - styled
+      - 1
+      - 2
+      - button
+    ");
+}
+
+#[test]
 fn styled_with_renamed_recipe_import_records_the_imported_name() {
     assert_eq!(
         styled_recipe_name(indoc! {r#"
@@ -664,4 +706,32 @@ fn styled_with_recipe_raw_member_records_no_recipe() {
         "#}),
         None
     );
+}
+
+const JSX_PAGE: &str = indoc! {r#"
+    import { Box } from "@panda/jsx"
+    export default function Page() {
+      return <Box color="red" />
+    }
+"#};
+
+#[test]
+fn jsx_in_a_js_file_is_extracted() {
+    let usage = extract(JSX_PAGE, "page.js", &panda_jsx_config());
+    assert!(usage.diagnostics.is_empty(), "{:?}", usage.diagnostics);
+    assert_eq!(usage.jsx.len(), 1);
+}
+
+#[test]
+fn jsx_in_an_mjs_file_is_extracted() {
+    let usage = extract(JSX_PAGE, "page.mjs", &panda_jsx_config());
+    assert!(usage.diagnostics.is_empty(), "{:?}", usage.diagnostics);
+    assert_eq!(usage.jsx.len(), 1);
+}
+
+#[test]
+fn jsx_in_a_cjs_file_is_extracted() {
+    let usage = extract(JSX_PAGE, "page.cjs", &panda_jsx_config());
+    assert!(usage.diagnostics.is_empty(), "{:?}", usage.diagnostics);
+    assert_eq!(usage.jsx.len(), 1);
 }

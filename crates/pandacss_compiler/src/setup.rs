@@ -5,7 +5,8 @@
 use std::sync::Arc;
 
 use pandacss_config::{
-    UserConfig, ValidationMode, validate_config_value, validation_mode_from_value,
+    UserConfig, ValidationMode, convert_array_conditions, validate_config_value,
+    validation_mode_from_value,
 };
 use pandacss_system::{System, SystemInput};
 use pandacss_tokens::TokenDictionary;
@@ -27,7 +28,7 @@ pub struct LoadedSystem {
 /// # Errors
 /// See [`LoadSystemError`].
 pub fn load_system<E>(
-    config: serde_json::Value,
+    mut config: serde_json::Value,
     resolve_utility_values: impl FnOnce(&mut UserConfig, Option<&Arc<TokenDictionary>>) -> Result<(), E>,
 ) -> Result<LoadedSystem, LoadSystemError<E>> {
     let diagnostics = validate_config_value(&config);
@@ -38,6 +39,7 @@ pub fn load_system<E>(
             diagnostics,
         });
     }
+    convert_array_conditions(&mut config);
     let mut user_config: UserConfig = serde_json::from_value(config.clone()).map_err(|err| {
         let message = if diagnostics.is_empty() {
             format!("invalid config: {err}")

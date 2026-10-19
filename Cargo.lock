@@ -218,6 +218,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd8e701084c37e7ef62d3f9e453b618130cbc0ef3573847785952a3ac3f746bf"
 
 [[package]]
+name = "dunce"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
+
+[[package]]
 name = "either"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -905,6 +911,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "oxc_codegen"
+version = "0.130.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f57d81e1a0cd99b07a760cf1bb6ae3ab4b4861b10139bc024716d7ab15e27fdf"
+dependencies = [
+ "bitflags",
+ "cow-utils",
+ "dragonbox_ecma",
+ "itoa",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_data_structures",
+ "oxc_index 4.1.0",
+ "oxc_semantic",
+ "oxc_sourcemap 6.1.1",
+ "oxc_span",
+ "oxc_str",
+ "oxc_syntax",
+ "rustc-hash",
+]
+
+[[package]]
 name = "oxc_data_structures"
 version = "0.130.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -961,6 +989,24 @@ checksum = "191884bee6c3744909a51acc7d78d4ae370d817b25875b10642f632327b6296e"
 dependencies = [
  "rayon",
  "serde",
+]
+
+[[package]]
+name = "oxc_isolated_declarations"
+version = "0.130.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4fa6126990125781d09b5780d2af35a3dc1200e510824089eda7a2550c8d4262"
+dependencies = [
+ "bitflags",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_diagnostics",
+ "oxc_ecmascript",
+ "oxc_span",
+ "oxc_str",
+ "oxc_syntax",
+ "rustc-hash",
 ]
 
 [[package]]
@@ -1054,6 +1100,19 @@ dependencies = [
 
 [[package]]
 name = "oxc_sourcemap"
+version = "6.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d378eb8bad20e89d66276aebab51f6a5408571092cac94abdd3eabb773713d6"
+dependencies = [
+ "base64-simd",
+ "json-escape-simd",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "oxc_sourcemap"
 version = "8.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73326286c78270f92c55e1a643a64daa558fc8a8e06fa0ddbe32fabb3d8eea11"
@@ -1139,6 +1198,8 @@ dependencies = [
  "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",
+ "oxc_codegen",
+ "oxc_isolated_declarations",
  "oxc_parser",
  "oxc_span",
  "pandacss_config",
@@ -1223,6 +1284,7 @@ dependencies = [
  "pandacss_config",
  "pandacss_fs",
  "pandacss_literal",
+ "pandacss_sfc",
  "pandacss_shared",
  "pandacss_tokens",
  "regex",
@@ -1238,6 +1300,7 @@ dependencies = [
 name = "pandacss_fs"
 version = "0.0.0"
 dependencies = [
+ "dunce",
  "fast-glob",
  "indoc",
  "oxc_resolver",
@@ -1270,11 +1333,13 @@ dependencies = [
  "pandacss_recipes",
  "pandacss_shared",
  "pandacss_system",
+ "pandacss_tokens",
  "pandacss_utility",
  "rustc-hash",
  "serde",
  "serde_json",
  "smallvec",
+ "tempfile",
  "tracing",
 ]
 
@@ -1290,6 +1355,21 @@ dependencies = [
  "rustc-hash",
  "serde",
  "tracing",
+]
+
+[[package]]
+name = "pandacss_sfc"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "insta",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_parser",
+ "oxc_span",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -1378,7 +1458,7 @@ version = "0.0.0"
 dependencies = [
  "indoc",
  "insta",
- "oxc_sourcemap",
+ "oxc_sourcemap 8.1.0",
  "pandacss_config",
  "pandacss_encoder",
  "pandacss_extractor",
@@ -1386,6 +1466,7 @@ dependencies = [
  "pandacss_literal",
  "pandacss_project",
  "pandacss_recipes",
+ "pandacss_sfc",
  "pandacss_shared",
  "pandacss_system",
  "pandacss_utility",
@@ -1790,7 +1871,7 @@ checksum = "8daaea6d7262b1c6927a230ed31f4c6d9e91a1354331dc90201cd486cd8d3a78"
 dependencies = [
  "memchr",
  "oxc_index 5.0.0",
- "oxc_sourcemap",
+ "oxc_sourcemap 8.1.0",
  "regex",
  "rustc-hash",
  "serde",

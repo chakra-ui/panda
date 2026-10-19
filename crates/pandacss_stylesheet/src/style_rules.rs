@@ -1,8 +1,10 @@
 //! Internal style-rule model used by the emitter: rule identity, declarations,
-//! and write-time coalescing. Condition resolution lives in `conditions.rs`;
+//! and declaration merging. Condition resolution lives in `conditions.rs`;
 //! cascade ordering lives in `sort.rs`.
 
 use std::borrow::Cow;
+
+use pandacss_encoder::AuthoredOrder;
 
 use crate::grouped::{GroupNode, GroupedDeclaration, RuleBody};
 use crate::writer::CssWriter;
@@ -22,7 +24,7 @@ pub(crate) enum Target<'a> {
 
 /// Ready-to-write selector plus enclosing at-rule wrappers. This is the
 /// lowered form, not a separate public stylesheet concept.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub(crate) struct LoweredTarget {
     pub selector: String,
     pub wrappers: Vec<String>,
@@ -51,45 +53,18 @@ pub(crate) struct Declaration {
     pub prop: String,
     pub value: String,
     pub important: bool,
+    pub authored_order: AuthoredOrder,
+}
+
+impl Declaration {
+    const fn priority(&self) -> (bool, AuthoredOrder) {
+        (self.important, self.authored_order)
+    }
 }
 
 pub(crate) struct StyleRule {
     pub target: LoweredTarget,
     pub declarations: Vec<Declaration>,
-}
-
-/// Keep adjacent rules with the same lowered target in one CSS block.
-pub(crate) fn push_pending_rule(
-    pending: &mut Option<StyleRule>,
-    target: LoweredTarget,
-    declarations: Vec<Declaration>,
-    mut flush: impl FnMut(StyleRule),
-) {
-    match pending {
-        Some(pending) if pending.target == target => {
-            append_declarations(&mut pending.declarations, declarations);
-        }
-        Some(_) => {
-            let previous = pending.take().expect("pending style rule");
-            flush(previous);
-            *pending = Some(StyleRule {
-                target,
-                declarations,
-            });
-        }
-        None => {
-            *pending = Some(StyleRule {
-                target,
-                declarations,
-            });
-        }
-    }
-}
-
-pub(crate) fn flush_pending_rule(pending: Option<StyleRule>, mut flush: impl FnMut(StyleRule)) {
-    if let Some(pending) = pending {
-        flush(pending);
-    }
 }
 
 pub(crate) fn push_grouped_rule(
@@ -112,20 +87,6 @@ pub(crate) fn push_grouped_rule(
                 .collect(),
         },
     );
-}
-
-pub(crate) fn write_rule(
-    writer: &mut CssWriter,
-    rule: &LoweredTarget,
-    declarations: &[Declaration],
-) {
-    write_with_wrappers(writer, &rule.wrappers, |writer| {
-        writer.rule(&rule.selector, |writer| {
-            for declaration in declarations {
-                writer.declaration(&declaration.prop, &declaration.value, declaration.important);
-            }
-        });
-    });
 }
 
 pub(crate) fn write_with_wrappers(
@@ -182,8 +143,11 @@ pub(crate) fn append_declaration_run(target: &mut Vec<Declaration>, run: Vec<Dec
         return;
     };
 
-    // Importance outranks source order within one declaration block.
-    if target[first].important && !run.iter().any(|declaration| declaration.important) {
+    // Importance wins first, then authored order.
+    if run
+        .iter()
+        .all(|declaration| declaration.priority() < target[first].priority())
+    {
         return;
     }
 
@@ -197,6 +161,8 @@ pub(crate) fn append_declaration_run(target: &mut Vec<Declaration>, run: Vec<Dec
 mod tests {
     use insta::assert_yaml_snapshot;
 
+    use pandacss_encoder::AuthoredOrder;
+
     use super::{Declaration, append_declaration, append_declaration_run};
 
     fn declaration(value: &str, important: bool) -> Declaration {
@@ -208,6 +174,7 @@ mod tests {
             prop: prop.to_owned(),
             value: value.to_owned(),
             important,
+            authored_order: AuthoredOrder::leaf(0),
         }
     }
 

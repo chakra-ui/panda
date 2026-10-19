@@ -1,5 +1,110 @@
 # studio
 
+## 2.0.5
+
+### Patch Changes
+
+- Updated dependencies [e9d19e3]
+- Updated dependencies [d5fb171]
+  - @pandacss/config@2.2.0
+  - @pandacss/compiler-wasm@2.2.0
+  - @pandacss/compiler-shared@2.2.0
+  - @pandacss/preset-base@2.2.0
+  - @pandacss/preset-panda@2.2.0
+
+## 2.0.4
+
+### Patch Changes
+
+- Updated dependencies [7f36e78]
+- Updated dependencies [d941e4a]
+- Updated dependencies [69ccc9f]
+- Updated dependencies [b8e2b5b]
+- Updated dependencies [db5d9b7]
+- Updated dependencies [30465d3]
+- Updated dependencies [d8c494c]
+- Updated dependencies [b806435]
+- Updated dependencies [645d370]
+- Updated dependencies [4842f3c]
+- Updated dependencies [145f6d2]
+- Updated dependencies [164508e]
+- Updated dependencies [42ff936]
+- Updated dependencies [b8e2b5b]
+- Updated dependencies [802eb61]
+- Updated dependencies [3f41f62]
+- Updated dependencies [a1c495c]
+- Updated dependencies [22ba83d]
+  - @pandacss/compiler-wasm@2.1.2
+  - @pandacss/config@2.1.2
+  - @pandacss/preset-base@2.1.2
+  - @pandacss/preset-panda@2.1.2
+  - @pandacss/compiler-shared@2.1.2
+
+## 2.0.3
+
+### Patch Changes
+
+- Updated dependencies [576c72a]
+- Updated dependencies [a63cb20]
+- Updated dependencies [24718f4]
+- Updated dependencies [b220f62]
+- Updated dependencies [24718f4]
+- Updated dependencies [8b6f7e0]
+  - @pandacss/compiler-wasm@2.1.1
+  - @pandacss/compiler-shared@2.1.1
+  - @pandacss/config@2.1.1
+  - @pandacss/preset-base@2.1.1
+  - @pandacss/preset-panda@2.1.1
+
+## 2.0.2
+
+### Patch Changes
+
+- Updated dependencies [5da09d9]
+- Updated dependencies [ee5c50b]
+- Updated dependencies [cd08564]
+- Updated dependencies [1469790]
+- Updated dependencies [e5a80ea]
+- Updated dependencies [b44b8e2]
+  - @pandacss/compiler-wasm@2.1.0
+  - @pandacss/compiler-shared@2.1.0
+  - @pandacss/config@2.1.0
+  - @pandacss/preset-base@2.1.0
+  - @pandacss/preset-panda@2.1.0
+
+## 2.0.1
+
+### Patch Changes
+
+- @pandacss/compiler-shared@2.0.1
+- @pandacss/compiler-wasm@2.0.1
+- @pandacss/config@2.0.1
+- @pandacss/preset-base@2.0.1
+- @pandacss/preset-panda@2.0.1
+
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [bb3d117]
+  - @pandacss/compiler-shared@2.0.0
+  - @pandacss/compiler-wasm@2.0.0
+  - @pandacss/config@2.0.0
+  - @pandacss/preset-base@2.0.0
+  - @pandacss/preset-panda@2.0.0
+
+## 2.0.0-beta.20
+
+### Patch Changes
+
+- Updated dependencies [9e45720]
+- Updated dependencies [883ecd6]
+  - @pandacss/compiler-wasm@2.0.0-beta.20
+  - @pandacss/compiler-shared@2.0.0-beta.20
+  - @pandacss/config@2.0.0-beta.20
+  - @pandacss/preset-base@2.0.0-beta.20
+  - @pandacss/preset-panda@2.0.0-beta.20
+
 ## 2.0.0-beta.19
 
 ### Patch Changes

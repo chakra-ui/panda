@@ -294,9 +294,7 @@ fn print_specialized_cva(
         let classes = if let Some(class_name) = &compound.class_name {
             class_name.clone()
         } else {
-            system
-                .class_names_for_style_literal(&compound.css)?
-                .join(" ")
+            recipe_style_classes(system, &compound.css)?.join(" ")
         };
         if classes.is_empty() {
             continue;
@@ -327,7 +325,7 @@ fn print_specialized_sva(system: &System, recipe: &SlotRecipe) -> Option<Special
     for slot in &recipe.slots {
         let mut fragments = Vec::new();
         if let Some((_, base)) = recipe.base.iter().find(|(name, _)| name == slot) {
-            let classes = system.class_names_for_style_literal(base)?.join(" ");
+            let classes = recipe_style_classes(system, base)?.join(" ");
             if !classes.is_empty() {
                 fragments.push(ClassFragment::static_value(js::string(&classes)));
             }
@@ -351,7 +349,7 @@ fn print_specialized_sva(system: &System, recipe: &SlotRecipe) -> Option<Special
             let classes = if let Some(class_name) = &compound.class_name {
                 class_name.clone()
             } else if let Some((_, style)) = compound.css.iter().find(|(name, _)| name == slot) {
-                system.class_names_for_style_literal(style)?.join(" ")
+                recipe_style_classes(system, style)?.join(" ")
             } else {
                 continue;
             };
@@ -424,6 +422,15 @@ fn print_selection_setup(selections: &[String], defaults: &[(String, VariantValu
         .join(" ")
 }
 
+/// An empty style object has no classes, where `class_names_for_style_literal`
+/// reports it as unprintable and would keep the whole recipe on the runtime.
+fn recipe_style_classes(system: &System, style: &Literal) -> Option<Vec<String>> {
+    if matches!(style, Literal::Object(entries) if entries.is_empty()) {
+        return Some(Vec::new());
+    }
+    system.class_names_for_style_literal(style)
+}
+
 fn print_variant_lookup(
     system: &System,
     options: &[VariantOption],
@@ -432,9 +439,7 @@ fn print_variant_lookup(
     let entries = options
         .iter()
         .map(|option| {
-            let classes = system
-                .class_names_for_style_literal(&option.style)?
-                .join(" ");
+            let classes = recipe_style_classes(system, &option.style)?.join(" ");
             Some((!classes.is_empty()).then(|| js::field(&option.key, js::string(&classes))))
         })
         .collect::<Option<Vec<_>>>()?;
@@ -464,7 +469,7 @@ fn print_slot_variant_lookup(
                 .map(|(_, style)| (option, style))
         })
         .map(|(option, style)| {
-            let classes = system.class_names_for_style_literal(style)?.join(" ");
+            let classes = recipe_style_classes(system, style)?.join(" ");
             Some((!classes.is_empty()).then(|| js::field(&option.key, js::string(&classes))))
         })
         .collect::<Option<Vec<_>>>()?;
@@ -667,7 +672,7 @@ fn is_jsx_factory_call(call: &pandacss_extractor::ExtractedCall) -> bool {
     )
 }
 
-fn styled_config_arg(call: &pandacss_extractor::ExtractedCall) -> Option<&Literal> {
+pub(crate) fn styled_config_arg(call: &pandacss_extractor::ExtractedCall) -> Option<&Literal> {
     match call.facts.callee_kind {
         pandacss_extractor::CallCalleeKind::Direct => {
             let tag = call.data.first().and_then(|arg| arg.as_ref())?;

@@ -50,7 +50,7 @@ pub use position_try::{
 pub use regex::compile_js_regex;
 pub use stringify::stable_stringify;
 pub use strings::{
-    MAX_SAFE_INTEGER, capitalize, closest_match, file_stem, find_matching_paren,
+    MAX_SAFE_INTEGER, capitalize, closest_match, composition_path, file_stem, find_matching_paren,
     hyphenate_property, is_js_safe_integer, js_ident, number_to_js_string, pascal_case,
     push_number_to_js_string,
 };

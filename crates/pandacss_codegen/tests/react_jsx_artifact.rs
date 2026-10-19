@@ -193,9 +193,9 @@ fn create_recipe_context_delegates_to_factory() {
         "jsx/create-recipe-context.mjs",
     );
 
-    assert!(code.contains("import { getDisplayName } from './helper'"));
+    assert!(code.contains("import { getDisplayName, mergeDefaultProps } from './helper'"));
     assert!(code.contains("const StyledComponent = panda(Component, recipe, options)"));
-    assert!(code.contains("Object.assign({}, propsContext, inProps)"));
+    assert!(code.contains("mergeDefaultProps(propsContext, inProps)"));
     assert!(!code.contains("createStyleContext"));
 }
 
@@ -231,7 +231,8 @@ fn react_types_include_jsx_factory_surface() {
     assert!(jsx.contains("export type Panda = JsxFactory & JsxElements"));
     assert!(jsx.contains("export type StyledVariantProps"));
     assert!(jsx.contains("T extends keyof JSX.IntrinsicElements"));
-    assert!(jsx.contains("ComponentProps<T> & UnstyledProps & AsProps & DataAttrs"));
+    assert!(jsx.contains("type BaseComponentProps<T extends ElementType> = ComponentProps<T> & UnstyledProps & AsProps\n"));
+    assert!(jsx.contains("defaultProps?: Partial<TProps> & DataAttrs"));
     assert!(!jsx.contains("ComponentPropsWithRef"));
     assert!(!jsx.contains("LibraryManagedAttributes"));
     assert!(index.contains("export * from './jsx'"));

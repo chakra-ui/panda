@@ -32,9 +32,9 @@ Take a look at the difference:
 - **Design systems you can publish**: `panda lib` to author, `designSystem` to consume, with no re-extraction in the
   consuming app.
 - **New in the box**: new styled-system factories (`viewTransition()`, `firstThatWorks()`, `keyframes()`,
-  `positionTry()`), mask and scrollbar utilities, `@property`-registered variables, config completions in your editor, a
-  first-party ESLint plugin, a typography preset, and a rebuilt CLI.
-- **ESM-only**, needs Node 22 or newer. It ships as a beta today.
+  `positionTry()`), mask and scrollbar utilities, `@property`-registered variables, a first-party ESLint plugin, a
+  typography preset, and a rebuilt CLI.
+- **ESM-only**, needs Node 22 or newer.
 
 Over the rest of this post, we'll walk you through why we decided to rewrite the compiler, what changed in terms of
 performance, how the new engine works and everything you need to know to upgrade.
@@ -430,26 +430,10 @@ You get rules like `no-invalid-token-paths`, `no-hardcoded-color` via `prefer-to
 toward semantic tokens when a matching category exists) and `no-descendant-selectors` (keeps every style scoped to its
 own element). The same rules run under [oxlint](https://oxc.rs) through a dedicated entry point.
 
-### Config completions in your editor
+### Typed config helpers
 
-Editing `panda.config.ts` now gets real completions, diagnostics, and hover for your design system — token, recipe,
-condition, and utility names, resolved through your actual config after presets merge rather than guessed from static
-types. It ships as a TypeScript language service plugin (`@pandacss/typescript-plugin`) and a standalone LSP server
-(`@pandacss/language-server`), so any tsserver-backed editor can pick it up. VS Code registers it for you; other editors
-add it to `compilerOptions.plugins`:
-
-```jsonc
-// tsconfig.json
-{
-  "compilerOptions": {
-    "plugins": [{ "name": "@pandacss/typescript-plugin" }]
-  }
-}
-```
-
-Config authoring also picks up the typed `define*` helpers the rest of the config already had — `defineConditions` and
-`definePositionTry` join `defineTokens`, `defineRecipe`, and friends, so custom conditions and anchor fallbacks get the
-same autocomplete and type-checking when you author them outside `defineConfig`.
+`defineConditions` and `definePositionTry` join `defineTokens`, `defineRecipe`, and friends, so custom conditions and
+anchor fallbacks get the same autocomplete and type-checking when you author them outside `defineConfig`.
 
 ### A typography preset
 
@@ -477,17 +461,20 @@ The MCP server is now its own package:
 
 run `npx -y @pandacss/mcp`
 
-Vue, Svelte, and Lightning CSS support are available as standalone opt-in plugins (`@pandacss/plugin-vue`,
-`@pandacss/plugin-svelte`, `@pandacss/plugin-lightningcss`), keeping the core install smaller for projects that don't
-need them. There's also a new `@pandacss/bun` plugin that codegens and injects CSS for `Bun.build`, the Bun dev server,
-and `bun test`.
+The compiler reads `.vue`, `.svelte`, and `.astro` files directly, so you no longer need `@pandacss/plugin-vue` or
+`@pandacss/plugin-svelte`.
+
+Panda now ships bundler plugins for Vite, webpack, Rollup, and Bun (`@pandacss/vite`, `@pandacss/webpack`,
+`@pandacss/rollup`, `@pandacss/bun`). Turn on `transform: true` and they rewrite static `css()`, recipe, and pattern
+calls into class strings, so the styling runtime drops out of your bundle. See
+[Source transforms](/docs/styling/source-transforms).
 
 ## Upgrading from v1
 
 Your `panda.config.ts` carries over. The `panda` and `pandacss` binaries are unchanged, `panda build` still runs codegen
 and CSS generation in one pass, and the CSS you get out stays in parity — except for a short list of deliberate changes
-below. Panda 2.0 ships as a beta today; install it with `@pandacss/dev@beta`. All `@pandacss/*` packages move on one
-version, so don't mix a v1 package with a v2 one.
+below. Install it with `@pandacss/dev@latest`. All `@pandacss/*` packages move on one version, so don't mix a v1 package
+with a v2 one.
 
 ### Panda is now ESM-only
 
@@ -548,7 +535,7 @@ matched by component name, a pattern, or the module a component is imported from
 
 ```ts
 export default defineConfig({
-  jsxMatchTag: [{ pattern: '^(Flex|Stack|Box)$' }, { from: '@acme/ui', props: ['padding', 'color'] }]
+  jsxMatchTag: [{ tag: /^(Flex|Stack|Box)$/ }, { from: '@acme/ui', props: ['padding', 'color'] }]
 })
 ```
 
@@ -557,7 +544,7 @@ identically in the CLI and in the browser.
 
 ### Removed config options
 
-Ten options are gone: `studio`, `eject`, `emitTokensOnly`, `gitignore`, `clean`, `watch`, `poll`, `lightningcss`, and
+Nine options are gone: `studio`, `eject`, `emitTokensOnly`, `gitignore`, `clean`, `watch`, `poll`, `lightningcss`, and
 `browserslist`. `forceConsistentTypeExtension` became `forceImportExtension` (different semantics, not a rename), and
 `outExtension` now also accepts `'ts'`.
 
@@ -585,6 +572,9 @@ of `panda mcp`.
 
 These are intentional and worth knowing about before you diff your output:
 
+- **`sizes.prose` is narrower.** `@pandacss/preset-panda` changes it from `65ch` to `60ch`. Override the token to keep
+  the v1 width; see [Upgrading to v2](/docs/get-started/upgrading-to-v2#sizesprose-is-narrower).
+
 - **Border overrides sort by property, not source order.** All border shorthands now sit in one tier and all-sides wins.
   When an override must win, use the longhand — `borderInlineEndWidth: '0'` ranks above every shorthand. Padding,
   margin, and the other directional shorthands sort the same way.
@@ -605,7 +595,7 @@ unlayered too), or hold a clean boundary by route, directory, or team.
 ## Try it
 
 ```bash
-npm install @pandacss/dev@beta
+npm install @pandacss/dev@latest
 ```
 
 The full [upgrade guide](/docs/get-started/upgrading-to-v2) is in the docs, and the

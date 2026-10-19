@@ -262,7 +262,39 @@ describe('@pandacss/bun in Bun.build', () => {
 
     expect(warn.mock.calls[0]?.[0]).toContain(`while parsing ${project.path('src/app.ts')}`)
     expect(warn.mock.calls[0]?.[0]).toContain('js_parse_error')
+    expect(warn.mock.calls.filter(([message]) => String(message).includes('js_parse_error'))).toHaveLength(1)
     expect(result?.contents).toContain('.app { color: black }')
+  })
+
+  it('reports a broken nested style once when a transformed file is edited', async () => {
+    const project = createProject(`{ has: { svg: { color: 'red' } } }`)
+    dir = project.dir
+    const bun = await setupPlugin({ cwd: project.dir, transform: true })
+    await bun.load(project.path('src/app.ts'))
+
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    project.write('src/app.ts', app(`{ has: { svg: { color: 'blue' } } }`))
+    await bun.load(project.path('src/app.ts'))
+    await bun.load(project.path('src/index.css'))
+
+    const nested = warn.mock.calls.filter(([message]) => String(message).includes('nested_property'))
+    expect(nested).toHaveLength(1)
+    expect(nested[0]?.[0]).toContain(`while parsing ${project.path('src/app.ts')}`)
+  })
+
+  it('reports a broken nested style once when bun run reloads a transformed file', async () => {
+    const project = createProject(`{ has: { svg: { color: 'red' } } }`)
+    dir = project.dir
+    const bun = await setupPlugin({ cwd: project.dir, transform: true }, 'runtime')
+    await bun.load(project.path('src/app.ts'))
+
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    project.write('src/app.ts', app(`{ has: { svg: { color: 'blue' } } }`))
+    await bun.load(project.path('src/app.ts'))
+
+    const nested = warn.mock.calls.filter(([message]) => String(message).includes('nested_property'))
+    expect(nested).toHaveLength(1)
+    expect(nested[0]?.[0]).toContain(`while parsing ${project.path('src/app.ts')}`)
   })
 
   it('generates the stylesheet only after the rest of the rebuild has loaded', async () => {
@@ -319,6 +351,57 @@ describe('@pandacss/bun in Bun.build', () => {
     await bun.load(project.path('src/app.ts'))
 
     expect((await bun.load(project.path('src/index.css')))?.contents).toContain('8px')
+  })
+
+  it('refreshes the stylesheet for edits and new files in a sibling package included with ../', async () => {
+    await expectSiblingPackageRefresh(() => `'../../packages/ui/src/**/*.ts'`)
+  })
+
+  it('refreshes the stylesheet for edits and new files in a sibling package included with an absolute path', async () => {
+    await expectSiblingPackageRefresh((root) => JSON.stringify(join(root, 'packages/ui/src/**/*.ts')))
+  })
+
+  async function expectSiblingPackageRefresh(include: (root: string) => string) {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'panda-bun-monorepo-')))
+    dir = root
+    const cwd = join(root, 'apps/demo')
+    const ui = join(root, 'packages/ui/src')
+    mkdirSync(join(cwd, 'src'), { recursive: true })
+    mkdirSync(ui, { recursive: true })
+    const card = (padding: string) =>
+      `import { css } from '@panda/css'\nexport const cls = css({ padding: '${padding}' })\n`
+    writeFileSync(
+      join(cwd, 'panda.config.ts'),
+      CONFIG.replace(
+        "include: ['src/**/*.{ts,tsx}'],",
+        `include: ['src/**/*.{ts,tsx}', ${include(root)}],\n  importMap: { css: ['@panda/css'], recipe: [], pattern: [], jsx: [], tokens: [] },`,
+      ),
+    )
+    writeFileSync(join(cwd, 'src/index.css'), ENTRY_CSS)
+    writeFileSync(join(ui, 'Card.ts'), card('4px'))
+
+    const bun = await setupPlugin({ cwd })
+    await bun.load(join(ui, 'Card.ts'))
+    expect((await bun.load(join(cwd, 'src/index.css')))?.contents).toContain('4px')
+
+    writeFileSync(join(ui, 'Card.ts'), card('8px'))
+    await bun.load(join(ui, 'Card.ts'))
+    expect((await bun.load(join(cwd, 'src/index.css')))?.contents).toContain('8px')
+
+    writeFileSync(join(ui, 'Created.ts'), card('12px'))
+    await bun.load(join(ui, 'Created.ts'))
+    expect((await bun.load(join(cwd, 'src/index.css')))?.contents).toContain('12px')
+  }
+
+  it('adds the styles of a source file created after the build started', async () => {
+    const project = createProject(`{ padding: '4px' }`)
+    dir = project.dir
+    const bun = await setupPlugin({ cwd: project.dir })
+    await bun.load(project.path('src/app.ts'))
+    expect((await bun.load(project.path('src/index.css')))?.contents).toContain('4px')
+    project.write('src/created.ts', app(`{ padding: '13px' }`))
+    await bun.load(project.path('src/created.ts'))
+    expect((await bun.load(project.path('src/index.css')))?.contents).toContain('13px')
   })
 
   it('picks up a config edit when the same plugin runs a second build', async () => {

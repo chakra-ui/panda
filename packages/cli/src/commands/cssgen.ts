@@ -43,7 +43,7 @@ export const cssgenCommand = defineCommand({
     'watch-debounce': { type: 'string', description: 'Watch rebuild debounce in milliseconds' },
     check: { type: 'boolean', description: 'Check generated CSS is up to date without writing' },
   }),
-  run: async ({ args }) => setExitCode(await runCssgen(parseCliFlags(cssgenFlagsSchema, args))),
+  run: async ({ args, rawArgs }) => setExitCode(await runCssgen(parseCliFlags(cssgenFlagsSchema, args, rawArgs))),
 })
 
 export async function runCssgen(flags: CssgenFlags = {}, output: OutputSink = consoleOutput): Promise<CssgenResult> {

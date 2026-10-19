@@ -42,8 +42,8 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
     @layer reset, base, tokens,
            recipes,
            utilities;
-    @layer recipes.base, recipes.slots, recipes.variants, recipes.compound_variants;
-    @layer recipes.slots.base, recipes.slots.variants, recipes.slots.compound_variants;
+    @layer recipes { @layer base, slots, variants, compound_variants; }
+    @layer recipes.slots { @layer base, variants, compound_variants; }
     @import './styles/global.css';
     @import './styles/tokens.css';
     @import './styles/utilities.css';
@@ -117,13 +117,16 @@ fn split_css_declares_recipe_sublayers_before_imports() {
         .find(|file| file.path == "styles.css")
         .expect("styles.css");
 
-    let base = index.code.find("recipes.base").expect("base preamble");
-    let variants = index
+    let recipes = index
         .code
-        .find("recipes.variants")
-        .expect("variants preamble");
+        .find("@layer recipes { @layer base, slots, variants, compound_variants; }")
+        .expect("recipe sub-layer order");
+    let slots = index
+        .code
+        .find("@layer recipes.slots { @layer base, variants, compound_variants; }")
+        .expect("slot recipe sub-layer order");
     let imports = index.code.find("@import").expect("imports");
-    assert!(base < variants && variants < imports);
+    assert!(recipes < slots && slots < imports);
 }
 
 #[test]

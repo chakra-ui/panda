@@ -550,6 +550,78 @@ fn implicit_uppercase_jsx_components_extract_valid_style_props() {
 }
 
 #[test]
+fn data_props_on_components_panda_does_not_own_emit_nothing() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "utilities": {
+            "columns": { "className": "columns" },
+            "right": { "className": "right" }
+        }
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            const COLS = [{ header: 'Name', accessorKey: 'name' }];
+            const table = <DataTable columns={COLS} />;
+            const layout = <Layout right={{ title: 'Menu' }} />;
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 0);
+    assert!(report.diagnostics.is_empty());
+    assert!(sorted_atoms(&project).is_empty());
+}
+
+#[test]
+fn conditional_style_props_on_wrapper_components_still_extract() {
+    let mut project = create_project(json!({
+        "jsxFramework": "react",
+        "conditions": { "hover": "&:hover" },
+        "theme": { "breakpoints": { "md": "768px" } },
+        "utilities": {
+            "columns": { "className": "columns" },
+            "right": { "className": "right" },
+            "color": { "className": "c" }
+        }
+    }));
+
+    let report = project.parse_file(
+        "fixture.tsx",
+        indoc! {r"
+            const card = <Card columns={3} right={{ base: '1px', md: '2px' }} color={['red', 'blue']} />;
+            const hovered = <Card color={{ _hover: 'green' }} />;
+        "},
+    );
+
+    assert_eq!(report.jsx_usages, 2);
+    assert!(report.diagnostics.is_empty());
+    assert_yaml_snapshot!(sorted_atoms(&project), @r#"
+    - prop: color
+      value: red
+      conditions: []
+    - prop: color
+      value: green
+      conditions:
+        - _hover
+    - prop: color
+      value: blue
+      conditions:
+        - md
+    - prop: columns
+      value: "3"
+      conditions: []
+    - prop: right
+      value: 1px
+      conditions: []
+    - prop: right
+      value: 2px
+      conditions:
+        - md
+    "#);
+}
+
+#[test]
 fn implicit_uppercase_jsx_components_without_style_props_are_ignored() {
     let mut project = create_project(json!({
         "jsxFramework": "react"

@@ -2,11 +2,11 @@
 
 ## Summary
 
-`pandacss_literal::Literal` is the host-neutral typed value the extractor reads out of source. Downstream
-transformation crates depend on `pandacss_literal` directly, so they do not pull in Oxc.
-`expression_to_literal(expr, resolver)` folds an Oxc expression into a `Literal` when it resolves to a static value. The
-fold rules match `ts-evaluator` semantics so the Rust extractor sees the same values the JS extractor sees — the goal is
-parity with the JS path before defaulting to Rust.
+`pandacss_literal::Literal` is the host-neutral typed value the extractor reads out of source. Downstream transformation
+crates depend on `pandacss_literal` directly, so they do not pull in Oxc. `expression_to_literal(expr, resolver)` folds
+an Oxc expression into a `Literal` when it resolves to a static value. The fold rules match `ts-evaluator` semantics so
+the Rust extractor sees the same values the JS extractor sees — the goal is parity with the JS path before defaulting to
+Rust.
 
 Simple pure helpers are an intentional extension of that surface: v1 folded them incidentally via `ts-evaluator`; v2
 lowers and applies a closed descriptor (`pure_fn.rs`) instead of running a JS interpreter.
@@ -28,8 +28,8 @@ pub enum Literal {
 Three notable choices:
 
 - **`Object` keeps keys in source order** as a `Vec`, not a map. Extraction never looks up by key; downstream code that
-  does can build whatever index it needs. The order matters because Panda's encoder reads the outermost non-condition key
-  as the property name.
+  does can build whatever index it needs. The order matters because Panda's encoder reads the outermost non-condition
+  key as the property name.
 - **`Number` is `f64`**, not split into int/float. JS only has one number type. The custom `Serialize` impl re-emits
   integers as `i64` when they fit (precision boundary at 2^53) to match the shape the JS extractor produces.
 - **`Conditional`** carries alternative branches from a non-foldable **ternary** (both sides resolved independently);
@@ -51,13 +51,14 @@ Production `extract()` paths always supply a `Resolver`, which unlocks identifie
   `TSInstantiationExpression`** — Syntactic no-ops; recurse on the inner expression.
 - **`UnaryExpression`** — `+`, `-`, `!`, `~`. Skips `typeof`, `void`, `delete`.
 - **`BinaryExpression`** — Arithmetic, comparison, equality. JS `+` keeps the string-vs-number split.
-- **`LogicalExpression`** — `&&`, `||`, `??`. Foldable left short-circuits; non-foldable left emits the right operand
-  (`cond && X` → `X`).
+- **`LogicalExpression`** — `&&`, `||`, `??`. Foldable left short-circuits; non-foldable left stays unresolved. Style
+  extraction separately collects the right operand through `StyleTree` (`cond && X` → `X`). A fallback is not a known
+  runtime value and must not make a later comparison or ternary test constant.
 - **`ConditionalExpression`** — Foldable test picks a branch; open test emits `Conditional` with both branches.
 - **`TemplateLiteral`** — Including tagged templates (tag identity ignored).
-- **`Identifier`** — Same-file `const` / `let` / `var` with literal initializer, never mutated. Free
-  global `undefined` folds to `Null` (parity with array slots and `null == undefined`); a shadowed
-  local named `undefined` that doesn't resolve stays open.
+- **`Identifier`** — Same-file `const` / `let` / `var` with literal initializer, never mutated. Free global `undefined`
+  folds to `Null` (parity with array slots and `null == undefined`); a shadowed local named `undefined` that doesn't
+  resolve stays open.
 - **`StaticMemberExpression`, `ComputedMemberExpression`** — After the object folds to a literal.
 - **Computed object keys** — When the key expression folds to a string or number (including nested condition objects).
 - **Object / array destructuring** — Renames, computed binding keys, defaults, and rest.
@@ -78,7 +79,7 @@ Production `extract()` paths always supply a `Resolver`, which unlocks identifie
 - Objects where _every_ member is unresolvable (a partially-static object keeps the static members; see the lenient
   `ObjectExpression` rule above — this matches the JS extractor, e.g. `sva({ slots: [...anatomy.keys()], base })` keeps
   `base` and infers slots).
-- Impure or unsupported callables (async/generator, rest/destructured params, nested unknown calls, `this`, assignment,
+- Impure or unsupported callables (async/generator, rest params or patterns, nested unknown calls, `this`, assignment,
   `Math.random`, etc.). Bare function values (`css({ color: getColor })` without a call) stay non-Literal.
 - BigInt, template literal types, unary-prefixed type literals.
 - Anything we don't recognize yet (`typeof`, `Object.keys`, enums whose declaration site isn't a `VariableDeclarator`,
@@ -113,14 +114,27 @@ Edge-case drops worth noting: division by zero (`1 / 0` would be `Infinity` in J
 2. Fold each argument to a `Literal`.
 3. Apply the body with those args.
 
-Captures that aren't parameters must already fold; they bake into the descriptor as `OwnedPureExpr::Value` at lower
-time. Lowering fails on async/generators, rest or destructured params, nested unknown calls, `this`, assignment, and
-other impure forms. Bare function values used without a call stay non-`Literal`, except factory
-`defaultProps` accessors (arrow / `function` / method), which are applied with no arguments.
+- **Body:** an expression arrow, or `const` / `let` declarations then one `return`. Params and locals share one slot
+  list, evaluated in order.
+- **Destructuring:** params and declarations can destructure objects (renames, nested patterns, defaults). Each name is
+  a `Read` of its source slot; a missing key is `undefined`. Defaults also apply to `null`, since both fold to
+  `Literal::Null`.
+- **Spreads and calls:** body spreads merge objects. A call to another pure callable lowers to `OwnedPureExpr::Call`;
+  `fn_cache` `InProgress` rejects recursion.
+- **Doesn't lower:** async/generators, rest params and patterns, computed keys, array patterns, `var`, other statements
+  (`if`, loops), unknown or member calls, `this`, assignment. Captures must already fold (baked as `Value`).
+- **Unsupported helpers:** stay unresolved without a warning. Evaluating a binding can visit unrelated properties,
+  so an unresolved call alone doesn't prove that a selected style was omitted.
+- Bare function values stay non-`Literal`, except `defaultProps` accessors, applied with no arguments.
 
 Same-file bindings go through the resolver's `fn_cache`. Imported / re-exported helpers come from `CrossFileResolver` as
 `ExportEntry::PureFn` (see [cross-file-resolution](./cross-file-resolution.md)) — lowered while the export file's AST is
 live, then applied at the call site with local args.
+
+## Binding defaults
+
+A param or destructured binding that doesn't fold but has a default resolves to `OpenWithFallback(default)` in the
+StyleTree path, like `size ?? 'md'`. Style extraction emits the default; constant folding still treats it as unknown.
 
 ## Scope resolution (`Resolver`)
 
@@ -162,9 +176,21 @@ once folded, the **path is erased** from the extracted literal. The `Resolver` t
 reference forms — bare category values (`color: 'red.300'`, incl. `/opacity` modifiers), curly `{colors.red.200}`, and
 whole-value token paths — survive folding as text and are classified directly from the extracted value.
 
+## Generated token runtime parity
+
+The generated `token()` and `token.var()` runtime must use the same variable names as the dictionary used by the literal
+evaluator. A dotted path loses the boundary between nested keys and dots inside a key (`spacing.1.5` can contain the
+single key `1.5`), so replacing every dot with a dash cannot reconstruct every name. The tokens artifact stores
+dictionary overrides for references that differ from `toCssVar(path)`, including hashed names and negative spacing
+paths. Runtime `token.var()` uses `runtime_var_str`: negative spacing returns the original positive variable, matching
+v1. Style-value lookups keep using `get_var_str`, which returns the negated `calc()` expression. Conditional values and
+opacity modifiers use the same local resolver. Overrides stay in the app's tokens artifact so a design-system consumer
+can keep sharing the base helpers.
+
 ## Related
 
 - [extraction-pipeline](./extraction-pipeline.md)
-- [style-tree](./style-tree.md) — transform-facing IR (`Ternary` / `And` / spans); encode still uses `Literal` via `project_literal`
+- [style-tree](./style-tree.md) — transform-facing IR (`Ternary` / `And` / spans); encode still uses `Literal` via
+  `project_literal`
 - [cross-file-resolution](./cross-file-resolution.md)
 - [performance-budget](./performance-budget.md)

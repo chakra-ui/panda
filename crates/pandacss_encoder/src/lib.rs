@@ -81,6 +81,8 @@ pub struct RecipeStyleGroup {
     pub class_name: Box<str>,
     pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
     pub entries: FxHashSet<RecipeStyleEntry>,
+    /// Config position: variant or compound index, option index, slot index.
+    pub position: [u32; 3],
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
@@ -91,10 +93,13 @@ pub struct RecipeStyleEntry {
     pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
     #[serde(skip_serializing_if = "is_false")]
     pub important: bool,
+    #[serde(skip)]
+    pub authored_order: AuthoredOrder,
 }
 
-impl From<Atom> for RecipeStyleEntry {
-    fn from(atom: Atom) -> Self {
+impl RecipeStyleEntry {
+    #[must_use]
+    pub fn new(atom: Atom, authored_order: AuthoredOrder) -> Self {
         let Atom {
             prop,
             value,
@@ -107,8 +112,63 @@ impl From<Atom> for RecipeStyleEntry {
             value,
             conditions,
             important,
+            authored_order,
         }
     }
+}
+
+/// Leaf position in the authored style, then position in its utility transform output.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct AuthoredOrder {
+    leaf: usize,
+    output: usize,
+}
+
+impl AuthoredOrder {
+    #[must_use]
+    pub const fn leaf(index: usize) -> Self {
+        Self {
+            leaf: index,
+            output: 0,
+        }
+    }
+
+    #[must_use]
+    pub const fn output(self, index: usize) -> Self {
+        Self {
+            leaf: self.leaf,
+            output: index,
+        }
+    }
+
+    #[must_use]
+    pub const fn after(self, count: usize) -> Self {
+        Self {
+            leaf: self.leaf + count,
+            output: self.output,
+        }
+    }
+}
+
+pub fn append_in_authored_order(
+    target: &mut Vec<RecipeStyleEntry>,
+    mut fragment: Vec<RecipeStyleEntry>,
+) {
+    let start = target
+        .iter()
+        .map(|entry| entry.authored_order.leaf + 1)
+        .max()
+        .unwrap_or(0);
+    fragment.sort_by_key(|entry| entry.authored_order);
+    target.extend(
+        fragment
+            .into_iter()
+            .enumerate()
+            .map(|(index, entry)| RecipeStyleEntry {
+                authored_order: AuthoredOrder::leaf(start + index),
+                ..entry
+            }),
+    );
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -121,6 +181,58 @@ pub struct EncodedRecipesSnapshot {
     pub atomic: Vec<Atom>,
 }
 
+impl EncodedRecipesSnapshot {
+    /// Drops a recipe group when an identical one comes later, so the last copy keeps its place.
+    pub fn retain_last_identical_groups(&mut self) {
+        retain_last_identical_groups(&mut self.base);
+        retain_last_identical_groups(&mut self.variants);
+        retain_last_identical_groups(&mut self.compounds);
+    }
+}
+
+fn retain_last_identical_groups(groups: &mut Vec<RecipeStyleGroupSnapshot>) {
+    let mut seen = FxHashSet::default();
+    let keep = groups
+        .iter()
+        .rev()
+        .map(|group| seen.insert(recipe_group_key(group)))
+        .collect::<Vec<_>>();
+    let mut keep = keep.into_iter().rev();
+    groups.retain(|_| keep.next().unwrap_or(true));
+}
+
+type RecipeDeclarationKey<'a> = (&'a str, &'a AtomValue, &'a [Box<str>], bool);
+type RecipeGroupKey<'a> = (
+    &'a str,
+    Option<&'a str>,
+    &'a str,
+    &'a [Box<str>],
+    Vec<RecipeDeclarationKey<'a>>,
+);
+
+/// Declarations in authored order, so copies numbered or sorted differently still match.
+fn recipe_group_key(group: &RecipeStyleGroupSnapshot) -> RecipeGroupKey<'_> {
+    let mut entries = group.entries.iter().collect::<Vec<_>>();
+    entries.sort_by_key(|entry| entry.authored_order);
+    (
+        &group.recipe,
+        group.slot.as_str(),
+        &group.class_name,
+        &group.conditions,
+        entries
+            .into_iter()
+            .map(|entry| {
+                (
+                    &*entry.prop,
+                    &entry.value,
+                    &entry.conditions[..],
+                    entry.important,
+                )
+            })
+            .collect(),
+    )
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipeStyleGroupSnapshot {
@@ -130,6 +242,9 @@ pub struct RecipeStyleGroupSnapshot {
     #[serde(skip_serializing_if = "is_empty_conditions")]
     pub conditions: SmallVec<[Box<str>; INLINE_CONDS]>,
     pub entries: Vec<RecipeStyleEntry>,
+    /// Config position, as in [`RecipeStyleGroup::position`].
+    #[serde(skip)]
+    pub position: [u32; 3],
 }
 
 impl Atom {
@@ -280,7 +395,16 @@ impl NormalizeAtomic for NoNormalize {}
 pub struct Encoder<C: ConditionMatcher> {
     conditions: C,
     atoms: FxHashSet<Atom>,
+    ordered_atoms: Option<Vec<Atom>>,
     nested_properties: bool,
+    nested_property: Option<NestedProperty>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NestedProperty {
+    pub key: Box<str>,
+    pub nested: Box<str>,
+    pub path: Box<str>,
 }
 
 impl<C: ConditionMatcher> Encoder<C> {
@@ -288,7 +412,9 @@ impl<C: ConditionMatcher> Encoder<C> {
         Self {
             conditions,
             atoms: FxHashSet::default(),
+            ordered_atoms: None,
             nested_properties: false,
+            nested_property: None,
         }
     }
 
@@ -298,6 +424,10 @@ impl<C: ConditionMatcher> Encoder<C> {
     #[must_use]
     pub fn has_nested_properties(&self) -> bool {
         self.nested_properties
+    }
+
+    pub fn take_nested_property(&mut self) -> Option<NestedProperty> {
+        self.nested_property.take()
     }
 
     /// Iteration order isn't stable — sort by `(prop, conditions, value)` for determinism.
@@ -319,6 +449,24 @@ impl<C: ConditionMatcher> Encoder<C> {
 
     pub fn reserve(&mut self, additional: usize) {
         self.atoms.reserve(additional);
+    }
+
+    /// Uses the shared normalized walker while retaining every recipe leaf in authored order.
+    #[must_use]
+    pub fn recipe_entries_with<'a, N: NormalizeAtomic>(
+        &mut self,
+        style: &'a Literal,
+        norm: &'a N,
+    ) -> Vec<RecipeStyleEntry> {
+        self.ordered_atoms = Some(Vec::new());
+        self.process_atomic_with(style, norm);
+        self.ordered_atoms
+            .take()
+            .unwrap_or_default()
+            .into_iter()
+            .enumerate()
+            .map(|(index, atom)| RecipeStyleEntry::new(atom, AuthoredOrder::leaf(index)))
+            .collect()
     }
 
     /// Walks a style object, emitting one atom per leaf. Mirrors `processAtomic` in the JS encoder.
@@ -415,7 +563,18 @@ impl<C: ConditionMatcher> Encoder<C> {
                 }
             }
             _ => {
-                self.nested_properties |= path.iter().filter(|s| !s.is_condition).nth(1).is_some();
+                let mut props = path.iter().filter(|s| !s.is_condition);
+                if let (Some(key), Some(nested)) = (props.next(), props.next()) {
+                    self.nested_properties = true;
+                    if self.nested_property.is_none() && !key.name.starts_with('_') {
+                        let path = path.iter().map(|s| s.name).collect::<Vec<_>>().join(".");
+                        self.nested_property = Some(NestedProperty {
+                            key: key.name.into(),
+                            nested: nested.name.into(),
+                            path: path.into(),
+                        });
+                    }
+                }
                 let prop = path.iter().find(|s| !s.is_condition).map(|s| s.name);
                 let normalized = match prop {
                     Some(prop) => norm.normalize_leaf(prop, value),
@@ -423,7 +582,11 @@ impl<C: ConditionMatcher> Encoder<C> {
                 };
 
                 if let Some(atom) = Self::atom_from_path(path, normalized.as_ref()) {
-                    self.atoms.insert(atom);
+                    if let Some(ordered) = &mut self.ordered_atoms {
+                        ordered.push(atom);
+                    } else {
+                        self.atoms.insert(atom);
+                    }
                 }
             }
         }

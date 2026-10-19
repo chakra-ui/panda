@@ -22,14 +22,14 @@ use oxc_ast::ast::{
     Program, Statement, VariableDeclaration,
 };
 use oxc_parser::Parser;
-use oxc_resolver::{ResolveOptions, ResolverGeneric, TsconfigDiscovery};
-use oxc_span::SourceType;
+use oxc_resolver::{ResolveContext, ResolveOptions, ResolverGeneric, TsconfigDiscovery};
 use pandacss_fs::{FileSystem, to_forward_slash};
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::Literal;
 use crate::literal::expression_to_literal;
 use crate::pure_fn::{OwnedPureFn, lower_callable_expr, lower_function};
+use crate::style_tree::into_project_literal;
 use crate::{
     MatchCategory, MatchedImport, Matchers, TokenDictionary, collect_imports,
     extract::UnresolvedCrossFileDependency, imports::module_export_name, match_import_records,
@@ -40,6 +40,11 @@ use crate::{
 #[derive(Debug, Clone)]
 pub(crate) enum ExportEntry {
     Literal(Literal),
+    /// Keep extractable styles separate from the value used in constant folding.
+    StyleFallback {
+        known_value: Option<Literal>,
+        style_value: Literal,
+    },
     PureFn(OwnedPureFn),
     Recipe(ExportedRecipe),
 }
@@ -117,6 +122,13 @@ fn default_resolve_options() -> ResolveOptions {
         tsconfig: Some(TsconfigDiscovery::Auto),
         ..ResolveOptions::default()
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RetryOutcome {
+    Resolved,
+    /// Probed paths that did not exist; creating one of them can make the import resolve.
+    StillMissing(Vec<String>),
 }
 
 /// Type-erased over `F: FileSystem` so `ExtractorConfig` stays non-generic.
@@ -220,12 +232,9 @@ impl CrossFileResolver {
         self.inner.dependency_key(path)
     }
 
-    /// Check previously unresolved requests against one fresh resolver view.
-    ///
-    /// The result at each index corresponds to the request at the same index.
     #[must_use]
-    pub fn check_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> Vec<bool> {
-        self.inner.check_resolvable(dependencies)
+    pub fn retry(&self, dependency: &UnresolvedCrossFileDependency) -> RetryOutcome {
+        self.inner.retry(dependency)
     }
 
     /// Clear cached filesystem lookups before retrying unresolved dependencies.
@@ -407,7 +416,7 @@ pub(crate) trait CrossFileLookup: Send + Sync {
 
     fn dependency_key(&self, path: &Path) -> Option<PathBuf>;
 
-    fn check_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> Vec<bool>;
+    fn retry(&self, dependency: &UnresolvedCrossFileDependency) -> RetryOutcome;
 
     fn clear_resolution_cache(&self);
 
@@ -465,7 +474,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         prefix: &str,
     ) -> (ModuleExports, Provenance, UnresolvedDependencies) {
         let allocator = Allocator::default();
-        let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::tsx());
+        let source_type = crate::adapter::source_type_from_path(path);
         let parser_return = Parser::new(&allocator, source, source_type).parse();
         let matched = matchers.map_or_else(Vec::new, |matchers| {
             let imports = collect_imports(&parser_return.program);
@@ -529,6 +538,16 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
 
     fn is_resolvable(&self, from_file: &Path, specifier: &str) -> bool {
         self.resolve_auto(from_file, specifier).is_some()
+    }
+
+    fn tsconfig_for(&self, from_file: &Path) -> Option<Arc<oxc_resolver::TsConfig>> {
+        let is_file = <F as oxc_resolver::FileSystem>::metadata(&self.fs, from_file)
+            .is_ok_and(oxc_resolver::FileMetadata::is_file);
+        if !is_file {
+            return None;
+        }
+
+        self.inner.find_tsconfig(from_file).ok().flatten()
     }
 
     fn resolve_auto(&self, from_file: &Path, specifier: &str) -> Option<PathBuf> {
@@ -844,23 +863,32 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
         Some(forward_slash_path(&parent.join(path.file_name()?)))
     }
 
-    fn check_resolvable(&self, dependencies: &[UnresolvedCrossFileDependency]) -> Vec<bool> {
-        let resolver = ResolverGeneric::<F>::new_with_file_system(
-            self.fs.clone(),
-            self.inner.options().clone(),
+    fn retry(&self, dependency: &UnresolvedCrossFileDependency) -> RetryOutcome {
+        let from_file = Path::new(&dependency.from_file);
+        let Some(directory) = from_file.parent() else {
+            return RetryOutcome::StillMissing(Vec::new());
+        };
+
+        let tsconfig = self.tsconfig_for(from_file);
+        let mut context = ResolveContext::default();
+        let resolution = self.inner.resolve_with_context(
+            directory,
+            &dependency.specifier,
+            tsconfig.as_deref(),
+            &mut context,
         );
-        dependencies
-            .iter()
-            .map(|dep| {
-                resolve_with(
-                    &self.fs,
-                    &resolver,
-                    Path::new(&dep.from_file),
-                    &dep.specifier,
-                )
-                .is_some()
-            })
-            .collect()
+
+        if resolution.is_ok() {
+            return RetryOutcome::Resolved;
+        }
+
+        RetryOutcome::StillMissing(
+            context
+                .missing_dependencies
+                .iter()
+                .map(|path| to_forward_slash(path))
+                .collect(),
+        )
     }
 
     fn clear_resolution_cache(&self) {
@@ -1038,7 +1066,9 @@ fn collect_from_named(
             return;
         }
         Some(Declaration::FunctionDeclaration(func)) => {
-            if let (Some(id), Some(pure_fn)) = (&func.id, lower_function(func, Some(resolver))) {
+            if let Some(id) = &func.id
+                && let Some(pure_fn) = lower_function(func, Some(resolver))
+            {
                 out.insert(id.name.to_string(), ExportEntry::PureFn(pure_fn));
             }
             return;
@@ -1063,14 +1093,11 @@ fn collect_from_named(
             module.re_exports.insert(exported, target);
             continue;
         }
-        let entry = resolver
-            .resolve_root_name(&local)
-            .map(ExportEntry::Literal)
-            .or_else(|| {
-                resolver
-                    .lookup_root_pure_fn(&local)
-                    .map(ExportEntry::PureFn)
-            });
+        let entry = exported_value(&local, resolver).or_else(|| {
+            resolver
+                .lookup_root_pure_fn(&local)
+                .map(ExportEntry::PureFn)
+        });
         if let Some(entry) = entry {
             module.exports.insert(exported, entry);
         }
@@ -1091,8 +1118,8 @@ fn collect_from_var(
             BindingPattern::BindingIdentifier(id) => {
                 if let Some(recipe) = exported_recipe(init, resolver, matched) {
                     out.insert(id.name.to_string(), ExportEntry::Recipe(recipe));
-                } else if let Some(value) = expression_to_literal(init, Some(resolver)) {
-                    out.insert(id.name.to_string(), ExportEntry::Literal(value));
+                } else if let Some(entry) = exported_value(id.name.as_str(), resolver) {
+                    out.insert(id.name.to_string(), entry);
                 } else if let Some(pure_fn) = lower_callable_expr(init, Some(resolver)) {
                     out.insert(id.name.to_string(), ExportEntry::PureFn(pure_fn));
                 }
@@ -1105,6 +1132,40 @@ fn collect_from_var(
     }
 }
 
+#[must_use]
+fn exported_value(name: &str, resolver: &Resolver<'_, '_>) -> Option<ExportEntry> {
+    let known_value = resolver.resolve_root_name(name);
+
+    if matches!(
+        &known_value,
+        Some(
+            Literal::String(_)
+                | Literal::Number(_)
+                | Literal::Bool(_)
+                | Literal::Null
+                | Literal::Token { .. }
+        )
+    ) {
+        return known_value.map(ExportEntry::Literal);
+    }
+
+    let Some(style_value) = resolver
+        .resolve_root_style_tree(name)
+        .and_then(into_project_literal)
+    else {
+        return known_value.map(ExportEntry::Literal);
+    };
+
+    if known_value.as_ref() == Some(&style_value) {
+        return Some(ExportEntry::Literal(style_value));
+    }
+
+    Some(ExportEntry::StyleFallback {
+        known_value,
+        style_value,
+    })
+}
+
 fn collect_pattern_bindings(
     pattern: &BindingPattern<'_>,
     resolver: &Resolver<'_, '_>,
@@ -1112,8 +1173,8 @@ fn collect_pattern_bindings(
 ) {
     match pattern {
         BindingPattern::BindingIdentifier(id) => {
-            if let Some(value) = resolver.resolve_root_name(id.name.as_str()) {
-                out.insert(id.name.to_string(), ExportEntry::Literal(value));
+            if let Some(entry) = exported_value(id.name.as_str(), resolver) {
+                out.insert(id.name.to_string(), entry);
             }
         }
         BindingPattern::ObjectPattern(object) => {

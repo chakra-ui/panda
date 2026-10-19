@@ -101,13 +101,13 @@ fn nested_tail_ampersand_one_level() {
 
 #[test]
 fn nested_tail_ampersand_three_levels() {
-    assert_snapshot!(compile_nested("{ '&:hover': { '& .b': { '.c &': { color: 'red' } } } }"), @r#"
-@layer utilities {
-  .c .\[\&\:hover\]\:\[\&_\.b\]\:\[\.c_\&\]\:c_red:hover .b {
-    color: red;
-  }
-}
-"#);
+    assert_snapshot!(compile_nested("{ '&:hover': { '& .b': { '.c &': { color: 'red' } } } }"), @r"
+    @layer utilities {
+      .c :is(.\[\&\:hover\]\:\[\&_\.b\]\:\[\.c_\&\]\:c_red:hover .b) {
+        color: red;
+      }
+    }
+    ");
 }
 
 #[test]

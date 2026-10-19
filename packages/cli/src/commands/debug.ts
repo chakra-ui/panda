@@ -30,7 +30,7 @@ export const debugCommand = defineCommand({
     zip: { type: 'boolean', description: 'Write the dump as a single <outdir>.zip archive' },
     onlyConfig: { type: 'boolean', description: 'Only dump the resolved config, skip per-file extraction' },
   }),
-  run: async ({ args }) => setExitCode(await runDebug(parseCliFlags(debugFlagsSchema, args))),
+  run: async ({ args, rawArgs }) => setExitCode(await runDebug(parseCliFlags(debugFlagsSchema, args, rawArgs))),
 })
 
 export async function runDebug(flags: DebugFlags = {}, output: OutputSink = consoleOutput): Promise<DebugResult> {

@@ -72,6 +72,12 @@ const options: TestUserConfig = {
       typecheck: { enabled: typecheck, include: ['**/__tests__/scenarios/format-names.{test,spec}.{j,t}s?(x)'] },
     },
   },
+  hash: {
+    test: {
+      include: ['**/__tests__/scenarios/hash.{test,spec}.{j,t}s?(x)'],
+      typecheck: { enabled: typecheck, include: ['**/__tests__/scenarios/hash.{test,spec}.{j,t}s?(x)'] },
+    },
+  },
   //
   preact: {
     plugins: [preact()],
@@ -111,4 +117,9 @@ const options: TestUserConfig = {
 
 const mode = process.env.MODE ?? 'react'
 console.log({ mode })
-export default defineConfig(options[mode])
+const config = options[mode]
+
+export default defineConfig({
+  ...config,
+  test: { ...config.test, typecheck: { ...config.test?.typecheck, checker: 'tsgo' } },
+})

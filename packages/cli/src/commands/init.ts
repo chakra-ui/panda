@@ -69,7 +69,7 @@ export const initCommand = defineCommand({
     logfile: { type: 'string', description: 'Write human output to a log file' },
     color: { type: 'boolean', description: 'Disable ANSI colors in human output', default: true },
   }),
-  run: async ({ args }) => setExitCode(await runInit(parseCliFlags(initFlagsSchema, args))),
+  run: async ({ args, rawArgs }) => setExitCode(await runInit(parseCliFlags(initFlagsSchema, args, rawArgs))),
 })
 
 export async function runInit(flags: InitFlags = {}, output: OutputSink = consoleOutput): Promise<InitResult> {

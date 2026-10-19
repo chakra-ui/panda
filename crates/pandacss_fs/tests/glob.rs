@@ -1122,10 +1122,16 @@ mod panda {
     }
 
     #[test]
-    fn dot_slash_only_stripped_at_start_not_mid_path() {
-        // The `.` inside `a/./b` is literal — only a *leading* `./` is normalized.
+    fn dot_segments_mid_path_resolve_like_fast_glob() {
         let fs = MemoryFileSystem::from_entries([("/proj/src/a.tsx", ""), ("/proj/x/a.tsx", "")]);
-        assert!(glob_abs(&fs, "/proj", &["src/./**/*.tsx"]).is_empty());
+        assert_eq!(
+            glob_abs(&fs, "/proj", &["src/./**/*.tsx"]),
+            vec![PathBuf::from("/proj/src/a.tsx")]
+        );
+        assert_eq!(
+            glob_abs(&fs, "/proj", &["src/../x/*.tsx"]),
+            vec![PathBuf::from("/proj/x/a.tsx")]
+        );
     }
 
     #[test]
@@ -1166,5 +1172,136 @@ mod panda {
             MemoryFileSystem::from_entries(entries.iter().map(|(p, c)| (p.clone(), c.to_string())));
         let results = glob_filtered(&fs, "/proj", &["**/*.{ts,js}"], &["**/node_modules/**"]);
         assert_eq!(results, vec![PathBuf::from("/proj/src/index.ts")]);
+    }
+
+    fn monorepo() -> MemoryFileSystem {
+        MemoryFileSystem::from_entries([
+            ("/repo/apps/demo/src/App.tsx", ""),
+            ("/repo/apps/demo/src/types.d.ts", ""),
+            ("/repo/packages/ui/src/Card.tsx", ""),
+            ("/repo/packages/ui/src/Card.test.tsx", ""),
+            ("/repo/packages/ui/node_modules/dep/index.tsx", ""),
+            ("/repo/packages/other/src/Other.tsx", ""),
+        ])
+    }
+
+    #[test]
+    fn monorepo_parent_dir_include_finds_sibling_package_files() {
+        let results = glob_abs(
+            &monorepo(),
+            "/repo/apps/demo",
+            &["src/**/*.tsx", "../../packages/ui/src/**/*.tsx"],
+        );
+        assert_eq!(
+            results,
+            vec![
+                PathBuf::from("/repo/apps/demo/src/App.tsx"),
+                PathBuf::from("/repo/packages/ui/src/Card.test.tsx"),
+                PathBuf::from("/repo/packages/ui/src/Card.tsx"),
+            ]
+        );
+    }
+
+    #[test]
+    fn monorepo_absolute_include_finds_files_outside_cwd() {
+        let results = glob_abs(
+            &monorepo(),
+            "/repo/apps/demo",
+            &["/repo/packages/ui/src/**/*.tsx"],
+        );
+        assert_eq!(
+            results,
+            vec![
+                PathBuf::from("/repo/packages/ui/src/Card.test.tsx"),
+                PathBuf::from("/repo/packages/ui/src/Card.tsx"),
+            ]
+        );
+    }
+
+    #[test]
+    fn absolute_include_inside_cwd_finds_files() {
+        let results = glob_abs(
+            &monorepo(),
+            "/repo/apps/demo",
+            &["/repo/apps/demo/src/**/*.tsx"],
+        );
+        assert_eq!(results, vec![PathBuf::from("/repo/apps/demo/src/App.tsx")]);
+    }
+
+    #[test]
+    fn monorepo_excludes_prune_sibling_package_trees() {
+        let results = glob_filtered(
+            &monorepo(),
+            "/repo/apps/demo",
+            &["../../packages/ui/**/*.tsx"],
+            &["**/node_modules/**", "**/*.test.tsx"],
+        );
+        assert_eq!(
+            results,
+            vec![PathBuf::from("/repo/packages/ui/src/Card.tsx")]
+        );
+    }
+
+    #[test]
+    fn monorepo_relative_results_keep_parent_dir_segments() {
+        let opts = GlobOptions {
+            include: vec!["../../packages/ui/src/*.tsx".into()],
+            exclude: vec!["**/*.test.tsx".into()],
+            cwd: PathBuf::from("/repo/apps/demo"),
+            absolute: false,
+        };
+        assert_eq!(
+            monorepo().glob(&opts).unwrap(),
+            vec![PathBuf::from("../../packages/ui/src/Card.tsx")]
+        );
+    }
+
+    #[test]
+    fn parent_dir_in_the_middle_of_an_include_finds_files() {
+        let results = glob_abs(
+            &monorepo(),
+            "/repo/apps/demo",
+            &["src/../../../packages/ui/src/Card.tsx"],
+        );
+        assert_eq!(
+            results,
+            vec![PathBuf::from("/repo/packages/ui/src/Card.tsx")]
+        );
+    }
+
+    #[test]
+    fn scan_and_watch_classification_agree() {
+        let fs = monorepo();
+        let files = [
+            "/repo/apps/demo/src/App.tsx",
+            "/repo/apps/demo/src/types.d.ts",
+            "/repo/packages/ui/src/Card.tsx",
+            "/repo/packages/ui/src/Card.test.tsx",
+            "/repo/packages/ui/node_modules/dep/index.tsx",
+            "/repo/packages/other/src/Other.tsx",
+        ];
+        let configs: [&[&str]; 5] = [
+            &["src/**/*.tsx"],
+            &["**/*.tsx"],
+            &["src/**/*.{ts,tsx}", "../../packages/ui/**/*.tsx"],
+            &["/repo/packages/**/*.tsx", "/repo/apps/demo/src/**/*.tsx"],
+            &["src/../../../packages/ui/src/*.tsx"],
+        ];
+        for include in configs {
+            let opts = GlobOptions {
+                include: include.iter().map(|s| (*s).to_string()).collect(),
+                exclude: vec!["**/node_modules/**".into()],
+                cwd: PathBuf::from("/repo/apps/demo"),
+                absolute: true,
+            };
+            let scanned = fs.glob(&opts).unwrap();
+            for file in files {
+                assert_eq!(
+                    pandacss_fs::matches_globs(Path::new(file), &opts),
+                    scanned.contains(&PathBuf::from(file)),
+                    "{file} with include {include:?}"
+                );
+            }
+        }
     }
 }

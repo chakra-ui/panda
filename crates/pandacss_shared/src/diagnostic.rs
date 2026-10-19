@@ -33,6 +33,7 @@ pub mod codes {
     pub const INVALID_COLOR_OPACITY_MODIFIER: &str = "invalid_color_opacity_modifier";
     pub const JS_PARSE_ERROR: &str = "js_parse_error";
     pub const GLOBAL_VAR_UTILITY_CONFLICT: &str = "global_var_utility_conflict";
+    pub const NESTED_PROPERTY: &str = "nested_property";
     pub const LAYER_NAME_COLLISION: &str = "layer_name_collision";
     pub const PREFLIGHT_OPTIONS_UNSUPPORTED: &str = "preflight_options_unsupported";
     pub const STATIC_CSS_PATTERN_MISSING_TRANSFORM: &str = "static_css_pattern_missing_transform";
@@ -54,6 +55,7 @@ pub mod codes {
     pub const TRANSFORM_CALLBACK_FAILED: &str = "transform_callback_failed";
     pub const TRANSFORM_HASHED_RECIPE_SKIPPED: &str = "transform_hashed_recipe_skipped";
     pub const UNKNOWN_CONDITION: &str = "unknown_condition";
+    pub const UNKNOWN_TOKEN_REFERENCE: &str = "unknown_token_reference";
 }
 
 /// UTF-8 byte offsets.

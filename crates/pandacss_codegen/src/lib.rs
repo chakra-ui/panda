@@ -13,6 +13,7 @@ mod context;
 mod emit;
 mod graph;
 mod overlay;
+mod ts_declarations;
 mod ts_erase;
 
 pub use ast::{

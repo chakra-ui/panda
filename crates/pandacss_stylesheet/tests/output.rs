@@ -136,8 +136,8 @@ fn a_recipe_call_emits_base_used_variants_and_matching_compound() {
           padding: 4px;
         }
         .button--variant_danger {
-          background-color: red.500;
           color: white;
+          background-color: red.500;
         }
       }
       @layer compound_variants {

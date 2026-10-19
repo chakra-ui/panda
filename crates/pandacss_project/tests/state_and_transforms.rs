@@ -134,7 +134,7 @@ fn global_css_boolean_utility_values_run_the_utility_transform() {
             Literal::String("flex".into()),
         )])))
     };
-    let snapshot = project.stylesheet_snapshots_with_utility_transform(&config, &mut callback);
+    let snapshot = project.stylesheet_snapshots_with_utility_transform(&config, &mut callback, &[]);
     assert_eq!(snapshot.utility_styles.len(), 2);
     assert!(calls.contains(&AtomValue::Bool(true)));
     assert!(calls.contains(&AtomValue::Bool(false)));

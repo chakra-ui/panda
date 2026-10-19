@@ -15,16 +15,19 @@ Owned:
 
 - Reset/preflight emission, including `preflight.scope` and `preflight.level`.
 - Base layer config CSS: `globalCss`, `globalVars`, and `globalFontface`.
-- Tokens layer: token CSS variables, semantic-token conditions, and `theme.keyframes`.
-  Keyframes-only CSS is available via `compile_keyframes` / host `getKeyframeCss()` (no token vars).
+- Tokens layer: token CSS variables, semantic-token conditions, and `theme.keyframes`. Keyframes-only CSS is available
+  via `compile_keyframes` / host `getKeyframeCss()` (no token vars).
 - Recipes layer: config recipes, slot recipes, compound variants, and split recipe files.
 - Utilities layer: dynamic atoms, recipe atomic atoms, static atoms, and utility sub-layers.
 - Supported native `staticCss`: `css`, `recipes`, `patterns`, global recipe wildcard, recipe-level `staticCss`, recipe
   wildcards, base recipe styles, slot recipes, compound variants, responsive values, and configured conditions.
 - Layer preamble/ranges, custom layer names, modern breakpoint media syntax, and writer-level minification.
-- Adjacent rule merging: consecutive compatibility-safe selectors with an identical declaration block collapse into
-  one comma-joined selector list. Selectors using `:has()`, pseudo-elements, vendor pseudos, or other explicitly
+- Adjacent rule merging: consecutive compatibility-safe selectors with an identical declaration block collapse into one
+  comma-joined selector list. Selectors using `:has()`, pseudo-elements, vendor pseudos, or other explicitly
   compatibility-sensitive syntax remain isolated. Merging is adjacency-only.
+- Recipe sub-layers (`base`, `variants`, `compound_variants`) go through the same grouping as atomic styles: plain rules
+  first, then one block per shared `@media`/`@supports` wrapper, sorted by breakpoint. This matches v1's
+  `sortMediaQueries` pass, so a responsive variant style wins over a plain one in the same sub-layer.
 
 Not owned:
 
@@ -48,8 +51,8 @@ The durable private concepts are intentionally few:
 - `SplitNameRegistry`: deterministic safe filenames, including collision handling after normalization.
 
 `css_syntax.rs` is a small lexical scanner shared by string-based boundary operations. It identifies syntax outside
-strings and comments for nesting-parent substitution, layer marker handling, and nested `var()` usage collection. It
-is not a general CSS parser.
+strings and comments for nesting-parent substitution, layer marker handling, and nested `var()` usage collection. It is
+not a general CSS parser.
 
 `LoweredTarget` is an implementation detail: selector plus at-rule wrappers after condition lowering. It should not grow
 into a separate public stylesheet concept.
@@ -71,7 +74,7 @@ flowchart TD
   AS --> AC[Target::Class with runtime-order class conditions]
 
   R --> RD[RecipeStyleEntry to Declaration]
-  RD --> RC[pending StyleRule coalescing]
+  RD --> RC[StyleRule declaration merging]
 
   G --> GP[resolve condition keys to ConditionPath groups]
 
@@ -96,28 +99,71 @@ order so selectors match recipe runtime output. Rule conditions are sorted separ
    direction across every axis — `width`, `inline-size` (container queries), `height`, and `block-size`.
 3. Selector priority: pseudo selectors use the configured pseudo-class priority table.
 4. Property priority: broad shorthands before shorthand groups before longhands.
-5. Deterministic ties: property name, atom value key, rule conditions, then class conditions.
+5. Ties: recipe and grouped-style entries keep authored order; atoms fall back to property name, atom value key, rule
+   conditions, then class conditions.
+
+Config recipe groups follow config order, not class names: variants and their options as declared, slots in `slots`
+order, and compound variants in array order, so a later variant overrides an earlier one. `globalCss` and keyframe
+bodies use the same property priority: shorthands first, otherwise as authored. Both match v1.
+
+A recipe or global style expands each composition in place, like a spread: `{ color: 'blue', textStyle: 'body' }` takes
+the body's color, and `{ textStyle: 'body', color: 'blue' }` keeps blue. Recipe entries retain their authored order
+through callback transforms; expansion walks them and each composition's children in order and assigns a flattened
+sequence. The shared declaration merger compares importance first, then that sequence, so the later declaration wins.
+This works on CSS properties after utility transforms and replaces whole fallback runs together. It matches v1 config
+recipes.
+
+Unused-keyframe pruning follows animation values through token variables, aliases, conditional token values, and `var()`
+fallbacks. `visit_animation_names` owns that traversal in the stylesheet crate and guards against cycles. Variable names
+come from the token dictionary, so custom prefixes and hashing do not change dependency tracking.
+
+### Style references
+
+Pruning and usage reports share one walk. The emitter's usage collectors lower styles exactly as they are emitted
+(utility transforms, `firstThatWorks`, conditions, nested selectors, recipe groups) and push what they read into a
+`ReferenceSink`. Two sinks decide what to keep:
+
+- `UsageMarks` (pruning) follows animation tokens to keyframes and lowers compositions in place.
+- `StyleReferences` (reports, public) keeps direct references only: `Token`, `Keyframe`, `Composition`, `Utility`.
+  `dependencies()` then expands one asset: a token's value under every condition, a keyframe's steps, a composition's
+  styles.
+
+Source inspection (`pandacss_compiler::inspect_file_source`) asks `StyleReferences::property` what each written value
+references, and the analyze graph (`emitter/requirements.rs`) asks the same API for config places. Neither keeps its own
+token or keyframe heuristics, so a value means the same thing in source, in config, and in the CSS.
+
+Atomic styles (`css()`, `cva()`, style props) can't follow one object's key order, since their classes are shared across
+call sites. There a composition's class sits in `@layer compositions`, below direct property classes, so a direct
+property always wins.
+
+When static CSS contributes another fragment to an existing recipe class, emission appends that fragment after the
+existing group's leaves. Ordinals from independent snapshots are not compared directly. This happens only in the
+temporary emit snapshot; usage caches and watch refcounts retain their canonical per-group entry identities.
+
+Recipe and grouped-style emission use one collector keyed by the lowered selector and wrappers, so block conditions
+merge each target independently. Recipe and grouped-style token and keyframe pruning visit the collector's winning
+declarations too. Expansion owns cycle detection and the flattened order; it does not decide property precedence.
 
 Condition application is separate from sorting. At-rules become wrappers, `&` conditions rewrite selectors, plain
 selectors become ancestors, and pseudo-elements are emitted after pseudo-classes so selectors stay valid.
 
 ## Performance
 
-- `pandacss_compiler` passes borrowed project snapshots into stylesheet compilation; generated static
-  atoms live in a local buffer.
+- `pandacss_compiler` passes borrowed project snapshots into stylesheet compilation; generated static atoms live in a
+  local buffer.
 - `TokenDictionary` and `Utility` are built once per compile and shared by static expansion and emission.
 - Sort keys are precomputed once per atom or recipe entry, avoiding allocation inside the comparator.
 - Empty static recipe snapshots skip `merge_encoded_recipes()`.
 - Successful config/static utility-transform snapshots stay cached across CSS methods. Callback failures carry
   diagnostics and retry on the next emission instead of caching partial output.
-- Every CSS result carries the complete canonical output diagnostics. Host layers consume that set directly and do
-  not merge earlier parse reports into it.
+- Every CSS result carries the complete canonical output diagnostics. Host layers consume that set directly and do not
+  merge earlier parse reports into it.
 - Current emit cost is `O(total atoms log total atoms)`. Incremental watch-mode CSS patching would require a different
   API with per-bucket output and stable invalidation.
 
 ## Cascade-layer polyfill
 
-With `polyfill` / `--polyfill`, emit is two-phase (csstools: boosts need the full sheet):
+With `polyfill` / `--polyfill`, emit is two-phase (boosts need the full sheet):
 
 1. **Record** — `CssWriter` stores `LayerEnter`/`LayerExit`, `Rule`, `Declaration`, `AtRule`, `Raw` (no `@layer`, no
    selector mutation). `Declaration` is for descriptors with no enclosing rule (`@font-face`/`@property`/
@@ -126,17 +172,26 @@ With `polyfill` / `--polyfill`, emit is two-phase (csstools: boosts need the ful
    `rank * step` as one `:not(#\##\#…)`.
 
 `CascadePlan` assigns explicit nested layers before direct rules in the parent layer. Those direct rules form CSS's
-implicit final sublayer. Empty container layers do not consume a polyfill rank because only relative order among
-emitted rules matters.
+implicit final sublayer. Empty container layers do not consume a polyfill rank because only relative order among emitted
+rules matters.
 
-`!important` reverses layer priority per spec, so a rule mixing important and non-important declarations splits into
-two blocks: normal gets `rank * step`, important gets `(max_rank - rank) * step` (`write_rule` in `polyfill.rs`).
-`@keyframes` step selectors (`from`/`to`/`50%`) are never boosted — they aren't real selectors, and a `:not()` there
-drops the whole block in every browser.
+`!important` reverses layer priority per spec, so a rule mixing important and non-important declarations splits into two
+blocks: normal gets `rank * step`, important gets `(max_rank - rank + 1) * step` (`write_rule` in `polyfill.rs`). The
+`+ 1` keeps the last layer's important rules above unlayered `!important` CSS, as native layers do. `@keyframes` step
+selectors (`from`/`to`/`50%`) are never boosted — they aren't real selectors, and a `:not()` there drops the whole block
+in every browser.
+
+Selectors are read with `selector_parts`, which splits a selector list into top-level parts (comma, combinator, ID,
+pseudo, other) the way CSS tokenizes it: escapes, strings, and bracketed blocks stay inside their part. The boost goes
+before the first combinator or pseudo-element of each complex selector. `maxIds` follows Selectors 4: `:where()` adds
+nothing; `:is()`, `:not()`, `:has()`, `:host()`, `::slotted()`, and `:nth-child(… of S)` add their argument's IDs. A
+hand-written byte scan here broke on Panda's escaped class names (`.hover\:before`, `.c_\#f00`, `\,`), so new selector
+logic belongs in `selector_parts`, not in another scanner. `polyfill/boost_tests.rs` pins every selector shape to v1's
+PostCSS polyfill output.
 
 Native `@layer` emit is unchanged when polyfill is off. Split reuses the merged analyze result. Hosts keep the entry
-`@layer …;` as the injection marker, then call `compiler.stripLayerOrderStatements(css)` (Panda order lines only,
-quote- and comment-aware).
+`@layer …;` as the injection marker, then call `compiler.stripLayerOrderStatements(css)` (Panda order lines only, quote-
+and comment-aware).
 
 ## Output Modes
 

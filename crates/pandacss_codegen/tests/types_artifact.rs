@@ -9,7 +9,7 @@ use pandacss_config::{
     PatternTypeData, PatternTypeDefinition, PrimitiveType, RESERVED_VALUE_ALIAS_NAMES,
     RecipeTypeData, RecipeTypeDefinition, SlotRecipeTypeDefinition, TokenCategoryTypeData,
     TokenTypeData, TypeData, UtilityPropertyTypeData, UtilityTypeData, ValueAliasTypeData,
-    ValueTypePart, VariantTypeData,
+    ValueTypePart, VariantTypeData, VariantTypeMap,
 };
 
 fn input() -> CodegenInput {
@@ -176,7 +176,7 @@ fn recipe_type_data() -> RecipeTypeData {
             RecipeTypeDefinition {
                 name: "button".into(),
                 type_name: "Button".into(),
-                variants: BTreeMap::from([
+                variants: VariantTypeMap::from_iter([
                     (
                         "size".into(),
                         VariantTypeData {
@@ -201,7 +201,7 @@ fn recipe_type_data() -> RecipeTypeData {
                 name: "card".into(),
                 type_name: "Card".into(),
                 slots: vec!["root".into(), "label".into()],
-                variants: BTreeMap::from([(
+                variants: VariantTypeMap::from_iter([(
                     "tone".into(),
                     VariantTypeData {
                         values: vec!["info".into(), "danger".into()],
@@ -536,7 +536,7 @@ fn emits_ts_source_types() {
     export type RecipeVariant<T> = Required<NonNullable<RecipeVariantProps<T>>>
 
     export type RecipeVariantMap<Variant extends object> = {
-      [K in keyof Variant]-?: Array<Variant[K]>
+      [K in keyof Variant]-?: Array<Exclude<Variant[K], undefined>>
     }
 
     export type RecipeConfigVariantMap<T> = {
@@ -557,7 +557,7 @@ fn emits_ts_source_types() {
     export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
 
     export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> {
-      (props?: Props): SlotRecord<Slot, string>
+      (props?: Props): Record<Slot, string>
       __type: Props
       __slot: Slot
       variantMap: Map
@@ -574,11 +574,11 @@ fn emits_ts_source_types() {
     export type RecipeSelection<T extends RecipeVariantRecord> = string extends keyof T
       ? {}
       : {
-          [K in keyof T]?: StringToBoolean<keyof T[K]>
+          [K in keyof T]?: StringToBoolean<keyof T[K]> | undefined
         }
 
     export type RecipeCompoundSelection<T> = {
-      [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>>
+      [K in keyof T]?: StringToBoolean<keyof T[K]> | Array<StringToBoolean<keyof T[K]>> | undefined
     }
 
     export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantRecord> {
@@ -596,7 +596,7 @@ fn emits_ts_source_types() {
 
     export interface SlotRecipeDefinition<Slot extends string = string, T extends SlotRecipeVariantRecord<Slot> = SlotRecipeVariantRecord<Slot>> {
       className?: string
-      slots: Slot[]
+      slots: readonly Slot[]
       base?: SlotRecord<Slot, SystemStyleObject>
       variants?: T
       defaultVariants?: RecipeSelection<T>
@@ -860,6 +860,63 @@ fn strict_tokens_keep_per_category_globals() {
     // Configured utility values take precedence over the csstype keyword table.
     assert!(system.contains(
         r#"export type DisplayValue = WithEscapeHatch<CssGlobals | CssVars | OnlyKnown<"flex" | "block">>"#
+    ));
+}
+
+#[test]
+fn strict_tokens_accept_property_keywords_per_member() {
+    let colors = |name: &str| UtilityPropertyTypeData {
+        token_category: Some("colors".into()),
+        ..utility(name, name, "ColorsValue")
+    };
+    let mut input = utilities_input(
+        vec![
+            colors("color"),
+            colors("fill"),
+            UtilityPropertyTypeData {
+                token_category: Some("sizes".into()),
+                ..utility("maxWidth", "maxWidth", "MaxWidthValue")
+            },
+            UtilityPropertyTypeData {
+                token_category: Some("sizes".into()),
+                ..utility("maxW", "maxWidth", "MaxWidthValue")
+            },
+            utility("rotate", "rotate", "RotateValue"),
+            utility("rotateX", "rotate", "RotateValue"),
+            utility(
+                "transitionProperty",
+                "transitionProperty",
+                "TransitionPropertyValue",
+            ),
+        ],
+        vec![
+            value_alias(
+                "ColorsValue",
+                vec![ValueTypePart::TokenCategory("colors".into())],
+            ),
+            value_alias(
+                "MaxWidthValue",
+                vec![ValueTypePart::TokenCategory("sizes".into())],
+            ),
+            value_alias("RotateValue", vec![ValueTypePart::Literal("auto".into())]),
+        ],
+    );
+    input.types.utilities.shorthands = BTreeMap::from([("maxW".into(), "maxWidth".into())]);
+    input.types.options.strict_tokens = true;
+
+    let system = system_types(&input);
+
+    assert!(system.contains(r"  color?: ConditionalValue<ColorsValue>"));
+    assert!(system.contains(r#"  fill?: ConditionalValue<ColorsValue | WithEscapeHatch<"none">>"#));
+    assert!(
+        system.contains(r#"  maxW?: ConditionalValue<MaxWidthValue | WithEscapeHatch<"none">>"#)
+    );
+    assert!(
+        system.contains(r#"  rotate?: ConditionalValue<RotateValue | WithEscapeHatch<"none">>"#)
+    );
+    assert!(system.contains(r"  rotateX?: ConditionalValue<RotateValue>"));
+    assert!(system.contains(
+        r#"  transitionProperty?: ConditionalValue<TransitionPropertyValue | WithEscapeHatch<"all" | "none"> | AnyString>"#
     ));
 }
 

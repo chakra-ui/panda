@@ -25,7 +25,7 @@ mod svg;
 pub use builder::TokenDictionaryBuilder;
 pub use category::TokenCategory;
 pub use color_palette::ColorPaletteView;
-pub use from_config::TokenDictionaryOptions;
+pub use from_config::{TokenDictionaryOptions, css_var_name, push_css_var_name};
 pub use token::{Token, TokenExtensions};
 
 // === Type Definitions ===
@@ -57,10 +57,13 @@ pub struct TokenDictionary {
     #[cfg_attr(feature = "serde", serde(skip))]
     by_var: FxHashMap<Arc<str>, usize>,
     #[cfg_attr(feature = "serde", serde(skip))]
+    by_reference: FxHashMap<Arc<str>, usize>,
+    #[cfg_attr(feature = "serde", serde(skip))]
     by_category: FxHashMap<TokenCategory, Vec<usize>>,
     #[cfg_attr(feature = "serde", serde(skip))]
     by_category_key: FxHashMap<TokenCategory, FxHashMap<Arc<str>, usize>>,
     #[cfg_attr(feature = "serde", serde(skip))]
+    /// Keyed by [`Token::name`], not the full path.
     category_values_cache: FxHashMap<TokenCategory, FxHashMap<Arc<str>, Arc<str>>>,
     #[cfg_attr(feature = "serde", serde(skip))]
     by_condition: FxHashMap<Arc<str>, Vec<usize>>,
@@ -287,6 +290,14 @@ impl TokenDictionary {
         self.by_var.get(var).map(|&i| &self.tokens[i])
     }
 
+    /// Inverse of [`Self::get_var_str`].
+    #[must_use]
+    pub fn token_by_reference(&self, value: &str) -> Option<&Token> {
+        self.by_reference
+            .get(value.trim())
+            .map(|&i| &self.tokens[i])
+    }
+
     /// Zero-allocation `token('path', fallback)` lookup.
     #[must_use]
     pub fn get_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
@@ -296,11 +307,11 @@ impl TokenDictionary {
         fallback
     }
 
-    /// Zero-allocation `token.var('path', fallback)` lookup.
+    /// Variable reference for style values; negative spacing resolves to `calc()`.
     #[must_use]
     pub fn get_var_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
         if let Some(token) = self.token(path) {
-            return Some(token.var.as_ref());
+            return Some(category_value(token));
         }
         fallback
     }
@@ -315,6 +326,31 @@ impl TokenDictionary {
     #[must_use]
     pub fn get_var(&self, path: &str, fallback: Option<&str>) -> Option<String> {
         self.get_var_str(path, fallback).map(str::to_owned)
+    }
+
+    /// Runtime `token.var()` reference, matching v1: negative spacing uses the
+    /// original positive token's variable rather than its negated style value.
+    #[must_use]
+    pub fn runtime_var_str<'a>(&'a self, path: &str, fallback: Option<&'a str>) -> Option<&'a str> {
+        let Some(token) = self.token(path) else {
+            return fallback;
+        };
+        let token = if token.extension("isNegative") == Some("true") {
+            let Some(original) = token
+                .extension("originalPath")
+                .and_then(|path| self.token(path))
+            else {
+                return fallback;
+            };
+            original
+        } else {
+            token
+        };
+        if token.var.is_empty() {
+            fallback
+        } else {
+            Some(token.var.as_ref())
+        }
     }
 
     /// Runtime `token()` value. Conditional tokens must keep their own variable
@@ -419,11 +455,17 @@ impl TokenDictionary {
 
     #[must_use]
     pub fn category_value_str(&self, category: &str, key: &str) -> Option<&str> {
+        self.category_token(category, key).map(category_value)
+    }
+
+    /// Token at a category-relative key (`spacing`, `-2` → `spacing.-2`).
+    #[must_use]
+    pub fn category_token(&self, category: &str, key: &str) -> Option<&Token> {
         let category = TokenCategory::from_path_segment(category);
         self.by_category_key
             .get(&category)?
             .get(key)
-            .map(|&i| category_value(&self.tokens[i]))
+            .map(|&i| &self.tokens[i])
     }
 
     // === Token Resolution & Metadata ===
@@ -456,7 +498,7 @@ impl TokenDictionary {
 
     #[must_use]
     pub fn token_metadata(&self, token: &Token, modifier: Option<String>) -> ResolvedTokenPath {
-        let category_path = category_relative_path(&token.path, &token.category).to_owned();
+        let category_path = token.name().unwrap_or(&token.path).to_owned();
         ResolvedTokenPath {
             path: token.path.to_string(),
             category: token.category.clone(),
@@ -603,12 +645,6 @@ pub(crate) fn parse_token_ref(original_value: Option<&str>) -> Option<&str> {
         .strip_prefix('{')
         .and_then(|rest| rest.strip_suffix('}'))
         .filter(|inner| !inner.is_empty() && !inner.contains('{'))
-}
-
-fn category_relative_path<'a>(path: &'a str, category: &TokenCategory) -> &'a str {
-    path.strip_prefix(category.as_str())
-        .and_then(|rest| rest.strip_prefix('.'))
-        .unwrap_or(path)
 }
 
 fn split_modifier(value: &str) -> (&str, Option<&str>) {

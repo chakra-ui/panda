@@ -76,6 +76,7 @@ struct SlotRecipeNode {
 struct ResolvedRecipePart {
     class_name: Box<str>,
     entries: FxHashSet<RecipeStyleEntry>,
+    position: [u32; 3],
 }
 
 #[derive(Debug, Clone)]
@@ -122,13 +123,10 @@ impl StyleResolver<'_> {
     ) -> FxHashSet<RecipeStyleEntry> {
         let normalizer = self.normalizer();
         let mut encoder = Encoder::with_conditions(self.conditions.clone());
-        encoder.process_atomic_with(style, &normalizer);
-
         encoder
-            .into_atoms()
+            .recipe_entries_with(style, &normalizer)
             .into_iter()
-            .map(|atom| {
-                let mut entry = RecipeStyleEntry::from(atom);
+            .map(|mut entry| {
                 if !prefix_conditions.is_empty() {
                     let mut conditions = prefix_conditions.clone();
                     conditions.extend(entry.conditions.iter().cloned());
@@ -277,6 +275,15 @@ impl RecipeRegistry {
         recipe_names: &[&str],
         props: &Literal,
     ) -> Option<Literal> {
+        if let Literal::Conditional(branches) = props {
+            let styles: Vec<Literal> = branches
+                .iter()
+                .filter_map(|branch| self.style_props_for_recipes(recipe_names, branch))
+                .collect();
+
+            return (!styles.is_empty()).then_some(Literal::Conditional(styles));
+        }
+
         let entries = literal_entries(props)?;
 
         let mut recipe_props = FxHashSet::default();
@@ -305,7 +312,7 @@ impl RecipeRegistry {
             .collect()
     }
 
-    fn variant_props(&self, recipe_name: &str) -> Option<&FxHashSet<Box<str>>> {
+    pub(crate) fn variant_props(&self, recipe_name: &str) -> Option<&FxHashSet<Box<str>>> {
         self.recipes
             .get(recipe_name)
             .map(|node| &node.variant_props)
@@ -720,6 +727,7 @@ fn resolve_recipe_base(
     recipe.base.as_ref().map(|base| ResolvedRecipePart {
         class_name: class_name.to_owned().into_boxed_str(),
         entries: resolver.recipe_entries(base),
+        position: [0; 3],
     })
 }
 
@@ -738,11 +746,13 @@ fn resolve_recipe_variants(
     recipe
         .variants
         .iter()
-        .map(|group| {
+        .zip(0u32..)
+        .map(|(group, group_index)| {
             let options = group
                 .options
                 .iter()
-                .map(|option| {
+                .zip(0u32..)
+                .map(|(option, option_index)| {
                     let class_name = recipe_variant_class_name(
                         class_name,
                         &group.name,
@@ -754,6 +764,7 @@ fn resolve_recipe_variants(
                         ResolvedRecipePart {
                             class_name: class_name.into_boxed_str(),
                             entries: resolver.recipe_entries(&option.style),
+                            position: [group_index, option_index, 0],
                         },
                     )
                 })
@@ -771,10 +782,11 @@ fn resolve_recipe_compounds(
     recipe: &Recipe,
     resolver: &StyleResolver<'_>,
 ) -> Vec<ResolvedCompoundVariant> {
-    recipe
+    let mut compounds = recipe
         .compound_variants
         .iter()
-        .map(|compound| {
+        .zip(0u32..)
+        .map(|(compound, compound_index)| {
             let conditions = intern_variant_condition_values(&compound.conditions);
             let pairs = canonical_compound_pairs(&conditions);
             let class_name = compound_class_name(
@@ -789,10 +801,13 @@ fn resolve_recipe_compounds(
                 target: CompoundTarget::Recipe(ResolvedRecipePart {
                     class_name: class_name.into_boxed_str(),
                     entries: resolver.recipe_entries(&compound.css),
+                    position: [compound_index, 0, 0],
                 }),
             }
         })
-        .collect()
+        .collect::<Vec<_>>();
+    order_compound_style_fragments(&mut compounds);
+    compounds
 }
 
 fn resolve_slot_recipe_base(
@@ -807,6 +822,7 @@ fn resolve_slot_recipe_base(
             ResolvedRecipePart {
                 class_name: RecipeRegistry::slot_class_name(class_name, slot).into_boxed_str(),
                 entries: resolver.recipe_entries(style),
+                position: [0, 0, slot_position(&recipe.slots, slot)],
             },
         );
     }
@@ -821,11 +837,13 @@ fn resolve_slot_recipe_variants(
     recipe
         .variants
         .iter()
-        .map(|group| {
+        .zip(0u32..)
+        .map(|(group, group_index)| {
             let options = group
                 .options
                 .iter()
-                .map(|option| {
+                .zip(0u32..)
+                .map(|(option, option_index)| {
                     let slots = option
                         .styles
                         .iter()
@@ -842,6 +860,11 @@ fn resolve_slot_recipe_variants(
                                 ResolvedRecipePart {
                                     class_name: class_name.into_boxed_str(),
                                     entries: resolver.recipe_entries(style),
+                                    position: [
+                                        group_index,
+                                        option_index,
+                                        slot_position(&recipe.slots, slot),
+                                    ],
                                 },
                             )
                         })
@@ -862,10 +885,11 @@ fn resolve_slot_recipe_compounds(
     recipe: &SlotRecipe,
     resolver: &StyleResolver<'_>,
 ) -> Vec<ResolvedCompoundVariant> {
-    recipe
+    let mut compounds = recipe
         .compound_variants
         .iter()
-        .map(|compound| {
+        .zip(0u32..)
+        .map(|(compound, compound_index)| {
             let conditions = intern_variant_condition_values(&compound.conditions);
             let pairs = canonical_compound_pairs(&conditions);
             let slots = compound
@@ -885,6 +909,7 @@ fn resolve_slot_recipe_compounds(
                         ResolvedRecipePart {
                             class_name: class_name.into_boxed_str(),
                             entries: resolver.recipe_entries(style),
+                            position: [compound_index, 0, slot_position(&recipe.slots, slot)],
                         },
                     )
                 })
@@ -894,7 +919,44 @@ fn resolve_slot_recipe_compounds(
                 target: CompoundTarget::Slots(slots),
             }
         })
-        .collect()
+        .collect::<Vec<_>>();
+    order_compound_style_fragments(&mut compounds);
+    compounds
+}
+
+fn slot_position(slots: &[String], slot: &str) -> u32 {
+    slots
+        .iter()
+        .position(|name| name == slot)
+        .and_then(|index| u32::try_from(index).ok())
+        .unwrap_or(u32::MAX)
+}
+
+fn order_compound_style_fragments(compounds: &mut [ResolvedCompoundVariant]) {
+    fn order_part(part: &mut ResolvedRecipePart, next_orders: &mut FxHashMap<Box<str>, usize>) {
+        let next_order = next_orders.entry(part.class_name.clone()).or_default();
+        part.entries = std::mem::take(&mut part.entries)
+            .into_iter()
+            .map(|mut entry| {
+                entry.authored_order = entry.authored_order.after(*next_order);
+                entry
+            })
+            .collect();
+        *next_order += part.entries.len();
+    }
+
+    // Assign once in config order; repeated usages must keep identical cache keys.
+    let mut next_orders = FxHashMap::default();
+    for compound in compounds {
+        match &mut compound.target {
+            CompoundTarget::Recipe(part) => order_part(part, &mut next_orders),
+            CompoundTarget::Slots(slots) => {
+                for (_, part) in slots {
+                    order_part(part, &mut next_orders);
+                }
+            }
+        }
+    }
 }
 
 fn canonical_compound_pairs(conditions: &[(Box<str>, Vec<Box<str>>)]) -> Vec<(String, String)> {
@@ -961,6 +1023,7 @@ struct CountedRecipeStyleGroup {
     class_name: Box<str>,
     conditions: SmallVec<[Box<str>; 2]>,
     entries: FxHashMap<RecipeStyleEntry, u32>,
+    position: [u32; 3],
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -1085,6 +1148,7 @@ impl EncodedRecipes {
                 class_name: base.class_name.clone(),
                 conditions: SmallVec::new(),
                 entries: base.entries.clone(),
+                position: base.position,
             });
         }
 
@@ -1109,6 +1173,7 @@ impl EncodedRecipes {
                         class_name: option.class_name.clone(),
                         conditions: selected_value.conditions.clone(),
                         entries: FxHashSet::default(),
+                        position: option.position,
                     })
                     .entries
                     .extend(option.entries.iter().cloned());
@@ -1139,6 +1204,7 @@ impl EncodedRecipes {
                     class_name: part.class_name.clone(),
                     conditions: SmallVec::new(),
                     entries: part.entries.clone(),
+                    position: part.position,
                 },
             );
         }
@@ -1165,6 +1231,7 @@ impl EncodedRecipes {
                             class_name: part.class_name.clone(),
                             conditions: selected_value.conditions.clone(),
                             entries: FxHashSet::default(),
+                            position: part.position,
                         })
                         .entries
                         .extend(part.entries.iter().cloned());
@@ -1249,6 +1316,7 @@ impl EncodedRecipes {
                 class_name: part.class_name.clone(),
                 conditions: extra_conditions.clone(),
                 entries: FxHashSet::default(),
+                position: part.position,
             });
         group.entries.extend(part.entries.iter().cloned());
     }
@@ -1298,6 +1366,11 @@ struct RecipeTransformCtx<'a> {
 }
 
 impl RecipeTransformCtx<'_> {
+    fn recipe_entries(&self, styles: &Literal) -> Vec<RecipeStyleEntry> {
+        let normalizer = StyleNormalizer::internal(self.utility, self.breakpoints);
+        Encoder::with_conditions(self.conditions.clone()).recipe_entries_with(styles, &normalizer)
+    }
+
     /// Runs a transform's style object through the normal encoder path, so
     /// nested conditions/selectors resolve instead of becoming junk props.
     fn encode(&self, styles: &Literal) -> FxHashSet<Atom> {
@@ -1322,6 +1395,7 @@ fn extend_missing_recipe_groups<K>(
                 class_name: group.class_name.clone(),
                 conditions: group.conditions.clone(),
                 entries: FxHashSet::default(),
+                position: group.position,
             });
         let mut missing_entries = FxHashSet::default();
         for entry in &group.entries {
@@ -1336,6 +1410,7 @@ fn extend_missing_recipe_groups<K>(
                     class_name: group.class_name.clone(),
                     conditions: group.conditions.clone(),
                     entries: missing_entries,
+                    position: group.position,
                 },
             );
         }
@@ -1407,22 +1482,20 @@ fn transform_recipe_entries(
         match transform(entry.prop.as_ref(), &resolved, &entry.value) {
             Ok(Some(styles)) if crate::is_empty_style_object(&styles) => {}
             Ok(Some(styles)) => {
-                if let Some(entries) =
-                    flat_transform_recipe_entries(&styles, &entry.conditions, entry.important)
-                {
+                if let Some(entries) = flat_transform_recipe_entries(&styles, &entry) {
                     out.extend(entries);
                 } else {
                     // Re-encode, prefixing the entry's conditions/important.
-                    for atom in ctx.encode(&styles) {
-                        let mut conditions = entry.conditions.clone();
-                        conditions.extend(atom.conditions().iter().cloned());
-                        out.insert(RecipeStyleEntry {
-                            prop: atom.prop().into(),
-                            value: atom.value().clone(),
-                            conditions,
-                            important: entry.important || atom.important(),
-                        });
-                    }
+                    out.extend(ctx.recipe_entries(&styles).into_iter().enumerate().map(
+                        |(index, mut next)| {
+                            let mut conditions = entry.conditions.clone();
+                            conditions.extend(next.conditions.iter().cloned());
+                            next.conditions = conditions;
+                            next.important |= entry.important;
+                            next.authored_order = entry.authored_order.output(index);
+                            next
+                        },
+                    ));
                 }
             }
             Ok(None) => {
@@ -1441,21 +1514,21 @@ fn transform_recipe_entries(
 
 fn flat_transform_recipe_entries(
     styles: &Literal,
-    base_conditions: &SmallVec<[Box<str>; 2]>,
-    inherited_important: bool,
-) -> Option<FxHashSet<RecipeStyleEntry>> {
+    transformed: &RecipeStyleEntry,
+) -> Option<Vec<RecipeStyleEntry>> {
     let Literal::Object(entries) = styles else {
         return None;
     };
 
-    let mut out = FxHashSet::default();
-    for (prop, value) in entries {
+    let mut out = Vec::with_capacity(entries.len());
+    for (index, (prop, value)) in entries.iter().enumerate() {
         let (value, important) = flat_transform_recipe_value(value)?;
-        out.insert(RecipeStyleEntry {
+        out.push(RecipeStyleEntry {
             prop: prop.clone().into_boxed_str(),
             value,
-            conditions: base_conditions.clone(),
-            important: inherited_important || important,
+            conditions: transformed.conditions.clone(),
+            important: transformed.important || important,
+            authored_order: transformed.authored_order.output(index),
         });
     }
     Some(out)
@@ -1569,11 +1642,13 @@ fn add_recipe_groups<K: Eq + Hash + Clone>(
                 class_name: group.class_name.clone(),
                 conditions: group.conditions.clone(),
                 entries: FxHashMap::default(),
+                position: group.position,
             });
         let view_group = view.entry(key.clone()).or_insert_with(|| RecipeStyleGroup {
             class_name: counted.class_name.clone(),
             conditions: counted.conditions.clone(),
             entries: FxHashSet::default(),
+            position: counted.position,
         });
         for entry in &group.entries {
             refcount_add(&mut counted.entries, entry, || {
@@ -1790,9 +1865,8 @@ fn literal_to_variant_key(value: &Literal) -> Option<String> {
     }
 }
 
-/// Shared by the base/variant/compound snapshot layers. Base groups always
-/// carry empty `conditions`, so sorting on it unconditionally is a no-op
-/// there — one ordering works for every caller.
+/// Shared by the base/variant/compound snapshot layers. Groups keep config
+/// order (variants, options, slots, compounds) within each recipe and condition set.
 fn sorted_group_snapshots<K: RecipeGroupKey>(
     groups: &FxHashMap<K, RecipeStyleGroup>,
 ) -> Vec<RecipeStyleGroupSnapshot> {
@@ -1806,20 +1880,17 @@ fn sorted_group_snapshots<K: RecipeGroupKey>(
             class_name: group.class_name.clone(),
             conditions: group.conditions.clone(),
             entries: sorted_recipe_entries(&group.entries),
+            position: group.position,
         })
         .collect();
     out.sort_by(|a, b| {
         a.recipe
             .cmp(&b.recipe)
-            .then_with(|| slot_sort_key(&a.slot).cmp(slot_sort_key(&b.slot)))
             .then_with(|| a.conditions.cmp(&b.conditions))
+            .then_with(|| a.position.cmp(&b.position))
             .then_with(|| a.class_name.cmp(&b.class_name))
     });
     out
-}
-
-fn slot_sort_key(slot: &serde_json::Value) -> &str {
-    slot.as_str().unwrap_or("")
 }
 
 fn sorted_atoms_vec(atoms: &FxHashSet<Atom>) -> Vec<Atom> {
@@ -1835,6 +1906,7 @@ fn sorted_recipe_entries(entries: &FxHashSet<RecipeStyleEntry>) -> Vec<RecipeSty
             .cmp(&b.conditions)
             .then_with(|| a.prop.cmp(&b.prop))
             .then_with(|| atom_value_sort_key(&a.value).cmp(&atom_value_sort_key(&b.value)))
+            .then_with(|| a.authored_order.cmp(&b.authored_order))
     });
     out
 }
@@ -1842,6 +1914,7 @@ fn sorted_recipe_entries(entries: &FxHashSet<RecipeStyleEntry>) -> Vec<RecipeSty
 #[cfg(test)]
 mod compound_tests {
     use super::*;
+    use pandacss_encoder::AuthoredOrder;
     use pandacss_encoder::{Atom, AtomValue};
 
     fn test_atom(prop: &str, value: &str) -> Atom {
@@ -1860,7 +1933,10 @@ mod compound_tests {
     ) -> ResolvedCompoundVariant {
         let entries = props
             .iter()
-            .map(|(prop, value)| RecipeStyleEntry::from(test_atom(prop, value)))
+            .enumerate()
+            .map(|(index, (prop, value))| {
+                RecipeStyleEntry::new(test_atom(prop, value), AuthoredOrder::leaf(index))
+            })
             .collect();
         ResolvedCompoundVariant {
             conditions: conditions
@@ -1870,6 +1946,7 @@ mod compound_tests {
             target: CompoundTarget::Recipe(ResolvedRecipePart {
                 class_name: class_name.into(),
                 entries,
+                position: [0; 3],
             }),
         }
     }

@@ -10,7 +10,7 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Declaration, ExportNamedDeclaration, Expression, FormalParameter, ImportDeclaration,
+    Comment, Declaration, ExportNamedDeclaration, Expression, FormalParameter, ImportDeclaration,
     ImportDeclarationSpecifier, ImportOrExportKind, Program, Statement, TSTypeAnnotation,
     VariableDeclarator,
 };
@@ -100,6 +100,19 @@ fn apply_cuts(source: &str, cuts: &[Span], offset: u32, original: &str) -> Strin
         .map_or_else(|| original.to_owned(), str::to_owned)
 }
 
+/// A plain identifier under one or more type-only wrappers, whose parentheses
+/// mean nothing once the types are gone.
+fn is_cast_identifier(expression: &Expression<'_>) -> bool {
+    let inner = match expression {
+        Expression::TSAsExpression(node) => &node.expression,
+        Expression::TSSatisfiesExpression(node) => &node.expression,
+        Expression::TSNonNullExpression(node) => &node.expression,
+        Expression::TSTypeAssertion(node) => &node.expression,
+        _ => return false,
+    };
+    matches!(inner, Expression::Identifier(_)) || is_cast_identifier(inner)
+}
+
 /// Byte offsets in a source Oxc already parsed, so they fit in `u32`.
 fn to_u32(value: usize) -> u32 {
     u32::try_from(value).unwrap_or(u32::MAX)
@@ -174,6 +187,23 @@ impl Eraser<'_> {
         }
     }
 
+    /// Cut a whole statement with its leading comments and trailing blank lines, so a
+    /// removed interface leaves no orphaned `JSDoc` or gap behind.
+    fn cut_statement(&mut self, span: Span, comments: &[Comment]) {
+        let start = comments
+            .iter()
+            .filter(|comment| comment.attached_to == span.start)
+            .map(|comment| comment.span.start)
+            .min()
+            .unwrap_or(span.start);
+        let bytes = self.source.as_bytes();
+        let mut end = span.end as usize;
+        while bytes.get(end).is_some_and(u8::is_ascii_whitespace) {
+            end += 1;
+        }
+        self.cut(Span::new(start, to_u32(end)));
+    }
+
     /// A statement that only exists for the type system.
     fn is_type_only_statement(statement: &Statement<'_>) -> bool {
         match statement {
@@ -212,7 +242,7 @@ impl<'a> Visit<'a> for Eraser<'_> {
     fn visit_program(&mut self, program: &Program<'a>) {
         for statement in &program.body {
             if Self::is_type_only_statement(statement) {
-                self.cut(statement.span());
+                self.cut_statement(statement.span(), &program.comments);
                 continue;
             }
             self.visit_statement(statement);
@@ -270,6 +300,13 @@ impl<'a> Visit<'a> for Eraser<'_> {
             }
             Expression::TSTypeAssertion(node) => {
                 self.cut(Span::new(node.span.start, node.expression.span().start));
+                self.visit_expression(&node.expression);
+                return;
+            }
+            // `(styled as T)[key]` erases to `styled[key]`, not `(styled)[key]`.
+            Expression::ParenthesizedExpression(node) if is_cast_identifier(&node.expression) => {
+                self.cut(Span::new(node.span.start, node.span.start + 1));
+                self.cut(Span::new(node.span.end - 1, node.span.end));
                 self.visit_expression(&node.expression);
                 return;
             }

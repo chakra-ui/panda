@@ -92,7 +92,8 @@ encoding directly — no equivalent shape needed.
 ## Project class (NAPI)
 
 `Compiler.fromConfig(config)` is the preferred production entrypoint. The JS side passes the resolved, serialized Panda
-config snapshot; the binding hands it to `pandacss_compiler::load_system` (validate, deserialize, build tokens, resolve
+config snapshot as a JSON string, which is cheaper to cross than an object NAPI walks property by property; the binding
+parses it and hands it to `pandacss_compiler::load_system` (validate, deserialize, build tokens, resolve
 `utility.values` callbacks, compile a `System`) and wraps the result in `Project::new`. That path is fallible: config
 compilation errors, such as invalid serialized JSX regexes, are mapped to `napi::Error`.
 
