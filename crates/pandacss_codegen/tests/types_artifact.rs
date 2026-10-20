@@ -554,6 +554,8 @@ fn emits_ts_source_types() {
       merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
     }
 
+    export type ConfigRecipeRuntimeFn<Props extends object = object, Map extends object = object> = RecipeRuntimeFn<Props, Map, Props>
+
     export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
 
     export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object, Raw = Record<Slot, SystemStyleObject>> {
@@ -566,6 +568,8 @@ fn emits_ts_source_types() {
       splitVariantProps<T extends Props & Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
       getVariantProps: (props?: Props) => Props
     }
+
+    export type ConfigSlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> = SlotRecipeRuntimeFn<Slot, Props, Map, Props>
 
     export type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 

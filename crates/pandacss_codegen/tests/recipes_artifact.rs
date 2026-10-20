@@ -259,7 +259,7 @@ fn emits_ts_source_recipes() {
     assert_snapshot!(file(recipes, "recipes/button.ts"), @r#"
     import { createRecipe } from './runtime';
     import type { ConditionalValue } from '../types/system';
-    import type { RecipeRuntimeFn, RecipeVariantMap } from '../types/recipe';
+    import type { ConfigRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe';
 
     export type ButtonVariant = {
       size?: "sm" | "md"
@@ -272,7 +272,7 @@ fn emits_ts_source_recipes() {
 
     export type ButtonVariantMap = RecipeVariantMap<ButtonVariant>
 
-    export type ButtonRecipe = RecipeRuntimeFn<ButtonVariantProps, ButtonVariantMap, ButtonVariantProps>
+    export type ButtonRecipe = ConfigRecipeRuntimeFn<ButtonVariantProps, ButtonVariantMap>
 
     const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"compoundVariants":[{"disabled":true,"size":["sm","md"],"className":"btn--compound__disabled_true__size_sm|md"}],"variantMap":{"size":["sm","md"],"disabled":["true","false"]}}
 
@@ -281,7 +281,7 @@ fn emits_ts_source_recipes() {
     assert_snapshot!(file(recipes, "recipes/card.ts"), @r#"
     import { createSlotRecipe } from './runtime';
     import type { ConditionalValue } from '../types/system';
-    import type { SlotRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe';
+    import type { ConfigSlotRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe';
 
     export type CardVariant = {
       tone?: "info" | "danger"
@@ -295,7 +295,7 @@ fn emits_ts_source_recipes() {
 
     export type CardSlot = "root" | "label"
 
-    export type CardRecipe = SlotRecipeRuntimeFn<CardSlot, CardVariantProps, CardVariantMap, CardVariantProps>
+    export type CardRecipe = ConfigSlotRecipeRuntimeFn<CardSlot, CardVariantProps, CardVariantMap>
 
     const cardConfig = {"name":"card","slots":["root","label"],"compoundVariants":[{"tone":"info","classNames":{"root":"card__root--compound__tone_info","label":"card__label--compound__tone_info"}}],"variantMap":{"tone":["info","danger"]}}
 
@@ -496,7 +496,7 @@ fn emits_js_runtime_and_declarations() {
     export const button = /* @__PURE__ */ createRecipe(buttonConfig)
     "#);
     assert_snapshot!(file(recipes, "recipes/button.d.mts"), @r#"
-    import type { RecipeRuntimeFn, RecipeVariantMap } from '../types/recipe.mjs';
+    import type { ConfigRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe.mjs';
 
     export type ButtonVariant = {
       size?: "sm" | "md"
@@ -509,7 +509,7 @@ fn emits_js_runtime_and_declarations() {
 
     export type ButtonVariantMap = RecipeVariantMap<ButtonVariant>
 
-    export type ButtonRecipe = RecipeRuntimeFn<ButtonVariantProps, ButtonVariantMap, ButtonVariantProps>
+    export type ButtonRecipe = ConfigRecipeRuntimeFn<ButtonVariantProps, ButtonVariantMap>
 
     export declare const button: ButtonRecipe;
     "#);
@@ -521,7 +521,7 @@ fn emits_js_runtime_and_declarations() {
     export const card = /* @__PURE__ */ createSlotRecipe(cardConfig)
     "#);
     assert_snapshot!(file(recipes, "recipes/card.d.mts"), @r#"
-    import type { SlotRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe.mjs';
+    import type { ConfigSlotRecipeRuntimeFn, RecipeVariantMap } from '../types/recipe.mjs';
 
     export type CardVariant = {
       tone?: "info" | "danger"
@@ -535,7 +535,7 @@ fn emits_js_runtime_and_declarations() {
 
     export type CardSlot = "root" | "label"
 
-    export type CardRecipe = SlotRecipeRuntimeFn<CardSlot, CardVariantProps, CardVariantMap, CardVariantProps>
+    export type CardRecipe = ConfigSlotRecipeRuntimeFn<CardSlot, CardVariantProps, CardVariantMap>
 
     export declare const card: CardRecipe;
     "#);

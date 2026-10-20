@@ -40,6 +40,8 @@ export interface RecipeRuntimeFn<Props extends object = object, Map extends obje
   merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
 }
 
+export type ConfigRecipeRuntimeFn<Props extends object = object, Map extends object = object> = RecipeRuntimeFn<Props, Map, Props>
+
 export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
 
 export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object, Raw = Record<Slot, SystemStyleObject>> {
@@ -52,6 +54,8 @@ export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object =
   splitVariantProps<T extends Props & Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
   getVariantProps: (props?: Props) => Props
 }
+
+export type ConfigSlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> = SlotRecipeRuntimeFn<Slot, Props, Map, Props>
 
 export type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 
@@ -123,11 +127,11 @@ pub(crate) fn concrete_recipe_types(
             string_union(slots, "string")
         ));
         out.push(format!(
-            "export type {type_name}Recipe = SlotRecipeRuntimeFn<{slot_name}, {props_name}, {map_name}, {props_name}>"
+            "export type {type_name}Recipe = ConfigSlotRecipeRuntimeFn<{slot_name}, {props_name}, {map_name}>"
         ));
     } else {
         out.push(format!(
-            "export type {type_name}Recipe = RecipeRuntimeFn<{props_name}, {map_name}, {props_name}>"
+            "export type {type_name}Recipe = ConfigRecipeRuntimeFn<{props_name}, {map_name}>"
         ));
     }
 
