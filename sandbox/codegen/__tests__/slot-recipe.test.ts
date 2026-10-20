@@ -56,6 +56,19 @@ describe('config slot recipe', () => {
     `)
   })
 
+  test('split variant props keeps a union of component props', () => {
+    type Props = { visual: 'solid' } & (
+      | { role: 'guest'; expiration: number }
+      | { role: 'admin'; permissions: string[] }
+    )
+    const split = (props: Props) => slotButton.splitVariantProps(props)[1]
+
+    expectTypeOf(split).returns.toEqualTypeOf<
+      { role: 'guest'; expiration: number } | { role: 'admin'; permissions: string[] }
+    >()
+    expect(split({ visual: 'solid', role: 'guest', expiration: 1 })).toEqual({ role: 'guest', expiration: 1 })
+  })
+
   test('get variant props', () => {
     const result = slotButton.getVariantProps()
 

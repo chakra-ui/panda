@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, test } from 'vitest'
 import { sva } from '../styled-system/css/sva'
+import type { SlotRecipeRuntimeFn, SystemStyleObject } from '../styled-system/types'
 
 describe('sva', () => {
   const button = sva({
@@ -121,5 +122,20 @@ describe('sva', () => {
 
     // @ts-expect-error `icon` is not one of the slots
     sva({ slots, base: { icon: { color: 'red' } } })
+  })
+
+  test('exposes the config it was built from', () => {
+    expectTypeOf(button.config.slots).toEqualTypeOf<readonly ('root' | 'icon')[]>()
+    expect(button.config.slots).toEqual(['root', 'icon'])
+  })
+
+  test('an isolated declaration annotation keeps raw as slot style objects', () => {
+    const annotated: SlotRecipeRuntimeFn<'root' | 'icon', { visual?: 'solid' | undefined }> = sva({
+      slots: ['root', 'icon'],
+      variants: { visual: { solid: { root: { color: 'white' } } } },
+    })
+
+    expectTypeOf(annotated.raw()).toEqualTypeOf<Record<'root' | 'icon', SystemStyleObject>>()
+    expect(annotated({ visual: 'solid' }).root).toBe('c_white')
   })
 })

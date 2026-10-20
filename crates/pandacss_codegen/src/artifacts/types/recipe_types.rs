@@ -6,7 +6,12 @@ use crate::{ImportDecl, Module};
 pub(super) fn module() -> Module {
     Module::new()
         .with_import(ImportDecl::ty(
-            ["ConditionalValue", "SystemStyleObject"],
+            [
+                "ConditionalValue",
+                "DistributiveOmit",
+                "Pretty",
+                "SystemStyleObject",
+            ],
             "./system",
         ))
         .with_item(type_raw(RECIPE_TYPES))
@@ -24,29 +29,33 @@ export type RecipeConfigVariantMap<T> = {
   [K in keyof T]: Array<keyof T[K]>
 }
 
-export interface RecipeRuntimeFn<Props extends object = object, Map extends object = object> {
+export interface RecipeRuntimeFn<Props extends object = object, Map extends object = object, Raw = SystemStyleObject> {
   (props?: Props): string
   __type: Props
   variantMap: Map
   variantKeys: Array<keyof Props>
-  raw: (props?: Props) => SystemStyleObject
-  splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
+  raw: (props?: Props) => Raw
+  splitVariantProps<T extends Props & Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
   getVariantProps: (props?: Props) => Props
   merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
 }
 
+export type ConfigRecipeRuntimeFn<Props extends object = object, Map extends object = object> = RecipeRuntimeFn<Props, Map, Props>
+
 export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
 
-export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> {
+export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object, Raw = Record<Slot, SystemStyleObject>> {
   (props?: Props): Record<Slot, string>
   __type: Props
   __slot: Slot
   variantMap: Map
   variantKeys: Array<keyof Props>
-  raw: (props?: Props) => Record<Slot, SystemStyleObject>
-  splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
+  raw: (props?: Props) => Raw
+  splitVariantProps<T extends Props & Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
   getVariantProps: (props?: Props) => Props
 }
+
+export type ConfigSlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> = SlotRecipeRuntimeFn<Slot, Props, Map, Props>
 
 export type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 
@@ -70,7 +79,11 @@ export interface RecipeDefinition<T extends RecipeVariantRecord = RecipeVariantR
 }
 
 export interface RecipeCreatorFn {
-  <T extends RecipeVariantRecord>(config: RecipeDefinition<T>): RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>>
+  <T extends RecipeVariantRecord>(config: RecipeDefinition<T>): CvaRuntimeFn<T>
+}
+
+export interface CvaRuntimeFn<T extends RecipeVariantRecord> extends RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>> {
+  config: RecipeDefinition<T>
 }
 
 export type SlotRecipeVariantRecord<Slot extends string> = Record<string, Record<string, SlotRecord<Slot, SystemStyleObject>>>
@@ -85,7 +98,11 @@ export interface SlotRecipeDefinition<Slot extends string = string, T extends Sl
 }
 
 export interface SlotRecipeCreatorFn {
-  <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>>
+  <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SvaRuntimeFn<Slot, T>
+}
+
+export interface SvaRuntimeFn<Slot extends string, T extends SlotRecipeVariantRecord<Slot>> extends SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>> {
+  config: SlotRecipeDefinition<Slot, T>
 }";
 
 pub(crate) fn concrete_recipe_types(
@@ -110,11 +127,11 @@ pub(crate) fn concrete_recipe_types(
             string_union(slots, "string")
         ));
         out.push(format!(
-            "export type {type_name}Recipe = SlotRecipeRuntimeFn<{slot_name}, {props_name}, {map_name}>"
+            "export type {type_name}Recipe = ConfigSlotRecipeRuntimeFn<{slot_name}, {props_name}, {map_name}>"
         ));
     } else {
         out.push(format!(
-            "export type {type_name}Recipe = RecipeRuntimeFn<{props_name}, {map_name}>"
+            "export type {type_name}Recipe = ConfigRecipeRuntimeFn<{props_name}, {map_name}>"
         ));
     }
 

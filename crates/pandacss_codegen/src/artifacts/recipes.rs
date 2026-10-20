@@ -134,9 +134,9 @@ fn recipe_module(
     let config_name = format!("{export_name}Config");
     let recipe_type = format!("{type_name}Recipe");
     let (factory, runtime_fn) = if slot {
-        ("createSlotRecipe", "SlotRecipeRuntimeFn")
+        ("createSlotRecipe", "ConfigSlotRecipeRuntimeFn")
     } else {
-        ("createRecipe", "RecipeRuntimeFn")
+        ("createRecipe", "ConfigRecipeRuntimeFn")
     };
 
     let empty = VariantTypeMap::default();

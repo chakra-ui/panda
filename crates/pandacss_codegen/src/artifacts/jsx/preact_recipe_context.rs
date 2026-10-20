@@ -124,11 +124,11 @@ export interface RuntimeRecipeFn {
   (props?: never): string
 }
 
-export type RecipeContextRecipe = RecipeRuntimeFn<any, any> | RuntimeRecipeFn | AnyRecipeDefinition
+export type RecipeContextRecipe = RecipeRuntimeFn<any, any, any> | RuntimeRecipeFn | AnyRecipeDefinition
 
 export type RecipePropsOf<R extends RecipeContextRecipe> = R extends RuntimeRecipeFn
   ? R['__type']
-  : R extends RecipeRuntimeFn<infer P, any>
+  : R extends RecipeRuntimeFn<infer P, any, any>
     ? P
     : R extends RecipeDefinition<infer T>
       ? RecipeSelection<T>
@@ -160,11 +160,11 @@ export interface RuntimeSlotRecipeFn {
   (props?: never): unknown
 }
 
-export type SlotRecipeContextInput = SlotRecipeRuntimeFn<string, any, any> | RuntimeSlotRecipeFn | AnySlotRecipeDefinition
+export type SlotRecipeContextInput = SlotRecipeRuntimeFn<string, any, any, any> | RuntimeSlotRecipeFn | AnySlotRecipeDefinition
 
 export type SlotNameOf<R extends SlotRecipeContextInput> = R extends RuntimeSlotRecipeFn
   ? R['__slot']
-  : R extends SlotRecipeRuntimeFn<infer S, any, any>
+  : R extends SlotRecipeRuntimeFn<infer S, any, any, any>
     ? S
     : R extends SlotRecipeDefinition<infer S, any>
       ? S
@@ -172,7 +172,7 @@ export type SlotNameOf<R extends SlotRecipeContextInput> = R extends RuntimeSlot
 
 export type SlotRecipePropsOf<R extends SlotRecipeContextInput> = R extends RuntimeSlotRecipeFn
   ? R['__type']
-  : R extends SlotRecipeRuntimeFn<any, infer P, any>
+  : R extends SlotRecipeRuntimeFn<any, infer P, any, any>
     ? P
     : R extends SlotRecipeDefinition<any, infer T>
       ? RecipeSelection<T>
