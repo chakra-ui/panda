@@ -9,6 +9,7 @@ export const card = css({
   rounded: '2xl',
   boxShadow: 'raised',
   overflow: 'hidden',
+  _focusWithin: { boxShadow: '{shadows.raised}, {shadows.focusHalo}' },
 })
 
 export const bar = css({

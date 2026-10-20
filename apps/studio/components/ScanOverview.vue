@@ -141,6 +141,7 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
           <li v-for="(issue, i) in issues" :key="i">
             <NuxtLink :to="to(issue.file, issue.line)" :class="s.issue">
               <span :class="s.dot" :data-tone="issue.kind === 'unknown' ? 'danger' : 'warning'" aria-hidden="true" />
+              <span :class="s.srOnly">{{ issue.kind === 'unknown' ? 'Not in your system' : 'Hard-coded' }}:</span>
               <code :class="s.issueValue">{{ issue.value }}</code>
               <span :class="s.issueWhere">{{ issue.file.split('/').pop() }}:{{ issue.line }}</span>
               <span v-if="issue.kind === 'unknown' ? issue.suggestion : issue.match" :class="s.issueFix">

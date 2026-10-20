@@ -65,6 +65,7 @@ watch(
           :ds="ds"
           :findings="shown.findings"
           read-only
+          :label="file.path"
           :class="s.editor"
         />
       </ClientOnly>

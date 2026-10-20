@@ -90,6 +90,7 @@ const statusLabel = computed(() =>
           :ds="ds"
           :findings="findings"
           :category-at="playground.categoryAt"
+          label="Style object"
           :class="s.editor"
         />
         <template #fallback>

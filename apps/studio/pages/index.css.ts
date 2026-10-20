@@ -69,7 +69,7 @@ export const composer = css({
   boxShadow: 'raised',
   textAlign: 'left',
   transition: 'box-shadow 0.15s',
-  _focusWithin: { boxShadow: 'raised, focusHalo' },
+  _focusWithin: { boxShadow: '{shadows.raised}, {shadows.focusHalo}' },
   '&[data-invalid]': { boxShadow: 'raised, 0 0 0 1px token(colors.danger)' },
 })
 

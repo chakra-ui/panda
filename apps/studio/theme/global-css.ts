@@ -23,4 +23,7 @@ export const globalCss = defineGlobalStyles({
     },
   },
   a: { color: 'inherit', textDecoration: 'none' },
+  '@media (prefers-reduced-motion: reduce)': {
+    '*, ::before, ::after': { transitionDuration: '0s !important', scrollBehavior: 'auto !important' },
+  },
 })

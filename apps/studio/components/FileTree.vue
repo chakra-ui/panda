@@ -105,7 +105,9 @@ const rows = computed<Row[]>(() => {
           :title="row.node.path"
         >
           <span :class="s.name" :data-path="row.label !== row.node.name || undefined">{{ row.label }}</span>
-          <span v-if="row.node.issues" :class="s.count">{{ row.node.issues }}</span>
+          <span v-if="row.node.issues" :class="s.count">
+            {{ row.node.issues }}<span :class="s.srOnly">{{ row.node.issues === 1 ? ' issue' : ' issues' }}</span>
+          </span>
         </NuxtLink>
         <button
           v-else

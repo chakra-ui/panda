@@ -2,6 +2,8 @@ import { css } from 'styled-system/css'
 
 export const panel = css({ display: 'grid', alignContent: 'start', gap: '5', minW: '0' })
 
+export const srOnly = css({ srOnly: true })
+
 export const empty = css({ py: '1', fontSize: '13px', color: 'faint', textWrap: 'pretty' })
 
 export const tabs = css({ display: 'grid', gap: '2', minW: '0' })

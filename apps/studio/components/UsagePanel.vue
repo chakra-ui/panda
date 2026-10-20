@@ -106,7 +106,8 @@ const swatch = (category: string, name: string) =>
               @click="emit('reveal', issue.from, issue.to)"
             >
               <span :class="s.dot" :data-tone="issue.tone" aria-hidden="true" />
-              <span v-if="readOnly" :class="s.line">{{ issue.line }}</span>
+              <span :class="s.srOnly">{{ issue.label }}:</span>
+              <span v-if="readOnly" :class="s.line"><span :class="s.srOnly">line</span> {{ issue.line }}</span>
               <code :class="s.value">{{ issue.value }}</code>
               <span :class="s.meta">{{ issue.prop }}</span>
             </button>

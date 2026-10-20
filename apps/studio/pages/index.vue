@@ -95,7 +95,7 @@ const { dragging, busy, onPick, onDrop, onDragOver, onDragLeave } = useFolderDro
       <ThemeSwitch />
     </header>
 
-    <main :class="s.center">
+    <main id="content" :class="s.center">
       <StudioLogo size="lg" />
       <h1 :class="s.title">Your design system, at a glance</h1>
       <p :class="s.lede">Open the <code>design-system.json</code> Panda generates to browse every token.</p>

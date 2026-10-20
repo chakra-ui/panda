@@ -18,6 +18,7 @@ const props = defineProps<{
   findings: Finding[]
   categoryAt?: (source: string, offset: number) => string | undefined
   readOnly?: boolean
+  label?: string
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
@@ -111,7 +112,12 @@ const tokenLinter = linter(
           message: `Hard-coded value. ${finding.category}.${finding.match} has the same value.`,
           actions: props.readOnly
             ? []
-            : [{ name: `Use ${name}`, apply: (v, from, to) => v.dispatch({ changes: quoted(v.state, { from, to, insert: name }) }) }],
+            : [
+                {
+                  name: `Use ${name}`,
+                  apply: (v, from, to) => v.dispatch({ changes: quoted(v.state, { from, to, insert: name }) }),
+                },
+              ],
         })
       }
     }
@@ -130,7 +136,7 @@ const theme = EditorView.theme({
   '.cm-lineNumbers .cm-gutterElement': {
     minWidth: '3ch',
     padding: '0 8px 0 0',
-    color: 'color-mix(in srgb, var(--colors-faint) 70%, transparent)',
+    color: 'var(--colors-faint)',
     fontSize: '12px',
     fontVariantNumeric: 'tabular-nums',
     userSelect: 'none',
@@ -206,8 +212,14 @@ onMounted(() => {
         javascript({ jsx: true, typescript: true }),
         syntaxHighlighting(highlight),
         ...(props.readOnly ? [EditorState.readOnly.of(true)] : [completions, placeholder('css({ color: … })')]),
+        EditorView.contentAttributes.of({ 'aria-label': props.label ?? 'Code' }),
         tokenLinter,
-        keymap.of([...defaultKeymap, ...historyKeymap, ...completionKeymap, indentWithTab]),
+        keymap.of([
+          ...defaultKeymap,
+          ...historyKeymap,
+          ...completionKeymap,
+          ...(props.readOnly ? [] : [indentWithTab]),
+        ]),
         theme,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) emit('update:modelValue', update.state.doc.toString())

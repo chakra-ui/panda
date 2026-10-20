@@ -81,3 +81,5 @@ export const count = css({
 })
 
 export const empty = css({ px: '2.5', py: '1', fontSize: '12.5px', color: 'faint' })
+
+export const srOnly = css({ srOnly: true })

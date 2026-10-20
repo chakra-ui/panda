@@ -17,6 +17,8 @@ export const legend = css({
   '& i:nth-of-type(2)': { ml: '2' },
 })
 
+export const srOnly = css({ srOnly: true })
+
 export const empty = css({ fontSize: '13px', color: 'faint' })
 
 export const waffle = css({ display: 'grid', gap: '1' })
