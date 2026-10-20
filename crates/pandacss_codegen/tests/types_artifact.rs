@@ -1174,3 +1174,48 @@ fn can_emit_type_import_extensions() {
         .trim()
     );
 }
+
+#[test]
+fn corner_shape_is_a_typed_style_property() {
+    let system = system_types(&input());
+    let lines = |needle: &str| {
+        system
+            .lines()
+            .filter(|line| line.contains(needle))
+            .map(str::trim)
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+
+    insta::assert_snapshot!(lines("  cornerBlockEndShape: "), @r#"cornerBlockEndShape: CssGlobals | "bevel" | "notch" | "round" | "scoop" | "square" | "squircle" | (string & {})"#);
+    insta::assert_snapshot!(lines("cornerShape"), @r#"
+    cornerShape: PropertyValueMap["cornerBlockEndShape"]
+    cornerShape?: ConditionalValue<PropertyValueMap["cornerShape"]>
+    "#);
+    insta::assert_snapshot!(lines("cornerTopLeftShape"), @r#"
+    cornerTopLeftShape: PropertyValueMap["cornerBlockEndShape"]
+    cornerTopLeftShape?: ConditionalValue<PropertyValueMap["cornerTopLeftShape"]>
+    "#);
+}
+
+#[test]
+fn baseline_source_and_dynamic_range_limit_are_typed_style_properties() {
+    let system = system_types(&input());
+    let lines = |needle: &str| {
+        system
+            .lines()
+            .filter(|line| line.contains(needle))
+            .map(str::trim)
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+
+    insta::assert_snapshot!(lines("baselineSource"), @r#"
+    baselineSource: CssGlobals | "auto" | "first" | "last" | (string & {})
+    baselineSource?: ConditionalValue<PropertyValueMap["baselineSource"]>
+    "#);
+    insta::assert_snapshot!(lines("dynamicRangeLimit"), @r#"
+    dynamicRangeLimit: CssGlobals | "constrained" | "no-limit" | "standard" | (string & {})
+    dynamicRangeLimit?: ConditionalValue<PropertyValueMap["dynamicRangeLimit"]>
+    "#);
+}
