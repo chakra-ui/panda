@@ -4,8 +4,7 @@
 //! order: unconditional rules first, then selector-conditioned,
 //! then at-rule-conditioned; within those, by media-query width, pseudo-class
 //! priority, and finally property specificity (longhands after shorthands so
-//! they win the cascade). Authored styles keep their written order instead;
-//! see [`AuthoredRuleKey`].
+//! they win the cascade).
 
 use std::cmp::Ordering;
 
@@ -206,7 +205,6 @@ impl PartialOrd for CssRuleKey {
     }
 }
 
-/// Cascade tiers only; authored order decides everything else.
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 struct AuthoredRuleKey {
     bucket: RuleBucket,
@@ -284,7 +282,6 @@ impl PartialOrd for AtRuleKey {
     }
 }
 
-/// Ties keep first appearance, so a recipe's own at-rules stay in written order.
 pub(crate) fn compare_at_rule_wrappers(a: &str, b: &str) -> Ordering {
     let (a, b) = (AtRuleKey::new(a), AtRuleKey::new(b));
     a.kind.cmp(&b.kind).then_with(|| a.query.cmp(&b.query))
