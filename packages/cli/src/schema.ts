@@ -141,9 +141,24 @@ export const analyzeFlagsSchema = commonFlagsSchema.omit({ watch: true, watchDeb
 })
 
 export type LogLevel = EnumValues<typeof logLevelSchema>
+// A long-running server: no one-shot result to print, no exit-code budget, always watching.
+export const studioFlagsSchema = object({
+  cwd: stringFlag,
+  config: stringFlag,
+  include: stringOrArray(),
+  logLevel: logLevelSchema,
+  logfile: stringFlag,
+  noColor: booleanFlag,
+  watchDebounce: numberLikeFlag,
+  port: numberLikeFlag,
+  open: booleanFlag,
+  studioUrl: stringFlag,
+})
+
 export type CommonFlags = FlagsInfer<typeof commonFlagsSchema>
 export type CodegenFlags = FlagsInfer<typeof codegenFlagsSchema>
 export type CssgenFlags = FlagsInfer<typeof cssgenFlagsSchema>
+export type StudioFlags = FlagsInfer<typeof studioFlagsSchema>
 export type BuildFlags = FlagsInfer<typeof buildFlagsSchema>
 export type InitFlags = FlagsInfer<typeof initFlagsSchema>
 export type BuildinfoFlags = FlagsInfer<typeof buildinfoFlagsSchema>
@@ -201,6 +216,11 @@ export interface BuildResult extends CommandResult {
   diagnosticCount: number
   missing: string[]
   stale: string[]
+}
+
+export interface StudioResult extends CommandResult {
+  url?: string
+  port?: number
 }
 
 export interface AnalyzeResult extends CommandResult, UsageReport {
