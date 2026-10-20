@@ -53,6 +53,14 @@ css({ padding: '10px', paddingTop: '20px' })
 // → .p_10px { padding: 10px } then .pt_20px { padding-top: 20px }
 ```
 
+In recipes, conditions keep the order you write them, so a later condition wins when both match. Interaction states
+still sort hover, then focus, then active, and breakpoints sort mobile-first.
+
+```js
+base: { _dark: { color: 'white' }, '&[data-active]': { color: 'red' } }
+// → .dark .button { … } then .button[data-active] { … }
+```
+
 </Details>
 
 <Details>

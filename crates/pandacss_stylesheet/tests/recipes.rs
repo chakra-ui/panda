@@ -1733,3 +1733,303 @@ fn slot_recipe_slots_emit_in_config_order() {
     }
     ");
 }
+
+#[test]
+fn recipe_condition_written_last_wins_when_both_match() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": { "dark": ".dark &" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "recipes": {
+                "darkFirst": {
+                    "className": "dark-first",
+                    "base": { "color": "gray", "_dark": { "color": "white" }, "&[data-active]": { "color": "red" } }
+                },
+                "activeFirst": {
+                    "className": "active-first",
+                    "base": { "color": "gray", "&[data-active]": { "color": "red" }, "_dark": { "color": "white" } }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { darkFirst, activeFirst } from '@panda/recipes'; darkFirst(); activeFirst()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .active-first {
+          color: gray;
+        }
+        .active-first[data-active] {
+          color: red;
+        }
+        .dark .active-first {
+          color: white;
+        }
+        .dark-first {
+          color: gray;
+        }
+        .dark .dark-first {
+          color: white;
+        }
+        .dark-first[data-active] {
+          color: red;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn dark_value_written_after_a_root_light_value_wins_in_dark_mode() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": { "light": ":root &, .light &", "dark": ".dark &" },
+        "utilities": { "background": { "className": "bg" } },
+        "theme": {
+            "recipes": {
+                "segment": {
+                    "className": "segment",
+                    "base": { "background": { "_light": "white", "_dark": "black" } }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { segment } from '@panda/recipes'; segment()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        :root .segment, .light .segment {
+          background: white;
+        }
+        .dark .segment {
+          background: black;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn recipe_state_conditions_keep_written_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "checked": "&:is(:checked, [data-checked])",
+            "open": "&:is([open], [data-open], :popover-open)",
+            "selected": "&:is([aria-selected=true], [data-selected])"
+        },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "recipes": {
+                "row": {
+                    "className": "row",
+                    "base": {
+                        "_checked": { "color": "blue" },
+                        "&[data-highlight]": { "color": "yellow" },
+                        "_open": { "color": "green" },
+                        "_selected": { "color": "purple" }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { row } from '@panda/recipes'; row()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .row:is(:checked, [data-checked]) {
+          color: blue;
+        }
+        .row[data-highlight] {
+          color: yellow;
+        }
+        .row:is([open], [data-open], :popover-open) {
+          color: green;
+        }
+        .row:is([aria-selected=true], [data-selected]) {
+          color: purple;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn recipe_interaction_states_follow_hover_focus_active_in_any_written_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "hover": "&:is(:hover, [data-hover])",
+            "focusVisible": "&:is(:focus-visible, [data-focus-visible])",
+            "active": "&:is(:active, [data-active])",
+            "disabled": "&:is(:disabled, [data-disabled])"
+        },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "base": {
+                        "_active": { "color": "red" },
+                        "_focusVisible": { "color": "green" },
+                        "_hover": { "color": "blue" },
+                        "_disabled": { "color": "gray" }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { button } from '@panda/recipes'; button()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .button:is(:disabled, [data-disabled]) {
+          color: gray;
+        }
+        .button:is(:hover, [data-hover]) {
+          color: blue;
+        }
+        .button:is(:focus-visible, [data-focus-visible]) {
+          color: green;
+        }
+        .button:is(:active, [data-active]) {
+          color: red;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn slot_recipe_condition_written_last_wins_when_both_match() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": { "dark": ".dark &" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "slotRecipes": {
+                "table": {
+                    "className": "table",
+                    "slots": ["column"],
+                    "base": {
+                        "column": { "_dark": { "color": "white" }, "&[data-sorted]": { "color": "blue" } }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { table } from '@panda/recipes'; table()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes.slots {
+      @layer base {
+        .dark .table__column {
+          color: white;
+        }
+        .table__column[data-sorted] {
+          color: blue;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn variant_condition_written_last_wins_when_both_match() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": { "dark": ".dark &" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "variants": {
+                        "visual": {
+                            "solid": { "_dark": { "color": "white" }, "&[data-active]": { "color": "red" } }
+                        }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { button } from '@panda/recipes'; button({ visual: 'solid' })",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer variants {
+        .dark .button--visual_solid {
+          color: white;
+        }
+        .button--visual_solid[data-active] {
+          color: red;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn recipe_breakpoints_stay_mobile_first_when_written_in_reverse() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "breakpoints": { "sm": "640px", "md": "768px" },
+            "recipes": {
+                "card": { "className": "card", "base": { "color": { "md": "blue", "sm": "red" } } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { card } from '@panda/recipes'; card()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        @media (width >= 40rem) {
+          .card {
+            color: red;
+          }
+        }
+        @media (width >= 48rem) {
+          .card {
+            color: blue;
+          }
+        }
+      }
+    }
+    ");
+}

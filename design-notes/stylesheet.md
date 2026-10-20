@@ -99,8 +99,15 @@ order so selectors match recipe runtime output. Rule conditions are sorted separ
    direction across every axis — `width`, `inline-size` (container queries), `height`, and `block-size`.
 3. Selector priority: pseudo selectors use the configured pseudo-class priority table.
 4. Property priority: broad shorthands before shorthand groups before longhands.
-5. Ties: recipe and grouped-style entries keep authored order; atoms fall back to property name, atom value key, rule
-   conditions, then class conditions.
+5. Ties: atoms fall back to selector and at-rule spelling, property name, atom value key, rule conditions, then class
+   conditions.
+
+Authored style objects (recipe base, variants, compounds, compositions) have an order the author chose, so they use
+`AuthoredRuleKey`: the same tiers, but among selectors only interaction states rank (link, visited, focus-within, hover,
+focus, focus-visible, active), and nothing compares spelling. Every other tie keeps authored order, so
+`{ _dark, '&[data-active]' }` lets `[data-active]` win and `{ _light, _dark }` lets dark win. This matches v1's
+`sortStyleRules`, except focus sorts after hover as it does for atoms. At-rule wrappers are still grouped and sorted
+across the layer, as in v1.
 
 Config recipe groups follow config order, not class names: variants and their options as declared, slots in `slots`
 order, and compound variants in array order, so a later variant overrides an earlier one. `globalCss` and keyframe

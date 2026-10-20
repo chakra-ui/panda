@@ -942,3 +942,35 @@ fn sorts_theme_container_inline_size_breakpoints_mobile_first() {
     }
     ");
 }
+
+#[test]
+fn atomic_conditions_keep_their_deterministic_order_regardless_of_written_order() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": { "dark": ".dark &" },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let dark_first = compile_output(
+        &config,
+        "import { css } from '@panda/css'; css({ _dark: { color: 'white' }, '&[data-active]': { color: 'red' } })",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
+    let active_first = compile_output(
+        &config,
+        "import { css } from '@panda/css'; css({ '&[data-active]': { color: 'red' }, _dark: { color: 'white' } })",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
+    assert_eq!(dark_first, active_first);
+    assert_snapshot!(dark_first, @r"
+    @layer utilities {
+      .\[\&\[data-active\]\]\:c_red[data-active] {
+        color: red;
+      }
+      .dark .dark\:c_white {
+        color: white;
+      }
+    }
+    ");
+}
