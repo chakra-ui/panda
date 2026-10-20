@@ -1740,9 +1740,12 @@ impl<'a> EmitContext<'a> {
 
         rules
             .into_iter()
-            .map(|(target, declarations)| StyleRule {
-                target,
-                declarations,
+            .map(|(target, mut declarations)| {
+                declarations.sort_by_cached_key(|declaration| declaration_order(&declaration.prop));
+                StyleRule {
+                    target,
+                    declarations,
+                }
             })
             .collect()
     }
@@ -2049,6 +2052,7 @@ impl<'a> EmitContext<'a> {
                 };
                 append_declarations(&mut declarations, entry_declarations);
             }
+            declarations.sort_by_cached_key(|declaration| declaration_order(&declaration.prop));
             return Some(declarations);
         }
         if self.nested_utility_style_entries(prop, &value).is_some() {

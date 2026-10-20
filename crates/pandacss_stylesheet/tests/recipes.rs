@@ -265,11 +265,11 @@ fn emits_config_recipe_css_with_nested_conditions() {
           display: inline-flex;
           color: red;
         }
-        .btn:disabled:hover {
-          background-color: initial;
-        }
         .btn:hover {
           padding: 4px;
+        }
+        .btn:disabled:hover {
+          background-color: initial;
         }
         @media (width >= 48rem) {
           .btn {
@@ -1871,7 +1871,7 @@ fn recipe_state_conditions_keep_written_order() {
 }
 
 #[test]
-fn recipe_interaction_states_follow_hover_focus_active_in_any_written_order() {
+fn recipe_interaction_states_follow_written_order() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
         "conditions": {
@@ -1904,17 +1904,59 @@ fn recipe_interaction_states_follow_hover_focus_active_in_any_written_order() {
     assert_snapshot!(css, @"
     @layer recipes {
       @layer base {
-        .button:is(:disabled, [data-disabled]) {
-          color: gray;
-        }
-        .button:is(:hover, [data-hover]) {
-          color: blue;
+        .button:is(:active, [data-active]) {
+          color: red;
         }
         .button:is(:focus-visible, [data-focus-visible]) {
           color: green;
         }
-        .button:is(:active, [data-active]) {
-          color: red;
+        .button:is(:hover, [data-hover]) {
+          color: blue;
+        }
+        .button:is(:disabled, [data-disabled]) {
+          color: gray;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn shorthand_in_a_later_condition_does_not_move_an_earlier_condition() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": {
+            "invalid": "&:is(:invalid, [data-invalid])",
+            "focus": "&:is(:focus, [data-focus])"
+        },
+        "utilities": { "borderColor": { "className": "bdc" }, "boxShadow": { "className": "bx-sh" } },
+        "theme": {
+            "recipes": {
+                "input": {
+                    "className": "input",
+                    "base": {
+                        "_invalid": { "borderColor": "red" },
+                        "_focus": { "boxShadow": "0 0 0 1px blue", "borderColor": "blue" }
+                    }
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { input } from '@panda/recipes'; input()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .input:is(:invalid, [data-invalid]) {
+          border-color: red;
+        }
+        .input:is(:focus, [data-focus]) {
+          border-color: blue;
+          box-shadow: 0 0 0 1px blue;
         }
       }
     }

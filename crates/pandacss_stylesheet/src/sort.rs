@@ -1,10 +1,11 @@
 //! Deterministic cascade ordering for emitted rules.
 //!
-//! Atoms/recipe entries are sorted by a composite [`CssRuleKey`], independent
-//! of extraction order: unconditional rules first, then selector-conditioned,
+//! Atoms are sorted by a composite [`CssRuleKey`], independent of extraction
+//! order: unconditional rules first, then selector-conditioned,
 //! then at-rule-conditioned; within those, by media-query width, pseudo-class
 //! priority, and finally property specificity (longhands after shorthands so
-//! they win the cascade). Mirrors the JS sort in `packages/core`.
+//! they win the cascade). Authored styles keep their written order instead;
+//! see [`AuthoredRuleKey`].
 
 use std::cmp::Ordering;
 
@@ -61,17 +62,6 @@ const PSEUDO_PRIORITIES: &[(&str, u16)] = &[
     (":focus", 150),
     (":focus-visible", 160),
     (":active", 170),
-];
-
-const INTERACTION_PSEUDOS: &[&str] = &[
-    ":link",
-    ":any-link",
-    ":visited",
-    ":focus-within",
-    ":hover",
-    ":focus",
-    ":focus-visible",
-    ":active",
 ];
 
 pub struct SortContext<'a> {
@@ -135,7 +125,7 @@ impl<'a> SortContext<'a> {
             .iter()
             .map(|entry| {
                 let conditions = self.sorted_condition_names(&entry.conditions);
-                let key = AuthoredRuleKey::new(self.config, &conditions, &entry.prop);
+                let key = AuthoredRuleKey::new(self.config, &conditions);
                 (SortedRecipeEntry { entry, conditions }, key)
             })
             .collect::<Vec<_>>();
@@ -216,36 +206,27 @@ impl PartialOrd for CssRuleKey {
     }
 }
 
-/// [`CssRuleKey`] without spelling, ranking only interaction states, so other ties keep authored order.
+/// Cascade tiers only; authored order decides everything else.
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 struct AuthoredRuleKey {
     bucket: RuleBucket,
     at_rules: Vec<(AtRuleKind, QueryKey)>,
-    selectors: Vec<(bool, u16)>,
-    property_priority: u16,
-    property_axis: u8,
 }
 
 impl AuthoredRuleKey {
-    fn new(config: &UserConfig, conditions: &[&str], prop: &str) -> Self {
-        let key = CssRuleKey::new(config, conditions, prop);
-        let mut selectors = key
-            .selectors
-            .iter()
-            .map(|selector| (selector.pseudo_element, interaction_rank(&selector.raw)))
-            .collect::<Vec<_>>();
-        selectors.sort_unstable();
-        Self {
-            bucket: key.bucket,
-            at_rules: key
-                .at_rules
-                .iter()
-                .map(|at_rule| (at_rule.kind, at_rule.query))
-                .collect(),
-            selectors,
-            property_priority: key.property_priority,
-            property_axis: key.property_axis,
+    fn new(config: &UserConfig, conditions: &[&str]) -> Self {
+        let mut at_rules = Vec::new();
+        let mut selectors = Vec::new();
+        for condition in conditions {
+            collect_condition_parts(config, condition, &mut at_rules, &mut selectors);
         }
+        let bucket = RuleBucket::from_parts(&at_rules, &selectors);
+        let mut at_rules = at_rules
+            .iter()
+            .map(|at_rule| (at_rule.kind, at_rule.query))
+            .collect::<Vec<_>>();
+        at_rules.sort();
+        Self { bucket, at_rules }
     }
 }
 
@@ -303,8 +284,10 @@ impl PartialOrd for AtRuleKey {
     }
 }
 
+/// Ties keep first appearance, so a recipe's own at-rules stay in written order.
 pub(crate) fn compare_at_rule_wrappers(a: &str, b: &str) -> Ordering {
-    AtRuleKey::new(a).cmp(&AtRuleKey::new(b))
+    let (a, b) = (AtRuleKey::new(a), AtRuleKey::new(b));
+    a.kind.cmp(&b.kind).then_with(|| a.query.cmp(&b.query))
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
@@ -754,13 +737,6 @@ fn pseudo_rank(selector: &str) -> u16 {
         rank += pseudo_priority(pseudo);
     }
     rank
-}
-
-fn interaction_rank(selector: &str) -> u16 {
-    pseudo_classes(selector)
-        .filter(|pseudo| INTERACTION_PSEUDOS.contains(pseudo))
-        .map(pseudo_priority)
-        .sum()
 }
 
 fn pseudo_priority(pseudo: &str) -> u16 {
