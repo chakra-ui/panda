@@ -1,4 +1,5 @@
 import { onMounted, ref, shallowRef, type Ref } from 'vue'
+import type { UsageReport } from '@pandacss/compiler-shared'
 import { index, parseSpec, type DesignSystemIndex } from '~/utils/design-system'
 import { extractSpec } from '~/utils/extract-tokens'
 import { loadScanFolder, loadUsage, saveScanFolder, saveTokens, saveUsage } from '~/utils/idb'
@@ -6,6 +7,14 @@ import { isSourceFile } from '~/utils/analyze'
 import { canRead, canRescan, fromFileList, pickDirectory, readDirectory, type PickedFile } from '~/utils/project-files'
 import { attachSources, isUsageReport, scanFromReport, scanSources, type ProjectScan } from '~/utils/project-scan'
 import { useFolderDrop } from '~/composables/useFolderDrop'
+
+type LiveChange = {
+  report?: UsageReport
+  system?: boolean
+  files?: { path: string; text: string }[]
+  path?: string
+  text?: string | null
+}
 
 const paint = () => new Promise((r) => requestAnimationFrame(() => r(null)))
 
@@ -160,21 +169,22 @@ export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
   }
 
   const liveSources = new Map<string, string>()
+  let liveReport: UsageReport | null = null
 
-  async function live(change: { files?: { path: string; text: string }[]; path?: string; text?: string | null }) {
+  /** `panda studio` sends the CLI's report plus the code of each file in it. */
+  function live(change: LiveChange) {
     if (change.files) {
       liveSources.clear()
-      for (const f of change.files) liveSources.set(f.path, f.text)
+      for (const file of change.files) liveSources.set(file.path, file.text)
     }
     if (change.path) {
       if (change.text == null) liveSources.delete(change.path)
       else liveSources.set(change.path, change.text)
     }
-    if (!ds.value) return
-    const { createCompilerFromSpec } = await import('~/utils/analyze-compiler')
-    const compiler = await createCompilerFromSpec(ds.value.spec)
-    const sources = [...liveSources].filter(([path]) => isSourceFile(path)).map(([path, text]) => ({ path, text }))
-    scan.value = { ...scanSources(compiler, sources, tokenNames), origin: 'live' }
+    if (change.report) liveReport = change.report
+    if (!liveReport || !ds.value || !(change.report || change.system)) return
+    const sources = [...liveSources].map(([path, text]) => ({ path, text }))
+    scan.value = { ...attachSources(scanFromReport(liveReport, tokenNames), sources), origin: 'live' }
   }
 
   function clear() {

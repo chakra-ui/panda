@@ -1,7 +1,9 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import type { UsageReport } from '@pandacss/compiler-shared'
 
 export type BridgeMessage =
   | { type: 'system'; spec: string }
+  | { type: 'report'; report: UsageReport }
   | { type: 'sources'; files: { path: string; text: string }[] }
   | { type: 'source'; path: string; text: string }
   | { type: 'removed'; path: string }

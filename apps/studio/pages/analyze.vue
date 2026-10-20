@@ -20,15 +20,16 @@ const ds = shallowRef<DesignSystemIndex | null>(null)
 const ready = ref(false)
 const scanner = useProjectScan(ds)
 
-const bridge = useStudioBridge(async (message) => {
+const bridge = useStudioBridge((message) => {
   if (message.type === 'system') {
     const result = parseSpec(message.spec)
     if (result.ok) ds.value = index(result.spec)
-    await scanner.live({})
+    scanner.live({ system: true })
   }
-  if (message.type === 'sources') await scanner.live({ files: message.files })
-  if (message.type === 'source') await scanner.live({ path: message.path, text: message.text })
-  if (message.type === 'removed') await scanner.live({ path: message.path, text: null })
+  if (message.type === 'report') scanner.live({ report: message.report })
+  if (message.type === 'sources') scanner.live({ files: message.files })
+  if (message.type === 'source') scanner.live({ path: message.path, text: message.text })
+  if (message.type === 'removed') scanner.live({ path: message.path, text: null })
 })
 
 const query = (key: string) => (typeof route.query[key] === 'string' ? (route.query[key] as string) : undefined)
