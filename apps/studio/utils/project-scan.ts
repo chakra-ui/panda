@@ -12,7 +12,7 @@ export interface ScanFile {
 }
 
 export interface ProjectScan {
-  origin: 'folder' | 'report'
+  origin: 'folder' | 'report' | 'live'
   scannedAt: number
   sourceCount: number
   files: ScanFile[]

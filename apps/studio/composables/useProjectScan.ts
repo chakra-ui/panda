@@ -146,7 +146,7 @@ export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
     const texts = await Promise.all(sources.map(async (f) => ({ path: f.path, text: await f.file.text() })))
     const next = attachSources(current, texts)
     if (next.files.every((f, i) => f.source === current.files[i].source)) {
-      error.value = 'None of the report\'s files are in that folder. Pick the folder you ran panda analyze in.'
+      error.value = "None of the report's files are in that folder. Pick the folder you ran panda analyze in."
       return
     }
     setScan(next)
@@ -157,6 +157,24 @@ export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
     const files = Array.from(input.files ?? [])
     input.value = ''
     await attach(fromFileList(files))
+  }
+
+  const liveSources = new Map<string, string>()
+
+  async function live(change: { files?: { path: string; text: string }[]; path?: string; text?: string | null }) {
+    if (change.files) {
+      liveSources.clear()
+      for (const f of change.files) liveSources.set(f.path, f.text)
+    }
+    if (change.path) {
+      if (change.text == null) liveSources.delete(change.path)
+      else liveSources.set(change.path, change.text)
+    }
+    if (!ds.value) return
+    const { createCompilerFromSpec } = await import('~/utils/analyze-compiler')
+    const compiler = await createCompilerFromSpec(ds.value.spec)
+    const sources = [...liveSources].filter(([path]) => isSourceFile(path)).map(([path, text]) => ({ path, text }))
+    scan.value = { ...scanSources(compiler, sources, tokenNames), origin: 'live' }
   }
 
   function clear() {
@@ -182,6 +200,7 @@ export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
     scanFiles: (files: File[]) => run(fromFileList(files)),
     clear,
     attach,
+    live,
     onAttach,
     onPick,
     onDrop,

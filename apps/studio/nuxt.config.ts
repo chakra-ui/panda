@@ -69,6 +69,7 @@ export default defineNuxtConfig({
   },
   typescript: { typeCheck: false },
   routeRules: {
+    '/**': { headers: { 'content-security-policy': "frame-ancestors 'self' http://localhost:* http://127.0.0.1:*" } },
     '/': { prerender: true },
     '/view': { prerender: true },
     '/analyze': { prerender: true },

@@ -6,6 +6,7 @@ import { index, parseSpec, type DesignSystemIndex } from '~/utils/design-system'
 import { loadTokens } from '~/utils/idb'
 import { droppedFiles } from '~/utils/dropped'
 import { useProjectScan } from '~/composables/useProjectScan'
+import { useStudioBridge } from '~/composables/useStudioBridge'
 
 useHead({
   title: 'Usage — Panda Studio',
@@ -18,6 +19,17 @@ const router = useRouter()
 const ds = shallowRef<DesignSystemIndex | null>(null)
 const ready = ref(false)
 const scanner = useProjectScan(ds)
+
+const bridge = useStudioBridge(async (message) => {
+  if (message.type === 'system') {
+    const result = parseSpec(message.spec)
+    if (result.ok) ds.value = index(result.spec)
+    await scanner.live({})
+  }
+  if (message.type === 'sources') await scanner.live({ files: message.files })
+  if (message.type === 'source') await scanner.live({ path: message.path, text: message.text })
+  if (message.type === 'removed') await scanner.live({ path: message.path, text: null })
+})
 
 const query = (key: string) => (typeof route.query[key] === 'string' ? (route.query[key] as string) : undefined)
 
@@ -54,6 +66,12 @@ const header = computed(() => {
   if (!scan) {
     return { title: 'Project scan', description: 'See which tokens your project uses, and where it strays from them.' }
   }
+  if (scan.origin === 'live') {
+    return {
+      title: 'Project scan',
+      description: `From panda studio · ${plural(scan.files.length, 'file')} with Panda styles`,
+    }
+  }
   const source = scan.origin === 'report' ? 'From panda analyze' : `${plural(scan.sourceCount, 'file')} scanned`
   return {
     title: 'Project scan',
@@ -69,7 +87,7 @@ async function clear() {
 onMounted(async () => {
   const raw = await loadTokens()
   const result = raw ? parseSpec(raw) : null
-  if (result?.ok) ds.value = index(result.spec)
+  if (result?.ok && !bridge.connected.value) ds.value = index(result.spec)
   ready.value = true
   if (droppedFiles.value.length) {
     const files = droppedFiles.value
@@ -113,8 +131,22 @@ onMounted(async () => {
 
     <template #header>
       <PageHeader :title="header.title" :description="header.description">
-        <template v-if="view === 'project' && !file && scanner.scan.value && scanner.status.value === 'idle'" #actions>
-          <button v-if="scanner.folder.value" type="button" :class="button({ variant: 'ghost' })" @click="scanner.rescan">
+        <template v-if="view === 'project' && bridge.connected.value" #actions>
+          <span :class="s.status" :data-live="bridge.live.value || undefined">
+            <i aria-hidden="true" />
+            {{ bridge.live.value ? 'Live' : 'Disconnected' }}
+          </span>
+        </template>
+        <template
+          v-else-if="view === 'project' && !file && scanner.scan.value && scanner.status.value === 'idle'"
+          #actions
+        >
+          <button
+            v-if="scanner.folder.value"
+            type="button"
+            :class="button({ variant: 'ghost' })"
+            @click="scanner.rescan"
+          >
             Rescan
           </button>
           <button type="button" :class="button()" @click="clear"><Icon name="folder" :size="14" /> New scan</button>
@@ -128,6 +160,13 @@ onMounted(async () => {
       </template>
 
       <template v-else>
+        <p v-if="bridge.connected.value && !bridge.live.value" role="status" :class="s.notice">
+          <Icon name="info" :size="14" />
+          <span
+            >Lost the connection to <code>panda studio</code>. Run it again to see new changes. Until then, these
+            results are from before it stopped.</span
+          >
+        </p>
         <ScanFileView v-if="ds && file" :ds="ds" :file="file" :line="line" :scanner="scanner" />
         <ScanOverview
           v-else-if="ds && scanner.scan.value && scanner.status.value === 'idle'"
