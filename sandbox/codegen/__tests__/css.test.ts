@@ -16,9 +16,9 @@ describe('css', () => {
   })
 
   test('newer CSS properties', () => {
-    const className = css({ readingFlow: 'grid-rows', interactivity: 'inert', interestDelay: '0.5s' })
+    const className = css({ baselineSource: 'last', dynamicRangeLimit: 'standard' })
 
-    expect(className).toMatchInlineSnapshot(`"reading-flow_grid-rows interactivity_inert interest-delay_0.5s"`)
+    expect(className).toMatchInlineSnapshot(`"baseline-source_last dynamic-range-limit_standard"`)
   })
 
   test('token value', () => {

@@ -86,12 +86,7 @@ for _corner in (
     KEYWORD_EXTRAS[f"corner{_corner}Shape"] = CORNER_SHAPE_KEYWORDS
 KEYWORD_EXTRAS.update({
     "baselineSource": ["auto", "first", "last"],
-    "caretAnimation": ["auto", "manual"],
     "dynamicRangeLimit": ["constrained", "no-limit", "standard"],
-    "interactivity": ["auto", "inert"],
-    "readingFlow": ["flex-flow", "flex-visual", "grid-columns", "grid-order", "grid-rows", "normal", "source-order"],
-    "scrollMarkerGroup": ["after", "before", "none"],
-    "scrollTargetGroup": ["auto", "none"],
 })
 
 # Props the ranked MAX_KEYWORD_ENTRIES budget would drop, but whose csstype union is

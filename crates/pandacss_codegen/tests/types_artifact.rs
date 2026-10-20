@@ -1199,7 +1199,7 @@ fn corner_shape_is_a_typed_style_property() {
 }
 
 #[test]
-fn reading_flow_and_interest_delay_are_typed_style_properties() {
+fn baseline_source_and_dynamic_range_limit_are_typed_style_properties() {
     let system = system_types(&input());
     let lines = |needle: &str| {
         system
@@ -1210,9 +1210,12 @@ fn reading_flow_and_interest_delay_are_typed_style_properties() {
             .join("\n")
     };
 
-    insta::assert_snapshot!(lines("readingFlow"), @r#"
-    readingFlow: CssGlobals | "flex-flow" | "flex-visual" | "grid-columns" | "grid-order" | "grid-rows" | "normal" | "source-order" | (string & {})
-    readingFlow?: ConditionalValue<PropertyValueMap["readingFlow"]>
+    insta::assert_snapshot!(lines("baselineSource"), @r#"
+    baselineSource: CssGlobals | "auto" | "first" | "last" | (string & {})
+    baselineSource?: ConditionalValue<PropertyValueMap["baselineSource"]>
     "#);
-    insta::assert_snapshot!(lines("interestDelay?"), @"interestDelay?: ConditionalValue<CssAny>");
+    insta::assert_snapshot!(lines("dynamicRangeLimit"), @r#"
+    dynamicRangeLimit: CssGlobals | "constrained" | "no-limit" | "standard" | (string & {})
+    dynamicRangeLimit?: ConditionalValue<PropertyValueMap["dynamicRangeLimit"]>
+    "#);
 }

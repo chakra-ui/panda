@@ -3,9 +3,7 @@
 '@pandacss/compiler-wasm': patch
 ---
 
-Add newer CSS properties to the generated types: `cornerShape` (and per-corner variants), `readingFlow`, `readingOrder`,
-`interestDelay`, `interactivity`, `scrollMarkerGroup`, `scrollTargetGroup`, `caretAnimation`, `dynamicRangeLimit`,
-`baselineSource` and `textDecorationInset`.
+Add `cornerShape` (and its per-corner variants), `baselineSource` and `dynamicRangeLimit` to the generated types.
 
 ```ts
 css({ borderRadius: '50%', cornerShape: 'squircle' })

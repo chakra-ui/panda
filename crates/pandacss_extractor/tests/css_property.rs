@@ -54,20 +54,6 @@ fn corner_shape_is_a_css_property() {
 
 #[test]
 fn shipped_newer_properties_are_css_properties() {
-    for prop in [
-        "baselineSource",
-        "caretAnimation",
-        "dynamicRangeLimit",
-        "interactivity",
-        "interestDelay",
-        "interestDelayEnd",
-        "interestDelayStart",
-        "readingFlow",
-        "readingOrder",
-        "scrollMarkerGroup",
-        "scrollTargetGroup",
-        "textDecorationInset",
-    ] {
-        assert!(is_css_property(prop), "{prop}");
-    }
+    assert!(is_css_property("baselineSource"));
+    assert!(is_css_property("dynamicRangeLimit"));
 }
