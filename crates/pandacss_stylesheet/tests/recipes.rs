@@ -2075,3 +2075,87 @@ fn recipe_breakpoints_stay_mobile_first_when_written_in_reverse() {
     }
     ");
 }
+
+#[test]
+fn text_style_condition_written_last_wins_over_an_earlier_recipe_block() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": { "dark": ".dark &", "active": "&:is(:active, [data-active])" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "textStyles": {
+                "body": { "value": { "_active": { "color": "blue" }, "_dark": { "color": "green" } } }
+            },
+            "recipes": {
+                "btn": { "className": "btn", "base": { "_dark": { "color": "red" }, "textStyle": "body" } }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { btn } from '@panda/recipes'; btn()",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .dark .btn {
+          color: red;
+        }
+        .btn:is(:active, [data-active]) {
+          color: blue;
+        }
+        .dark .btn {
+          color: green;
+        }
+      }
+    }
+    ");
+}
+
+#[test]
+fn recipe_used_and_listed_in_static_css_emits_its_base_once() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": { "dark": ".dark &", "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" }, "fontWeight": { "className": "fw" } },
+        "theme": {
+            "recipes": {
+                "link": {
+                    "className": "link",
+                    "base": { "color": "blue", "_dark": { "color": "white" }, "fontWeight": "500", "_hover": { "color": "red" } },
+                    "variants": { "size": { "sm": { "fontWeight": "400" } } },
+                    "staticCss": ["*"]
+                }
+            }
+        }
+    }));
+    let css = compile_output(
+        &config,
+        "import { link } from '@panda/recipes'; link({ size: 'sm' })",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Recipes]);
+    assert_snapshot!(css, @"
+    @layer recipes {
+      @layer base {
+        .link {
+          color: blue;
+          font-weight: 500;
+        }
+        .dark .link {
+          color: white;
+        }
+        .link:hover {
+          color: red;
+        }
+      }
+      @layer variants {
+        .link--size_sm {
+          font-weight: 400;
+        }
+      }
+    }
+    ");
+}
