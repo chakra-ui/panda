@@ -283,8 +283,7 @@ impl PartialOrd for AtRuleKey {
 }
 
 pub(crate) fn compare_at_rule_wrappers(a: &str, b: &str) -> Ordering {
-    let (a, b) = (AtRuleKey::new(a), AtRuleKey::new(b));
-    a.kind.cmp(&b.kind).then_with(|| a.query.cmp(&b.query))
+    AtRuleKey::new(a).cmp(&AtRuleKey::new(b))
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
