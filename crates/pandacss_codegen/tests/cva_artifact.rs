@@ -19,7 +19,7 @@ fn emits_ts_source_cva() {
     assert_snapshot!(file(cva, "css/cva.ts"), @"
     import { getCompoundVariantCss, memo, mergeProps, splitProps, toVariantMap, uniq, withDefaults } from '../helpers';
     import { css, mergeCss } from './css';
-    import type { RecipeConfigVariantMap, RecipeCreatorFn, RecipeDefinition, RecipeRuntimeFn, RecipeSelection, RecipeVariantRecord } from '../types/recipe';
+    import type { CvaRuntimeFn, RecipeCreatorFn, RecipeDefinition, RecipeVariantRecord } from '../types/recipe';
 
     export const cva: RecipeCreatorFn = <T extends RecipeVariantRecord>(config: RecipeDefinition<T>) => {
       const defaults = (c: Record<string, any>): Record<string, any> => ({ base: {}, variants: {}, defaultVariants: {}, compoundVariants: [], ...c })
@@ -67,7 +67,7 @@ fn emits_ts_source_cva() {
           return splitProps(props, variantKeys)
         },
         getVariantProps,
-      }) as unknown as RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>>
+      }) as unknown as CvaRuntimeFn<T>
     }
 
     export type { RecipeVariant, RecipeVariantProps } from '../types/recipe';

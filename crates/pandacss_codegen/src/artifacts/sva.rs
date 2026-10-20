@@ -56,12 +56,10 @@ fn module(ctx: CodegenContext<'_>) -> Module {
         .with_import(ImportDecl::value(["cx"], "./cx"))
         .with_import(ImportDecl::ty(
             [
-                "RecipeConfigVariantMap",
-                "RecipeSelection",
                 "SlotRecipeCreatorFn",
                 "SlotRecipeDefinition",
-                "SlotRecipeRuntimeFn",
                 "SlotRecipeVariantRecord",
+                "SvaRuntimeFn",
             ],
             "../types/recipe",
         ))
@@ -118,5 +116,5 @@ const SVA_IMPL: &str = r"<Slot extends string, T extends SlotRecipeVariantRecord
     getVariantProps(props: Record<string, any>) {
       return withDefaults(defaultVariants, props)
     },
-  }) as unknown as SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>>
+  }) as unknown as SvaRuntimeFn<Slot, T>
 }";

@@ -57,11 +57,9 @@ fn module(ctx: CodegenContext<'_>) -> Module {
         .with_import(ImportDecl::value(["css", "mergeCss"], "./css"))
         .with_import(ImportDecl::ty(
             [
-                "RecipeConfigVariantMap",
+                "CvaRuntimeFn",
                 "RecipeCreatorFn",
                 "RecipeDefinition",
-                "RecipeRuntimeFn",
-                "RecipeSelection",
                 "RecipeVariantRecord",
             ],
             "../types/recipe",
@@ -126,5 +124,5 @@ const CVA_IMPL: &str = r"<T extends RecipeVariantRecord>(config: RecipeDefinitio
       return splitProps(props, variantKeys)
     },
     getVariantProps,
-  }) as unknown as RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>>
+  }) as unknown as CvaRuntimeFn<T>
 }";

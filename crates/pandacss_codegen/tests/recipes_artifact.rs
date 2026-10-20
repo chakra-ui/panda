@@ -272,7 +272,7 @@ fn emits_ts_source_recipes() {
 
     export type ButtonVariantMap = RecipeVariantMap<ButtonVariant>
 
-    export type ButtonRecipe = RecipeRuntimeFn<ButtonVariantProps, ButtonVariantMap>
+    export type ButtonRecipe = RecipeRuntimeFn<ButtonVariantProps, ButtonVariantMap, ButtonVariantProps>
 
     const buttonConfig = {"name":"button","className":"btn","defaultVariants":{"size":"sm"},"compoundVariants":[{"disabled":true,"size":["sm","md"],"className":"btn--compound__disabled_true__size_sm|md"}],"variantMap":{"size":["sm","md"],"disabled":["true","false"]}}
 
@@ -295,7 +295,7 @@ fn emits_ts_source_recipes() {
 
     export type CardSlot = "root" | "label"
 
-    export type CardRecipe = SlotRecipeRuntimeFn<CardSlot, CardVariantProps, CardVariantMap>
+    export type CardRecipe = SlotRecipeRuntimeFn<CardSlot, CardVariantProps, CardVariantMap, CardVariantProps>
 
     const cardConfig = {"name":"card","slots":["root","label"],"compoundVariants":[{"tone":"info","classNames":{"root":"card__root--compound__tone_info","label":"card__label--compound__tone_info"}}],"variantMap":{"tone":["info","danger"]}}
 
@@ -509,7 +509,7 @@ fn emits_js_runtime_and_declarations() {
 
     export type ButtonVariantMap = RecipeVariantMap<ButtonVariant>
 
-    export type ButtonRecipe = RecipeRuntimeFn<ButtonVariantProps, ButtonVariantMap>
+    export type ButtonRecipe = RecipeRuntimeFn<ButtonVariantProps, ButtonVariantMap, ButtonVariantProps>
 
     export declare const button: ButtonRecipe;
     "#);
@@ -535,7 +535,7 @@ fn emits_js_runtime_and_declarations() {
 
     export type CardSlot = "root" | "label"
 
-    export type CardRecipe = SlotRecipeRuntimeFn<CardSlot, CardVariantProps, CardVariantMap>
+    export type CardRecipe = SlotRecipeRuntimeFn<CardSlot, CardVariantProps, CardVariantMap, CardVariantProps>
 
     export declare const card: CardRecipe;
     "#);

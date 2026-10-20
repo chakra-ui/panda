@@ -543,27 +543,27 @@ fn emits_ts_source_types() {
       [K in keyof T]: Array<keyof T[K]>
     }
 
-    export interface RecipeRuntimeFn<Props extends object = object, Map extends object = object> {
+    export interface RecipeRuntimeFn<Props extends object = object, Map extends object = object, Raw = SystemStyleObject> {
       (props?: Props): string
       __type: Props
       variantMap: Map
       variantKeys: Array<keyof Props>
-      raw: (props?: Props) => SystemStyleObject
-      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
+      raw: (props?: Props) => Raw
+      splitVariantProps<T extends Props & Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
       getVariantProps: (props?: Props) => Props
       merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
     }
 
     export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
 
-    export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> {
+    export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object, Raw = Record<Slot, SystemStyleObject>> {
       (props?: Props): Record<Slot, string>
       __type: Props
       __slot: Slot
       variantMap: Map
       variantKeys: Array<keyof Props>
-      raw: (props?: Props) => Record<Slot, SystemStyleObject>
-      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
+      raw: (props?: Props) => Raw
+      splitVariantProps<T extends Props & Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
       getVariantProps: (props?: Props) => Props
     }
 
@@ -589,7 +589,11 @@ fn emits_ts_source_types() {
     }
 
     export interface RecipeCreatorFn {
-      <T extends RecipeVariantRecord>(config: RecipeDefinition<T>): RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>>
+      <T extends RecipeVariantRecord>(config: RecipeDefinition<T>): CvaRuntimeFn<T>
+    }
+
+    export interface CvaRuntimeFn<T extends RecipeVariantRecord> extends RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>> {
+      config: RecipeDefinition<T>
     }
 
     export type SlotRecipeVariantRecord<Slot extends string> = Record<string, Record<string, SlotRecord<Slot, SystemStyleObject>>>
@@ -604,7 +608,11 @@ fn emits_ts_source_types() {
     }
 
     export interface SlotRecipeCreatorFn {
-      <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>>
+      <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SvaRuntimeFn<Slot, T>
+    }
+
+    export interface SvaRuntimeFn<Slot extends string, T extends SlotRecipeVariantRecord<Slot>> extends SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>> {
+      config: SlotRecipeDefinition<Slot, T>
     }
     ");
 }
