@@ -7,7 +7,6 @@ const props = defineProps<{
   label: string
   items: { label: string; value: string }[]
   value: string
-  /** Sized to its content, for toolbars. */
   compact?: boolean
 }>()
 const emit = defineEmits<{ change: [value: string] }>()

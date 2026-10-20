@@ -21,10 +21,7 @@ function setPath(tree: TokenTree, segments: string[], leaf: unknown) {
   }
 }
 
-/**
- * Rebuilds the token side of a Panda config from a spec, so the compiler can inspect code against a system
- * when only its `design-system.json` is available. Values are already resolved; utilities come from the base preset.
- */
+/** Spec values are already resolved; utilities come from the base preset. */
 export function specToConfig(spec: DesignSystemSpec) {
   const tokens: TokenTree = {}
   const semanticTokens: TokenTree = {}

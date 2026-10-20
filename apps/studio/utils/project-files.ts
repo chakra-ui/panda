@@ -23,7 +23,6 @@ export async function pickDirectory(): Promise<FileSystemDirectoryHandle | null>
   }
 }
 
-/** Ask again for read access to a folder picked in an earlier visit. */
 export async function canRead(handle: FileSystemDirectoryHandle, prompt: boolean): Promise<boolean> {
   const dir = handle as DirectoryHandle
   if ((await dir.queryPermission({ mode: 'read' })) === 'granted') return true

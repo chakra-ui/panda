@@ -203,7 +203,6 @@ export function orderCategories<T extends { type: string }>(items: T[]): T[] {
 /** Studio's own root font size isn't 16px, so specimens rebase `rem` to the 16px the system was designed for. */
 export const remToPx = (value: string) => value.replace(/(-?\d*\.?\d+)rem\b/g, (_, n) => `${Number(n) * 16}px`)
 
-/** The token a semantic token points to when its value is a plain reference like `{radii.sm}`. */
 export const aliasOf = (token: { originalValue?: string }) => token.originalValue?.match(/^\{([^}]+)\}$/)?.[1]
 
 /** Condition states shown on a dark tile, so dark-mode values stay visible. */

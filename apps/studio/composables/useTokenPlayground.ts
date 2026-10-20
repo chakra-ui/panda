@@ -7,7 +7,6 @@ type Spec = Parameters<typeof tokenCategoryOf>[0]
 
 const KEY_BEFORE_STRING = /([A-Za-z_$][\w$]*)\s*[:=]\s*\{?\s*['"`][^'"`]*$/
 
-/** One compiler per loaded system, built from its spec, for inspecting and completing playground code. */
 export function useTokenPlayground(ds: Ref<DesignSystemIndex | null>) {
   const compiler = shallowRef<InspectingCompiler | null>(null)
   const status = ref<'idle' | 'loading' | 'ready' | 'error'>('idle')
@@ -46,7 +45,6 @@ export function useTokenPlayground(ds: Ref<DesignSystemIndex | null>) {
     return compiler.value ? inspectSnippet(compiler.value, source, tokenNames) : null
   }
 
-  /** The token category a string at `offset` takes, read from the compiler's style entries. */
   function categoryAt(source: string, offset: number): string | undefined {
     const instance = compiler.value
     if (!instance) return undefined

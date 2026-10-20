@@ -1,6 +1,5 @@
 const FORMATTABLE = /\.(m?[jt]sx?|cjs|cts)$/
 
-/** Prettier-formatted source for display, or null when the file can't be formatted. */
 export async function formatSource(path: string, source: string): Promise<string | null> {
   if (!FORMATTABLE.test(path)) return null
   try {

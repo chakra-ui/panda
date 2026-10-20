@@ -10,7 +10,6 @@ type Change = { from: number; to: number; insert: string }
 const props = defineProps<{
   ds: DesignSystemIndex
   findings: Finding[]
-  /** A scanned file: suggestions are shown, not applied. */
   readOnly?: boolean
   emptyText?: string
 }>()

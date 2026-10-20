@@ -38,7 +38,6 @@ async function createCompiler(merged: unknown): Promise<InspectingCompiler> {
 
 const compilers = new WeakMap<DesignSystemSpec, Promise<InspectingCompiler>>()
 
-/** A compiler for a system known only by its spec: tokens from the spec, utilities from the base preset. */
 export function createCompilerFromSpec(spec: DesignSystemSpec): Promise<InspectingCompiler> {
   let compiler = compilers.get(spec)
   if (!compiler) {

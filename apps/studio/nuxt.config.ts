@@ -13,6 +13,7 @@ const description =
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   devtools: { enabled: false },
+  features: { inlineStyles: false },
   pages: { pattern: ['**/*.vue'] },
   components: [{ path: '~/components', extensions: ['vue'] }],
   app: {

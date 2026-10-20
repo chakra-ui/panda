@@ -9,7 +9,6 @@ import { useFolderDrop } from '~/composables/useFolderDrop'
 
 const paint = () => new Promise((r) => requestAnimationFrame(() => r(null)))
 
-/** Scans a project folder, or opens a `panda analyze` report, against the loaded system. */
 export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
   const scan = shallowRef<ProjectScan | null>(null)
   const status = ref<'idle' | 'scanning'>('idle')
@@ -133,7 +132,6 @@ export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
     await run(fromFileList(files))
   }
 
-  /** Read code for a report's files from the folder it was run in. */
   async function attach(picked?: PickedFile[]) {
     const current = scan.value
     if (!current) return

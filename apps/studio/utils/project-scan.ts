@@ -7,7 +7,6 @@ export interface ScanFile {
   path: string
   /** Present when Studio read the file itself; a CLI report only has lines. */
   source?: string
-  /** Where the file lives on disk, as a CLI report records it. */
   absPath?: string
   findings: Finding[]
 }
@@ -23,7 +22,6 @@ export type Issue = Exclude<Finding, { kind: 'token' }>
 
 export const isIssue = (finding: Finding): finding is Issue => finding.kind !== 'token'
 
-/** Drop the folders every path shares, so the tree starts where the project does. */
 export function trimCommonRoot(paths: string[]): (path: string) => string {
   if (!paths.length) return (path) => path
   const split = paths.map((p) => p.split('/').slice(0, -1))
@@ -107,10 +105,7 @@ export function scanFromReport(report: UsageReport, tokenNames: (category: strin
   return { origin: 'report', scannedAt: Date.now(), sourceCount: report.sourceCount, files: sortFiles(files) }
 }
 
-/**
- * Give report files their code without re-scanning: findings stay the CLI's,
- * placed on the value they name, or on the whole line when it can't be found.
- */
+/** Report findings stay the CLI's; the code only places them on the matching value, or the whole line. */
 export function attachSources(scan: ProjectScan, sources: { path: string; text: string }[]): ProjectScan {
   const files = scan.files.map((file) => {
     const text = findSource(file.absPath ?? file.path, sources)

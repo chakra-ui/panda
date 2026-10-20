@@ -1,6 +1,5 @@
 import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
 
-/** Whether a scroll box has hidden content above or below, so edges can fade only when there's more to see. */
 export function useScrollEdges(target: Ref<HTMLElement | null | undefined>) {
   const top = ref(false)
   const bottom = ref(false)
