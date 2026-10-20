@@ -128,7 +128,7 @@ onMounted(async () => {
       </template>
 
       <template v-else>
-        <ScanFileView v-if="ds && file" :ds="ds" :file="file" :line="line" />
+        <ScanFileView v-if="ds && file" :ds="ds" :file="file" :line="line" :scanner="scanner" />
         <ScanOverview
           v-else-if="ds && scanner.scan.value && scanner.status.value === 'idle'"
           :ds="ds"

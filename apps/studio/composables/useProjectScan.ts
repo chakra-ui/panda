@@ -4,7 +4,7 @@ import { extractSpec } from '~/utils/extract-tokens'
 import { loadScanFolder, loadUsage, saveScanFolder, saveTokens, saveUsage } from '~/utils/idb'
 import { isSourceFile } from '~/utils/analyze'
 import { canRead, canRescan, fromFileList, pickDirectory, readDirectory, type PickedFile } from '~/utils/project-files'
-import { isUsageReport, scanFromReport, scanSources, type ProjectScan } from '~/utils/project-scan'
+import { attachSources, isUsageReport, scanFromReport, scanSources, type ProjectScan } from '~/utils/project-scan'
 import { useFolderDrop } from '~/composables/useFolderDrop'
 
 const paint = () => new Promise((r) => requestAnimationFrame(() => r(null)))
@@ -133,6 +133,34 @@ export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
     await run(fromFileList(files))
   }
 
+  /** Read code for a report's files from the folder it was run in. */
+  async function attach(picked?: PickedFile[]) {
+    const current = scan.value
+    if (!current) return
+    let files = picked
+    if (!files) {
+      const handle = await pickDirectory()
+      if (!handle) return
+      files = await readDirectory(handle)
+    }
+    error.value = ''
+    const sources = files.filter((f) => isSourceFile(f.path))
+    const texts = await Promise.all(sources.map(async (f) => ({ path: f.path, text: await f.file.text() })))
+    const next = attachSources(current, texts)
+    if (next.files.every((f, i) => f.source === current.files[i].source)) {
+      error.value = 'None of the report\'s files are in that folder. Pick the folder you ran panda analyze in.'
+      return
+    }
+    setScan(next)
+  }
+
+  async function onAttach(event: Event) {
+    const input = event.target as HTMLInputElement
+    const files = Array.from(input.files ?? [])
+    input.value = ''
+    await attach(fromFileList(files))
+  }
+
   function clear() {
     scan.value = null
     error.value = ''
@@ -155,6 +183,8 @@ export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
     rescan,
     scanFiles: (files: File[]) => run(fromFileList(files)),
     clear,
+    attach,
+    onAttach,
     onPick,
     onDrop,
     dragging: drop.dragging,

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { UsageReport } from '@pandacss/compiler-shared'
 import { index, parseSpec } from './design-system'
-import { buildTree, isUsageReport, scanFromReport, summarizeScan, trimCommonRoot, type ProjectScan } from './project-scan'
+import { attachSources, buildTree, isUsageReport, scanFromReport, summarizeScan, trimCommonRoot, type ProjectScan } from './project-scan'
 import type { Finding } from './token-inspection'
 
 const raw = readFileSync(new URL('../public/sample-design-system.json', import.meta.url), 'utf8')
@@ -107,6 +107,36 @@ describe('summarizeScan', () => {
         "used": 2,
       }
     `)
+  })
+})
+
+describe('attachSources', () => {
+  it('shows a report file with its code, marking the values the CLI found', () => {
+    const scan = scanFromReport(report, tokenNames)
+    const card = [
+      "import { css } from 'styled-system/css'",
+      '',
+      'export const card = css({',
+      '  p: 4,',
+      "  color: 'fg',",
+      "  bg: 'fg.mutd',",
+      '  rounded: 12,',
+      "  borderColor: '#fff',",
+      '})',
+    ].join('\n')
+    const attached = attachSources(scan, [
+      { path: 'my-app/src/components/Card.tsx', text: card },
+      { path: 'my-app/src/other/Card.tsx', text: 'nope' },
+    ])
+    const file = attached.files.find((f) => f.path === 'components/Card.tsx')!
+    expect(file.findings.map((f) => `${f.line} ${card.slice(f.from, f.to)}`)).toMatchInlineSnapshot(`
+      [
+        "5 fg",
+        "6 fg.mutd",
+        "8 #fff",
+      ]
+    `)
+    expect(attached.files.find((f) => f.path === 'App.tsx')?.source).toBeUndefined()
   })
 })
 

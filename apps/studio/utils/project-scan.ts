@@ -1,12 +1,14 @@
 import type { UsageReport } from '@pandacss/compiler-shared'
 import type { InspectingCompiler } from './analyze-compiler'
 import type { DesignSystemIndex } from './design-system'
-import { inspectSource, nearestTokenName, type Finding } from './token-inspection'
+import { inspectSource, lineStarts, nearestTokenName, type Finding } from './token-inspection'
 
 export interface ScanFile {
   path: string
   /** Present when Studio read the file itself; a CLI report only has lines. */
   source?: string
+  /** Where the file lives on disk, as a CLI report records it. */
+  absPath?: string
   findings: Finding[]
 }
 
@@ -63,7 +65,7 @@ export function scanFromReport(report: UsageReport, tokenNames: (category: strin
     const token = tokens.get(use.tokenId)
     if (!token) continue
     const value = token.path.slice(token.category.length + 1)
-    const at = { prop: token.category, value, line: use.line, from: -1, to: -1 }
+    const at = { prop: token.category, value, line: use.line, column: use.column, from: -1, to: -1 }
     add(
       use.fileId,
       token.configured
@@ -90,6 +92,7 @@ export function scanFromReport(report: UsageReport, tokenNames: (category: strin
       category: raw.category,
       match: suggestions.get(raw.id),
       line: use.line,
+      column: use.column,
       from: -1,
       to: -1,
     })
@@ -99,9 +102,45 @@ export function scanFromReport(report: UsageReport, tokenNames: (category: strin
   const trim = trimCommonRoot([...paths.values()])
   const files = [...byFile].flatMap(([id, findings]) => {
     const path = paths.get(id)
-    return path ? [{ path: trim(path), findings: findings.toSorted((a, b) => a.line - b.line) }] : []
+    return path ? [{ path: trim(path), absPath: path, findings: findings.toSorted((a, b) => a.line - b.line) }] : []
   })
   return { origin: 'report', scannedAt: Date.now(), sourceCount: report.sourceCount, files: sortFiles(files) }
+}
+
+/**
+ * Give report files their code without re-scanning: findings stay the CLI's,
+ * placed on the value they name, or on the whole line when it can't be found.
+ */
+export function attachSources(scan: ProjectScan, sources: { path: string; text: string }[]): ProjectScan {
+  const files = scan.files.map((file) => {
+    const text = findSource(file.absPath ?? file.path, sources)
+    if (text == null) return file
+    const lines = lineStarts(text)
+    const findings = file.findings.map((finding) => {
+      const start = lines[finding.line - 1]
+      if (start == null) return finding
+      const end = lines[finding.line] ?? text.length + 1
+      const at = text.slice(start, end - 1).indexOf(finding.value)
+      return at < 0
+        ? { ...finding, from: start, to: end - 1 }
+        : { ...finding, from: start + at, to: start + at + finding.value.length }
+    })
+    return { ...file, source: text, findings }
+  })
+  return { ...scan, files }
+}
+
+/** The source whose path shares the most trailing folders with `path`, the file name included. */
+function findSource(path: string, sources: { path: string; text: string }[]): string | undefined {
+  const want = path.split('/').reverse()
+  let best: { text: string; score: number } | undefined
+  for (const source of sources) {
+    const have = source.path.split('/').reverse()
+    let score = 0
+    while (score < want.length && score < have.length && want[score] === have[score]) score++
+    if (score && (!best || score > best.score)) best = { text: source.text, score }
+  }
+  return best?.text
 }
 
 const sortFiles = (files: ScanFile[]) => files.toSorted((a, b) => a.path.localeCompare(b.path))

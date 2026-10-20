@@ -4,9 +4,15 @@ import * as s from './ScanFileView.css'
 import type { DesignSystemIndex } from '~/utils/design-system'
 import { formatSource } from '~/utils/format-source'
 import type { ScanFile } from '~/utils/project-scan'
+import type { useProjectScan } from '~/composables/useProjectScan'
 import { inspectSource, type Finding } from '~/utils/token-inspection'
 
-const props = defineProps<{ ds: DesignSystemIndex; file: ScanFile; line?: number }>()
+const props = defineProps<{
+  ds: DesignSystemIndex
+  file: ScanFile
+  line?: number
+  scanner: ReturnType<typeof useProjectScan>
+}>()
 
 const editor = ref<{ select: (from: number, to: number) => void } | null>(null)
 
@@ -19,7 +25,7 @@ watch(
   () => props.file,
   async (file) => {
     shown.value = { source: file.source ?? '', findings: file.findings }
-    if (!file.source) return
+    if (!file.source || file.absPath) return
     const formatted = await formatSource(file.path, file.source)
     if (!formatted || formatted === file.source || props.file !== file) return
     const { createCompilerFromSpec } = await import('~/utils/analyze-compiler')
@@ -66,10 +72,5 @@ watch(
     <UsagePanel :ds="ds" :findings="shown.findings" read-only @reveal="(from, to) => editor?.select(from, to)" />
   </div>
 
-  <div v-else :class="s.reportOnly">
-    <p :class="s.notice">
-      This report lists lines, not code. Scan the project folder to see the file with its issues marked.
-    </p>
-    <UsagePanel :ds="ds" :findings="file.findings" read-only />
-  </div>
+  <ReportFileView v-else :ds="ds" :file="file" :scanner="scanner" />
 </template>

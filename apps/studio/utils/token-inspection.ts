@@ -12,6 +12,7 @@ interface Located {
   prop: string
   value: string
   line: number
+  column?: number
   /** Character offsets into the source; -1 when only the line is known. */
   from: number
   to: number
@@ -96,9 +97,14 @@ const kebab = (property: string) => property.replace(/[A-Z]/g, (c) => `-${c.toLo
 const isValidCss = (cssProperty: string | undefined, value: string) =>
   !!cssProperty && typeof CSS !== 'undefined' && CSS.supports(kebab(cssProperty), value)
 
-function lineIndex(source: string): (offset: number) => number {
+export function lineStarts(source: string): number[] {
   const starts = [0]
   for (let i = 0; i < source.length; i++) if (source[i] === '\n') starts.push(i + 1)
+  return starts
+}
+
+function lineIndex(source: string): (offset: number) => number {
+  const starts = lineStarts(source)
   return (offset) => {
     let lo = 0
     let hi = starts.length - 1
