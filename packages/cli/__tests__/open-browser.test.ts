@@ -6,12 +6,12 @@ import { browserOpener, openBrowser } from '../src/open-browser'
 
 const URL = 'http://localhost:6420/?token=abc'
 
-function fakeSpawn(behave: (child: EventEmitter) => void) {
+function fakeSpawn(behave?: (child: EventEmitter) => void) {
   const calls: unknown[][] = []
   const run = ((...args: unknown[]) => {
     calls.push(args)
     const child = Object.assign(new EventEmitter(), { unref: vi.fn() })
-    queueMicrotask(() => behave(child))
+    queueMicrotask(() => behave?.(child))
     return child
   }) as unknown as typeof spawn
   return { run, calls }
@@ -92,7 +92,7 @@ describe('openBrowser', () => {
   it('treats a browser that keeps running as opened', async () => {
     vi.useFakeTimers()
     vi.stubEnv('BROWSER', 'test-browser')
-    const { run } = fakeSpawn(() => {})
+    const { run } = fakeSpawn()
 
     const opened = openBrowser(URL, run)
     await vi.advanceTimersByTimeAsync(3000)
@@ -101,7 +101,7 @@ describe('openBrowser', () => {
 
   it("doesn't start anything when there's no browser to open", async () => {
     vi.stubEnv('BROWSER', 'none')
-    const { run, calls } = fakeSpawn(() => {})
+    const { run, calls } = fakeSpawn()
 
     expect(await openBrowser(URL, run)).toBe(false)
     expect(calls).toHaveLength(0)

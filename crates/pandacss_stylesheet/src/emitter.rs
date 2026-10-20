@@ -6,7 +6,6 @@
 
 use std::{borrow::Cow, ops::Range};
 
-use indexmap::IndexMap;
 use pandacss_config::{UserConfig, theme_condition_name};
 use pandacss_encoder::{
     Atom, AtomValue, AuthoredOrder, ConditionSet, EncodedRecipesSnapshot, Encoder,
@@ -37,8 +36,8 @@ use crate::grouped::{GroupNode, write_grouped_rules};
 use crate::numeric_value;
 use crate::sort::{SortContext, SortedAtom, condition_names, declaration_order};
 use crate::style_rules::{
-    Declaration, LoweredTarget, StyleRule, Target, append_declaration, append_declaration_run,
-    append_declarations, push_grouped_rule, write_with_wrappers,
+    AuthoredRules, Declaration, LoweredTarget, StyleRule, Target, append_declaration,
+    append_declaration_run, append_declarations, push_grouped_rule, write_with_wrappers,
 };
 use crate::writer::CssWriter;
 
@@ -1713,11 +1712,15 @@ impl<'a> EmitContext<'a> {
         entries: &[RecipeStyleEntry],
         importance: InheritedImportance,
     ) -> Vec<StyleRule> {
-        let mut rules: IndexMap<LoweredTarget, Vec<Declaration>, FxBuildHasher> =
-            IndexMap::default();
         let entries = self.expand_recipe_style_entries(entries);
+        let mut rules = AuthoredRules::default();
 
-        for entry in self.sort.sorted_recipe_entries(&entries) {
+        for (index, entry) in self
+            .sort
+            .sorted_recipe_entries(&entries)
+            .into_iter()
+            .enumerate()
+        {
             let Some(mut declarations) = self.style_entry_declarations(
                 entry.entry,
                 matches!(importance, InheritedImportance::Important),
@@ -1733,18 +1736,12 @@ impl<'a> EmitContext<'a> {
 
             for base_rule in base_rules {
                 for rule in self.lower_rule_conditions(base_rule, &entry.conditions) {
-                    append_declarations(rules.entry(rule).or_default(), declarations.clone());
+                    rules.append(rule, index, declarations.clone());
                 }
             }
         }
 
-        rules
-            .into_iter()
-            .map(|(target, declarations)| StyleRule {
-                target,
-                declarations,
-            })
-            .collect()
+        rules.into_style_rules()
     }
 
     fn declarations_from_literal(
@@ -2049,6 +2046,7 @@ impl<'a> EmitContext<'a> {
                 };
                 append_declarations(&mut declarations, entry_declarations);
             }
+            declarations.sort_by_cached_key(|declaration| declaration_order(&declaration.prop));
             return Some(declarations);
         }
         if self.nested_utility_style_entries(prop, &value).is_some() {

@@ -29,7 +29,7 @@ use std::{ops::Range, sync::Arc};
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use pandacss_config::UserConfig;
-use pandacss_encoder::{Atom, EncodedRecipesSnapshot, RecipeStyleGroupSnapshot};
+use pandacss_encoder::{Atom, EncodedRecipesSnapshot, RecipeStyleEntry, RecipeStyleGroupSnapshot};
 use pandacss_shared::{Diagnostic, diagnostic_codes};
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, UtilityOptions};
@@ -792,10 +792,9 @@ fn extend_recipe_groups(
             if index < target_len {
                 merges.push((index, group.entries.clone()));
             } else {
-                pandacss_encoder::append_in_authored_order(
-                    &mut additions[index - target_len].entries,
-                    group.entries.clone(),
-                );
+                let existing = &mut additions[index - target_len].entries;
+                let entries = entries_not_in(existing, &group.entries);
+                pandacss_encoder::append_in_authored_order(existing, entries);
             }
         } else {
             indexes.insert(key, target_len + additions.len());
@@ -805,9 +804,30 @@ fn extend_recipe_groups(
 
     drop(indexes);
     for (index, entries) in merges {
+        let entries = entries_not_in(&target[index].entries, &entries);
         pandacss_encoder::append_in_authored_order(&mut target[index].entries, entries);
     }
     insert_in_config_order(target, additions);
+}
+
+fn entries_not_in(
+    existing: &[RecipeStyleEntry],
+    incoming: &[RecipeStyleEntry],
+) -> Vec<RecipeStyleEntry> {
+    let declared = |entry: &RecipeStyleEntry| {
+        (
+            entry.prop.clone(),
+            entry.value.clone(),
+            entry.conditions.clone(),
+            entry.important,
+        )
+    };
+    let present = existing.iter().map(declared).collect::<FxHashSet<_>>();
+    incoming
+        .iter()
+        .filter(|entry| !present.contains(&declared(entry)))
+        .cloned()
+        .collect()
 }
 
 /// Places each new group before the first group of its recipe and conditions

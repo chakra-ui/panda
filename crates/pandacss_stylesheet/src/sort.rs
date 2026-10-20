@@ -1,10 +1,10 @@
 //! Deterministic cascade ordering for emitted rules.
 //!
-//! Atoms/recipe entries are sorted by a composite [`CssRuleKey`], independent
-//! of extraction order: unconditional rules first, then selector-conditioned,
+//! Atoms are sorted by a composite [`CssRuleKey`], independent of extraction
+//! order: unconditional rules first, then selector-conditioned,
 //! then at-rule-conditioned; within those, by media-query width, pseudo-class
 //! priority, and finally property specificity (longhands after shorthands so
-//! they win the cascade). Mirrors the JS sort in `packages/core`.
+//! they win the cascade).
 
 use std::cmp::Ordering;
 
@@ -124,7 +124,7 @@ impl<'a> SortContext<'a> {
             .iter()
             .map(|entry| {
                 let conditions = self.sorted_condition_names(&entry.conditions);
-                let key = CssRuleKey::new(self.config, &conditions, &entry.prop);
+                let key = AuthoredRuleKey::new(self.config, &conditions);
                 (SortedRecipeEntry { entry, conditions }, key)
             })
             .collect::<Vec<_>>();
@@ -202,6 +202,29 @@ impl Ord for CssRuleKey {
 impl PartialOrd for CssRuleKey {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
+struct AuthoredRuleKey {
+    bucket: RuleBucket,
+    at_rules: Vec<(AtRuleKind, QueryKey)>,
+}
+
+impl AuthoredRuleKey {
+    fn new(config: &UserConfig, conditions: &[&str]) -> Self {
+        let mut at_rules = Vec::new();
+        let mut selectors = Vec::new();
+        for condition in conditions {
+            collect_condition_parts(config, condition, &mut at_rules, &mut selectors);
+        }
+        let bucket = RuleBucket::from_parts(&at_rules, &selectors);
+        let mut at_rules = at_rules
+            .iter()
+            .map(|at_rule| (at_rule.kind, at_rule.query))
+            .collect::<Vec<_>>();
+        at_rules.sort();
+        Self { bucket, at_rules }
     }
 }
 
