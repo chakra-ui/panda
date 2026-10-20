@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { byteToCharIndex, nearestTokenName } from './token-inspection'
+import { byteToCharIndex, isRawValue, nearestTokenName } from './token-inspection'
 
 describe('nearestTokenName', () => {
   const names = ['fg', 'fg.muted', 'fg.subtle', 'bg.surface', 'accent.solid']
@@ -30,5 +30,15 @@ describe('byteToCharIndex', () => {
     const source = `// 🐼\ncss({ p: '4' })`
     const byte = new TextEncoder().encode(source.slice(0, source.indexOf("'4'"))).length
     expect(byteToCharIndex(source)(byte)).toBe(source.indexOf("'4'"))
+  })
+})
+
+describe('isRawValue', () => {
+  it('counts a percentage on a Panda-only utility as hard-coded, not an unknown token', () => {
+    expect(isRawValue('maskBottomFrom', '40%')).toBe(true)
+  })
+
+  it('still flags a misspelled token name on a Panda-only utility', () => {
+    expect(isRawValue('maskBottomFrom', 'fg.mutd')).toBe(false)
   })
 })

@@ -110,6 +110,7 @@ export const brand = css({
 export const sidebarHeader = css({ display: 'flex', flexDir: 'column', gap: '3' })
 
 export const sidebarBody = css({
+  position: 'relative',
   display: 'flex',
   flexDir: 'column',
   gap: '5',
@@ -153,6 +154,7 @@ export const docsLink = css({
 })
 
 export const panel = css({
+  position: 'relative',
   minW: '0',
   m: { base: '0', md: '1' },
   mx: { md: '0' },

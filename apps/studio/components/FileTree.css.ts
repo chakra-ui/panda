@@ -74,7 +74,7 @@ export const count = css({
   px: '1',
   rounded: 'sm',
   fontSize: '11px',
-  fontVariantNumeric: 'tabular-nums',
+  fontFamily: 'mono',
   textAlign: 'center',
   color: 'danger',
   bg: 'dangerSubtle',

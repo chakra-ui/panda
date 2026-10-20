@@ -15,12 +15,14 @@ export const stat = css({
   boxShadow: 'raised',
   '& dt': { fontSize: '12px', color: 'faint' },
   '& dd': {
+    fontFamily: 'mono',
     fontSize: '20px',
-    fontWeight: '600',
-    letterSpacing: '-0.02em',
+    fontWeight: '500',
+    letterSpacing: '-0.04em',
     color: 'ink',
-    fontVariantNumeric: 'tabular-nums',
   },
   '&[data-tone=danger] dd': { color: 'danger' },
   '&[data-tone=warning] dd': { color: 'code.number' },
 })
+
+export const total = css({ ml: '0.5', fontSize: '13px', fontWeight: '400', letterSpacing: '0', color: 'faint' })

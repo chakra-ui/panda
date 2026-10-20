@@ -66,7 +66,7 @@ export const categoryCount = css({
   fontSize: '12px',
   color: 'faint',
   textAlign: 'right',
-  fontVariantNumeric: 'tabular-nums',
+  fontFamily: 'mono',
 })
 
 export const unused = css({
@@ -112,7 +112,7 @@ export const groupHeading = css({
   color: 'muted',
 })
 
-export const groupCount = css({ fontWeight: '400', color: 'faint', fontVariantNumeric: 'tabular-nums' })
+export const groupCount = css({ fontWeight: '400', color: 'faint' })
 
 export const bars = css({ display: 'grid', gap: '2px', mx: '-2' })
 
@@ -145,28 +145,101 @@ export const swatch = css({
   boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.12)',
 })
 
-export const barLabel = css({ flex: '1', minW: '0', fontFamily: 'mono', fontSize: '12.5px', color: 'ink', truncate: true })
+export const barLabel = css({
+  flex: '1',
+  minW: '0',
+  fontFamily: 'mono',
+  fontSize: '12.5px',
+  color: 'ink',
+  truncate: true,
+})
 
 export const barValue = css({
   flexShrink: '0',
   fontSize: '12px',
   color: 'muted',
-  fontVariantNumeric: 'tabular-nums',
+  fontFamily: 'mono',
 })
 
-export const issues = css({ display: 'grid', gap: '1px', mx: '-2' })
+export const filter = css({ display: 'flex', gap: '0.5', p: '2px', rounded: 'lg', bg: 'selected' })
 
-export const issue = css({
+export const filterOption = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1.5',
+  h: '6',
+  px: '2',
+  rounded: 'md',
+  fontSize: '12px',
+  fontWeight: '500',
+  color: 'muted',
+  cursor: 'pointer',
+  _hover: { _enabled: { color: 'ink' } },
+  _pressed: { bg: 'paper', color: 'ink', boxShadow: 'raised' },
+  _disabled: { opacity: '0.5', cursor: 'default' },
+  _focusVisible: { outline: '2px solid', outlineColor: 'ring', outlineOffset: '1px' },
+})
+
+export const filterCount = css({ color: 'faint', fontWeight: '400' })
+
+export const values = css({ display: 'grid', gap: '0.5', mx: '-2' })
+
+export const value = css({
+  rounded: 'lg',
+  '&[open]': { bg: 'subtle' },
+})
+
+export const valueRow = css({
   display: 'flex',
   alignItems: 'center',
   gap: '2',
-  h: '7',
+  h: '8',
   px: '2',
   rounded: 'md',
   minW: '0',
+  cursor: 'pointer',
+  listStyle: 'none',
+  '&::-webkit-details-marker': { display: 'none' },
   _hover: { bg: 'subtle' },
+  '[open] > &': { roundedBottom: '0', _hover: { bg: 'transparent' } },
   _focusVisible: { outline: '2px solid', outlineColor: 'ring', outlineOffset: '-2px' },
 })
+
+export const valueMeta = css({ flex: '1', minW: '0', fontSize: '12px', color: 'faint', truncate: true })
+
+export const chevron = css({
+  flexShrink: '0',
+  color: 'faint',
+  transition: 'transform 0.15s',
+  '[open] > summary &': { transform: 'rotate(90deg)' },
+})
+
+export const locations = css({
+  display: 'grid',
+  gap: '0.5',
+  px: '1.5',
+  pb: '2',
+})
+
+export const location = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '3',
+  minW: '0',
+  h: '8',
+  pl: '4',
+  pr: '2',
+  rounded: 'md',
+  fontSize: '12.5px',
+  _hover: { bg: 'selected' },
+  _focusVisible: { outline: '2px solid', outlineColor: 'ring', outlineOffset: '-2px' },
+})
+
+export const locationFile = css({ minW: '0', fontFamily: 'mono', fontSize: '11.5px', color: 'muted', truncate: true })
+
+export const locationLine = css({ color: 'faint' })
+
+export const locationProp = css({ ml: 'auto', flexShrink: '0', fontFamily: 'mono', fontSize: '11.5px', color: 'faint' })
 
 export const dot = css({
   w: '1.5',
@@ -179,7 +252,7 @@ export const dot = css({
 
 export const issueValue = css({ fontFamily: 'mono', fontSize: '12.5px', color: 'ink', truncate: true })
 
-export const issueWhere = css({ fontSize: '12px', color: 'faint', truncate: true })
+export const issueWhere = css({ flexShrink: '0', fontFamily: 'mono', fontSize: '11.5px', color: 'faint' })
 
 export const issueFix = css({
   ml: 'auto',
@@ -193,6 +266,9 @@ export const issueFix = css({
 
 export const more = css({
   justifySelf: 'start',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
   h: '7',
   px: '2',
   mx: '-2',
@@ -201,4 +277,5 @@ export const more = css({
   color: 'muted',
   cursor: 'pointer',
   _hover: { bg: 'subtle', color: 'ink' },
+  _focusVisible: { outline: '2px solid', outlineColor: 'ring', outlineOffset: '-2px' },
 })

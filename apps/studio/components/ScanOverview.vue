@@ -6,7 +6,7 @@ import type { RouteLocationRaw } from 'vue-router'
 import * as s from './ScanOverview.css'
 import type { DesignSystemIndex } from '~/utils/design-system'
 import { orderCategories } from '~/utils/design-system'
-import { summarizeScan, type ProjectScan, type ScanSummary } from '~/utils/project-scan'
+import { summarizeScan, type Issue, type ProjectScan, type ScanSummary } from '~/utils/project-scan'
 
 const props = defineProps<{
   ds: DesignSystemIndex
@@ -14,7 +14,8 @@ const props = defineProps<{
   to: (path: string, line?: number) => RouteLocationRaw
 }>()
 
-const ISSUE_LIMIT = 30
+const VALUE_LIMIT = 8
+const CHIP_LIMIT = 60
 
 const summary = computed(() => {
   const categories = orderCategories(
@@ -52,8 +53,32 @@ const topGroups = computed(() => {
   return [...groups.values()].toSorted((a, b) => b.uses - a.uses)
 })
 
-const showAllIssues = ref(false)
-const issues = computed(() => (showAllIssues.value ? summary.value.issues : summary.value.issues.slice(0, ISSUE_LIMIT)))
+const issueKind = ref<'all' | 'unknown' | 'raw'>('all')
+const showAllValues = ref(false)
+
+const issueValues = computed(() => {
+  const groups = new Map<string, { kind: Issue['kind']; value: string; fix?: string; issues: ScanSummary['issues'] }>()
+  for (const issue of summary.value.issues) {
+    if (issueKind.value !== 'all' && issue.kind !== issueKind.value) continue
+    const fix = issue.kind === 'unknown' ? issue.suggestion : issue.match
+    const key = `${issue.kind}\0${issue.value}\0${fix ?? ''}`
+    const group = groups.get(key) ?? { kind: issue.kind, value: issue.value, fix, issues: [] }
+    group.issues.push(issue)
+    groups.set(key, group)
+  }
+  return [...groups]
+    .map(([key, group]) => ({ key, ...group, files: [...new Set(group.issues.map((i) => i.file))] }))
+    .toSorted(
+      (a, b) =>
+        Number(b.kind === 'unknown') - Number(a.kind === 'unknown') ||
+        b.issues.length - a.issues.length ||
+        a.value.localeCompare(b.value),
+    )
+})
+
+const shownValues = computed(() => (showAllValues.value ? issueValues.value : issueValues.value.slice(0, VALUE_LIMIT)))
+
+const fileName = (path: string) => path.split('/').pop() ?? path
 
 const swatch = (category: string, name: string) =>
   category === 'colors' || category === 'gradients' ? props.ds.resolve(`${category}.${name}`)?.value : undefined
@@ -65,7 +90,7 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
   <div :class="s.root">
     <StatGrid
       :items="[
-        { label: 'Tokens used', value: `${summary.used} / ${summary.total}` },
+        { label: 'Tokens used', value: summary.used, total: summary.total },
         { label: 'Coverage', value: `${coverage}%` },
         { label: 'Unknown', value: summary.unknown, tone: summary.unknown ? 'danger' : undefined },
         { label: 'Hard-coded', value: summary.raw, tone: summary.raw ? 'warning' : undefined },
@@ -100,7 +125,12 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
           <div :class="s.unused">
             <template v-if="c.used < c.tokens.length">
               <span :class="s.unusedLabel">Never used</span>
-              <code v-for="t in c.tokens.filter((t) => !t.uses)" :key="t.name" :class="s.chip">{{ t.name }}</code>
+              <code v-for="t in c.tokens.filter((t) => !t.uses).slice(0, CHIP_LIMIT)" :key="t.name" :class="s.chip">
+                {{ t.name }}
+              </code>
+              <span v-if="c.tokens.length - c.used > CHIP_LIMIT" :class="s.unusedLabel">
+                and {{ c.tokens.length - c.used - CHIP_LIMIT }} more
+              </span>
             </template>
             <span v-else :class="s.unusedLabel">All {{ c.tokens.length }} {{ c.type }} are used.</span>
           </div>
@@ -135,28 +165,62 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
       </section>
 
       <section :class="s.section">
-        <h2 :class="s.heading">Issues</h2>
+        <header :class="s.sectionHeader">
+          <h2 :class="s.heading">Issues</h2>
+          <div v-if="summary.issues.length" :class="s.filter" role="group" aria-label="Show issues">
+            <button
+              v-for="option in [
+                { kind: 'all', label: 'All', count: summary.issues.length },
+                { kind: 'unknown', label: 'Unknown', count: summary.unknown },
+                { kind: 'raw', label: 'Hard-coded', count: summary.raw },
+              ] as const"
+              :key="option.kind"
+              type="button"
+              :class="s.filterOption"
+              :aria-pressed="issueKind === option.kind"
+              :disabled="!option.count"
+              @click="issueKind = option.kind"
+            >
+              {{ option.label }} <span :class="s.filterCount">{{ option.count }}</span>
+            </button>
+          </div>
+        </header>
         <p v-if="!summary.issues.length" :class="s.empty">No issues. Every value comes from your tokens.</p>
-        <ul :class="s.issues">
-          <li v-for="(issue, i) in issues" :key="i">
-            <NuxtLink :to="to(issue.file, issue.line)" :class="s.issue">
-              <span :class="s.dot" :data-tone="issue.kind === 'unknown' ? 'danger' : 'warning'" aria-hidden="true" />
-              <span :class="s.srOnly">{{ issue.kind === 'unknown' ? 'Not in your system' : 'Hard-coded' }}:</span>
-              <code :class="s.issueValue">{{ issue.value }}</code>
-              <span :class="s.issueWhere">{{ issue.file.split('/').pop() }}:{{ issue.line }}</span>
-              <span v-if="issue.kind === 'unknown' ? issue.suggestion : issue.match" :class="s.issueFix">
-                → {{ issue.kind === 'unknown' ? issue.suggestion : issue.match }}
-              </span>
-            </NuxtLink>
+        <ul :class="s.values">
+          <li v-for="group in shownValues" :key="group.key">
+            <details :class="s.value">
+              <summary :class="s.valueRow">
+                <span :class="s.dot" :data-tone="group.kind === 'unknown' ? 'danger' : 'warning'" aria-hidden="true" />
+                <span :class="s.srOnly">{{ group.kind === 'unknown' ? 'Not in your system' : 'Hard-coded' }}:</span>
+                <code :class="s.issueValue">{{ group.value }}</code>
+                <span :class="s.valueMeta">
+                  {{ plural(group.issues.length, 'use') }} ·
+                  {{ group.files.length === 1 ? fileName(group.files[0]) : plural(group.files.length, 'file') }}
+                </span>
+                <code v-if="group.fix" :class="s.issueFix">→ {{ group.fix }}</code>
+                <Icon name="chevronRight" :size="12" :class="s.chevron" />
+              </summary>
+              <ul :class="s.locations">
+                <li v-for="(issue, i) in group.issues" :key="i">
+                  <NuxtLink :to="to(issue.file, issue.line)" :class="s.location" :title="issue.file">
+                    <span :class="s.locationFile">
+                      {{ issue.file
+                      }}<span :class="s.locationLine"><span :class="s.srOnly"> line</span>:{{ issue.line }}</span>
+                    </span>
+                    <span :class="s.locationProp">{{ issue.prop }}</span>
+                  </NuxtLink>
+                </li>
+              </ul>
+            </details>
           </li>
         </ul>
         <button
-          v-if="summary.issues.length > ISSUE_LIMIT && !showAllIssues"
+          v-if="issueValues.length > VALUE_LIMIT && !showAllValues"
           type="button"
           :class="s.more"
-          @click="showAllIssues = true"
+          @click="showAllValues = true"
         >
-          Show {{ summary.issues.length - ISSUE_LIMIT }} more
+          Show {{ issueValues.length - VALUE_LIMIT }} more values
         </button>
       </section>
     </div>

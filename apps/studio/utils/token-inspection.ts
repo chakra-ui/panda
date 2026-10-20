@@ -94,8 +94,14 @@ export const tokenCategoryOf = (spec: SpecUtilities, prop: string) =>
 
 const kebab = (property: string) => property.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)
 
-const isValidCss = (cssProperty: string | undefined, value: string) =>
+const supports = (cssProperty: string | undefined, value: string) =>
   !!cssProperty && typeof CSS !== 'undefined' && CSS.supports(kebab(cssProperty), value)
+
+const looksLikeTokenName = (value: string) => /^[a-z_][\w.-]*$/i.test(value)
+
+/** Utilities that aren't CSS properties (`maskBottomFrom`) can't be checked by the browser, so only name-like values count as unknown. */
+export const isRawValue = (cssProperty: string | undefined, value: string) =>
+  supports(cssProperty, 'inherit') ? supports(cssProperty, value) : !looksLikeTokenName(value)
 
 export function lineStarts(source: string): number[] {
   const starts = [0]
@@ -149,7 +155,7 @@ export function inspectSource(
         continue
       }
       const match = compiler.suggestTokens(prop, span.value)[0]?.token
-      if (match || isValidCss(property.cssProperty, span.value)) {
+      if (match || isRawValue(property.cssProperty, span.value)) {
         findings.push({ kind: 'raw', prop, value: span.value, category, match, line, from, to })
       } else {
         const suggestion = nearestTokenName(span.value, tokenNames(category))

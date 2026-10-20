@@ -35,7 +35,7 @@ export const tab = css({
   _focusVisible: { outline: '2px solid', outlineColor: 'ring', outlineOffset: '1px' },
 })
 
-export const tabCount = css({ fontSize: '11.5px', color: 'faint', fontVariantNumeric: 'tabular-nums' })
+export const tabCount = css({ fontSize: '11.5px', color: 'faint' })
 
 export const fixAll = css({
   display: 'block',
@@ -110,7 +110,6 @@ export const line = css({
   fontFamily: 'mono',
   fontSize: '11.5px',
   color: 'faint',
-  fontVariantNumeric: 'tabular-nums',
 })
 
 export const value = css({ fontFamily: 'mono', fontSize: '12.5px', color: 'ink', truncate: true })
@@ -124,7 +123,6 @@ export const aside = css({
   fontFamily: 'mono',
   fontSize: '12px',
   color: 'muted',
-  fontVariantNumeric: 'tabular-nums',
   truncate: true,
 })
 
