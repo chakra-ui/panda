@@ -1,14 +1,10 @@
 //! Deterministic cascade ordering for emitted rules.
 //!
-//! Atoms are sorted by a composite [`CssRuleKey`], independent of extraction
-//! order: unconditional rules first, then selector-conditioned, then
-//! at-rule-conditioned; within those, by media-query width, pseudo-class
+//! Atoms/recipe entries are sorted by a composite [`CssRuleKey`], independent
+//! of extraction order: unconditional rules first, then selector-conditioned,
+//! then at-rule-conditioned; within those, by media-query width, pseudo-class
 //! priority, and finally property specificity (longhands after shorthands so
-//! they win the cascade).
-//!
-//! Authored style objects (recipes, compositions) use [`AuthoredRuleKey`]:
-//! the same tiers, but only interaction states rank among selectors, and the
-//! author's order breaks every other tie.
+//! they win the cascade). Mirrors the JS sort in `packages/core`.
 
 use std::cmp::Ordering;
 
@@ -67,8 +63,6 @@ const PSEUDO_PRIORITIES: &[(&str, u16)] = &[
     (":active", 170),
 ];
 
-/// Pseudo-classes whose cascade order is a convention (link → visited → hover →
-/// focus → active), not an author choice.
 const INTERACTION_PSEUDOS: &[&str] = &[
     ":link",
     ":any-link",
@@ -222,9 +216,7 @@ impl PartialOrd for CssRuleKey {
     }
 }
 
-/// Sort key for one entry of an authored style object. Shares [`CssRuleKey`]'s
-/// tiers, but selectors rank by interaction state alone and nothing compares
-/// spelling, so `_dark` and `&[data-active]` tie and keep the author's order.
+/// [`CssRuleKey`] without spelling, ranking only interaction states, so other ties keep authored order.
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 struct AuthoredRuleKey {
     bucket: RuleBucket,
