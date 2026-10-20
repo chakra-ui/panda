@@ -4,11 +4,12 @@ import { createServer, request, type Server } from 'node:http'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { runStudio } from '../src'
+import { resolveStudioUrl } from '../src/commands/studio'
 import type { StudioResult } from '../src/schema'
 import { runCli } from './cli-runner'
 import { cleanupFixture, createFixture, CONFIG_WITH_TOKENS } from './helpers'
 
-const STUDIO_URL = 'http://localhost:3311/analyze?view=project'
+const STUDIO_URL = 'http://localhost:3311/view'
 const TOKEN = 'test-token'
 
 interface Message {
@@ -193,6 +194,14 @@ describe('cli studio', () => {
 
     expect(studio.ok).toBe(false)
     expect(studio.diagnostics.map((diagnostic) => diagnostic.code)).toContain('studio_port_in_use')
+  })
+
+  it('opens Studio on the Tokens page', () => {
+    expect(resolveStudioUrl(undefined)).toEqual({ ok: true, url: 'https://studio.panda-css.com/view' })
+  })
+
+  it('opens a local Studio on the Tokens page too', () => {
+    expect(resolveStudioUrl('http://localhost:3311')).toEqual({ ok: true, url: 'http://localhost:3311/view' })
   })
 
   it('refuses --json because studio keeps running', () => {

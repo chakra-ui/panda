@@ -236,13 +236,10 @@ export function resolveStudioUrl(value: string | undefined): { ok: true; url: st
   return { ok: true, url: resolveStudioPage(url.href) }
 }
 
-/** A bare Studio origin opens the project scan; a URL with a path is used as given. */
+/** A bare Studio origin opens on Tokens; a URL with a path is used as given. */
 function resolveStudioPage(base: string): string {
   const url = new URL(base)
-  if (url.pathname === '/' && !url.search) {
-    url.pathname = '/analyze'
-    url.search = '?view=project'
-  }
+  if (url.pathname === '/' && !url.search) url.pathname = '/view'
   return url.href
 }
 

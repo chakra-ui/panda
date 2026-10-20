@@ -17,7 +17,7 @@ export type StudioMessage =
 export interface StudioServerOptions {
   port: number
   token: string
-  /** Hosted Studio page the bridge frames, e.g. `https://studio.panda-css.com/analyze?view=project`. */
+  /** Hosted Studio page the bridge frames, e.g. `https://studio.panda-css.com/view`. */
   studioUrl: string
   /** Everything a newly connected page needs before live updates. */
   snapshot(): StudioMessage[]
