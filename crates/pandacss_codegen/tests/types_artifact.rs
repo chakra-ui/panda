@@ -1174,3 +1174,45 @@ fn can_emit_type_import_extensions() {
         .trim()
     );
 }
+
+#[test]
+fn corner_shape_is_a_typed_style_property() {
+    let system = system_types(&input());
+    let lines = |needle: &str| {
+        system
+            .lines()
+            .filter(|line| line.contains(needle))
+            .map(str::trim)
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+
+    insta::assert_snapshot!(lines("  cornerBlockEndShape: "), @r#"cornerBlockEndShape: CssGlobals | "bevel" | "notch" | "round" | "scoop" | "square" | "squircle" | (string & {})"#);
+    insta::assert_snapshot!(lines("cornerShape"), @r#"
+    cornerShape: PropertyValueMap["cornerBlockEndShape"]
+    cornerShape?: ConditionalValue<PropertyValueMap["cornerShape"]>
+    "#);
+    insta::assert_snapshot!(lines("cornerTopLeftShape"), @r#"
+    cornerTopLeftShape: PropertyValueMap["cornerBlockEndShape"]
+    cornerTopLeftShape?: ConditionalValue<PropertyValueMap["cornerTopLeftShape"]>
+    "#);
+}
+
+#[test]
+fn reading_flow_and_interest_delay_are_typed_style_properties() {
+    let system = system_types(&input());
+    let lines = |needle: &str| {
+        system
+            .lines()
+            .filter(|line| line.contains(needle))
+            .map(str::trim)
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+
+    insta::assert_snapshot!(lines("readingFlow"), @r#"
+    readingFlow: CssGlobals | "flex-flow" | "flex-visual" | "grid-columns" | "grid-order" | "grid-rows" | "normal" | "source-order" | (string & {})
+    readingFlow?: ConditionalValue<PropertyValueMap["readingFlow"]>
+    "#);
+    insta::assert_snapshot!(lines("interestDelay?"), @"interestDelay?: ConditionalValue<CssAny>");
+}
