@@ -70,14 +70,9 @@ export const name = css({
 
 export const count = css({
   flexShrink: '0',
-  minW: '4',
-  px: '1',
-  rounded: 'sm',
-  fontSize: '11px',
+  fontSize: '11.5px',
   fontFamily: 'mono',
-  textAlign: 'center',
   color: 'danger',
-  bg: 'dangerSubtle',
 })
 
 export const empty = css({ px: '2.5', py: '1', fontSize: '12.5px', color: 'faint' })

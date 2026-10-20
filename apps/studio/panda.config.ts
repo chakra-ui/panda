@@ -31,6 +31,12 @@ export default defineConfig({
       semanticTokens,
       recipes: { button, control, navItem, tokenCell },
       slotRecipes: { select, frame, tabs },
+      keyframes: {
+        livePulse: {
+          '0%, 100%': { boxShadow: '0 0 0 2px var(--ring)' },
+          '50%': { boxShadow: '0 0 0 5px var(--ring)' },
+        },
+      },
     },
   },
   globalCss,

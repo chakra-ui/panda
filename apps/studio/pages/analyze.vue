@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, shallowRef, ref } from 'vue'
+import { computed, onMounted, shallowRef, ref, watch } from 'vue'
 import * as s from './analyze.css'
 import { button, navItem } from 'styled-system/recipes'
 import { index, parseSpec, type DesignSystemIndex } from '~/utils/design-system'
 import { loadTokens } from '~/utils/idb'
 import { droppedFiles } from '~/utils/dropped'
 import { useProjectScan } from '~/composables/useProjectScan'
-import { useStudioBridge } from '~/composables/useStudioBridge'
+import { useLiveStudio } from '~/composables/useLiveStudio'
 
 useHead({
   title: 'Usage — Panda Studio',
@@ -20,21 +20,19 @@ const ds = shallowRef<DesignSystemIndex | null>(null)
 const ready = ref(false)
 const scanner = useProjectScan(ds)
 
-const bridge = useStudioBridge((message) => {
-  if (message.type === 'system') {
-    const result = parseSpec(message.spec)
-    if (result.ok) ds.value = index(result.spec)
-    scanner.live({ system: true })
-  }
-  if (message.type === 'report') scanner.live({ report: message.report })
-  if (message.type === 'sources') scanner.live({ files: message.files })
-  if (message.type === 'source') scanner.live({ path: message.path, text: message.text })
-  if (message.type === 'removed') scanner.live({ path: message.path, text: null })
+const live = useLiveStudio()
+
+watch(live.ds, (system) => system && (ds.value = system), { immediate: true })
+watch([live.report, live.sources, ds], ([report, sources]) => report && scanner.showLive(report, sources), {
+  immediate: true,
 })
 
 const query = (key: string) => (typeof route.query[key] === 'string' ? (route.query[key] as string) : undefined)
 
-const view = computed(() => (query('view') === 'project' || (ready.value && !ds.value) ? 'project' : 'playground'))
+const view = computed(() => {
+  if (query('view') === 'playground') return 'playground'
+  return query('view') === 'project' || live.connected.value || (ready.value && !ds.value) ? 'project' : 'playground'
+})
 const file = computed(() => scanner.scan.value?.files.find((f) => f.path === query('file')))
 const line = computed(() => Number(query('line')) || undefined)
 
@@ -86,9 +84,10 @@ async function clear() {
 }
 
 onMounted(async () => {
-  const raw = await loadTokens()
+  await live.settled()
+  const raw = live.connected.value ? null : await loadTokens()
   const result = raw ? parseSpec(raw) : null
-  if (result?.ok && !bridge.connected.value) ds.value = index(result.spec)
+  if (result?.ok) ds.value = index(result.spec)
   ready.value = true
   if (droppedFiles.value.length) {
     const files = droppedFiles.value
@@ -108,7 +107,7 @@ onMounted(async () => {
     <template #sidebar>
       <SidebarSection>
         <NuxtLink
-          :to="{ query: {} }"
+          :to="{ query: { view: 'playground' } }"
           :class="[navItem(), s.mode]"
           :aria-current="view === 'playground' ? 'page' : undefined"
         >
@@ -132,14 +131,14 @@ onMounted(async () => {
 
     <template #header>
       <PageHeader :title="header.title" :description="header.description">
-        <template v-if="view === 'project' && bridge.connected.value" #actions>
-          <span :class="s.status" :data-live="bridge.live.value || undefined">
-            <i aria-hidden="true" />
-            {{ bridge.live.value ? 'Live' : 'Disconnected' }}
-          </span>
-        </template>
         <template
-          v-else-if="view === 'project' && !file && scanner.scan.value && scanner.status.value === 'idle'"
+          v-if="
+            view === 'project' &&
+            !file &&
+            !live.connected.value &&
+            scanner.scan.value &&
+            scanner.status.value === 'idle'
+          "
           #actions
         >
           <button
@@ -161,7 +160,7 @@ onMounted(async () => {
       </template>
 
       <template v-else>
-        <p v-if="bridge.connected.value && !bridge.live.value" role="status" :class="s.notice">
+        <p v-if="live.connected.value && !live.live.value" role="status" :class="s.notice">
           <Icon name="info" :size="14" />
           <span
             >Lost the connection to <code>panda studio</code>. Run it again to see new changes. Until then, these

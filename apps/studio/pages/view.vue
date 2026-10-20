@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useLiveStudio } from '~/composables/useLiveStudio'
 import { index, parseSpec, type DesignSystemIndex } from '~/utils/design-system'
 import { loadTokens } from '~/utils/idb'
 import { linkPending } from '~/utils/spec-link-state'
@@ -9,10 +10,17 @@ useHead({
   meta: [{ name: 'robots', content: 'noindex' }],
 })
 
-const ds = ref<DesignSystemIndex | null>(null)
+const live = useLiveStudio()
+const saved = ref<DesignSystemIndex | null>(null)
 const ready = ref(false)
+const ds = computed(() => live.ds.value ?? saved.value)
 
 onMounted(async () => {
+  await live.settled()
+  if (live.connected.value) {
+    ready.value = true
+    return
+  }
   if (linkPending.value && !(await linkPending.value)) return
   const raw = await loadTokens()
   const result = raw ? parseSpec(raw) : null
@@ -20,7 +28,7 @@ onMounted(async () => {
     await navigateTo('/')
     return
   }
-  ds.value = index(result.spec)
+  saved.value = index(result.spec)
   ready.value = true
 })
 </script>

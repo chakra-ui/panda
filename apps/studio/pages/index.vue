@@ -9,6 +9,7 @@ import { parseSpecUrlInput } from '~/utils/spec-link'
 import { isIgnoredPath, isSourceFile, MAX_FILE_BYTES } from '~/utils/analyze'
 import { droppedFiles } from '~/utils/dropped'
 import { useFolderDrop } from '~/composables/useFolderDrop'
+import { useLiveStudio } from '~/composables/useLiveStudio'
 
 useHead({ title: 'Panda Studio — see your design system' })
 
@@ -16,6 +17,13 @@ const CODEGEN_COMMAND = 'panda codegen --spec'
 
 const nuxtApp = useNuxtApp()
 const router = useRouter()
+
+// Under `panda studio` the project is already loaded; there's nothing to open here.
+const live = useLiveStudio()
+onMounted(async () => {
+  await live.settled()
+  if (live.connected.value) await router.replace('/view')
+})
 
 const input = ref('')
 const error = ref('')

@@ -80,10 +80,13 @@ export const handle = css({
   bg: 'lineStrong',
 })
 
-export const sidebarTop = css({ display: 'flex', alignItems: 'center', justifyContent: 'space-between' })
+export const sidebarTop = css({ display: 'flex', alignItems: 'center', gap: '2' })
+
+export const live = css({ ml: 'auto' })
 
 export const closeButton = css({
   display: { base: 'grid', md: 'none' },
+  ml: 'auto',
   mr: '-2',
   placeItems: 'center',
   w: '8',

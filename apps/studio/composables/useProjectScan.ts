@@ -8,14 +8,6 @@ import { canRead, canRescan, fromFileList, pickDirectory, readDirectory, type Pi
 import { attachSources, isUsageReport, scanFromReport, scanSources, type ProjectScan } from '~/utils/project-scan'
 import { useFolderDrop } from '~/composables/useFolderDrop'
 
-type LiveChange = {
-  report?: UsageReport
-  system?: boolean
-  files?: { path: string; text: string }[]
-  path?: string
-  text?: string | null
-}
-
 const paint = () => new Promise((r) => requestAnimationFrame(() => r(null)))
 
 export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
@@ -168,23 +160,11 @@ export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
     await attach(fromFileList(files))
   }
 
-  const liveSources = new Map<string, string>()
-  let liveReport: UsageReport | null = null
-
-  /** `panda studio` sends the CLI's report plus the code of each file in it. */
-  function live(change: LiveChange) {
-    if (change.files) {
-      liveSources.clear()
-      for (const file of change.files) liveSources.set(file.path, file.text)
-    }
-    if (change.path) {
-      if (change.text == null) liveSources.delete(change.path)
-      else liveSources.set(change.path, change.text)
-    }
-    if (change.report) liveReport = change.report
-    if (!liveReport || !ds.value || !(change.report || change.system)) return
-    const sources = [...liveSources].map(([path, text]) => ({ path, text }))
-    scan.value = { ...attachSources(scanFromReport(liveReport, tokenNames), sources), origin: 'live' }
+  /** `panda studio`'s report, with the code it sent attached. */
+  function showLive(report: UsageReport, sources: Map<string, string>) {
+    if (!ds.value) return
+    const files = [...sources].map(([path, text]) => ({ path, text }))
+    scan.value = { ...attachSources(scanFromReport(report, tokenNames), files), origin: 'live' }
   }
 
   function clear() {
@@ -195,7 +175,7 @@ export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
 
   onMounted(async () => {
     const saved = await loadUsage<ProjectScan>()
-    if (saved?.files) scan.value = saved
+    if (saved?.files && !scan.value) scan.value = saved
     folder.value = canRescan() ? await loadScanFolder() : null
   })
 
@@ -210,7 +190,7 @@ export function useProjectScan(ds: Ref<DesignSystemIndex | null>) {
     scanFiles: (files: File[]) => run(fromFileList(files)),
     clear,
     attach,
-    live,
+    showLive,
     onAttach,
     onPick,
     onDrop,

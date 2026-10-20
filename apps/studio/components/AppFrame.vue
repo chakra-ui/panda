@@ -51,6 +51,7 @@ onBeforeUnmount(() => {
       <NuxtLink to="/" :class="s.brand" aria-label="Panda Studio home">
         <StudioLogo />
       </NuxtLink>
+      <LiveStatus :class="s.live" />
       <button
         type="button"
         :class="s.menuButton"
@@ -77,6 +78,7 @@ onBeforeUnmount(() => {
         <NuxtLink to="/" :class="s.brand" aria-label="Panda Studio home">
           <StudioLogo />
         </NuxtLink>
+        <LiveStatus :class="s.live" />
         <button type="button" :class="s.closeButton" aria-label="Close menu" @click="menuOpen = false">
           <Icon name="close" :size="15" />
         </button>
