@@ -529,7 +529,7 @@ fn emits_ts_source_types() {
     assert!(!system.contains("KhtmlBoxAlign"));
 
     assert_snapshot!(file(types, "types/recipe.ts"), @"
-    import type { ConditionalValue, SystemStyleObject } from './system';
+    import type { ConditionalValue, DistributiveOmit, Pretty, SystemStyleObject } from './system';
 
     export type RecipeVariantProps<T> = T extends (props?: infer Props) => unknown ? Props : never
 
@@ -549,7 +549,7 @@ fn emits_ts_source_types() {
       variantMap: Map
       variantKeys: Array<keyof Props>
       raw: (props?: Props) => SystemStyleObject
-      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
+      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
       getVariantProps: (props?: Props) => Props
       merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
     }
@@ -563,7 +563,7 @@ fn emits_ts_source_types() {
       variantMap: Map
       variantKeys: Array<keyof Props>
       raw: (props?: Props) => Record<Slot, SystemStyleObject>
-      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
+      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
       getVariantProps: (props?: Props) => Props
     }
 

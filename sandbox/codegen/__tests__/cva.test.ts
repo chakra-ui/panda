@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 import { cva } from '../styled-system/css/cva'
 
 describe('cva', () => {
@@ -63,6 +63,19 @@ describe('cva', () => {
         },
       ]
     `)
+  })
+
+  test('split variant props keeps a union of component props', () => {
+    type Props = { visual: 'solid' } & (
+      | { role: 'guest'; expiration: number }
+      | { role: 'admin'; permissions: string[] }
+    )
+    const split = (props: Props) => button.splitVariantProps(props)[1]
+
+    expectTypeOf(split).returns.toEqualTypeOf<
+      { role: 'guest'; expiration: number } | { role: 'admin'; permissions: string[] }
+    >()
+    expect(split({ visual: 'solid', role: 'guest', expiration: 1 })).toEqual({ role: 'guest', expiration: 1 })
   })
 
   test('get variant props', () => {

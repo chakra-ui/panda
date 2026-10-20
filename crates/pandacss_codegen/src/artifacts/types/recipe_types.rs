@@ -6,7 +6,12 @@ use crate::{ImportDecl, Module};
 pub(super) fn module() -> Module {
     Module::new()
         .with_import(ImportDecl::ty(
-            ["ConditionalValue", "SystemStyleObject"],
+            [
+                "ConditionalValue",
+                "DistributiveOmit",
+                "Pretty",
+                "SystemStyleObject",
+            ],
             "./system",
         ))
         .with_item(type_raw(RECIPE_TYPES))
@@ -30,7 +35,7 @@ export interface RecipeRuntimeFn<Props extends object = object, Map extends obje
   variantMap: Map
   variantKeys: Array<keyof Props>
   raw: (props?: Props) => SystemStyleObject
-  splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
+  splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
   getVariantProps: (props?: Props) => Props
   merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
 }
@@ -44,7 +49,7 @@ export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object =
   variantMap: Map
   variantKeys: Array<keyof Props>
   raw: (props?: Props) => Record<Slot, SystemStyleObject>
-  splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
+  splitVariantProps<T extends Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
   getVariantProps: (props?: Props) => Props
 }
 
