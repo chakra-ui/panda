@@ -15,9 +15,7 @@ import {
 
 const props = defineProps<{
   ds: DesignSystemIndex
-  usage?: unknown
 }>()
-defineEmits<{ reset: [] }>()
 
 const route = useRoute()
 const router = useRouter()
@@ -83,7 +81,6 @@ const description = computed(() => {
     ? `${tokens} overridden by ${themeLabel}. Click one to copy it.`
     : `${tokens}. Click one to copy it.`
 })
-const analyzeTo = computed(() => ({ path: '/analyze', query: { category: activeType.value } }))
 
 const search = computed({
   get: () => param('q') ?? '',
@@ -106,16 +103,21 @@ watch(activeType, () => setQuery({ q: undefined, text: undefined }))
 <template>
   <Tabs.Root v-model="activeType" orientation="vertical" :class="s.root">
     <AppFrame width="wide">
-      <template #sidebar-header>
-        <DesignSearch :ds="ds" />
-
+      <template #topbar>
         <SelectField
           v-if="themes.length"
           label="Theme"
+          compact
           :items="themeItems"
           :value="theme"
+          :class="s.theme"
           @change="(value) => (theme = value)"
         />
+        <div :class="s.search"><DesignSearch :ds="ds" /></div>
+      </template>
+
+      <template #sidebar-header>
+        <StudioNav />
       </template>
 
       <template #sidebar>
@@ -132,14 +134,6 @@ watch(activeType, () => setQuery({ q: undefined, text: undefined }))
       <template #header>
         <PageHeader :title="active?.type ?? ''" :description="description">
           <template #actions>
-            <NuxtLink :to="analyzeTo" :class="button()" title="See which tokens are used, unused, and hot">
-              <Icon name="chart" :size="13" />
-              {{ usage ? 'View usage' : 'Analyze usage' }}
-            </NuxtLink>
-            <button type="button" :class="button()" @click="$emit('reset')">
-              <Icon name="upload" :size="13" />
-              Open another
-            </button>
             <span :class="s.stepper">
               <button
                 type="button"

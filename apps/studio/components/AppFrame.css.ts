@@ -107,18 +107,6 @@ export const brand = css({
   _focusVisible: { outline: '2px solid', outlineColor: 'ring', outlineOffset: '2px' },
 })
 
-export const brandMark = css({
-  display: 'grid',
-  placeItems: 'center',
-  w: '6',
-  h: '6',
-  rounded: 'md',
-  bg: 'accent',
-  boxShadow: 'inset 0 0 0 0.5px rgba(0,0,0,0.12)',
-})
-
-export const brandLogo = css({ w: '3.5', h: '3.5' })
-
 export const sidebarHeader = css({ display: 'flex', flexDir: 'column', gap: '3' })
 
 export const sidebarBody = css({
@@ -174,9 +162,20 @@ export const panel = css({
   roundedRight: { md: '0' },
   boxShadow: 'raised',
   overflowY: { md: 'auto' },
-  scrollbarWidth: 'thin',
-  scrollbarColor: '{colors.lineStrong} transparent',
   scrollbarGutter: 'stable',
+})
+
+export const topbar = css({
+  position: 'sticky',
+  top: '0',
+  zIndex: '10',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+  h: '14',
+  px: { base: '4', md: '5' },
+  bg: 'color-mix(in srgb, token(colors.canvas) 88%, transparent)',
+  backdropFilter: 'blur(8px)',
 })
 
 export const header = css({})
@@ -188,6 +187,10 @@ export const content = css({
   '&[data-width=wide]': { maxW: 'calc(880px + 5rem)' },
 })
 
-export const headerContent = css({ pt: { base: '8', md: '16' }, pb: '2' })
+export const headerContent = css({
+  pt: { base: '8', md: '16' },
+  pb: '2',
+  '[data-topbar] &': { pt: { base: '4', md: '8' } },
+})
 
 export const bodyContent = css({ pt: { base: '6', md: '10' }, pb: { base: '10', md: '20' } })

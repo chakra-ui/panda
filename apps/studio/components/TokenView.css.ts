@@ -2,6 +2,10 @@ import { css } from 'styled-system/css'
 
 export const root = css({ display: 'contents' })
 
+export const search = css({ flex: '1', maxW: '64', ml: 'auto' })
+
+export const theme = css({ flexShrink: '0', display: { base: 'none', sm: 'block' } })
+
 export const tabs = css({
   display: 'flex',
   flexDir: 'column',

@@ -1,173 +1,142 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, shallowRef, ref } from 'vue'
 import * as s from './analyze.css'
-import { button, frame, navItem } from 'styled-system/recipes'
-import { index, parseSpec } from '~/utils/design-system'
-import { loadTokens, saveUsage, loadUsage } from '~/utils/idb'
-import type { CategoryUsage } from '~/utils/analyze'
+import { button, navItem } from 'styled-system/recipes'
+import { index, parseSpec, type DesignSystemIndex } from '~/utils/design-system'
+import { loadTokens } from '~/utils/idb'
 import { droppedFiles } from '~/utils/dropped'
-import { useAnalyze } from '~/composables/useAnalyze'
-
-const {
-  ds,
-  report,
-  scannedCount,
-  empty,
-  mode,
-  analyzing,
-  preciseFailed,
-  preciseError,
-  analyzeFiles,
-  reset,
-  dragging,
-  busy,
-  onPick,
-  onDrop,
-  onDragOver,
-  onDragLeave,
-} = useAnalyze()
+import { useProjectScan } from '~/composables/useProjectScan'
 
 useHead({
-  title: 'Analyze usage — Panda Studio',
+  title: 'Usage — Panda Studio',
   meta: [{ name: 'robots', content: 'noindex' }],
 })
 
-const classes = frame()
 const route = useRoute()
-const scopeCategory = computed(() => String(route.query.category ?? ''))
-const scopedReport = computed(() => {
-  if (!report.value) return []
-  if (!scopeCategory.value) return report.value
-  const scoped = report.value.filter((c) => c.type === scopeCategory.value)
-  return scoped.length ? scoped : report.value
-})
+const router = useRouter()
 
-const noUsage = computed(() => !!report.value?.length && report.value.every((c) => c.used === 0))
+const ds = shallowRef<DesignSystemIndex | null>(null)
+const ready = ref(false)
+const scanner = useProjectScan(ds)
 
-const scopeItems = computed(() => [
-  { label: 'All categories', value: '' },
-  ...(report.value ?? []).map((c) => ({ label: c.type, value: c.type })),
-])
+const query = (key: string) => (typeof route.query[key] === 'string' ? (route.query[key] as string) : undefined)
 
-async function onScope(v: string) {
-  await navigateTo({ path: '/analyze', query: v ? { category: v } : {} })
+const view = computed(() => (query('view') === 'project' || (ready.value && !ds.value) ? 'project' : 'playground'))
+const file = computed(() => scanner.scan.value?.files.find((f) => f.path === query('file')))
+const line = computed(() => Number(query('line')) || undefined)
+
+const projectLink = { query: { view: 'project' } }
+const fileLink = (path: string, at?: number) => ({ query: { view: 'project', file: path, line: at } })
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+
+function timeAgo(at: number) {
+  const minutes = Math.round((Date.now() - at) / 60_000)
+  const format = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+  if (minutes < 60) return format.format(-minutes, 'minute')
+  if (minutes < 60 * 24) return format.format(-Math.round(minutes / 60), 'hour')
+  return format.format(-Math.round(minutes / 1440), 'day')
 }
 
-const usageSnapshot = computed(() =>
-  report.value ? { report: report.value, scannedCount: scannedCount.value, mode: mode.value } : null,
-)
-watch(usageSnapshot, (u) => saveUsage(u))
+const header = computed(() => {
+  if (view.value === 'playground') {
+    return { title: 'Playground', description: 'Write styles and see which tokens they use as you type.' }
+  }
+  if (file.value) {
+    const parts = file.value.path.split('/')
+    const issues = file.value.findings.filter((f) => f.kind !== 'token').length
+    return {
+      title: parts.at(-1) ?? file.value.path,
+      description: `${parts.slice(0, -1).join('/') || 'Project root'} · ${plural(issues, 'issue')}`,
+    }
+  }
+  const scan = scanner.scan.value
+  if (!scan) {
+    return { title: 'Project scan', description: 'See which tokens your project uses, and where it strays from them.' }
+  }
+  const source = scan.origin === 'report' ? 'From panda analyze' : `${plural(scan.sourceCount, 'file')} scanned`
+  return {
+    title: 'Project scan',
+    description: `${source} · ${plural(scan.files.length, 'file')} with Panda styles · ${timeAgo(scan.scannedAt)}`,
+  }
+})
+
+async function clear() {
+  scanner.clear()
+  await router.replace(projectLink)
+}
 
 onMounted(async () => {
   const raw = await loadTokens()
   const result = raw ? parseSpec(raw) : null
   if (result?.ok) ds.value = index(result.spec)
+  ready.value = true
   if (droppedFiles.value.length) {
-    await analyzeFiles(droppedFiles.value)
-    return
-  }
-  const saved = await loadUsage<{
-    report: CategoryUsage[]
-    scannedCount: number
-    mode: 'heuristic' | 'precise'
-  }>()
-  if (saved?.report?.length) {
-    report.value = saved.report
-    scannedCount.value = saved.scannedCount ?? 0
-    mode.value = saved.mode ?? 'heuristic'
+    const files = droppedFiles.value
+    droppedFiles.value = []
+    await router.replace(projectLink)
+    await scanner.scanFiles(files)
   }
 })
 </script>
 
 <template>
-  <AppFrame>
-    <template v-if="ds" #sidebar-header>
-      <DesignSearch :ds="ds" />
+  <AppFrame width="wide">
+    <template #sidebar-header>
+      <StudioNav />
     </template>
 
     <template #sidebar>
-      <SidebarSection label="Studio">
-        <NuxtLink v-if="ds" to="/view" :class="navItem()">Tokens</NuxtLink>
-        <NuxtLink to="/analyze" :class="navItem()">Usage</NuxtLink>
-        <NuxtLink to="/" :class="navItem()">Open another system</NuxtLink>
+      <SidebarSection>
+        <NuxtLink
+          :to="{ query: {} }"
+          :class="[navItem(), s.mode]"
+          :aria-current="view === 'playground' ? 'page' : undefined"
+        >
+          <Icon name="code" :size="14" />
+          Playground
+        </NuxtLink>
+        <NuxtLink
+          :to="projectLink"
+          :class="[navItem(), s.mode]"
+          :aria-current="view === 'project' && !file ? 'page' : undefined"
+        >
+          <Icon name="folder" :size="14" />
+          Project scan
+        </NuxtLink>
+      </SidebarSection>
+
+      <SidebarSection v-if="scanner.scan.value?.files.length" :label="`Files · ${scanner.scan.value.files.length}`">
+        <FileTree :files="scanner.scan.value.files" :active="file?.path" :to="(path) => fileLink(path)" />
       </SidebarSection>
     </template>
 
     <template #header>
-      <PageHeader
-        title="Analyze usage"
-        description="Find the tokens your code uses, the ones it never touches, and the ones it leans on most."
-      >
-        <template v-if="report" #actions>
-          <SelectField label="Category" :items="scopeItems" :value="scopeCategory" @change="onScope" />
-          <button type="button" :class="button()" @click="reset">Scan another folder</button>
+      <PageHeader :title="header.title" :description="header.description">
+        <template v-if="view === 'project' && !file && scanner.scan.value && scanner.status.value === 'idle'" #actions>
+          <button v-if="scanner.folder.value" type="button" :class="button({ variant: 'ghost' })" @click="scanner.rescan">
+            Rescan
+          </button>
+          <button type="button" :class="button()" @click="clear"><Icon name="folder" :size="14" /> New scan</button>
         </template>
       </PageHeader>
     </template>
 
-    <div v-if="busy || analyzing" :class="s.analyzing" role="status">
-      <Spinner />
-      {{ busy && !analyzing ? 'Reading your files…' : 'Analyzing your source…' }}
-    </div>
+    <template v-if="ready">
+      <template v-if="view === 'playground'">
+        <UsagePlayground v-if="ds" :ds="ds" />
+      </template>
 
-    <template v-else-if="!report">
-      <div :class="classes.root">
-        <div
-          :class="[classes.body, s.dropzone]"
-          :data-dragging="dragging || undefined"
-          @drop="onDrop"
-          @dragover="onDragOver"
-          @dragleave="onDragLeave"
-        >
-          <span :class="s.dropIcon"><Icon name="folder" :size="16" /></span>
-          <p v-if="ds" :class="s.dropTitle">Drop your app folder or the whole repo</p>
-          <p v-else :class="s.dropTitle">Drop your source folder or the whole repo</p>
-          <p :class="s.dropHint">
-            {{
-              ds
-                ? 'Your tokens are loaded. Drop your source to scan it.'
-                : 'Include your design-system.json to browse the tokens too.'
-            }}
-          </p>
-          <label :class="[button({ variant: 'primary', size: 'md' }), s.dropAction]">
-            Choose folder
-            <input type="file" webkitdirectory multiple hidden @change="onPick" />
-          </label>
-        </div>
-        <p :class="classes.bar">
-          <Icon name="info" :size="13" />
-          <span>
-            Include <code>panda.config.ts</code> for exact results from the Panda compiler. Without it, Studio matches
-            token names.
-          </span>
-        </p>
-      </div>
-      <p v-if="empty" role="alert" :class="s.notice">
-        No source files found. Studio skips build output like <code>styled-system/</code>,
-        <code>node_modules/</code> and <code>dist/</code>. Drop <code>app/</code>, <code>src/</code>, or the whole repo.
-      </p>
-    </template>
-
-    <template v-else>
-      <p :class="s.scanned">
-        <span :class="s.badge" :data-precise="mode === 'precise' || undefined">
-          {{ mode === 'precise' ? 'exact' : 'name match' }}
-        </span>
-        Scanned {{ scannedCount }} file{{ scannedCount === 1 ? '' : 's' }}
-      </p>
-
-      <p v-if="noUsage" role="alert" :class="s.notice">
-        None of these tokens appear in {{ scannedCount }} file{{ scannedCount === 1 ? '' : 's' }}. They may belong to
-        another project: run <code>panda codegen --spec</code> here and open that file. Studio supports Panda v2.
-      </p>
-      <p v-else-if="preciseFailed" :class="s.hint">
-        Showing a name-match scan. The compiler couldn't read <code>panda.config</code
-        ><template v-if="preciseError"
-          >: <code>{{ preciseError }}</code></template
-        >.
-      </p>
-
-      <AnalyzeReport :report="scopedReport" />
+      <template v-else>
+        <ScanFileView v-if="ds && file" :ds="ds" :file="file" :line="line" />
+        <ScanOverview
+          v-else-if="ds && scanner.scan.value && scanner.status.value === 'idle'"
+          :ds="ds"
+          :scan="scanner.scan.value"
+          :to="fileLink"
+        />
+        <ProjectScan v-else :scanner="scanner" />
+      </template>
     </template>
   </AppFrame>
 </template>

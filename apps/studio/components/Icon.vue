@@ -4,6 +4,10 @@ import type { PropType } from 'vue'
 const PATHS = {
   upload: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v13'],
   chart: ['M3 3v18h18', 'M18 17V9M13 17V5M8 17v-3'],
+  grid: ['M3 3h7v7H3z', 'M14 3h7v7h-7z', 'M3 14h7v7H3z', 'M14 14h7v7h-7z'],
+  code: ['M16 18l6-6-6-6', 'M8 6l-6 6 6 6'],
+  arrowUp: ['M12 19V5', 'M5 12l7-7 7 7'],
+  paperclip: ['M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5'],
   menu: ['M4 7h16', 'M4 12h16', 'M4 17h16'],
   close: ['M18 6L6 18', 'M6 6l12 12'],
   chevronDown: ['M6 9l6 6 6-6'],

@@ -62,6 +62,23 @@ export const select = defineSlotRecipe({
       color: 'ink',
     },
   },
+  variants: {
+    compact: {
+      true: {
+        trigger: {
+          w: 'auto',
+          minW: '0',
+          gap: '1.5',
+          bg: 'paper',
+          boxShadow: 'inset',
+          _hover: { bg: 'paper', boxShadow: 'button' },
+          '&[data-state=open]': { bg: 'paper', boxShadow: 'focusHalo' },
+        },
+        value: { flex: 'none', textAlign: 'left' },
+        content: { minW: '180px' },
+      },
+    },
+  },
 })
 
 export const frame = defineSlotRecipe({

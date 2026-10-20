@@ -28,6 +28,13 @@ export const semanticTokens = defineSemanticTokens({
     ring: { value: { base: '#dcc11a', _dark: '#f6e458' } },
     accentSubtle: { value: { base: 'rgba(246,228,88,0.55)', _dark: 'rgba(246,228,88,0.28)' } },
     onAccent: { value: '#1a1a1a' },
+    code: {
+      keyword: { value: { base: '#7a3cc9', _dark: '#c4a3ff' } },
+      string: { value: { base: '#16794b', _dark: '#7ad6a0' } },
+      number: { value: { base: '#b45309', _dark: '#f2b462' } },
+      tag: { value: { base: '#2056b8', _dark: '#8cb4ff' } },
+      property: { value: { base: '#3f3f46', _dark: '#d4d4d8' } },
+    },
     success: { value: { base: '#15864a', _dark: '#2fbd6e' } },
     danger: { value: { base: '#c0362c', _dark: '#f0554b' } },
     dangerSubtle: { value: { base: 'rgba(192,54,44,0.07)', _dark: 'rgba(240,85,75,0.1)' } },

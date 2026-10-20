@@ -7,10 +7,12 @@ const props = defineProps<{
   label: string
   items: { label: string; value: string }[]
   value: string
+  /** Sized to its content, for toolbars. */
+  compact?: boolean
 }>()
 const emit = defineEmits<{ change: [value: string] }>()
 
-const classes = select()
+const classes = computed(() => select({ compact: props.compact }))
 const collection = computed(() => createListCollection({ items: props.items }))
 </script>
 
@@ -19,7 +21,7 @@ const collection = computed(() => createListCollection({ items: props.items }))
     :class="classes.root"
     :collection="collection"
     :model-value="[value]"
-    :positioning="{ sameWidth: true, gutter: 4 }"
+    :positioning="{ sameWidth: !compact, gutter: 4 }"
     @value-change="(d) => emit('change', d.value[0] ?? '')"
   >
     <Select.Label :class="classes.label">{{ label }}</Select.Label>

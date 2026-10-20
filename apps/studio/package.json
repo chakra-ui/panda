@@ -17,19 +17,30 @@
   },
   "dependencies": {
     "@ark-ui/vue": "^5.0.0",
+    "@codemirror/autocomplete": "^6.20.3",
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/language": "^6.13.1",
+    "@codemirror/lint": "^6.9.7",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.14",
+    "@lezer/highlight": "^1.2.5",
     "@pandacss/compiler-shared": "workspace:*",
     "@pandacss/compiler-wasm": "2.1.1",
     "@pandacss/config": "2.1.1",
     "@pandacss/preset-base": "2.1.1",
     "@pandacss/preset-panda": "2.1.1",
+    "d3-array": "3.2.4",
+    "d3-scale": "4.0.2",
     "nuxt": "^3.13.0",
-    "sucrase": "^3.35.1",
-    "vue": "^3.5.0",
-    "vue-data-ui": "^3.25.0"
+    "prettier": "3.2.5",
+    "vue": "^3.5.0"
   },
   "devDependencies": {
     "@pandacss/dev": "2.1.1",
     "@pandacss/postcss": "2.1.1",
+    "@types/d3-array": "3.2.1",
+    "@types/d3-scale": "4.0.9",
     "@types/node": "^22.0.0",
     "autoprefixer": "^10.4.0",
     "vitest": "^2.1.0"

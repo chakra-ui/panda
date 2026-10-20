@@ -58,7 +58,7 @@ export default defineNuxtConfig({
       ],
     },
   },
-  css: ['vue-data-ui/style.css', '~/styles/panda.css'],
+  css: ['~/styles/panda.css'],
   alias: { 'styled-system': styledSystem },
   postcss: {
     plugins: {

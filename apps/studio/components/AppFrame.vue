@@ -49,8 +49,7 @@ onBeforeUnmount(() => {
   <div :class="s.frame">
     <header :class="s.mobileBar">
       <NuxtLink to="/" :class="s.brand" aria-label="Panda Studio home">
-        <span :class="s.brandMark"><img src="/panda.svg" alt="" :class="s.brandLogo" /></span>
-        <span>Studio</span>
+        <StudioLogo />
       </NuxtLink>
       <button
         type="button"
@@ -76,8 +75,7 @@ onBeforeUnmount(() => {
       <span :class="s.handle" aria-hidden="true" />
       <div :class="s.sidebarTop">
         <NuxtLink to="/" :class="s.brand" aria-label="Panda Studio home">
-          <span :class="s.brandMark"><img src="/panda.svg" alt="" :class="s.brandLogo" /></span>
-          <span>Studio</span>
+          <StudioLogo />
         </NuxtLink>
         <button type="button" :class="s.closeButton" aria-label="Close menu" @click="menuOpen = false">
           <Icon name="close" :size="15" />
@@ -106,7 +104,10 @@ onBeforeUnmount(() => {
       </footer>
     </aside>
 
-    <main id="content" :class="s.panel">
+    <main id="content" :class="s.panel" :data-topbar="$slots.topbar ? '' : undefined">
+      <div v-if="$slots.topbar" :class="s.topbar">
+        <slot name="topbar" />
+      </div>
       <div v-if="$slots.header" :class="s.header">
         <div :class="[s.content, s.headerContent]" :data-width="width">
           <slot name="header" />

@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Clipboard } from '@ark-ui/vue/clipboard'
-import { Field } from '@ark-ui/vue/field'
-import { Tabs } from '@ark-ui/vue/tabs'
 import * as s from './index.css'
-import { button, control, frame, navItem, tabs } from 'styled-system/recipes'
 import { extractSpec } from '~/utils/extract-tokens'
 import { openSpec } from '~/utils/open-spec'
+import { openSpecLink } from '~/utils/open-spec-link'
+import { parseSpecUrlInput } from '~/utils/spec-link'
 import { isIgnoredPath, isSourceFile, MAX_FILE_BYTES } from '~/utils/analyze'
 import { droppedFiles } from '~/utils/dropped'
 import { useFolderDrop } from '~/composables/useFolderDrop'
@@ -15,153 +14,151 @@ useHead({ title: 'Panda Studio — see your design system' })
 
 const CODEGEN_COMMAND = 'panda codegen --spec'
 
-const classes = frame()
-const tab = tabs()
+const nuxtApp = useNuxtApp()
+const router = useRouter()
+
+const input = ref('')
 const error = ref('')
-const pasted = ref('')
+const opening = ref(false)
 
-async function load(raw: string) {
+const isJson = computed(() => input.value.trimStart().startsWith('{'))
+
+const detected = computed(() => {
+  if (!input.value.trim()) return ''
+  if (!isJson.value) return 'Link'
+  const kb = new Blob([input.value]).size / 1024
+  return `JSON · ${kb < 1 ? '<1' : Math.round(kb)} KB`
+})
+
+watch(input, () => (error.value = ''))
+
+async function run(task: () => Promise<{ ok: true } | { ok: false; error: string }>) {
   error.value = ''
-  const result = await openSpec(raw)
-  if (!result.ok) error.value = result.error
-}
-
-async function loadSample() {
-  droppedFiles.value = []
+  opening.value = true
   try {
-    const res = await fetch('/sample-design-system.json')
-    await load(await res.text())
-  } catch {
-    error.value = "Couldn't load the sample. Reload the page and try again."
+    const result = await task()
+    if (!result.ok) error.value = result.error
+  } finally {
+    opening.value = false
   }
 }
 
-async function renderPasted() {
+function submit() {
+  const value = input.value.trim()
+  if (!value) return
   droppedFiles.value = []
-  await load(pasted.value)
+  if (isJson.value) return run(() => openSpec(value))
+  const parsed = parseSpecUrlInput(value)
+  if (!parsed.ok) {
+    error.value = parsed.error
+    return
+  }
+  return run(() => openSpecLink({ kind: 'url', url: parsed.url }, { router, nuxtApp }))
+}
+
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+    event.preventDefault()
+    submit()
+  }
+}
+
+function loadSample() {
+  droppedFiles.value = []
+  return run(async () => {
+    const res = await fetch('/sample-design-system.json').catch(() => null)
+    if (!res?.ok) return { ok: false, error: "Couldn't load the sample. Reload the page and try again." }
+    return openSpec(await res.text())
+  })
 }
 
 const pathOf = (f: File) => (f as File & { webkitRelativePath?: string }).webkitRelativePath || f.name
 
-const { dragging, busy, onPick, onDrop, onDragOver, onDragLeave } = useFolderDrop(onFiles)
-
-async function onFiles(files: File[]) {
-  error.value = ''
-
+const { dragging, busy, onPick, onDrop, onDragOver, onDragLeave } = useFolderDrop(async (files) => {
   droppedFiles.value = files.filter(
     (f) => !isIgnoredPath(pathOf(f)) && f.size <= MAX_FILE_BYTES && isSourceFile(f.name),
   )
-
   const raw = await extractSpec(files)
-  if (raw) {
-    await load(raw)
-    return
-  }
-
+  if (raw) return run(() => openSpec(raw))
   error.value =
-    "That isn't a design-system.json. Run `panda codegen --spec` and open styled-system/specs/design-system.json."
-}
+    "That isn't a design-system.json. Run the command below, then open styled-system/specs/design-system.json."
+})
 </script>
 
 <template>
-  <AppFrame>
-    <template #sidebar>
-      <SidebarSection label="Get started">
-        <NuxtLink to="/" :class="navItem()">Open a system</NuxtLink>
-        <NuxtLink to="/analyze" :class="navItem()">Analyze usage</NuxtLink>
-      </SidebarSection>
-      <SidebarSection label="Resources">
-        <a href="https://panda-css.com/docs" target="_blank" rel="noopener" :class="navItem()"> Documentation </a>
-        <a href="https://github.com/chakra-ui/panda" target="_blank" rel="noopener" :class="navItem()"> GitHub </a>
-      </SidebarSection>
-    </template>
+  <div :class="s.page" @drop="onDrop" @dragover="onDragOver" @dragleave="onDragLeave">
+    <header :class="s.top">
+      <a href="https://panda-css.com/docs" target="_blank" rel="noopener" :class="s.topLink">
+        Docs
+        <Icon name="arrowUpRight" :size="12" />
+      </a>
+      <ThemeSwitch />
+    </header>
 
-    <template #header>
-      <PageHeader title="Open a design system">
-        <template #description> Browse every token in the <code>design-system.json</code> Panda generates. </template>
-      </PageHeader>
-    </template>
+    <main :class="s.center">
+      <StudioLogo size="lg" />
+      <h1 :class="s.title">Your design system, at a glance</h1>
+      <p :class="s.lede">Open the <code>design-system.json</code> Panda generates to browse every token.</p>
 
-    <BusyOverlay v-if="busy" label="Reading your file…" />
-
-    <p v-if="error" role="alert" :class="s.error">{{ error }}</p>
-
-    <Tabs.Root default-value="files" :class="tab.root">
-      <Tabs.List :class="tab.list" aria-label="Where to load from">
-        <Tabs.Trigger value="files" :class="tab.trigger">File</Tabs.Trigger>
-        <Tabs.Trigger value="url" :class="tab.trigger">URL</Tabs.Trigger>
-        <Tabs.Trigger value="paste" :class="tab.trigger">Paste JSON</Tabs.Trigger>
-        <Tabs.Indicator :class="tab.indicator" />
-      </Tabs.List>
-
-      <Tabs.Content value="files" :class="tab.content">
-        <div :class="classes.root">
-          <div
-            :class="[classes.body, s.dropzone]"
-            :data-dragging="dragging || undefined"
-            @drop="onDrop"
-            @dragover="onDragOver"
-            @dragleave="onDragLeave"
-          >
-            <span :class="s.dropIcon"><Icon name="upload" :size="16" /></span>
-            <p :class="s.dropTitle">Drop your <code>design-system.json</code></p>
-            <p :class="s.dropHint">It's in <code>styled-system/specs/</code> after you run the command below.</p>
-            <div :class="s.dropActions">
-              <label :class="button({ variant: 'primary', size: 'md' })">
-                Choose file
-                <input type="file" accept=".json,application/json" hidden @change="onPick" />
-              </label>
-              <button type="button" :class="button({ size: 'md' })" @click="loadSample">Try the sample</button>
-            </div>
-          </div>
-          <p :class="classes.bar">
-            <Icon name="info" :size="13" />
-            <span>Files are read locally and never uploaded.</span>
-          </p>
-        </div>
-      </Tabs.Content>
-
-      <Tabs.Content value="url" :class="tab.content">
-        <LoadFromUrl />
-      </Tabs.Content>
-
-      <Tabs.Content value="paste" :class="tab.content">
-        <div :class="classes.root">
-          <Field.Root :class="[classes.body, s.pasteField]">
-            <Field.Label :class="s.pasteLabel">Paste the file contents</Field.Label>
-            <Field.Textarea
-              v-model="pasted"
-              :class="control({ kind: 'textarea' })"
-              placeholder='{ "schemaVersion": 1, "categories": {...}, "paths": [...], "tokens": {...} }'
-            />
-            <button
-              type="button"
-              :class="[button({ variant: 'primary', size: 'md' }), s.pasteSubmit]"
-              :disabled="!pasted.trim()"
-              @click="renderPasted"
-            >
-              Open
+      <form :class="s.composer" :data-invalid="error ? '' : undefined" novalidate @submit.prevent="submit">
+        <label for="spec-input" :class="s.srOnly">Link to design-system.json, or its contents</label>
+        <textarea
+          id="spec-input"
+          v-model="input"
+          :class="s.input"
+          :data-json="isJson || undefined"
+          spellcheck="false"
+          autocomplete="off"
+          placeholder="Paste a link or the JSON, or drop a file"
+          aria-describedby="spec-error"
+          @keydown="onKeydown"
+        />
+        <div :class="s.composerBar">
+          <label :class="s.attach">
+            <Icon name="paperclip" :size="14" />
+            Choose file
+            <input type="file" accept=".json,application/json" hidden @change="onPick" />
+          </label>
+          <span :class="s.actions">
+            <span v-if="detected" :class="s.kind">{{ detected }}</span>
+            <button type="submit" :class="s.send" :disabled="!input.trim() || opening" aria-label="Open">
+              <Spinner v-if="opening" />
+              <Icon v-else name="arrowUp" :size="15" />
             </button>
-          </Field.Root>
+          </span>
         </div>
-      </Tabs.Content>
-    </Tabs.Root>
+      </form>
 
-    <PageSection title="Generate the file" :class="s.getOne">
-      <div :class="classes.root">
-        <Clipboard.Root :value="CODEGEN_COMMAND" :class="[classes.body, s.command]">
-          <code :class="s.commandText"><span :class="s.prompt">$</span> {{ CODEGEN_COMMAND }}</code>
-          <Clipboard.Trigger :class="button({ variant: 'ghost', size: 'icon' })" aria-label="Copy command">
+      <p id="spec-error" role="alert" :class="s.error">{{ error }}</p>
+
+      <div :class="s.chips">
+        <button type="button" :class="s.chip({ tone: 'accent' })" @click="loadSample">
+          Try the sample
+          <Icon name="chevronRight" :size="13" />
+        </button>
+        <Clipboard.Root :value="CODEGEN_COMMAND">
+          <Clipboard.Trigger :class="[s.chip(), s.command]">
+            <span :class="s.prompt">$</span> {{ CODEGEN_COMMAND }}
             <Clipboard.Indicator>
-              <Icon name="copy" :size="13" />
-              <template #copied><Icon name="check" :size="13" /></template>
+              <Icon name="copy" :size="12" />
+              <template #copied><Icon name="check" :size="12" /></template>
             </Clipboard.Indicator>
           </Clipboard.Trigger>
         </Clipboard.Root>
-        <p :class="classes.bar">
-          <span>Run it in your Panda project. It writes <code>styled-system/specs/design-system.json</code>.</span>
-        </p>
       </div>
-    </PageSection>
-  </AppFrame>
+
+      <p :class="s.footnote">Your file stays in this browser.</p>
+    </main>
+
+    <div :class="s.strip" aria-hidden="true" />
+
+    <div v-if="dragging" :class="s.dropOverlay" aria-hidden="true">
+      <span :class="s.dropCard">
+        <Icon name="upload" :size="16" />
+        Drop to open
+      </span>
+    </div>
+
+    <BusyOverlay v-if="busy" label="Reading your file…" />
+  </div>
 </template>

@@ -11,5 +11,16 @@ export const globalCss = defineGlobalStyles({
   },
   '*, ::before, ::after': { boxSizing: 'border-box', borderColor: 'line', borderStyle: 'solid' },
   '::selection': { bg: 'accent', color: 'onAccent' },
+  '*': { scrollbarWidth: 'thin', scrollbarColor: '{colors.lineStrong} transparent' },
+  '@supports not (scrollbar-color: auto)': {
+    '::-webkit-scrollbar': { width: '10px', height: '10px' },
+    '::-webkit-scrollbar-track': { bg: 'transparent' },
+    '::-webkit-scrollbar-thumb': {
+      bg: 'lineStrong',
+      rounded: 'full',
+      border: '3px solid transparent',
+      backgroundClip: 'content-box',
+    },
+  },
   a: { color: 'inherit', textDecoration: 'none' },
 })
