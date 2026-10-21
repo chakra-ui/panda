@@ -2,6 +2,7 @@
 
 use crate::common::panda_config;
 use indoc::indoc;
+use insta::assert_snapshot;
 use pandacss_extractor::{ExpressionKind, LocalDeclarationKind, extract, extract_transform};
 
 #[test]
@@ -236,6 +237,27 @@ fn a_non_raw_member_access_is_not_opaque_raw() {
     assert!(binding.has_non_call_references);
 }
 
+fn describe_bindings(source: &str) -> String {
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
+    result
+        .module
+        .local_call_bindings
+        .iter()
+        .map(|binding| {
+            let init = &source[binding.init_span.start as usize..binding.init_span.end as usize];
+            format!(
+                "{} = {init}\n  calls: {}, raw calls: {}, escapes: {}, other uses: {}",
+                binding.local,
+                binding.calls.len(),
+                binding.raw_calls.len(),
+                binding.has_non_call_references,
+                binding.has_other_references,
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 #[test]
 fn collects_recipes_held_by_a_local_object() {
     let source = indoc! {r"
@@ -250,17 +272,13 @@ fn collects_recipes_held_by_a_local_object() {
         export const c = styles.label.raw({ on: true })
         export const d = styles.plain
     "};
-    let result = extract_transform(source, "fixture.tsx", &panda_config());
-    let bindings = &result.module.local_call_bindings;
-    assert_eq!(bindings.len(), 2);
-    assert!(bindings.iter().all(|binding| binding.local == "styles"));
-    assert_eq!(bindings[0].init_span, result.calls[0].span);
-    assert_eq!(bindings[0].calls.len(), 1);
-    assert!(!bindings[0].has_other_references);
-    assert_eq!(bindings[1].init_span, result.calls[1].span);
-    assert_eq!(bindings[1].calls.len(), 1);
-    assert_eq!(bindings[1].raw_calls.len(), 1);
-    assert!(!bindings[1].has_non_call_references);
+
+    assert_snapshot!(describe_bindings(source), @"
+    styles = cva({ base: { color: 'red' } })
+      calls: 1, raw calls: 0, escapes: false, other uses: false
+    styles = cva({ variants: { on: { true: { opacity: '0.5' } } } })
+      calls: 1, raw calls: 1, escapes: false, other uses: true
+    ");
 }
 
 #[test]
@@ -274,15 +292,17 @@ fn using_a_member_as_a_value_marks_only_that_member() {
         export const alias = styles.root
         export const cls = styles.label()
     "};
-    let result = extract_transform(source, "fixture.tsx", &panda_config());
-    let bindings = &result.module.local_call_bindings;
-    assert_eq!(bindings.len(), 2);
-    assert!(bindings[0].has_non_call_references);
-    assert!(!bindings[1].has_non_call_references);
+
+    assert_snapshot!(describe_bindings(source), @"
+    styles = cva({ base: { color: 'red' } })
+      calls: 0, raw calls: 0, escapes: true, other uses: true
+    styles = cva({ base: { color: 'blue' } })
+      calls: 1, raw calls: 0, escapes: false, other uses: false
+    ");
 }
 
 #[test]
-fn using_the_object_as_a_value_marks_every_member() {
+fn passing_the_object_around_marks_every_member() {
     let source = indoc! {r"
         import { cva } from '@panda/css'
         const styles = {
@@ -291,35 +311,67 @@ fn using_the_object_as_a_value_marks_every_member() {
         }
         export const cls = styles.root()
         register(styles)
-        export const opt = styles?.label()
     "};
-    let result = extract_transform(source, "fixture.tsx", &panda_config());
-    let bindings = &result.module.local_call_bindings;
-    assert_eq!(bindings.len(), 2);
-    assert!(
-        bindings
-            .iter()
-            .all(|binding| binding.has_non_call_references)
-    );
-    assert_eq!(bindings[0].calls.len(), 1);
+
+    assert_snapshot!(describe_bindings(source), @"
+    styles = cva({ base: { color: 'red' } })
+      calls: 1, raw calls: 0, escapes: true, other uses: true
+    styles = cva({ base: { color: 'blue' } })
+      calls: 0, raw calls: 0, escapes: true, other uses: true
+    ");
 }
 
 #[test]
-fn skips_an_object_whose_keys_may_not_read_back_the_recipe() {
-    for object in [
-        "{ root: cva({ base: { color: 'red' } }), ...other }",
-        "{ root: cva({ base: { color: 'red' } }), [key]: 1 }",
-        "{ root: cva({ base: { color: 'red' } }), root: 1 }",
-    ] {
-        let source = format!(
-            "import {{ cva }} from '@panda/css'\nconst styles = {object}\nexport const cls = styles.root()\n"
-        );
-        let result = extract_transform(&source, "fixture.tsx", &panda_config());
-        assert!(
-            result.module.local_call_bindings.is_empty(),
-            "collected a binding from {object}"
-        );
-    }
+fn optional_chaining_on_the_object_marks_every_member() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = {
+          root: cva({ base: { color: 'red' } }),
+          label: cva({ base: { color: 'blue' } }),
+        }
+        export const cls = styles.root()
+        export const opt = styles?.label()
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"
+    styles = cva({ base: { color: 'red' } })
+      calls: 1, raw calls: 0, escapes: true, other uses: true
+    styles = cva({ base: { color: 'blue' } })
+      calls: 0, raw calls: 0, escapes: true, other uses: true
+    ");
+}
+
+#[test]
+fn skips_an_object_with_a_spread() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = { root: cva({ base: { color: 'red' } }), ...other }
+        export const cls = styles.root()
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"");
+}
+
+#[test]
+fn skips_an_object_with_a_computed_key() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = { root: cva({ base: { color: 'red' } }), [key]: 1 }
+        export const cls = styles.root()
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"");
+}
+
+#[test]
+fn skips_an_object_with_a_repeated_key() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = { root: cva({ base: { color: 'red' } }), root: 1 }
+        export const cls = styles.root()
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"");
 }
 
 #[test]
@@ -333,11 +385,11 @@ fn ignores_references_in_type_positions() {
         export const a = recipe({ on: true })
         export const b = styles.root({ on: true })
     "};
-    let result = extract_transform(source, "fixture.tsx", &panda_config());
-    let bindings = &result.module.local_call_bindings;
-    assert_eq!(bindings.len(), 2);
-    for binding in bindings {
-        assert!(!binding.has_other_references, "{}", binding.local);
-        assert_eq!(binding.calls.len(), 1);
-    }
+
+    assert_snapshot!(describe_bindings(source), @"
+    recipe = cva({ variants: { on: { true: { opacity: '0.5' } } } })
+      calls: 1, raw calls: 0, escapes: false, other uses: false
+    styles = cva({ variants: { on: { true: { opacity: '0.5' } } } })
+      calls: 1, raw calls: 0, escapes: false, other uses: false
+    ");
 }

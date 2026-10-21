@@ -1907,28 +1907,35 @@ fn memoizes_a_recipe_called_through_a_local_object() {
 }
 
 #[test]
-fn attaches_the_recipe_surface_when_its_object_escapes() {
-    for source in [
-        indoc! {r#"
-            import { cva } from '@panda/css';
-            export const styles = {
-              button: cva({ variants: { size: { sm: { color: 'red' } } } }),
-            };
-        "#},
-        indoc! {r#"
-            import { cva } from '@panda/css';
-            const styles = {
-              button: cva({ variants: { size: { sm: { color: 'red' } } } }),
-            };
-            export const cls = styles.button({ size: 'sm' });
-            register(styles);
-        "#},
-    ] {
-        let output = transform("src/recipes.ts", source);
+fn attaches_the_recipe_surface_when_its_object_is_exported() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        export const styles = {
+          button: cva({ variants: { size: { sm: { color: 'red' } } } }),
+        };
+    "#};
 
-        assert!(output.helper.needs_attach_recipe, "{source}");
-        assert!(!output.helper.needs_memo_recipe, "{source}");
-    }
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.helper.needs_attach_recipe);
+    assert!(!output.helper.needs_memo_recipe);
+}
+
+#[test]
+fn attaches_the_recipe_surface_when_its_object_is_passed_around() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        const styles = {
+          button: cva({ variants: { size: { sm: { color: 'red' } } } }),
+        };
+        export const cls = styles.button({ size: 'sm' });
+        register(styles);
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.helper.needs_attach_recipe);
+    assert!(!output.helper.needs_memo_recipe);
 }
 
 #[test]
