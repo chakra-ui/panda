@@ -21,6 +21,7 @@ pub mod position_try;
 pub mod regex;
 pub mod stringify;
 pub mod strings;
+pub mod style_value;
 pub mod unit_conversion;
 pub mod view_transition;
 
@@ -54,6 +55,7 @@ pub use strings::{
     hyphenate_property, is_js_safe_integer, js_ident, number_to_js_string, pascal_case,
     push_number_to_js_string,
 };
+pub use style_value::{is_js_whitespace, sanitize_style_value};
 pub use unit_conversion::to_rem;
 pub use view_transition::{
     ViewTransitionStyle, filter_view_transition_slots, stable_stringify_view_transition,

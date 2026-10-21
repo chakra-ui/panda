@@ -2076,3 +2076,46 @@ fn array_css_arg_with_conditional_element_emits_every_branch() {
     }
     ");
 }
+
+#[test]
+fn grid_template_areas_with_extra_spaces_keep_them_in_css_and_the_class() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] }
+    }));
+    let css = compile_output(
+        &config,
+        "import { css } from '@panda/css'; css({ gridTemplateAreas: `\n  \"col1  col2\"\n  \"col3 col4\"\n` })",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
+    assert_snapshot!(css, @r#"
+    @layer utilities {
+      .grid-template-areas_\"col1__col2\"_\"col3_col4\" {
+        grid-template-areas: "col1  col2" "col3 col4";
+      }
+    }
+    "#);
+}
+
+#[test]
+fn whitespace_inside_quotes_becomes_underscores_in_the_class() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] }
+    }));
+    let css = compile_output(
+        &config,
+        "import { css } from '@panda/css'; css({ content: '\"a\\tb  c\"', fontFamily: \"'Open  Sans',  serif\" })",
+        StylesheetOptions::default(),
+    )
+    .get_layer_css(&[StylesheetLayer::Utilities]);
+    assert_snapshot!(css, @r#"
+    @layer utilities {
+      .content_\"a_b__c\" {
+        content: "a	b  c";
+      }
+      .font-family_\'Open__Sans\'\,_serif {
+        font-family: 'Open  Sans', serif;
+      }
+    }
+    "#);
+}

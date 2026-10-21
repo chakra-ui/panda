@@ -1,0 +1,86 @@
+[
+  {
+    "name": "unquoted spaces collapse",
+    "value": "1px  solid   red",
+    "sanitized": "1px solid red",
+    "classValue": "1px_solid_red"
+  },
+  {
+    "name": "tabs and newlines collapse",
+    "value": "1rem\t\n 2rem",
+    "sanitized": "1rem 2rem",
+    "classValue": "1rem_2rem"
+  },
+  {
+    "name": "grid areas keep quoted spacing",
+    "value": "\"col1  col2\" \"col3 col4\"",
+    "sanitized": "\"col1  col2\" \"col3 col4\"",
+    "classValue": "\"col1__col2\"_\"col3_col4\""
+  },
+  {
+    "name": "multi-line grid areas",
+    "value": "\n  \"col1  col2\"\n  \"col3 col4\"\n",
+    "sanitized": " \"col1  col2\" \"col3 col4\" ",
+    "classValue": "\"col1__col2\"_\"col3_col4\""
+  },
+  {
+    "name": "tab inside double quotes",
+    "value": "\"a\tb\"",
+    "sanitized": "\"a\tb\"",
+    "classValue": "\"a_b\""
+  },
+  {
+    "name": "content in single quotes",
+    "value": "'a  b'",
+    "sanitized": "'a  b'",
+    "classValue": "'a__b'"
+  },
+  {
+    "name": "content with a function",
+    "value": "attr(title)  \"  x  \"",
+    "sanitized": "attr(title) \"  x  \"",
+    "classValue": "attr(title)_\"__x__\""
+  },
+  {
+    "name": "unterminated quote keeps the rest",
+    "value": "\"open  run",
+    "sanitized": "\"open  run",
+    "classValue": "\"open__run"
+  },
+  {
+    "name": "no-break spaces collapse",
+    "value": "1px\u00a0\u00a0solid",
+    "sanitized": "1px solid",
+    "classValue": "1px_solid"
+  },
+  {
+    "name": "line separator collapses",
+    "value": "a\u2028b",
+    "sanitized": "a b",
+    "classValue": "a_b"
+  },
+  {
+    "name": "byte order mark collapses",
+    "value": "a\ufeffb",
+    "sanitized": "a b",
+    "classValue": "a_b"
+  },
+  {
+    "name": "next line is not JS whitespace",
+    "value": "a\u0085b",
+    "sanitized": "a\u0085b",
+    "classValue": "a\u0085b"
+  },
+  {
+    "name": "important keeps its space",
+    "value": "1rem  2rem  !important",
+    "sanitized": "1rem 2rem !important",
+    "classValue": "1rem_2rem_!important"
+  },
+  {
+    "name": "already clean",
+    "value": "1px solid red",
+    "sanitized": "1px solid red",
+    "classValue": "1px_solid_red"
+  }
+]

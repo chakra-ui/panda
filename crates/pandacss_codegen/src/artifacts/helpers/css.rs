@@ -55,7 +55,32 @@ pub(super) fn sanitize_style_value() -> Item {
     Item::runtime(ItemNode::RawStmt(
         indoc! {r#"
             const WHITESPACE_REGEX = /[\n\s]+/g
-            const sanitizeStyleValue = (value: any) => typeof value === "string" ? value.replace(WHITESPACE_REGEX, " ") : value
+            const SPACE_REGEX = /\s/
+            const QUOTE_REGEX = /["']/
+            const sanitizeStyleValue = (value: any) => {
+              if (typeof value !== "string") return value
+              if (!QUOTE_REGEX.test(value)) return value.replace(WHITESPACE_REGEX, " ")
+              let out = ""
+              let quote = ""
+              let afterSpace = false
+              for (const ch of value) {
+                if (quote) {
+                  out += ch
+                  if (ch === quote) quote = ""
+                } else if (ch === '"' || ch === "'") {
+                  quote = ch
+                  out += ch
+                  afterSpace = false
+                } else if (SPACE_REGEX.test(ch)) {
+                  if (!afterSpace) out += " "
+                  afterSpace = true
+                } else {
+                  out += ch
+                  afterSpace = false
+                }
+              }
+              return out
+            }
         "#}
         .trim()
         .into(),

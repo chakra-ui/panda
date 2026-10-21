@@ -13,8 +13,9 @@ use oxc_ast::ast::{
     VariableDeclarationKind,
 };
 
-use crate::literal::{collapse_whitespace, expression_to_literal, less_than, loose_eq, strict_eq};
+use crate::literal::{expression_to_literal, less_than, loose_eq, strict_eq};
 use crate::{Literal, Resolver};
+use pandacss_shared::sanitize_style_value;
 
 /// Owned, closed representation of a pure function body.
 #[derive(Debug, Clone, PartialEq)]
@@ -376,7 +377,7 @@ fn lower_expr(
 ) -> Option<OwnedPureExpr> {
     match expr {
         Expression::StringLiteral(s) => Some(OwnedPureExpr::Value(Literal::String(
-            collapse_whitespace(&s.value),
+            sanitize_style_value(&s.value).into_owned(),
         ))),
         Expression::NumericLiteral(n) => Some(OwnedPureExpr::Value(Literal::Number(n.value))),
         Expression::BooleanLiteral(b) => Some(OwnedPureExpr::Value(Literal::Bool(b.value))),
@@ -622,18 +623,19 @@ fn eval_expr(expr: &OwnedPureExpr, args: &[Literal]) -> Option<Literal> {
                     out.push_str(&eval_expr(e, args)?.to_loose_string()?);
                 }
             }
-            Some(Literal::String(collapse_whitespace(&out)))
+            Some(Literal::String(sanitize_style_value(&out).into_owned()))
         }
         OwnedPureExpr::BinaryAdd(left, right) => {
             let left_val = eval_expr(left, args)?;
             let right_val = eval_expr(right, args)?;
             // JS `+`: any string operand → concatenation, else numeric add.
             if left_val.is_string_like() || right_val.is_string_like() {
-                Some(Literal::String(collapse_whitespace(&format!(
+                let joined = format!(
                     "{}{}",
                     left_val.to_loose_string()?,
                     right_val.to_loose_string()?
-                ))))
+                );
+                Some(Literal::String(sanitize_style_value(&joined).into_owned()))
             } else {
                 Some(Literal::Number(
                     left_val.to_number()? + right_val.to_number()?,

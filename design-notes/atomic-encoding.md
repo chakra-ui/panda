@@ -25,6 +25,16 @@ Three perf choices:
 - **Numbers as their JS string form** (`AtomValue::Number(Box<str>)`) — `Atom: Hash` needs `Eq`, which `f64` lacks; the
   string round-trips and preserves the integer/float distinction.
 
+### Whitespace in string values
+
+The runtime `css()` also builds class names from values, so the compiler and the generated runtime must agree.
+`pandacss_shared::sanitize_style_value` and the runtime's `sanitizeStyleValue` apply one rule: collapse whitespace runs
+outside quotes to one space, keep quoted text as written (`content`, `grid-template-areas`). The encoder applies it in
+`leaf_to_atom_value`, so values from any source (extraction, config recipes, static CSS, pattern transforms) follow it.
+Class values then replace every JS whitespace character with `_` (`without_space`), since a class name can't hold
+whitespace. `crates/pandacss_shared/tests/fixtures/style-values.json` is the shared conformance list: Rust tests and the
+runtime parity test in `packages/compiler` both read it.
+
 ## RecipeStyleEntry
 
 ```rust

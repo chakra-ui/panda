@@ -809,9 +809,9 @@ pub(crate) fn jsx_attributes_to_style_tree(
                 }
                 let value = match attr.value.as_ref() {
                     None => StyleTree::Bool(true),
-                    Some(JSXAttributeValue::StringLiteral(s)) => {
-                        StyleTree::String(crate::literal::collapse_whitespace(&s.value))
-                    }
+                    Some(JSXAttributeValue::StringLiteral(s)) => StyleTree::String(
+                        pandacss_shared::sanitize_style_value(&s.value).into_owned(),
+                    ),
                     Some(JSXAttributeValue::ExpressionContainer(container)) => {
                         match &container.expression {
                             JSXExpression::EmptyExpression(_) => continue,

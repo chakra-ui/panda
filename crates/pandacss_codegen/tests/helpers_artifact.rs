@@ -46,9 +46,9 @@ fn ts_helpers_include_memo_and_style_serializer() {
     let source = file(&helpers, "helpers.ts");
     assert!(
         source.contains(
-            "const WHITESPACE_REGEX = /[\\n\\s]+/g\nconst sanitizeStyleValue = (value: any)"
+            "const WHITESPACE_REGEX = /[\\n\\s]+/g\nconst SPACE_REGEX = /\\s/\nconst QUOTE_REGEX = /[\"']/\nconst sanitizeStyleValue = (value: any)"
         ),
-        "multiline value sanitizer should reuse a module-scope regex"
+        "value sanitizer should reuse module-scope regexes"
     );
     assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo<T extends (...args: any[]) => any>(fn: T): T {
@@ -403,9 +403,10 @@ fn js_helpers_include_memo_and_style_serializer() {
     assert_eq!(paths(&helpers), vec!["helpers.js", "helpers.d.ts"]);
     let source = file(&helpers, "helpers.js");
     assert!(
-        source
-            .contains("const WHITESPACE_REGEX = /[\\n\\s]+/g\nconst sanitizeStyleValue = (value)"),
-        "multiline value sanitizer should reuse a module-scope regex"
+        source.contains(
+            "const WHITESPACE_REGEX = /[\\n\\s]+/g\nconst SPACE_REGEX = /\\s/\nconst QUOTE_REGEX = /[\"']/\nconst sanitizeStyleValue = (value)"
+        ),
+        "value sanitizer should reuse module-scope regexes"
     );
     assert_snapshot!(function_block(source, "memo"), @r#"
     export function memo(fn) {
