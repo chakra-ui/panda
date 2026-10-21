@@ -1,5 +1,87 @@
 # @pandacss/compiler
 
+## 2.4.0
+
+### Minor Changes
+
+- b9d7d19: Fix type errors when your app extends a design system.
+
+  Tokens, keyframes or conditions your app added were rejected by the design system's types, like its component props.
+  Now they're accepted, including through nested design systems.
+
+  ```ts
+  import type { SystemStyleObject } from '@acme/ds/types'
+
+  const styles: SystemStyleObject = css.raw({ animationName: 'appFade' }) // ✅ your keyframe
+  ```
+
+- 587fa95: Recipe conditions now follow the order you write them, so the one written last wins, including `_hover` and
+  `_active`.
+
+  ```ts
+  base: {
+    _dark: { color: 'white' },
+    '&[data-active]': { color: 'red' }, // written last, wins on an active element in dark mode
+  }
+  ```
+
+### Patch Changes
+
+- c850097: Add `cornerShape` (and its per-corner variants), `baselineSource` and `dynamicRangeLimit` to the generated
+  types.
+
+  ```ts
+  css({ borderRadius: '50%', cornerShape: 'squircle' })
+  ```
+
+- c6cd931: Fix source inspection missing the token on values of utilities that build their values from `theme()`, like
+  `mt: '2'` or `mx: { base: '-2' }`.
+- 79046e9: Fix source transforms reading a pattern's `.raw()` props as styles when it's passed to `css()`, like
+  `css(fade.raw({ inset: 56 }), { overflowX: 'auto' })`. The transform now runs the pattern, so the classes match the
+  generated CSS.
+
+  Patterns without a `transform` now emit CSS, and `defaultValues` now apply to `pattern.raw()` inside `css()`.
+
+- 98a3d5c: Fix styles not applying when a value has extra spaces or tabs inside quotes, such as `gridTemplateAreas`. The
+  class on the element now matches the generated CSS, and quoted text keeps its spacing.
+
+  ```ts
+  css({ gridTemplateAreas: `"col1  col2" "col3 col4"` })
+  ```
+
+- faa1568: Resolve a `.js` import specifier to its `.ts` or `.tsx` source (and `.mjs` to `.mts`, `.cjs` to `.cts`) when
+  reading values from another file, as TypeScript and bundlers do. Before, a value imported as `'./tokens.js'` or
+  through a package.json `imports` map ending in `.js` was silently dropped, so its CSS was never generated.
+- 5105a71: Resolve `.jsx` imports to `.tsx` sources and extensionless imports to `.mts` / `.cts` files when reading
+  values from another file.
+- 140b896: Fix recipe types: `splitVariantProps` keeps union props and checks variant values, config recipe `raw()`
+  returns its variant props, and `cva()` / `sva()` results expose `config`.
+
+  ```ts
+  const [, rest] = button.splitVariantProps(props) // rest stays a union
+  const args = { ...button.raw({ size: 'lg' }), title: 'Hi' } // raw returns { size: 'lg' }
+  ```
+
+- bcc43e1: Recipes kept in a local object now compile to plain functions, so their config no longer ships in the bundle.
+
+  ```ts
+  const styles = { button: cva({ ... }) }
+
+  styles.button({ size: 'sm' })
+  ```
+
+  This applies when the recipe is only called. Type-only uses, like `RecipeVariantProps<typeof styles.button>`, don't
+  count.
+
+- 5105a71: `optimize.treeshakeDesignSystem` now keeps the styles of design-system modules that an imported component
+  imports, like a `Label` rendered by a `Checkbox`. Design systems need to rerun `panda lib` to regenerate their build
+  info.
+- Updated dependencies [53f924c]
+- Updated dependencies [5105a71]
+  - @pandacss/compiler-shared@2.4.0
+  - @pandacss/config@2.4.0
+  - @pandacss/types@2.4.0
+
 ## 2.3.0
 
 ### Minor Changes

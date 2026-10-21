@@ -1,5 +1,36 @@
 # @pandacss/cli
 
+## 2.4.0
+
+### Patch Changes
+
+- 53f924c: Add `panda studio`. It opens Panda Studio in your browser, connected to your project, and updates it as you
+  save. Usage comes from your full `panda.config`, the same as `panda analyze`.
+
+  ```sh
+  panda studio            # opens http://localhost:6420
+  panda studio --no-open  # prints the link instead
+  ```
+
+  The driver also gets `specJson()`, which returns the design-system document without writing a file.
+
+- Updated dependencies [c850097]
+- Updated dependencies [b9d7d19]
+- Updated dependencies [c6cd931]
+- Updated dependencies [53f924c]
+- Updated dependencies [79046e9]
+- Updated dependencies [98a3d5c]
+- Updated dependencies [587fa95]
+- Updated dependencies [faa1568]
+- Updated dependencies [5105a71]
+- Updated dependencies [140b896]
+- Updated dependencies [bcc43e1]
+- Updated dependencies [5105a71]
+  - @pandacss/compiler@2.4.0
+  - @pandacss/compiler-shared@2.4.0
+  - @pandacss/config@2.4.0
+  - @pandacss/types@2.4.0
+
 ## 2.3.0
 
 ### Minor Changes

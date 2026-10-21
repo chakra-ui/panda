@@ -1,5 +1,14 @@
 # @pandacss/config
 
+## 2.4.0
+
+### Patch Changes
+
+- Updated dependencies [53f924c]
+- Updated dependencies [5105a71]
+  - @pandacss/compiler-shared@2.4.0
+  - @pandacss/types@2.4.0
+
 ## 2.3.0
 
 ### Patch Changes
