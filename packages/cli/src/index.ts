@@ -6,6 +6,7 @@ export { runDoctor } from './commands/doctor'
 export { runBuildinfo } from './commands/buildinfo'
 export { runLib } from './commands/lib'
 export { runAnalyze } from './commands/analyze'
+export { runStudio } from './commands/studio'
 export { projectSummary, type ProjectSummary } from './project-summary'
 export { runInit, setupGitIgnore } from './commands/init'
 export type {

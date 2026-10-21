@@ -119,6 +119,7 @@ describe('Compiler', () => {
     expect(artifact?.files.map((file) => file.path)).toMatchInlineSnapshot(`
       [
         "types/tokens.d.ts",
+        "types/register.d.ts",
         "types/system.d.ts",
         "types/pattern.d.ts",
         "types/recipe.d.ts",
@@ -127,21 +128,25 @@ describe('Compiler', () => {
       ]
     `)
     expect(artifact?.files.find((file) => file.path === 'types/tokens.d.ts')?.code).toMatchInlineSnapshot(`
-      "export type ColorToken = "colorPalette.500" | "red.500"
+      "import type { Registered } from './register';
 
-      export interface Tokens {
+      export type ColorToken = Registered<"ColorToken", "colorPalette.500" | "red.500">
+
+      interface LocalTokens {
         colors: ColorToken
       }
 
-      export type Token = \`colors.\${ColorToken}\`
+      export interface Tokens extends Registered<"Tokens", LocalTokens> {}
 
-      export type ColorOpacityModifier = \`\${number}\`
+      export type Token = Registered<"Token", \`colors.\${ColorToken}\`>
 
-      export type ColorOpacityToken = \`colors.\${ColorToken}/\${ColorOpacityModifier}\`
+      export type ColorOpacityModifier = Registered<"ColorOpacityModifier", \`\${number}\`>
+
+      export type ColorOpacityToken = Registered<"ColorOpacityToken", \`colors.\${ColorToken}/\${ColorOpacityModifier}\`>
 
       export type TokenPath = Token | ColorOpacityToken
 
-      export type ColorPalette = "red"
+      export type ColorPalette = Registered<"ColorPalette", "red">
 
       export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never"
     `)
@@ -159,6 +164,22 @@ describe('Compiler', () => {
         "conditions",
       ]
     `)
+  })
+
+  it('regenerates the types when the design system changes', () => {
+    const compiler = createProject({ designSystem: '@acme/ui' })
+
+    const affected = compiler.generateAffectedArtifacts(['designSystem'])
+    const register = affected
+      .find((artifact) => artifact.id === 'types')
+      ?.files.find((file) => file.path === 'types/register.d.ts')
+
+    expect(affected.map((artifact) => artifact.id)).toMatchInlineSnapshot(`
+      [
+        "types",
+      ]
+    `)
+    expect(register?.code).toContain('declare module "@acme/ui/types"')
   })
 
   it('uses config forceImportExtension for generated import specifiers', () => {

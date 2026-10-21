@@ -20,8 +20,8 @@ use smallvec::SmallVec;
 use pandacss_literal::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe};
 use pandacss_shared::{
-    is_first_that_works_value, number_to_js_string, push_number_to_js_string, split_important,
-    split_run_important,
+    is_first_that_works_value, number_to_js_string, push_number_to_js_string, sanitize_style_value,
+    split_important, split_run_important,
 };
 
 // PERF(port): `Atom::conditions` inline budget, not a semantic limit — longer
@@ -670,11 +670,12 @@ fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
             if is_absolute_url(s) {
                 return None;
             }
+            let s = sanitize_style_value(s);
             // Members carry their own importance; only a trailing marker is the run's.
-            let (value, important) = if is_first_that_works_value(s) {
-                split_run_important(s)
+            let (value, important) = if is_first_that_works_value(&s) {
+                split_run_important(&s)
             } else {
-                split_important(s)
+                split_important(&s)
             };
             // `"1"` == `1`: encode as `Number` so it dedupes and gets px.
             let value = match canonical_number(&value) {
@@ -684,7 +685,8 @@ fn leaf_to_atom_value(value: &Literal) -> Option<EncodedLeaf> {
             Some(EncodedLeaf { value, important })
         }
         Literal::Token { path, value } => {
-            let (value, important) = split_important(value);
+            let value = sanitize_style_value(value);
+            let (value, important) = split_important(&value);
             Some(EncodedLeaf {
                 value: AtomValue::Token {
                     path: path.clone().into_boxed_str(),

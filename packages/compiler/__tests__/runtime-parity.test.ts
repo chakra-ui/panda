@@ -1,9 +1,21 @@
 import { describe, expect, it } from 'vitest'
 import { loadGeneratedModule } from './generated-runtime'
-import { createProject } from './test-utils'
+import { createProject, createTransformProject } from './test-utils'
 
 type CssRuntime = {
   css: (styles: Record<string, unknown>) => string
+}
+
+function unescapeCss(selector: string) {
+  return selector
+    .replace(/\\([0-9a-fA-F]{1,6}) ?/g, (_, hex: string) => String.fromCodePoint(Number.parseInt(hex, 16)))
+    .replace(/\\(.)/g, '$1')
+}
+
+function classSelectors(css: string) {
+  const names = new Set<string>()
+  for (const match of css.matchAll(/\.((?:\\.|[^\s.,:{\\])+)/g)) names.add(unescapeCss(match[1]))
+  return names
 }
 
 type ViewTransitionRuntime = {
@@ -381,5 +393,112 @@ describe('generated runtime/cssgen parity', () => {
     expect(utilitiesCss).toContain('view-transition-class: vt_slide;')
     expect(utilitiesCss).toContain('::view-transition-old(.vt_slide)')
     expect(utilitiesCss).not.toContain('vt_fade')
+  })
+
+  it('keeps extra spaces in grid template areas css and matches the runtime class', async () => {
+    const compiler = createProject({ outExtension: 'mjs' })
+
+    const gridTemplateAreas = [``, `  "col1  col2"`, `  "col3 col4"`, ``].join('\n')
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { css } from '@panda/css'; css({ gridTemplateAreas: ${JSON.stringify(gridTemplateAreas)} })`,
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css({ gridTemplateAreas })
+    const utilitiesCss = compiler.getLayerCss({ layers: ['utilities'] }).css
+
+    expect(className).toBe('grid-template-areas_"col1_col2"_"col3_col4"')
+    expect(classSelectors(utilitiesCss)).toContain(className)
+    expect(utilitiesCss).toContain('grid-template-areas: "col1  col2" "col3 col4";')
+  })
+
+  it('keeps tabs inside quoted content out of the class name', async () => {
+    const compiler = createProject({ outExtension: 'mjs' })
+
+    const content = '"a\tb"'
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { css } from '@panda/css'; css({ content: ${JSON.stringify(content)} })`,
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css({ content })
+    const utilitiesCss = compiler.getLayerCss({ layers: ['utilities'] }).css
+
+    expect(className).toBe('content_"a_b"')
+    expect(classSelectors(utilitiesCss)).toContain(className)
+    expect(utilitiesCss).toContain('content: "a\tb";')
+  })
+
+  it('uses the same class as cssgen for tricky whitespace values', async () => {
+    const styleValues = [
+      '1px  solid   red',
+      '1rem\t\n 2rem',
+      '"col1  col2" "col3 col4"',
+      '\n  "col1  col2"\n  "col3 col4"\n',
+      '"a\tb"',
+      "'a  b'",
+      'attr(title)  "  x  "',
+      '"open  run',
+      '1px\u00a0\u00a0solid',
+      'a\u2028b',
+      'a\ufeffb',
+      'a\u0085b',
+      '1rem  2rem  !important',
+      '1px solid red',
+    ]
+    const compiler = createProject({ outExtension: 'mjs' })
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      [
+        `import { css } from '@panda/css'`,
+        ...styleValues.map((value) => `css({ content: ${JSON.stringify(value)} })`),
+      ].join('\n'),
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const selectors = classSelectors(compiler.getLayerCss({ layers: ['utilities'] }).css)
+
+    for (const value of styleValues) {
+      expect(selectors, JSON.stringify(value)).toContain(runtime.css({ content: value }))
+    }
+  })
+
+  it('rewrites quoted-whitespace values to the class the runtime and css use', async () => {
+    const compiler = createTransformProject({ outExtension: 'mjs' })
+
+    const gridTemplateAreas = '"col1  col2" "col3 col4"'
+    const source = `import { css } from '@panda/css'; export const cls = css({ gridTemplateAreas: ${JSON.stringify(gridTemplateAreas)} })`
+
+    compiler.parseFileSource('/virtual/app.ts', source)
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css({ gridTemplateAreas })
+    const transformed = compiler.transformSource({ path: 'src/app.ts', source })
+
+    expect(transformed.changed).toBe(true)
+    expect(transformed.code).toContain(JSON.stringify(className))
+    expect(classSelectors(compiler.getLayerCss({ layers: ['utilities'] }).css)).toContain(className)
+  })
+
+  it('uses the same hashed class as cssgen for quoted-whitespace values', async () => {
+    const compiler = createProject({ outExtension: 'mjs', hash: { className: true } })
+
+    const gridTemplateAreas = '"col1  col2" "col3 col4"'
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { css } from '@panda/css'; css({ gridTemplateAreas: ${JSON.stringify(gridTemplateAreas)} })`,
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css({ gridTemplateAreas })
+
+    expect(className).not.toContain('col1')
+    expect(classSelectors(compiler.getLayerCss({ layers: ['utilities'] }).css)).toContain(className)
   })
 })

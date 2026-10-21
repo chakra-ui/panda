@@ -5,8 +5,10 @@
 use std::borrow::Cow;
 
 use pandacss_encoder::AuthoredOrder;
+use rustc_hash::FxHashMap;
 
 use crate::grouped::{GroupNode, GroupedDeclaration, RuleBody};
+use crate::sort::declaration_order;
 use crate::writer::CssWriter;
 
 /// User-facing rule identity before condition lowering. Class targets still
@@ -65,6 +67,55 @@ impl Declaration {
 pub(crate) struct StyleRule {
     pub target: LoweredTarget,
     pub declarations: Vec<Declaration>,
+}
+
+/// Joins an earlier block only when no other entry's block sits after it.
+#[derive(Default)]
+pub(crate) struct AuthoredRules {
+    blocks: Vec<AuthoredBlock>,
+    last_block: FxHashMap<LoweredTarget, usize>,
+}
+
+struct AuthoredBlock {
+    target: LoweredTarget,
+    entry: usize,
+    declarations: Vec<Declaration>,
+}
+
+impl AuthoredRules {
+    pub fn append(&mut self, target: LoweredTarget, entry: usize, declarations: Vec<Declaration>) {
+        if let Some(&index) = self.last_block.get(&target) {
+            let owner = self.blocks[index].entry;
+            let joinable = self.blocks[index + 1..]
+                .iter()
+                .all(|block| block.entry == owner || block.entry == entry);
+            if joinable {
+                append_declarations(&mut self.blocks[index].declarations, declarations);
+                return;
+            }
+        }
+        self.last_block.insert(target.clone(), self.blocks.len());
+        self.blocks.push(AuthoredBlock {
+            target,
+            entry,
+            declarations,
+        });
+    }
+
+    pub fn into_style_rules(self) -> Vec<StyleRule> {
+        self.blocks
+            .into_iter()
+            .map(|mut block| {
+                block
+                    .declarations
+                    .sort_by_cached_key(|declaration| declaration_order(&declaration.prop));
+                StyleRule {
+                    target: block.target,
+                    declarations: block.declarations,
+                }
+            })
+            .collect()
+    }
 }
 
 pub(crate) fn push_grouped_rule(

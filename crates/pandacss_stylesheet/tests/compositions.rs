@@ -486,3 +486,36 @@ fn unused_compositions_emit_no_css() {
     let utilities = compile_layer_css(&cfg, "", &[StylesheetLayer::Utilities]);
     assert_snapshot!(utilities, @"");
 }
+
+#[test]
+fn text_style_condition_written_last_wins_when_both_match() {
+    let cfg = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "conditions": { "dark": ".dark &" },
+        "theme": {
+            "textStyles": {
+                "label": { "value": { "color": "gray", "_dark": { "color": "white" }, "&[data-active]": { "color": "red" } } }
+            }
+        }
+    }));
+    let utilities = compile_layer_css(
+        &cfg,
+        "import { css } from '@panda/css'; css({ textStyle: 'label' });",
+        &[StylesheetLayer::Utilities],
+    );
+    assert_snapshot!(utilities, @"
+    @layer utilities {
+      @layer compositions {
+        .textStyle_label {
+          color: gray;
+        }
+        .dark .textStyle_label {
+          color: white;
+        }
+        .textStyle_label[data-active] {
+          color: red;
+        }
+      }
+    }
+    ");
+}

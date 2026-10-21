@@ -70,6 +70,22 @@ export default defineConfig({
 If both your app and `@acme/ds` define `spacing.6`, your value wins. Panda still reports `design_system_token_conflict`
 (info) so the collision doesn't pass silently.
 
+### Your additions type-check in the design system
+
+The design system's types accept what you add, including through nested design systems. There's nothing to set up.
+
+```ts
+import type { SystemStyleObject } from '@acme/ds/types'
+import { css } from '../styled-system/css'
+
+const styles: SystemStyleObject = css.raw({ padding: '6' }) // `spacing.6` is yours
+```
+
+- The design system needs a `./types` export. `panda lib` writes it.
+- Use `designSystem`. Importing its config as a preset doesn't share types.
+- Don't rename or remove tokens it uses. Its components follow your types.
+- Type-check one app per `tsconfig`. Two apps in one program conflict (`TS2717`).
+
 ## Wire up the bundler
 
 The bundler needs the Panda plugin to generate CSS for both your app and the design system's components:

@@ -321,6 +321,7 @@ fn emits_ts_source_types() {
         paths(types),
         vec![
             "types/tokens.ts",
+            "types/register.ts",
             "types/system.ts",
             "types/pattern.ts",
             "types/recipe.ts",
@@ -328,44 +329,46 @@ fn emits_ts_source_types() {
         ]
     );
 
-    assert_eq!(
-        file(types, "types/tokens.ts"),
-        indoc! {r#"
-        export type ColorToken = "red.500" | "blue.500"
+    insta::assert_snapshot!(file(types, "types/tokens.ts"), @r#"
+    import type { Registered } from './register';
 
-        export type OpacityToken = "half"
+    export type ColorToken = Registered<"ColorToken", "red.500" | "blue.500">
 
-        export type SpacingToken = "1" | "2"
+    export type OpacityToken = Registered<"OpacityToken", "half">
 
-        export interface Tokens {
-          colors: ColorToken
-          opacity: OpacityToken
-          spacing: SpacingToken
-        }
+    export type SpacingToken = Registered<"SpacingToken", "1" | "2">
 
-        export type Token = `colors.${ColorToken}` | `opacity.${OpacityToken}` | `spacing.${SpacingToken}`
+    interface LocalTokens {
+      colors: ColorToken
+      opacity: OpacityToken
+      spacing: SpacingToken
+    }
 
-        export type ColorOpacityModifier = `${number}` | OpacityToken
+    export interface Tokens extends Registered<"Tokens", LocalTokens> {}
 
-        export type ColorOpacityToken = `colors.${ColorToken}/${ColorOpacityModifier}`
+    export type Token = Registered<"Token", `colors.${ColorToken}` | `opacity.${OpacityToken}` | `spacing.${SpacingToken}`>
 
-        export type TokenPath = Token | ColorOpacityToken
+    export type ColorOpacityModifier = Registered<"ColorOpacityModifier", `${number}` | OpacityToken>
 
-        export type ColorPalette = "red" | "blue"
+    export type ColorOpacityToken = Registered<"ColorOpacityToken", `colors.${ColorToken}/${ColorOpacityModifier}`>
 
-        export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never
-        "#}
-        .trim()
-    );
+    export type TokenPath = Token | ColorOpacityToken
+
+    export type ColorPalette = Registered<"ColorPalette", "red" | "blue">
+
+    export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never
+    "#);
 
     // `types/system` is the merged surface (own csstype + properties + selectors +
     // system-types). It's ~825 members, so assert its shape rather than full content.
     let system = file(types, "types/system.ts");
-    assert!(system.contains("export interface Conditions {"));
+    assert!(system.contains("interface LocalConditions {"));
     assert!(system.contains("  \"base\": string"));
     assert!(system.contains("  \"_hover\": string"));
-    assert!(system.contains("export interface Breakpoints {"));
-    assert!(system.contains("export type ContainerName = \"card\" | AnyString"));
+    assert!(system.contains("interface LocalBreakpoints {"));
+    assert!(system.contains(
+        "export type ContainerName = Registered<\"ContainerName\", \"card\" | AnyString>"
+    ));
     assert!(system.contains(
         "export type CssContainer = ContainerName | `${ContainerName} / inline-size` | `${ContainerName} / size` | AnyString"
     ));
@@ -403,7 +406,7 @@ fn emits_ts_source_types() {
     assert!(system.contains(r#""last baseline""#));
     assert!(system.contains(r#""stable both-edges""#));
     // SystemProperties: native css props plus configured utility overrides
-    assert!(system.contains("export interface SystemProperties {"));
+    assert!(system.contains("interface LocalSystemProperties {"));
     assert!(!system.contains("export interface CssProperties {"));
     assert!(!system.contains("extends CssProperties"));
     assert!(
@@ -529,7 +532,7 @@ fn emits_ts_source_types() {
     assert!(!system.contains("KhtmlBoxAlign"));
 
     assert_snapshot!(file(types, "types/recipe.ts"), @"
-    import type { ConditionalValue, SystemStyleObject } from './system';
+    import type { ConditionalValue, DistributiveOmit, Pretty, SystemStyleObject } from './system';
 
     export type RecipeVariantProps<T> = T extends (props?: infer Props) => unknown ? Props : never
 
@@ -543,29 +546,33 @@ fn emits_ts_source_types() {
       [K in keyof T]: Array<keyof T[K]>
     }
 
-    export interface RecipeRuntimeFn<Props extends object = object, Map extends object = object> {
+    export interface RecipeRuntimeFn<Props extends object = object, Map extends object = object, Raw = SystemStyleObject> {
       (props?: Props): string
       __type: Props
       variantMap: Map
       variantKeys: Array<keyof Props>
-      raw: (props?: Props) => SystemStyleObject
-      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
+      raw: (props?: Props) => Raw
+      splitVariantProps<T extends Props & Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
       getVariantProps: (props?: Props) => Props
       merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
     }
 
+    export type ConfigRecipeRuntimeFn<Props extends object = object, Map extends object = object> = RecipeRuntimeFn<Props, Map, Props>
+
     export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
 
-    export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> {
+    export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object, Raw = Record<Slot, SystemStyleObject>> {
       (props?: Props): Record<Slot, string>
       __type: Props
       __slot: Slot
       variantMap: Map
       variantKeys: Array<keyof Props>
-      raw: (props?: Props) => Record<Slot, SystemStyleObject>
-      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
+      raw: (props?: Props) => Raw
+      splitVariantProps<T extends Props & Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
       getVariantProps: (props?: Props) => Props
     }
+
+    export type ConfigSlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> = SlotRecipeRuntimeFn<Slot, Props, Map, Props>
 
     export type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 
@@ -589,7 +596,11 @@ fn emits_ts_source_types() {
     }
 
     export interface RecipeCreatorFn {
-      <T extends RecipeVariantRecord>(config: RecipeDefinition<T>): RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>>
+      <T extends RecipeVariantRecord>(config: RecipeDefinition<T>): CvaRuntimeFn<T>
+    }
+
+    export interface CvaRuntimeFn<T extends RecipeVariantRecord> extends RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>> {
+      config: RecipeDefinition<T>
     }
 
     export type SlotRecipeVariantRecord<Slot extends string> = Record<string, Record<string, SlotRecord<Slot, SystemStyleObject>>>
@@ -604,7 +615,11 @@ fn emits_ts_source_types() {
     }
 
     export interface SlotRecipeCreatorFn {
-      <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>>
+      <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SvaRuntimeFn<Slot, T>
+    }
+
+    export interface SvaRuntimeFn<Slot extends string, T extends SlotRecipeVariantRecord<Slot>> extends SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>> {
+      config: SlotRecipeDefinition<Slot, T>
     }
     ");
 }
@@ -645,7 +660,7 @@ fn token_value_allows_missing_utility_categories() {
     let tokens = file(types, "types/tokens.ts");
     let system = file(types, "types/system.ts");
 
-    assert!(tokens.contains("export type SpacingToken = \"4\""));
+    assert!(tokens.contains("export type SpacingToken = Registered<\"SpacingToken\", \"4\">"));
     assert!(tokens.contains(
         "export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never"
     ));
@@ -671,7 +686,7 @@ fn empty_tokens_emit_no_index_signature() {
     let types = artifact(&artifacts, ArtifactId::Types);
     let tokens = file(types, "types/tokens.ts");
 
-    assert!(tokens.contains("export interface Tokens {}"));
+    assert!(tokens.contains("interface LocalTokens {}"));
     assert!(!tokens.contains("[category: string]"));
     assert!(tokens.contains(
         "export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never"
@@ -712,6 +727,7 @@ fn emits_ts_system_and_index_types() {
     assert_eq!(
         file(types, "types/index.ts"),
         indoc! {r"
+        export type * from './register';
         export type * from './tokens';
         export type * from './system';
         export type * from './pattern';
@@ -736,6 +752,7 @@ fn emits_js_declaration_types() {
         paths(types),
         vec![
             "types/tokens.d.ts",
+            "types/register.d.ts",
             "types/system.d.ts",
             "types/pattern.d.ts",
             "types/recipe.d.ts",
@@ -806,7 +823,7 @@ fn emits_strict_value_types_without_repeating_large_unions() {
     assert!(system.contains(
         "export type SpacingValue = WithEscapeHatch<CssAutoGlobals | TokenValue<\"spacing\"> | CssVars>"
     ));
-    assert!(system.contains("export interface SystemProperties {"));
+    assert!(system.contains("interface LocalSystemProperties {"));
     assert!(system.contains("  color?: ConditionalValue<ColorValue>"));
     assert!(system.contains("  gap?: ConditionalValue<SpacingValue>"));
     assert!(system.contains(r#"  cursor?: ConditionalValue<PropertyValueMap["cursor"]>"#));
@@ -1166,6 +1183,7 @@ fn can_emit_type_import_extensions() {
     assert_eq!(
         file(types, "types/index.d.mts"),
         indoc! {r"
+        export * from './register.mjs';
         export * from './tokens.mjs';
         export * from './system.mjs';
         export * from './pattern.mjs';
@@ -1173,4 +1191,49 @@ fn can_emit_type_import_extensions() {
         "}
         .trim()
     );
+}
+
+#[test]
+fn corner_shape_is_a_typed_style_property() {
+    let system = system_types(&input());
+    let lines = |needle: &str| {
+        system
+            .lines()
+            .filter(|line| line.contains(needle))
+            .map(str::trim)
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+
+    insta::assert_snapshot!(lines("  cornerBlockEndShape: "), @r#"cornerBlockEndShape: CssGlobals | "bevel" | "notch" | "round" | "scoop" | "square" | "squircle" | (string & {})"#);
+    insta::assert_snapshot!(lines("cornerShape"), @r#"
+    cornerShape: PropertyValueMap["cornerBlockEndShape"]
+    cornerShape?: ConditionalValue<PropertyValueMap["cornerShape"]>
+    "#);
+    insta::assert_snapshot!(lines("cornerTopLeftShape"), @r#"
+    cornerTopLeftShape: PropertyValueMap["cornerBlockEndShape"]
+    cornerTopLeftShape?: ConditionalValue<PropertyValueMap["cornerTopLeftShape"]>
+    "#);
+}
+
+#[test]
+fn baseline_source_and_dynamic_range_limit_are_typed_style_properties() {
+    let system = system_types(&input());
+    let lines = |needle: &str| {
+        system
+            .lines()
+            .filter(|line| line.contains(needle))
+            .map(str::trim)
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+
+    insta::assert_snapshot!(lines("baselineSource"), @r#"
+    baselineSource: CssGlobals | "auto" | "first" | "last" | (string & {})
+    baselineSource?: ConditionalValue<PropertyValueMap["baselineSource"]>
+    "#);
+    insta::assert_snapshot!(lines("dynamicRangeLimit"), @r#"
+    dynamicRangeLimit: CssGlobals | "constrained" | "no-limit" | "standard" | (string & {})
+    dynamicRangeLimit?: ConditionalValue<PropertyValueMap["dynamicRangeLimit"]>
+    "#);
 }

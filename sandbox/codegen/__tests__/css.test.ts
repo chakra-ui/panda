@@ -9,6 +9,18 @@ describe('css', () => {
     expect(className).toMatchInlineSnapshot('"d_flex"')
   })
 
+  test('corner-shape squircle', () => {
+    const className = css({ borderRadius: '50%', cornerShape: 'squircle', cornerTopLeftShape: 'superellipse(2)' })
+
+    expect(className).toMatchInlineSnapshot(`"bdr_50% corner-shape_squircle corner-top-left-shape_superellipse(2)"`)
+  })
+
+  test('newer CSS properties', () => {
+    const className = css({ baselineSource: 'last', dynamicRangeLimit: 'standard' })
+
+    expect(className).toMatchInlineSnapshot(`"baseline-source_last dynamic-range-limit_standard"`)
+  })
+
   test('token value', () => {
     const className = css({ color: 'blue.300' })
 

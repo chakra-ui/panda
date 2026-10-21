@@ -8,6 +8,7 @@ const ALL_DEPENDENCIES: CodegenDependency[] = [
   'outExtension',
   'forceImportExtension',
   'conditions',
+  'designSystem',
   'hash',
   'jsxFactory',
   'jsxFramework',
@@ -93,6 +94,8 @@ function classify(path: string[]): Classified {
   switch (head) {
     case 'conditions':
       return { deps: ['conditions'] }
+    case 'designSystem':
+      return { deps: ['designSystem'] }
     case 'utilities':
       return { deps: ['utilities'] }
     case 'patterns':
