@@ -470,6 +470,16 @@ impl Utility {
             .into_owned()
     }
 
+    /// Token behind a value-map entry, e.g. `mt: '4'` when `values` came from `theme('spacing')`.
+    #[must_use]
+    pub fn value_map_token(&self, prop: &str, value: &str) -> Option<&Token> {
+        let config = self.properties.get(self.resolve_shorthand(prop))?;
+        let Literal::String(mapped) = config.values.get(value)? else {
+            return None;
+        };
+        self.tokens.as_ref()?.token_by_reference(mapped)
+    }
+
     fn raw_property_value(&self, prop: &str, value: &str) -> Literal {
         self.property_value(prop, value).0
     }
