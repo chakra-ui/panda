@@ -83,6 +83,9 @@ export default defineConfig({
 })
 ```
 
+A selected component keeps the styles of the design-system modules it imports, like a `Checkbox` that renders a `Label`
+from another file.
+
 Nested design systems are narrowed through the parent chain too. If a selected child module depends on a parent
 component, Panda keeps the parent CSS it needs.
 

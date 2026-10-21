@@ -52,6 +52,10 @@ export class BuildInfo {
       if (module) modules.add(module)
     }
 
+    for (const module of modules) {
+      for (const imported of info.modules[module]?.imports ?? []) modules.add(imported)
+    }
+
     return [...modules]
   }
 
@@ -91,7 +95,9 @@ export class BuildInfo {
     const modules: BuildInfoArtifact['modules'] = {}
 
     for (const [key, entry] of Object.entries(info.modules)) {
-      modules[options.mapModuleKey(key)] = entry
+      modules[options.mapModuleKey(key)] = entry.imports
+        ? { ...entry, imports: entry.imports.map((imported) => options.mapModuleKey(imported)) }
+        : entry
     }
 
     if (!info.exports) return { ...info, modules }
@@ -141,12 +147,14 @@ function hasBuildInfoShape(info: Record<string, unknown>): boolean {
     (info.recipes === undefined || isRecord(info.recipes)) &&
     (info.designSystemDependencies === undefined || isStringArray(info.designSystemDependencies)) &&
     (info.starReexportDependencies === undefined || isStringArray(info.starReexportDependencies)) &&
-    Object.values(info.modules).every(hasDependencyImportsShape)
+    Object.values(info.modules).every(hasModuleEntryShape)
   )
 }
 
-function hasDependencyImportsShape(entry: unknown): boolean {
-  if (!isRecord(entry) || entry.dependencyImports === undefined) return true
+function hasModuleEntryShape(entry: unknown): boolean {
+  if (!isRecord(entry)) return true
+  if (entry.imports !== undefined && !isStringArray(entry.imports)) return false
+  if (entry.dependencyImports === undefined) return true
   return isRecord(entry.dependencyImports) && Object.values(entry.dependencyImports).every(isStringArray)
 }
 

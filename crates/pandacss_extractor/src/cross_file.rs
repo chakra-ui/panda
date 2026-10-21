@@ -112,27 +112,50 @@ fn resolve_with<F: FileSystem + Clone>(
         .map(|resolution| forward_slash_path(&resolution.full_path()))
 }
 
+/// Extensions tried, in order, for a specifier written without one.
+const MODULE_EXTENSIONS: &[&str] = &[
+    ".tsx", ".ts", ".mts", ".cts", ".jsx", ".mjs", ".cjs", ".js", ".json",
+];
+
+/// Sources a written extension may name, TypeScript first, as `tsc` and bundlers resolve them.
+const EXTENSION_ALIASES: &[(&str, &[&str])] = &[
+    (".js", &[".ts", ".tsx", ".js", ".jsx"]),
+    (".jsx", &[".tsx", ".jsx"]),
+    (".mjs", &[".mts", ".mjs"]),
+    (".cjs", &[".cts", ".cjs"]),
+];
+
+/// Paths a joined specifier may resolve to, in the order the resolver tries them.
+#[must_use]
+pub fn module_path_candidates(base: &str) -> Vec<String> {
+    if let Some((stem, sources)) = EXTENSION_ALIASES
+        .iter()
+        .find_map(|(written, sources)| base.strip_suffix(written).map(|stem| (stem, sources)))
+    {
+        return sources.iter().map(|ext| format!("{stem}{ext}")).collect();
+    }
+    std::iter::once(base.to_owned())
+        .chain(MODULE_EXTENSIONS.iter().map(|ext| format!("{base}{ext}")))
+        .chain(
+            MODULE_EXTENSIONS
+                .iter()
+                .map(|ext| format!("{base}/index{ext}")),
+        )
+        .collect()
+}
+
 fn default_resolve_options() -> ResolveOptions {
     ResolveOptions {
-        extensions: [".tsx", ".ts", ".jsx", ".mjs", ".cjs", ".js", ".json"]
+        extensions: MODULE_EXTENSIONS.iter().map(|s| (*s).to_string()).collect(),
+        extension_alias: EXTENSION_ALIASES
             .iter()
-            .map(|s| (*s).to_string())
+            .map(|(from, to)| {
+                (
+                    (*from).to_string(),
+                    to.iter().map(|s| (*s).to_string()).collect(),
+                )
+            })
             .collect(),
-        // A `.js` specifier may name a `.ts` source, as TypeScript and bundlers allow. The written
-        // extension stays last, so a real `.js` file still resolves.
-        extension_alias: [
-            (".js", &[".ts", ".tsx", ".js", ".jsx"][..]),
-            (".mjs", &[".mts", ".mjs"]),
-            (".cjs", &[".cts", ".cjs"]),
-        ]
-        .iter()
-        .map(|(from, to)| {
-            (
-                (*from).to_string(),
-                to.iter().map(|s| (*s).to_string()).collect(),
-            )
-        })
-        .collect(),
         // Auto-discover tsconfig so `paths` aliases resolve (matches rolldown/tsc).
         tsconfig: Some(TsconfigDiscovery::Auto),
         ..ResolveOptions::default()

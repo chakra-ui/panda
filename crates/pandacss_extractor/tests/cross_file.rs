@@ -225,6 +225,8 @@ fn js_specifiers_resolve_to_typescript_sources() {
             import { c5 } from './c5.js';
             import { c6 } from './c6.mjs';
             import { c7 } from './c7.cjs';
+            import { c8 } from './c8.jsx';
+            import { c9 } from './c9';
             import { css } from '@panda/css';
             css({ height: `[${c1}px]` });
             css({ height: `[${c2}px]` });
@@ -233,6 +235,8 @@ fn js_specifiers_resolve_to_typescript_sources() {
             css({ height: `[${c5}px]` });
             css({ height: `[${c6}px]` });
             css({ height: `[${c7}px]` });
+            css({ height: `[${c8}px]` });
+            css({ height: `[${c9}px]` });
         "},
         &[
             (
@@ -246,6 +250,8 @@ fn js_specifiers_resolve_to_typescript_sources() {
             ("c5.js", "export const c5 = 5;\n"),
             ("c6.mts", "export const c6 = 6;\n"),
             ("c7.cts", "export const c7 = 7;\n"),
+            ("c8.tsx", "export const c8 = 8;\n"),
+            ("c9.mts", "export const c9 = 9;\n"),
         ],
     );
     assert_yaml_snapshot!(shape(&run(&fs, &main)), @r#"
@@ -271,6 +277,12 @@ fn js_specifiers_resolve_to_typescript_sources() {
       - name: css
         data:
           - height: "[7px]"
+      - name: css
+        data:
+          - height: "[8px]"
+      - name: css
+        data:
+          - height: "[9px]"
     "#);
 }
 
