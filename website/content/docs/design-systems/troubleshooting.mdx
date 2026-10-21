@@ -109,6 +109,22 @@ Mark styled-system specifiers as **external** when you bundle the library. If a 
 For the annotation that keeps CSS out of `.d.ts`, see
 [Isolated declarations](/docs/design-systems/isolated-declarations).
 
+## Cannot find the design system's types
+
+```
+TS2307: Cannot find module '@acme/ds/types'
+```
+
+The design system has no `./types` export. Run `panda lib` in it, republish, then reinstall.
+
+## Two apps register with the same design system
+
+```
+TS2717: Subsequent property declarations must have the same type. Property 'system' ...
+```
+
+One `tsconfig` covers two apps that use the same design system. Type-check each app on its own.
+
 ## Yarn PnP
 
 Set `nodeLinker: node-modules` in `.yarnrc.yml`. Generated `styled-system` does not resolve under PnP's strict

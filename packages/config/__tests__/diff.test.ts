@@ -26,6 +26,7 @@ describe('diffConfig', () => {
         "outExtension",
         "forceImportExtension",
         "conditions",
+        "designSystem",
         "hash",
         "jsxFactory",
         "jsxFramework",
@@ -37,6 +38,15 @@ describe('diffConfig', () => {
         "themes",
         "tokens",
         "utilities",
+      ]
+    `)
+  })
+
+  test('switching design systems → designSystem dependency', () => {
+    const result = diffConfig({ ...base, designSystem: '@acme/ui' }, { ...clone(base), designSystem: '@acme/next' })
+    expect(result.dependencies).toMatchInlineSnapshot(`
+      [
+        "designSystem",
       ]
     `)
   })

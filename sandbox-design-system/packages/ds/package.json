@@ -47,6 +47,9 @@
     "./jsx/*": {
       "types": "./styled-system/jsx/*.d.ts",
       "default": "./styled-system/jsx/*.js"
+    },
+    "./types": {
+      "types": "./styled-system/types/index.d.ts"
     }
   },
   "scripts": {
