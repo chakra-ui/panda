@@ -29,7 +29,7 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use crate::Literal;
 use crate::literal::expression_to_literal;
 use crate::pure_fn::{OwnedPureFn, lower_callable_expr, lower_function};
-use crate::style_tree::into_project_literal;
+use crate::style_tree::{StyleTree, into_project_literal};
 use crate::{
     MatchCategory, MatchedImport, Matchers, TokenDictionary, collect_imports,
     extract::UnresolvedCrossFileDependency, imports::module_export_name, match_import_records,
@@ -1197,14 +1197,14 @@ fn exported_value(name: &str, resolver: &Resolver<'_, '_>) -> Option<ExportEntry
         return known_value.map(ExportEntry::Literal);
     }
 
-    let Some(style_value) = resolver
-        .resolve_root_style_tree(name)
-        .and_then(into_project_literal)
-    else {
+    let tree = resolver.resolve_root_style_tree(name);
+    // Projection drops unknown values, so the result can't stand in for the export.
+    let has_open = tree.as_ref().is_some_and(StyleTree::has_open);
+    let Some(style_value) = tree.and_then(into_project_literal) else {
         return known_value.map(ExportEntry::Literal);
     };
 
-    if known_value.as_ref() == Some(&style_value) {
+    if !has_open && known_value.as_ref() == Some(&style_value) {
         return Some(ExportEntry::Literal(style_value));
     }
 

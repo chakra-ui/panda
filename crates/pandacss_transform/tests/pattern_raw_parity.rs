@@ -494,3 +494,50 @@ fn a_transform_without_the_host_does_not_hide_imported_pattern_raw_values() {
     export const cls = "d_flex padding-inline_4px";
     "#);
 }
+
+const NESTED_STYLES: &str = "import { fade } from '@panda/patterns';\nexport const styles = { root: fade.raw({ inset: '4px' }), label: { color: 'red' } };\nexport const list = [fade.raw({ inset: '2px' })];\nexport const merged = { ...fade.raw({ inset: '6px' }), color: 'red' };\n";
+
+#[test]
+fn css_with_a_pattern_raw_member_of_an_imported_object() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { styles } from './styles';
+        export const cls = css({ _hover: styles.root });
+    "};
+
+    assert_snapshot!(transform_and_check("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @"
+    import { css } from '@panda/css';
+    import { styles } from './styles';
+    export const cls = css({ _hover: styles.root });
+    ");
+}
+
+#[test]
+fn css_with_a_pattern_raw_item_of_an_imported_array() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { list } from './styles';
+        export const cls = css(list[0]);
+    "};
+
+    assert_snapshot!(transform_and_check("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @"
+    import { css } from '@panda/css';
+    import { list } from './styles';
+    export const cls = css(list[0]);
+    ");
+}
+
+#[test]
+fn css_with_an_imported_object_spreading_a_pattern_raw() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { merged } from './styles';
+        export const cls = css({ _hover: merged });
+    "};
+
+    assert_snapshot!(transform_and_check("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @"
+    import { css } from '@panda/css';
+    import { merged } from './styles';
+    export const cls = css({ _hover: merged });
+    ");
+}
