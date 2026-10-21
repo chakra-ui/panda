@@ -6,6 +6,7 @@ use indoc::indoc;
 use insta::assert_snapshot;
 use pandacss_extractor::Diagnostic;
 use pandacss_literal::Literal;
+use pandacss_project::Project;
 use pandacss_system::ParseTransforms;
 use pandacss_transform::{TransformOptions, transform_source_with};
 use rustc_hash::FxHashSet;
@@ -34,8 +35,8 @@ fn host_pattern_transform(name: &str, props: &Literal) -> Result<Option<Literal>
 
 /// Builds every file like `panda` would, transforms `main_path`, and checks
 /// each class the transform wrote has CSS behind it.
-fn transform_and_check(main_path: &str, main_source: &str, siblings: &[(&str, &str)]) -> String {
-    let mut project = project_with_files_and(
+fn parity_project(main_path: &str, main_source: &str, siblings: &[(&str, &str)]) -> Project {
+    project_with_files_and(
         main_path,
         main_source,
         siblings,
@@ -56,7 +57,11 @@ fn transform_and_check(main_path: &str, main_source: &str, siblings: &[(&str, &s
                 }
             }
         }),
-    );
+    )
+}
+
+fn transform_and_check(main_path: &str, main_source: &str, siblings: &[(&str, &str)]) -> String {
+    let mut project = parity_project(main_path, main_source, siblings);
     let main_path = format!("/proj/{main_path}");
     for (path, source) in siblings
         .iter()
@@ -371,5 +376,121 @@ fn css_with_an_imported_pattern_raw_under_a_condition() {
     assert_snapshot!(transform_and_check("a.ts", source, &[("spacing.ts", spacing)]), @r#"
     import { spacing } from './spacing';
     export const cls = "hover:gap_4px hover:padding_2px";
+    "#);
+}
+
+#[test]
+fn css_with_an_imported_pattern_raw_of_a_ternary_prop() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { faded } from './faded';
+        export const cls = css(faded);
+    "};
+    let faded = indoc! {r"
+        import { fade } from '@panda/patterns';
+        export const faded = fade.raw({ inset: active ? '4px' : '8px' });
+    "};
+
+    assert_snapshot!(transform_and_check("a.ts", source, &[("faded.ts", faded)]), @"
+    import { css } from '@panda/css';
+    import { faded } from './faded';
+    export const cls = css(faded);
+    ");
+}
+
+#[test]
+fn css_with_an_imported_pattern_raw_of_partly_dynamic_props() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { faded } from './faded';
+        export const cls = css(faded);
+    "};
+    let faded = indoc! {r"
+        import { fade } from '@panda/patterns';
+        export const faded = fade.raw({ inset: size, color: 'red' });
+    "};
+
+    assert_snapshot!(transform_and_check("a.ts", source, &[("faded.ts", faded)]), @"
+    import { css } from '@panda/css';
+    import { faded } from './faded';
+    export const cls = css(faded);
+    ");
+}
+
+/// The same pattern after its `transform` was edited to set `marginTop`.
+#[allow(
+    clippy::unnecessary_wraps,
+    clippy::result_large_err,
+    reason = "signature must match PatternTransformFn"
+)]
+fn edited_fade_transform(name: &str, props: &Literal) -> Result<Option<Literal>, Diagnostic> {
+    if name != "fade" {
+        return Ok(None);
+    }
+    let Literal::Object(entries) = props else {
+        return Ok(None);
+    };
+    let styles = entries
+        .iter()
+        .filter(|(key, _)| key == "inset")
+        .map(|(_, value)| ("marginTop".to_owned(), value.clone()))
+        .collect();
+    Ok(Some(Literal::Object(styles)))
+}
+
+fn transform_imported_fade<'a>(
+    project: &Project,
+    pattern: Option<&'a mut pandacss_system::PatternTransformFn<'a>>,
+) -> String {
+    transform_source_with(
+        project.system(),
+        "/proj/a.ts",
+        IMPORTS_FADED,
+        &TransformOptions::default(),
+        ParseTransforms {
+            pattern,
+            ..Default::default()
+        },
+    )
+    .code
+}
+
+const IMPORTS_FADED: &str = "import { css } from '@panda/css';\nimport { faded } from './faded';\nexport const cls = css(faded);\n";
+const FADED: &str =
+    "import { fade } from '@panda/patterns';\nexport const faded = fade.raw({ inset: '4px' });\n";
+
+#[test]
+fn an_edited_pattern_transform_reaches_imported_pattern_raw_values() {
+    let project = parity_project("a.ts", IMPORTS_FADED, &[("faded.ts", FADED)]);
+
+    let mut before = host_pattern_transform;
+    let first = transform_imported_fade(&project, Some(&mut before));
+    let mut after = edited_fade_transform;
+    let second = transform_imported_fade(&project, Some(&mut after));
+
+    assert_snapshot!(format!("{first}---\n{second}"), @r#"
+    import { faded } from './faded';
+    export const cls = "d_flex padding-inline_4px";
+    ---
+    import { faded } from './faded';
+    export const cls = "margin-top_4px";
+    "#);
+}
+
+#[test]
+fn a_transform_without_the_host_does_not_hide_imported_pattern_raw_values() {
+    let project = parity_project("a.ts", IMPORTS_FADED, &[("faded.ts", FADED)]);
+
+    let without_host = transform_imported_fade(&project, None);
+    let mut host = host_pattern_transform;
+    let with_host = transform_imported_fade(&project, Some(&mut host));
+
+    assert_snapshot!(format!("{without_host}---\n{with_host}"), @r#"
+    import { css } from '@panda/css';
+    import { faded } from './faded';
+    export const cls = css(faded);
+    ---
+    import { faded } from './faded';
+    export const cls = "d_flex padding-inline_4px";
     "#);
 }

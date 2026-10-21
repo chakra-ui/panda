@@ -770,8 +770,9 @@ Pattern function calls such as `hstack(...)` follow the same broad rule as `css(
 Every pattern usage, including a `.raw()` nested in `css()`, `cva()` or JSX, resolves through
 `System::pattern_styles`, so the build and the transform agree. Without the host callback, a pattern that needs a JS
 transform resolves to nothing, never to its props. A nested `.raw()` whose props hold a runtime branch or unknown value
-keeps the enclosing call. An imported `.raw()` value resolves with the consumer's hook, so its CSS follows the
-consumer's conditions. `tests/pattern_raw_parity.rs` checks that every class the transform writes has CSS.
+keeps the enclosing call. `export const x = pattern.raw(props)` with static props is exported unevaluated
+(`ExportEntry::PatternRaw`) and runs through the importing file's hook, so its CSS follows the consumer's conditions and
+the cross-file cache never holds callback output. `tests/pattern_raw_parity.rs` checks that every class the transform writes has CSS.
 
 A pattern call collapses to a single value — one class string, or one object for `.raw` — so unlike `css(...)` it
 cannot print a runtime ternary. Any branch the runtime has to decide bails the call. The literal alone can't show this

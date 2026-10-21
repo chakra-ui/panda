@@ -71,7 +71,7 @@ pub(crate) struct Resolver<'a, 'cb> {
     /// Config class-name prefix used to build `positionTry(...)` dashed-idents
     /// byte-identically to the emitter/transform. Empty for no prefix.
     prefix: &'a str,
-    cross_file: Option<&'a CrossFileContext<'a, 'cb>>,
+    cross_file: Option<&'a CrossFileContext<'a>>,
     source_path: Option<PathBuf>,
     line_index: Option<&'a crate::LineIndex<'a>>,
     diagnostics: RefCell<Vec<crate::Diagnostic>>,
@@ -125,7 +125,7 @@ pub(crate) struct ResolverBuildInput<'a, 'cb> {
     pub matchers: Option<&'a Matchers>,
     pub tokens: Option<&'a TokenDictionary>,
     pub prefix: &'a str,
-    pub cross_file: Option<&'a CrossFileContext<'a, 'cb>>,
+    pub cross_file: Option<&'a CrossFileContext<'a>>,
     pub source_path: Option<PathBuf>,
     pub line_index: Option<&'a crate::LineIndex<'a>>,
     pub pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
@@ -187,7 +187,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         std::mem::take(&mut self.diagnostics.borrow_mut())
     }
 
-    pub(crate) fn cross_file_context(&self) -> Option<&CrossFileContext<'a, 'cb>> {
+    pub(crate) fn cross_file_context(&self) -> Option<&CrossFileContext<'a>> {
         self.cross_file
     }
 
@@ -371,6 +371,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 ExportEntry::PureFn(func) => Some(func),
                 ExportEntry::Literal(_)
                 | ExportEntry::StyleFallback { .. }
+                | ExportEntry::PatternRaw { .. }
                 | ExportEntry::Recipe(_) => None,
             })
     }
@@ -680,6 +681,9 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 ExportEntry::StyleFallback { style_value, .. } => Some(
                     StyleTree::OpenWithFallback(Box::new(literal_to_style_tree(style_value))),
                 ),
+                ExportEntry::PatternRaw { pattern, props } => self
+                    .pattern_raw_styles(&pattern, &props)
+                    .map(literal_to_style_tree),
                 ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
             };
         }
@@ -732,6 +736,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         match self.resolve_import_entry(symbol_id)? {
             ExportEntry::Literal(lit) => Some(lit),
             ExportEntry::StyleFallback { known_value, .. } => known_value,
+            ExportEntry::PatternRaw { pattern, props } => self.pattern_raw_styles(&pattern, &props),
             // A recipe is a function, not a value — only `.raw(props)` resolves it.
             ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
         }
@@ -793,18 +798,53 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         if category != MatchCategory::Pattern {
             return Some(style);
         }
+        self.pattern_raw_styles(name, &style)
+    }
 
-        // Without the host, a pattern's output is unknown; its props are not its styles.
+    /// Run `pattern.raw(props)` through the host. Without one, a pattern's output is
+    /// unknown; its props are not its styles.
+    fn pattern_raw_styles(&self, pattern: &str, props: &Literal) -> Option<Literal> {
         let transform = self.pattern_raw_transform?;
-
-        match (transform.borrow_mut())(name, &style) {
-            Ok(Some(transformed)) => Some(transformed),
-            Ok(None) => None,
+        match (transform.borrow_mut())(pattern, props) {
+            Ok(styles) => styles,
             Err(diagnostic) => {
                 self.diagnostics.borrow_mut().push(diagnostic);
                 None
             }
         }
+    }
+
+    /// `export const x = pattern.raw(props)` with static props, left for the importing
+    /// file to run through its own host.
+    pub(crate) fn root_pattern_raw_call(&self, name: &str) -> Option<(String, Literal)> {
+        let symbol_id = self.semantic.scoping().get_root_binding(name.into())?;
+        if self.semantic.scoping().symbol_is_mutated(symbol_id) {
+            return None;
+        }
+        let AstKind::VariableDeclarator(declarator) =
+            self.semantic.symbol_declaration(symbol_id).kind()
+        else {
+            return None;
+        };
+        if !matches!(&declarator.id, BindingPattern::BindingIdentifier(_)) {
+            return None;
+        }
+        let Expression::CallExpression(call) = declarator.init.as_ref()?.get_inner_expression()
+        else {
+            return None;
+        };
+
+        let (pattern, MatchCategory::Pattern) = self.match_raw_style_call(call)? else {
+            return None;
+        };
+        let props = match call.arguments.first() {
+            Some(arg) => expression_to_style_tree(arg.as_expression()?, Some(self))?,
+            None => literal_to_style_tree(Literal::Object(Vec::new())),
+        };
+        if !props.is_static() {
+            return None;
+        }
+        Some((pattern.to_owned(), project_literal(&props)?))
     }
 
     /// The variant props of a recipe call: none, or one static object.
@@ -938,16 +978,9 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             return Some(StyleTree::Open);
         }
 
-        let transform = self.pattern_raw_transform?;
         let style = project_literal(&tree)?;
-        match (transform.borrow_mut())(name, &style) {
-            Ok(Some(transformed)) => Some(literal_to_style_tree(transformed)),
-            Ok(None) => None,
-            Err(diagnostic) => {
-                self.diagnostics.borrow_mut().push(diagnostic);
-                None
-            }
-        }
+        self.pattern_raw_styles(name, &style)
+            .map(literal_to_style_tree)
     }
 
     /// Fold `firstThatWorks('75%', 'min(60rem, 100%)')` to the written value form.
