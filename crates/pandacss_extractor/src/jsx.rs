@@ -159,7 +159,7 @@ pub fn extract_jsx(
         .map(crate::CrossFileResolver::session);
     let cross_file_context = cross_file
         .as_ref()
-        .map(crate::cross_file::CrossFileContext::new);
+        .map(|session| crate::cross_file::CrossFileContext::new(session, None));
     let resolver = crate::Resolver::build(crate::scope::ResolverBuildInput {
         program: &parser_return.program,
         matched,

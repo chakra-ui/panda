@@ -199,11 +199,10 @@ fn css_with_a_pattern_raw_imported_from_another_file() {
         export const faded = fade.raw({ inset: '4px' });
     "};
 
-    assert_snapshot!(transform_and_check("a.ts", source, &[("faded.ts", faded)]), @"
-    import { css } from '@panda/css';
+    assert_snapshot!(transform_and_check("a.ts", source, &[("faded.ts", faded)]), @r#"
     import { faded } from './faded';
-    export const cls = css(faded);
-    ");
+    export const cls = "d_flex padding-inline_4px";
+    "#);
 }
 
 #[test]
@@ -310,4 +309,67 @@ fn jsx_spreading_a_pattern_raw() {
     "};
 
     assert_snapshot!(transform_and_check("a.tsx", source, &[]), @r#"export const Faded = () => <div className="d_flex padding-inline_4px" />;"#);
+}
+
+#[test]
+fn css_with_a_pattern_raw_of_a_ternary_prop() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { fade } from '@panda/patterns';
+        export const cls = css(fade.raw({ inset: active ? '4px' : '8px' }));
+    "};
+
+    assert_snapshot!(transform_and_check("a.ts", source, &[]), @"
+    import { css } from '@panda/css';
+    import { fade } from '@panda/patterns';
+    export const cls = css(fade.raw({ inset: active ? '4px' : '8px' }));
+    ");
+}
+
+#[test]
+fn css_with_a_pattern_raw_of_a_conditional_spread() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { fade } from '@panda/patterns';
+        export const cls = css(fade.raw({ ...(active && { inset: '4px' }) }));
+    "};
+
+    assert_snapshot!(transform_and_check("a.ts", source, &[]), @"
+    import { css } from '@panda/css';
+    import { fade } from '@panda/patterns';
+    export const cls = css(fade.raw({ ...(active && { inset: '4px' }) }));
+    ");
+}
+
+#[test]
+fn css_with_a_pattern_raw_of_partly_dynamic_props() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { fade } from '@panda/patterns';
+        export const cls = css(fade.raw({ inset: size, color: 'red' }));
+    "};
+
+    assert_snapshot!(transform_and_check("a.ts", source, &[]), @"
+    import { css } from '@panda/css';
+    import { fade } from '@panda/patterns';
+    export const cls = css(fade.raw({ inset: size, color: 'red' }));
+    ");
+}
+
+#[test]
+fn css_with_an_imported_pattern_raw_under_a_condition() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { spacing } from './spacing';
+        export const cls = css({ _hover: spacing });
+    "};
+    let spacing = indoc! {r"
+        import { spaced } from '@panda/patterns';
+        export const spacing = spaced.raw({ gap: '4px' });
+    "};
+
+    assert_snapshot!(transform_and_check("a.ts", source, &[("spacing.ts", spacing)]), @r#"
+    import { spacing } from './spacing';
+    export const cls = "hover:gap_4px hover:padding_2px";
+    "#);
 }

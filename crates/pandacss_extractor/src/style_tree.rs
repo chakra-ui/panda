@@ -54,6 +54,26 @@ impl StyleTree {
     pub const fn is_open(&self) -> bool {
         matches!(self, Self::Open | Self::OpenWithFallback(_))
     }
+
+    /// No runtime branch or unknown value anywhere in the tree.
+    #[must_use]
+    pub fn is_static(&self) -> bool {
+        match self {
+            Self::String(_) | Self::Number(_) | Self::Bool(_) | Self::Null | Self::Token { .. } => {
+                true
+            }
+            Self::Object(object) => {
+                object.spreads.is_empty()
+                    && object.entries.iter().all(|(_, value)| value.is_static())
+            }
+            Self::Array(items) => items.iter().all(Self::is_static),
+            Self::Ternary { .. }
+            | Self::And { .. }
+            | Self::Branches(_)
+            | Self::Open
+            | Self::OpenWithFallback(_) => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]

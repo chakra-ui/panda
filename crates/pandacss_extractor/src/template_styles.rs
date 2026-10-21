@@ -126,14 +126,14 @@ fn mask_script_blocks(source: &str, scripts: &[pandacss_sfc::markup::TagBlock]) 
     finish_mask(mask)
 }
 
-struct TemplateContext<'a> {
+struct TemplateContext<'a, 'cb> {
     format: SfcFormat,
     source: &'a str,
     raw_source: &'a str,
     path: &'a str,
     matched: &'a [MatchedImport],
     config: &'a ExtractorConfig,
-    cross_file: Option<&'a crate::cross_file::CrossFileContext<'a>>,
+    cross_file: Option<&'a crate::cross_file::CrossFileContext<'a, 'cb>>,
     literals: FxHashMap<(u32, u32), Literal>,
     retain_transform_facts: bool,
 }
@@ -215,16 +215,16 @@ impl<'ast> Visit<'ast> for TemplateLiteralIndex<'_, 'ast, '_> {
     }
 }
 
-struct TemplateScan<'a> {
+struct TemplateScan<'a, 'cb> {
     import_sources: FxHashMap<&'a str, &'a str>,
     framework: Framework,
     adapted: &'a AdaptedSource<'a>,
     matched: &'a [MatchedImport],
     config: &'a ExtractorConfig,
-    context: &'a TemplateContext<'a>,
+    context: &'a TemplateContext<'a, 'cb>,
 }
 
-fn collect_vue_template_styles(source: &str, scan: &TemplateScan<'_>) -> Vec<ExtractedJsx> {
+fn collect_vue_template_styles(source: &str, scan: &TemplateScan<'_, '_>) -> Vec<ExtractedJsx> {
     let mut out = Vec::new();
     for block in &scan.adapted.templates {
         collect_markup_range(
@@ -238,7 +238,7 @@ fn collect_vue_template_styles(source: &str, scan: &TemplateScan<'_>) -> Vec<Ext
     out
 }
 
-fn collect_svelte_template_styles(source: &str, scan: &TemplateScan<'_>) -> Vec<ExtractedJsx> {
+fn collect_svelte_template_styles(source: &str, scan: &TemplateScan<'_, '_>) -> Vec<ExtractedJsx> {
     let scripts = &scan.adapted.scripts;
     let styles = &scan.adapted.styles;
     let mut excluded = Vec::with_capacity(scripts.len() + styles.len());
@@ -271,7 +271,7 @@ fn collect_svelte_template_styles(source: &str, scan: &TemplateScan<'_>) -> Vec<
 fn collect_markup_template_styles(
     source: &str,
     elements: &[TemplateElement],
-    scan: &TemplateScan<'_>,
+    scan: &TemplateScan<'_, '_>,
 ) -> Vec<ExtractedJsx> {
     let slice = |range: &std::ops::Range<u32>| source.get(range.start as usize..range.end as usize);
     let mut out = Vec::new();
@@ -356,7 +356,7 @@ fn collect_markup_range(
     source: &str,
     start: usize,
     end: usize,
-    scan: &TemplateScan<'_>,
+    scan: &TemplateScan<'_, '_>,
     out: &mut Vec<ExtractedJsx>,
 ) {
     let bytes = source.as_bytes();
@@ -403,7 +403,7 @@ fn collect_tag(
     tag_start: usize,
     limit: usize,
     walker: &mut MarkupWalker<'_>,
-    scan: &TemplateScan<'_>,
+    scan: &TemplateScan<'_, '_>,
     out: &mut Vec<ExtractedJsx>,
 ) -> Tag {
     let bytes = source.as_bytes();
@@ -462,7 +462,7 @@ fn collect_tag(
 
 fn push_template_jsx(
     out: &mut Vec<ExtractedJsx>,
-    scan: &TemplateScan<'_>,
+    scan: &TemplateScan<'_, '_>,
     tag_name: &str,
     resolved: ResolvedTemplateTag<'_>,
     entries: Vec<(String, Literal)>,
@@ -507,7 +507,7 @@ fn push_template_jsx(
 fn apply_template_tag_rule<'a>(
     detected: Option<ResolvedTemplateTag<'a>>,
     tag_name: &'a str,
-    scan: &TemplateScan<'a>,
+    scan: &TemplateScan<'a, '_>,
 ) -> Option<ResolvedTemplateTag<'a>> {
     let jsx = &scan.config.jsx;
     if jsx.tag_rules.is_empty() || !crate::matcher::is_uppercase_component_tag(tag_name) {
@@ -614,7 +614,7 @@ fn collect_attrs(
     source: &str,
     start: usize,
     end: usize,
-    scan: &TemplateScan<'_>,
+    scan: &TemplateScan<'_, '_>,
     tag_name: &str,
     entries: &mut Vec<(String, Literal)>,
 ) {
@@ -676,7 +676,7 @@ fn merge_attr(
     value: AttrValue<'_>,
     framework: Framework,
     config: &ExtractorConfig,
-    context: &TemplateContext<'_>,
+    context: &TemplateContext<'_, '_>,
     tag_name: &str,
     entries: &mut Vec<(String, Literal)>,
 ) {
@@ -690,7 +690,7 @@ fn merge_vue_attr(
     raw_name: &str,
     value: AttrValue<'_>,
     config: &ExtractorConfig,
-    context: &TemplateContext<'_>,
+    context: &TemplateContext<'_, '_>,
     tag_name: &str,
     entries: &mut Vec<(String, Literal)>,
 ) {
@@ -744,7 +744,7 @@ fn merge_svelte_attr(
     raw_name: &str,
     value: AttrValue<'_>,
     config: &ExtractorConfig,
-    context: &TemplateContext<'_>,
+    context: &TemplateContext<'_, '_>,
     tag_name: &str,
     entries: &mut Vec<(String, Literal)>,
 ) {
@@ -765,7 +765,7 @@ fn is_template_transport_attr(name: &str) -> bool {
 fn merge_spread_with_context(
     expr: &str,
     config: &ExtractorConfig,
-    context: &TemplateContext<'_>,
+    context: &TemplateContext<'_, '_>,
     tag_name: &str,
     entries: &mut Vec<(String, Literal)>,
 ) {
@@ -782,7 +782,7 @@ fn merge_spread_with_context(
 fn attr_literal(
     value: AttrValue<'_>,
     is_expr: bool,
-    context: &TemplateContext<'_>,
+    context: &TemplateContext<'_, '_>,
 ) -> Option<Literal> {
     match value {
         AttrValue::Bool => Some(Literal::Bool(true)),
@@ -794,7 +794,7 @@ fn attr_literal(
 
 fn parse_expression_literal(
     source: &str,
-    context: Option<&TemplateContext<'_>>,
+    context: Option<&TemplateContext<'_, '_>>,
 ) -> Option<Literal> {
     if let Some(context) = context
         && context.format == SfcFormat::Mdx

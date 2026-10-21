@@ -581,9 +581,9 @@ fn extract_astro_script(
     if !should_collect_calls(&matched, config) {
         return;
     }
-    let cross_file_context = options
-        .cross_file
-        .map(crate::cross_file::CrossFileContext::new);
+    let cross_file_context = options.cross_file.map(|session| {
+        crate::cross_file::CrossFileContext::new(session, options.pattern_raw_transform)
+    });
     let resolver = Resolver::build(crate::scope::ResolverBuildInput {
         program: &parser_return.program,
         matched: &matched,
@@ -723,7 +723,8 @@ fn run_extract_adapted(
     }
 
     let line_index = crate::LineIndex::new(source);
-    let cross_file_context = cross_file.map(crate::cross_file::CrossFileContext::new);
+    let cross_file_context = cross_file
+        .map(|session| crate::cross_file::CrossFileContext::new(session, pattern_raw_transform));
     let resolver = {
         let _span = tracing::trace_span!(target: "parse", "resolve_scopes", path = path).entered();
         Resolver::build(crate::scope::ResolverBuildInput {

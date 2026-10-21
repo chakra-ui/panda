@@ -71,7 +71,7 @@ pub(crate) struct Resolver<'a, 'cb> {
     /// Config class-name prefix used to build `positionTry(...)` dashed-idents
     /// byte-identically to the emitter/transform. Empty for no prefix.
     prefix: &'a str,
-    cross_file: Option<&'a CrossFileContext<'a>>,
+    cross_file: Option<&'a CrossFileContext<'a, 'cb>>,
     source_path: Option<PathBuf>,
     line_index: Option<&'a crate::LineIndex<'a>>,
     diagnostics: RefCell<Vec<crate::Diagnostic>>,
@@ -125,7 +125,7 @@ pub(crate) struct ResolverBuildInput<'a, 'cb> {
     pub matchers: Option<&'a Matchers>,
     pub tokens: Option<&'a TokenDictionary>,
     pub prefix: &'a str,
-    pub cross_file: Option<&'a CrossFileContext<'a>>,
+    pub cross_file: Option<&'a CrossFileContext<'a, 'cb>>,
     pub source_path: Option<PathBuf>,
     pub line_index: Option<&'a crate::LineIndex<'a>>,
     pub pattern_raw_transform: Option<&'cb PatternRawTransformCell<'cb>>,
@@ -187,7 +187,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         std::mem::take(&mut self.diagnostics.borrow_mut())
     }
 
-    pub(crate) fn cross_file_context(&self) -> Option<&CrossFileContext<'a>> {
+    pub(crate) fn cross_file_context(&self) -> Option<&CrossFileContext<'a, 'cb>> {
         self.cross_file
     }
 
@@ -931,6 +931,11 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
         if category != MatchCategory::Pattern {
             return Some(tree);
+        }
+        // The pattern sees concrete props; a runtime branch or unknown value would be
+        // flattened away, so the call has to stay.
+        if !tree.is_static() {
+            return Some(StyleTree::Open);
         }
 
         let transform = self.pattern_raw_transform?;

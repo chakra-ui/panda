@@ -78,6 +78,8 @@ struct CachedFileExports {
     re_exports: ReExports,
     /// Modules folded while collecting this file's exports. A hash miss busts this entry.
     deps: Provenance,
+    /// Whether a pattern hook was available; without one, `pattern.raw(…)` stays unknown.
+    pattern_hook: bool,
     /// Failed nested resolutions. A newly resolvable request invalidates this entry.
     unresolved: UnresolvedDependencies,
 }
@@ -187,8 +189,10 @@ pub struct CrossFileSession {
 }
 
 /// Per-extraction recursion state over a shared analyzed-module session.
-pub(crate) struct CrossFileContext<'a> {
+pub(crate) struct CrossFileContext<'a, 'cb> {
     session: &'a CrossFileSession,
+    /// The consumer's hook, so an imported `pattern.raw(…)` resolves as it would locally.
+    pattern_raw_transform: Option<&'cb crate::scope::PatternRawTransformCell<'cb>>,
     in_flight: RefCell<FxHashSet<(PathBuf, String)>>,
     /// Lookups through a loaded module: `Some(name)` for a named re-export, `None` for its star index.
     forwarding: RefCell<FxHashSet<(PathBuf, Option<String>)>>,
@@ -323,10 +327,14 @@ impl CrossFileSession {
     }
 }
 
-impl<'a> CrossFileContext<'a> {
-    pub(crate) fn new(session: &'a CrossFileSession) -> Self {
+impl<'a, 'cb> CrossFileContext<'a, 'cb> {
+    pub(crate) fn new(
+        session: &'a CrossFileSession,
+        pattern_raw_transform: Option<&'cb crate::scope::PatternRawTransformCell<'cb>>,
+    ) -> Self {
         Self {
             session,
+            pattern_raw_transform,
             in_flight: RefCell::default(),
             forwarding: RefCell::default(),
         }
@@ -446,7 +454,7 @@ impl CrossFileResolution {
 pub(crate) trait CrossFileLookup: Send + Sync {
     fn resolve_named_export(
         &self,
-        context: &CrossFileContext<'_>,
+        context: &CrossFileContext<'_, '_>,
         request: CrossFileRequest<'_>,
     ) -> CrossFileResolution;
 
@@ -504,7 +512,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
     }
 
     fn extract_exports(
-        context: &CrossFileContext<'_>,
+        context: &CrossFileContext<'_, '_>,
         path: &Path,
         source: &str,
         matchers: Option<&Matchers>,
@@ -527,7 +535,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             cross_file: Some(context),
             source_path: Some(path.to_path_buf()),
             line_index: None,
-            pattern_raw_transform: None,
+            pattern_raw_transform: context.pattern_raw_transform,
             recipe_raw_resolve: None,
         });
 
@@ -560,11 +568,13 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
         &self,
         session: &CrossFileSession,
         deps: &[(PathBuf, Option<u64>)],
+        pattern_hook: bool,
     ) {
         let cache = self.cache();
         let entries = deps.iter().filter_map(|(path, expected)| {
             let cached = cache.get(path)?;
-            (Some(cached.source_hash) == *expected).then(|| (path.clone(), Arc::clone(cached)))
+            (Some(cached.source_hash) == *expected && cached.pattern_hook == pattern_hook)
+                .then(|| (path.clone(), Arc::clone(cached)))
         });
         session.extend(entries);
     }
@@ -596,7 +606,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
     /// return when there is none.
     fn load_module(
         &self,
-        context: &CrossFileContext<'_>,
+        context: &CrossFileContext<'_, '_>,
         request: CrossFileRequest<'_>,
     ) -> Result<(PathBuf, Arc<CachedFileExports>), Box<CrossFileResolution>> {
         let CrossFileRequest {
@@ -608,6 +618,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             prefix,
         } = request;
         let session = context.session;
+        let pattern_hook = context.pattern_raw_transform.is_some();
         let Some(directory) = from_file.parent() else {
             return Err(Box::new(CrossFileResolution::none()));
         };
@@ -653,14 +664,16 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             let guard = self.cache();
             guard
                 .get(&path)
-                .filter(|cached| cached.source_hash == source_hash)
+                .filter(|cached| {
+                    cached.source_hash == source_hash && cached.pattern_hook == pattern_hook
+                })
                 .map(Arc::clone)
         };
         if let Some(cached) = cached
             && self.provenance_fresh(&cached.deps)
             && self.unresolved_still_missing(&cached.unresolved)
         {
-            self.seed_session_dependencies(session, &cached.deps);
+            self.seed_session_dependencies(session, &cached.deps, pattern_hook);
             session.insert(path.clone(), Arc::clone(&cached));
             return Ok((path, cached));
         }
@@ -691,6 +704,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             re_exports: module.re_exports,
             deps,
             unresolved,
+            pattern_hook,
         });
         self.cache().insert(path.clone(), Arc::clone(&cached));
         session.insert(path.clone(), Arc::clone(&cached));
@@ -700,7 +714,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
     /// `export { local as name } from './module'`, or an imported binding exported again.
     fn resolve_re_export(
         &self,
-        context: &CrossFileContext<'_>,
+        context: &CrossFileContext<'_, '_>,
         request: CrossFileRequest<'_>,
         path: &Path,
         cached: &CachedFileExports,
@@ -731,7 +745,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
     /// `export * from` re-exports every name the barrel doesn't declare itself, except `default`.
     fn resolve_through_stars(
         &self,
-        context: &CrossFileContext<'_>,
+        context: &CrossFileContext<'_, '_>,
         request: CrossFileRequest<'_>,
         path: &Path,
         cached: &CachedFileExports,
@@ -760,7 +774,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
 
     fn star_index(
         &self,
-        context: &CrossFileContext<'_>,
+        context: &CrossFileContext<'_, '_>,
         request: CrossFileRequest<'_>,
         path: &Path,
         cached: &CachedFileExports,
@@ -785,7 +799,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
 
     fn build_star_index(
         &self,
-        context: &CrossFileContext<'_>,
+        context: &CrossFileContext<'_, '_>,
         request: CrossFileRequest<'_>,
         path: &Path,
         cached: &CachedFileExports,
@@ -935,7 +949,7 @@ impl<F: FileSystem + Clone> CrossFileLookup for ResolverImpl<F> {
 
     fn resolve_named_export(
         &self,
-        context: &CrossFileContext<'_>,
+        context: &CrossFileContext<'_, '_>,
         request: CrossFileRequest<'_>,
     ) -> CrossFileResolution {
         let (path, cached) = match self.load_module(context, request) {
