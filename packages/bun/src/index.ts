@@ -18,9 +18,11 @@ export interface PandaPluginOptions {
   configPath?: string
   /** Where codegen artifacts are written. Defaults to the config `outdir`. */
   outdir?: string
+  /** Generate runtime helpers and types. Set to `false` when another package owns them. Defaults to `true`. */
+  codegen?: boolean
   /**
    * Opt-in source rewrite (`css()` → class strings, etc.). Default: `false`.
-   * Codegen and CSS injection always run.
+   * CSS injection runs independently of codegen.
    */
   transform?: boolean
 }
@@ -117,9 +119,9 @@ function createDriverLoader(options: PandaPluginOptions, warnDiagnostics: WarnDi
     const cwd = options.cwd ?? process.cwd()
     if (!driver) {
       driver = await createNodeDriver({ cwd, configPath })
-      if (driver.needsCodegen(outdir)) driver.codegen({ cwd, outdir })
+      if (options.codegen !== false) driver.codegen({ cwd, outdir })
     } else if ((await driver.reload()).hasChanged) {
-      if (driver.needsCodegen(outdir)) driver.codegen({ cwd, outdir })
+      if (options.codegen !== false) driver.codegen({ cwd, outdir })
     }
 
     for (const report of driver.parseFiles()) {

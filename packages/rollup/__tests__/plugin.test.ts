@@ -32,6 +32,45 @@ beforeEach(() => {
 })
 
 describe('@pandacss/rollup', () => {
+  it('keeps codegen disabled during builds and config or design-system changes', async () => {
+    const driver = createDriver([])
+    driver.reload.mockResolvedValue({ hasChanged: true })
+    mocks.createNodeDriver.mockResolvedValue(driver)
+    const plugin = pandacss({ codegen: false })[0] as unknown as TestPlugin
+    const context = createContext()
+
+    await plugin.buildStart.call(context)
+    driver.isConfigFile.mockReturnValue(true)
+    await plugin.watchChange('/project/panda.config.ts', { event: 'update' })
+    driver.isDesignSystemFile.mockReturnValue('artifact')
+    driver.syncDesignSystemFileChange.mockResolvedValue(true)
+    await plugin.watchChange('/project/node_modules/@acme/ds/panda/lib.json', { event: 'update' })
+    await plugin.generateBundle.call(context, {})
+
+    expect(driver.codegen).not.toHaveBeenCalled()
+    expect(driver.reload).toHaveBeenCalledOnce()
+    expect(driver.parseFiles).toHaveBeenCalledTimes(2)
+    expect(driver.syncDesignSystemFileChange).toHaveBeenCalledOnce()
+    expect(context.emitFile.mock.calls).toMatchInlineSnapshot(`
+      [
+        [
+          {
+            "fileName": "panda.css",
+            "source": ".generated { color: red }",
+            "type": "asset",
+          },
+        ],
+      ]
+    `)
+  })
+
+  it('generates code by default', async () => {
+    const driver = createDriver([])
+    mocks.createNodeDriver.mockResolvedValue(driver)
+    await (pandacss({ cwd: '/project' })[0] as unknown as TestPlugin).buildStart.call(createContext())
+    expect(driver.codegen).toHaveBeenCalledWith({ cwd: '/project', outdir: undefined })
+  })
+
   it('stops before emitting CSS when compilation fails', async () => {
     const driver = createDriver([{ severity: 'error', code: 'config_load_error', message: 'bad config' }])
     mocks.createNodeDriver.mockResolvedValue(driver)
@@ -218,7 +257,6 @@ function createDriver(diagnostics: Array<{ severity: 'error' | 'info' | 'warning
     configPath: '/project/panda.config.ts',
     applyChange: vi.fn(),
     codegen: vi.fn(),
-    needsCodegen: vi.fn(() => true),
     parseFiles: vi.fn(),
     scan: vi.fn(() => ['/project/src/app.tsx']),
     cssgen: vi.fn(() => ({ css: '.generated { color: red }', diagnostics })),

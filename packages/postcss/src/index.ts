@@ -13,6 +13,8 @@ export interface PluginOptions {
   cwd?: string
   /** Where codegen artifacts are written. Defaults to the config `outdir`. */
   outdir?: string
+  /** Generate runtime helpers and types. Set to `false` when another package owns them. Defaults to `true`. */
+  codegen?: boolean
   /** Allow selected `node_modules` CSS files through the processing guard. */
   allow?: RegExp[]
 }
@@ -65,7 +67,7 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
     )
     if (pandaLayerStatements.length === 0) return
 
-    ensureCodegen(state, { cwd, outdir: options.outdir })
+    if (options.codegen !== false) ensureCodegen(state, { cwd, outdir: options.outdir })
     syncProjectSources(state)
     registerDependencies(driver, result, cwd, fileName)
     emitDiagnostics(root, result, driver.designSystemDiagnostics ?? [])
@@ -133,7 +135,7 @@ function ensureCodegen(state: DriverState, options: { cwd: string; outdir: strin
   const outdirKey = state.driver.getOutdir(options.outdir)
   if (state.generatedOutdirs.has(outdirKey)) return
 
-  if (state.driver.needsCodegen(options.outdir)) state.driver.codegen({ cwd: options.cwd, outdir: options.outdir })
+  state.driver.codegen({ cwd: options.cwd, outdir: options.outdir })
   state.generatedOutdirs.add(outdirKey)
 }
 

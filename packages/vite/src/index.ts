@@ -16,9 +16,11 @@ export interface PandaPluginOptions {
   configPath?: string
   /** Where codegen artifacts are written. Defaults to the config `outdir`. */
   outdir?: string
+  /** Generate runtime helpers and types. Set to `false` when another package owns them. Defaults to `true`. */
+  codegen?: boolean
   /**
    * Opt-in source rewrite (`css()` → class strings, etc.). Default: `false`.
-   * CSS injection and HMR always run; codegen is skipped when `importMap` points to an installed package.
+   * CSS injection and HMR run independently of codegen.
    */
   transform?: boolean
 }
@@ -57,7 +59,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
     : undefined
 
   const codegen = () => {
-    if (driver?.needsCodegen(outdir)) driver.codegen({ cwd, outdir })
+    if (options.codegen !== false) driver?.codegen({ cwd, outdir })
   }
 
   const addPandaWatchFiles = (addWatchFile: (file: string) => void, inputId: string) => {

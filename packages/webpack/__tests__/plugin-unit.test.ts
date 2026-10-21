@@ -16,6 +16,25 @@ afterEach(() => {
 })
 
 describe('@pandacss/webpack design-system watch', () => {
+  it('keeps codegen disabled at startup and after config changes', async () => {
+    const { driver, PandaWebpackPlugin } = await setupPlugin()
+    const { beforeCompile, watchRun } = applyPlugin(new PandaWebpackPlugin({ cwd: '/project', codegen: false }))
+    await beforeCompile?.()
+    driver.isConfigFile.mockReturnValue(true)
+    await watchRun?.({ modifiedFiles: new Set(['/project/panda.config.ts']) })
+
+    expect(driver.codegen).not.toHaveBeenCalled()
+    expect(driver.reload).toHaveBeenCalledOnce()
+    expect(driver.parseFiles).toHaveBeenCalledTimes(2)
+  })
+
+  it('generates code by default', async () => {
+    const { driver, PandaWebpackPlugin } = await setupPlugin()
+    const { beforeCompile } = applyPlugin(new PandaWebpackPlugin({ cwd: '/project' }))
+    await beforeCompile?.()
+    expect(driver.codegen).toHaveBeenCalledWith({ cwd: '/project', outdir: undefined })
+  })
+
   it('registers design-system artifacts and source files from the CSS root', async () => {
     const { driver, pandaCssLoader } = await setupLoader()
     const addDependency = vi.fn()
@@ -199,6 +218,7 @@ async function setupPlugin() {
 
 function applyPlugin(plugin: PandaWebpackPlugin, compilerOverrides: Record<string, unknown> = {}) {
   const warn = vi.fn()
+  let beforeCompile: (() => Promise<void>) | undefined
   let watchRun: ((compiler: { modifiedFiles?: Set<string>; removedFiles?: Set<string> }) => Promise<void>) | undefined
 
   plugin.apply({
@@ -206,7 +226,11 @@ function applyPlugin(plugin: PandaWebpackPlugin, compilerOverrides: Record<strin
     options: { module: { rules: [] } },
     getInfrastructureLogger: () => ({ warn }),
     hooks: {
-      beforeCompile: { tapPromise: vi.fn() },
+      beforeCompile: {
+        tapPromise: (_name: string, fn: typeof beforeCompile) => {
+          beforeCompile = fn
+        },
+      },
       watchRun: {
         tapPromise: (_name: string, fn: typeof watchRun) => {
           watchRun = fn
@@ -216,7 +240,7 @@ function applyPlugin(plugin: PandaWebpackPlugin, compilerOverrides: Record<strin
     ...compilerOverrides,
   } as never)
 
-  return { watchRun, warn }
+  return { beforeCompile, watchRun, warn }
 }
 
 function createMockDriver() {
@@ -239,7 +263,6 @@ function createMockDriver() {
     ],
     applyChange: vi.fn(() => true),
     codegen: vi.fn(),
-    needsCodegen: vi.fn(() => true),
     cssgen: vi.fn(() => ({ css: '.fs_20px { font-size: 20px }', diagnostics: [] })),
     designSystemWatchTargets: vi.fn(() => [
       {

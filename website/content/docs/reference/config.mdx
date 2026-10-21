@@ -395,9 +395,27 @@ is the equivalent of:
 }
 ```
 
-When every entry points to an installed package, like `@scope/styled-system` above, the bundler plugins (PostCSS, Vite,
-Rollup, webpack and Bun) skip codegen, so no local `outdir` is written. CSS is still generated. Codegen still runs for
-relative paths, tsconfig aliases, the `outdir` name, packages that aren't installed, and any `designSystem` app.
+If another package owns all your generated runtime helpers and types, set `codegen: false` in your bundler plugin
+options to skip writing a local `outdir`. This option is supported by the PostCSS, Vite, Rollup, webpack and Bun plugins
+and defaults to `true`. CSS generation and updates still run.
+
+```ts
+// vite.config.ts
+pandacss({ codegen: false })
+```
+
+```js
+// postcss.config.mjs
+export default {
+  plugins: {
+    '@pandacss/postcss': { codegen: false }
+  }
+}
+```
+
+The shared package must update its generated files when its config changes. Keep codegen enabled if your app imports
+local generated helpers or needs its own generated types. This option does not remove existing files or affect
+`panda codegen`.
 
 Pass an array to match imports from more than one root, for example a shared design system package alongside the app's
 own local `styled-system` output:

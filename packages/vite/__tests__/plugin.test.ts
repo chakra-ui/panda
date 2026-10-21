@@ -386,16 +386,31 @@ describe('@pandacss/vite', () => {
     throw new Error('timed out waiting for codegen in updated config outdir')
   })
 
-  it('skips codegen but still serves CSS when importMap points to an installed package', async () => {
+  it('skips codegen only when explicitly disabled, while CSS keeps updating', async () => {
     dir = createFixture(`{ color: 'red' }`, "export default { include: ['**/*.tsx'], importMap: '@acme/ds' }")
     writeTree(dir, {
       'App.tsx': "import { css } from '@acme/ds/css'\ncss({ color: 'red' })",
       'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds' }),
     })
-    server = await startServer(dir)
+    server = await startServer(dir, { codegen: false })
 
     expect(await readCss(server)).toContain('red')
     expect(existsSync(join(dir, 'styled-system'))).toBe(false)
+
+    const configFile = join(dir, 'panda.config.ts')
+    writeFileSync(join(dir, 'App.tsx'), "import { css } from '@acme/ds/css'\ncss({ color: 'blue' })")
+    writeFileSync(configFile, "export default { outdir: 'system', include: ['**/*.tsx'], importMap: '@acme/ds' }")
+    server.watcher.emit('change', configFile)
+
+    expect(await waitForCss(server, 'blue')).toContain('blue')
+    expect(existsSync(join(dir, 'system'))).toBe(false)
+  })
+
+  it('generates code by default even when importMap points to an installed package', async () => {
+    dir = createFixture(`{ color: 'red' }`, "export default { include: ['**/*.tsx'], importMap: '@acme/ds' }")
+    writeTree(dir, { 'node_modules/@acme/ds/package.json': JSON.stringify({ name: '@acme/ds' }) })
+    server = await startServer(dir)
+    expect(existsSync(join(dir, 'styled-system', 'css', 'index.js'))).toBe(true)
   })
 
   it('writes the local outdir for a designSystem app, even with a styled-system package installed', async () => {

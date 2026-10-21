@@ -4,10 +4,7 @@
 '@pandacss/rollup': minor
 '@pandacss/webpack': minor
 '@pandacss/bun': minor
-'@pandacss/compiler': minor
-'@pandacss/compiler-shared': minor
 ---
 
-The bundler plugins (PostCSS, Vite, Rollup, webpack and Bun) no longer write a local `styled-system` folder when every
-`importMap` entry points to an installed package. CSS is still generated, and `designSystem` apps keep their local
-folder.
+Add `codegen: false` to bundler plugins so apps importing a shared styled-system can skip generating a local copy while
+still generating CSS.

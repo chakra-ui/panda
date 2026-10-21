@@ -11,9 +11,11 @@ export interface PandaWebpackPluginOptions {
   configPath?: string
   /** Where codegen artifacts are written. Defaults to the config `outdir`. */
   outdir?: string
+  /** Generate runtime helpers and types. Set to `false` when another package owns them. Defaults to `true`. */
+  codegen?: boolean
   /**
    * Opt-in source rewrite (`css()` → class strings, etc.). Default: `false`.
-   * CSS injection, codegen, and watch sync always run.
+   * CSS injection and watch sync run independently of codegen.
    */
   transform?: boolean
 }
@@ -40,7 +42,7 @@ export class PandaWebpackPlugin {
     if (!this.#ready) {
       this.#ready = (async () => {
         const driver = await createNodeDriver({ cwd, configPath: this.#options.configPath })
-        if (driver.needsCodegen(this.#options.outdir)) driver.codegen({ cwd, outdir: this.#options.outdir })
+        if (this.#options.codegen !== false) driver.codegen({ cwd, outdir: this.#options.outdir })
         driver.parseFiles()
         this.#driver = driver
       })()
@@ -94,7 +96,7 @@ export class PandaWebpackPlugin {
     if (configChanged) {
       const diff = await driver.reload()
       if (diff.hasChanged) {
-        if (driver.needsCodegen(this.#options.outdir)) driver.codegen({ cwd, outdir: this.#options.outdir })
+        if (this.#options.codegen !== false) driver.codegen({ cwd, outdir: this.#options.outdir })
         driver.parseFiles()
         designSystemChanged = true
       }

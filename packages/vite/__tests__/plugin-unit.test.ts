@@ -22,6 +22,28 @@ afterEach(() => {
 })
 
 describe('@pandacss/vite design-system HMR', () => {
+  it('keeps codegen disabled while config and design-system updates refresh CSS', async () => {
+    const { driver, pandacss } = await setup()
+    const plugin = pandacss({ codegen: false }) as unknown as TestPlugin
+    const environment = createEnvironment()
+    await plugin.configResolved({ root: '/project', logger: { warn: vi.fn() } })
+    driver.isConfigFile.mockReturnValue(true)
+    await plugin.hotUpdate.call({ environment }, hotUpdateEvent('/project/panda.config.ts', environment))
+    driver.isDesignSystemFile.mockReturnValue('artifact')
+    driver.syncDesignSystemFileChange.mockResolvedValue(true)
+    await plugin.hotUpdate.call(
+      { environment },
+      hotUpdateEvent('/project/node_modules/@acme/ds/panda/lib.json', environment),
+    )
+    plugin.transform.handler.call({ addWatchFile: vi.fn(), warn: vi.fn() }, CSS_ROOT, '/project/src/index.css')
+
+    expect(driver.codegen).not.toHaveBeenCalled()
+    expect(driver.reload).toHaveBeenCalledOnce()
+    expect(driver.parseFiles).toHaveBeenCalledTimes(2)
+    expect(driver.syncDesignSystemFileChange).toHaveBeenCalledOnce()
+    expect(driver.cssgen).toHaveBeenCalled()
+  })
+
   it('watches design-system artifacts and source files from the CSS root', async () => {
     const { driver, pandacss } = await setup()
     const plugin = pandacss() as unknown as TestPlugin
@@ -469,6 +491,7 @@ function hotUpdateEvent(file: string, environment: ReturnType<typeof createEnvir
     server: {
       config: { logger: { warn: vi.fn() } },
       environments: { client: environment },
+      ws: { send: vi.fn() },
     },
   }
 }
@@ -501,7 +524,6 @@ function createMockDriver() {
     designSystemDiagnostics: [],
     applyChange: vi.fn(() => true),
     codegen: vi.fn(),
-    needsCodegen: vi.fn(() => true),
     cssgen: vi.fn(() => ({ css: '.fs_20px { font-size: 20px }', diagnostics: [] })),
     designSystemWatchTargets: vi.fn(() => [
       {
