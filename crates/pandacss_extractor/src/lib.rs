@@ -12,6 +12,7 @@
 mod adapter;
 mod calls;
 mod cross_file;
+mod deferred_value;
 mod design_system_imports;
 mod export_names;
 mod extract;

@@ -55,39 +55,9 @@ impl StyleTree {
         matches!(self, Self::Open | Self::OpenWithFallback(_))
     }
 
-    /// Some value in the tree is only known at runtime.
-    #[must_use]
-    pub fn has_open(&self) -> bool {
-        match self {
-            Self::String(_) | Self::Number(_) | Self::Bool(_) | Self::Null | Self::Token { .. } => {
-                false
-            }
-            Self::Open | Self::OpenWithFallback(_) => true,
-            Self::Object(object) => {
-                object.entries.iter().any(|(_, value)| value.has_open())
-                    || object.spreads.iter().any(|spread| match spread {
-                        StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => true,
-                        StyleSpread::Ternary {
-                            consequent,
-                            alternate,
-                            ..
-                        } => consequent.has_open() || alternate.has_open(),
-                        StyleSpread::And { value, .. } => value.has_open(),
-                    })
-            }
-            Self::Array(items) | Self::Branches(items) => items.iter().any(Self::has_open),
-            Self::Ternary {
-                consequent,
-                alternate,
-                ..
-            } => consequent.has_open() || alternate.has_open(),
-            Self::And { value, .. } => value.has_open(),
-        }
-    }
-
     /// No runtime branch or unknown value anywhere in the tree.
     #[must_use]
-    pub fn is_static(&self) -> bool {
+    pub(crate) fn is_static(&self) -> bool {
         match self {
             Self::String(_) | Self::Number(_) | Self::Bool(_) | Self::Null | Self::Token { .. } => {
                 true
@@ -544,7 +514,7 @@ fn chain_to_style_tree(
     }
 }
 
-fn lookup_style_member(object: &StyleTree, key: &str) -> Option<StyleTree> {
+pub(crate) fn lookup_style_member(object: &StyleTree, key: &str) -> Option<StyleTree> {
     match object {
         StyleTree::Object(obj) => obj
             .entries

@@ -26,6 +26,7 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
 use crate::cross_file::{CrossFileContext, ExportEntry};
+use crate::deferred_value::{self, DeferredValue};
 use crate::extract::{CrossFileDependency, UnresolvedCrossFileDependency};
 use crate::literal::expression_to_literal;
 use crate::matcher::{MatchCategory, MatchedImport, Matchers};
@@ -65,6 +66,8 @@ pub(crate) struct Resolver<'a, 'cb> {
     /// Memo of lowered pure callables. Separate from [`Self::cache`] so a bare
     /// function binding stays non-Literal while `f()` can still fold.
     fn_cache: RefCell<FxHashMap<SymbolId, PureFnResolutionState>>,
+    deferred_cache: RefCell<FxHashMap<SymbolId, Option<DeferredValue>>>,
+    deferred_in_flight: RefCell<FxHashSet<SymbolId>>,
     aliases: FxHashMap<&'a str, &'a MatchedImport>,
     matchers: Option<&'a Matchers>,
     tokens: Option<&'a TokenDictionary>,
@@ -164,6 +167,8 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             cache: RefCell::default(),
             style_cache: RefCell::default(),
             fn_cache: RefCell::default(),
+            deferred_cache: RefCell::default(),
+            deferred_in_flight: RefCell::default(),
             aliases: matched.iter().map(|m| (m.alias.as_str(), m)).collect(),
             matchers,
             tokens,
@@ -371,6 +376,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 ExportEntry::PureFn(func) => Some(func),
                 ExportEntry::Literal(_)
                 | ExportEntry::StyleFallback { .. }
+                | ExportEntry::Deferred(_)
                 | ExportEntry::Recipe(_) => None,
             })
     }
@@ -624,6 +630,71 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         self.resolve_symbol(symbol_id)
     }
 
+    /// Capture a pattern-dependent export without executing host callbacks.
+    #[must_use]
+    pub(crate) fn resolve_deferred_root(&self, name: &str) -> Option<DeferredValue> {
+        let symbol = self.semantic.scoping().get_root_binding(name.into())?;
+        self.resolve_deferred_symbol(symbol)
+    }
+
+    /// Capture a pattern-dependent binding using its semantic identity.
+    #[must_use]
+    pub(crate) fn resolve_deferred_identifier(
+        &self,
+        ident: &IdentifierReference<'_>,
+    ) -> Option<DeferredValue> {
+        self.resolve_deferred_symbol(self.symbol_for_identifier(ident)?)
+    }
+
+    fn resolve_deferred_symbol(&self, symbol: SymbolId) -> Option<DeferredValue> {
+        if let Some(cached) = self.deferred_cache.borrow().get(&symbol) {
+            return cached.clone();
+        }
+        if !self.deferred_in_flight.borrow_mut().insert(symbol) {
+            return None;
+        }
+        let value = self
+            .capture_deferred_symbol(symbol)
+            .filter(DeferredValue::needs_pattern);
+        self.deferred_in_flight.borrow_mut().remove(&symbol);
+        self.deferred_cache
+            .borrow_mut()
+            .insert(symbol, value.clone());
+        value
+    }
+
+    fn capture_deferred_symbol(&self, symbol: SymbolId) -> Option<DeferredValue> {
+        let scoping = self.semantic.scoping();
+        if scoping.symbol_is_mutated(symbol) {
+            return None;
+        }
+        if scoping.symbol_flags(symbol).contains(SymbolFlags::Import) {
+            return match self.resolve_import_entry(symbol)? {
+                ExportEntry::Deferred(value) => Some(value),
+                ExportEntry::Literal(value) => Some(DeferredValue::Literal(value)),
+                ExportEntry::StyleFallback { style_value, .. } => Some(DeferredValue::Fallback(
+                    Box::new(DeferredValue::Literal(style_value)),
+                )),
+                ExportEntry::Recipe(_) | ExportEntry::PureFn(_) => None,
+            };
+        }
+        let AstKind::VariableDeclarator(declarator) =
+            self.semantic.symbol_declaration(symbol).kind()
+        else {
+            return None;
+        };
+        let source = deferred_value::lower(declarator.init.as_ref()?, self);
+        let path = deferred_value::binding_path(&declarator.id, symbol, self)?;
+        if path.is_empty() {
+            Some(source)
+        } else {
+            Some(DeferredValue::Binding {
+                source: Box::new(source),
+                path,
+            })
+        }
+    }
+
     /// Resolve a root binding while retaining dynamic style fallbacks.
     #[must_use]
     pub(crate) fn resolve_root_style_tree(&self, name: &str) -> Option<StyleTree> {
@@ -676,15 +747,11 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         if flags.contains(SymbolFlags::Import) {
             // Rehydrate from Literal (`Conditional` → `Branches`, no foreign spans).
             return match self.resolve_import_entry(symbol_id)? {
-                ExportEntry::Literal(value) => {
-                    Some(literal_to_style_tree(self.fill_pattern_raws(&value)?))
-                }
-                ExportEntry::StyleFallback { style_value, .. } => {
-                    let style_value = self.fill_pattern_raws(&style_value)?;
-                    Some(StyleTree::OpenWithFallback(Box::new(
-                        literal_to_style_tree(style_value),
-                    )))
-                }
+                ExportEntry::Literal(value) => Some(literal_to_style_tree(value)),
+                ExportEntry::StyleFallback { style_value, .. } => Some(
+                    StyleTree::OpenWithFallback(Box::new(literal_to_style_tree(style_value))),
+                ),
+                ExportEntry::Deferred(value) => Some(value.resolve(self)),
                 ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
             };
         }
@@ -735,8 +802,12 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     /// resolver. Default/namespace imports return `None`.
     fn resolve_import_symbol(&self, symbol_id: SymbolId) -> Option<Literal> {
         match self.resolve_import_entry(symbol_id)? {
-            ExportEntry::Literal(lit) => self.fill_pattern_raws(&lit),
-            ExportEntry::StyleFallback { known_value, .. } => self.fill_pattern_raws(&known_value?),
+            ExportEntry::Literal(lit) => Some(lit),
+            ExportEntry::StyleFallback { known_value, .. } => known_value,
+            ExportEntry::Deferred(value) => {
+                let tree = value.resolve(self);
+                tree.is_static().then(|| project_literal(&tree)).flatten()
+            }
             // A recipe is a function, not a value — only `.raw(props)` resolves it.
             ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
         }
@@ -801,16 +872,9 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         self.pattern_raw_styles(name, &style)
     }
 
-    /// An imported value with its `pattern.raw(…)` placeholders run through this file's host.
-    fn fill_pattern_raws(&self, value: &Literal) -> Option<Literal> {
-        crate::cross_file::fill_pattern_raws(value, &mut |pattern, props| {
-            self.pattern_raw_styles(pattern, props)
-        })
-    }
-
     /// Run `pattern.raw(props)` through the host. Without one, a pattern's output is
     /// unknown; its props are not its styles.
-    fn pattern_raw_styles(&self, pattern: &str, props: &Literal) -> Option<Literal> {
+    pub(crate) fn pattern_raw_styles(&self, pattern: &str, props: &Literal) -> Option<Literal> {
         let transform = self.pattern_raw_transform?;
         match (transform.borrow_mut())(pattern, props) {
             Ok(styles) => styles,
@@ -1037,7 +1101,7 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     }
 
     /// Match a Panda `.raw(...)` call → `(name, category)`.
-    fn match_raw_style_call<'s>(
+    pub(crate) fn match_raw_style_call<'s>(
         &'s self,
         call: &'s CallExpression<'_>,
     ) -> Option<(&'s str, MatchCategory)> {
@@ -1462,7 +1526,7 @@ fn resolve_pattern_path(
     }
 }
 
-fn binding_property_key(
+pub(crate) fn binding_property_key(
     key: &PropertyKey<'_>,
     computed: bool,
     resolver: Option<&Resolver<'_, '_>>,

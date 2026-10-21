@@ -27,9 +27,10 @@ use pandacss_fs::{FileSystem, to_forward_slash};
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::Literal;
+use crate::deferred_value::DeferredValue;
 use crate::literal::expression_to_literal;
 use crate::pure_fn::{OwnedPureFn, lower_callable_expr, lower_function};
-use crate::style_tree::{StyleTree, into_project_literal};
+use crate::style_tree::{into_project_literal, style_tree_has_open_value};
 use crate::{
     MatchCategory, MatchedImport, Matchers, TokenDictionary, collect_imports,
     extract::UnresolvedCrossFileDependency, imports::module_export_name, match_import_records,
@@ -47,65 +48,8 @@ pub(crate) enum ExportEntry {
     },
     PureFn(OwnedPureFn),
     Recipe(ExportedRecipe),
-}
-
-/// Stands in for `pattern.raw(props)` in an exported value. Its styles come from the
-/// importing file's host, so the cache never holds callback output.
-const PATTERN_RAW_KEY: &str = "\u{0}pattern.raw:";
-
-/// Keyed by the call itself, so the literal and style-tree passes agree.
-fn pattern_raw_placeholder(pattern: &str, props: &Literal) -> Literal {
-    let id = pandacss_shared::fx_hash(format!("{pattern}{props:?}"));
-    Literal::Object(vec![(
-        format!("{PATTERN_RAW_KEY}{id:x}"),
-        Literal::Array(vec![Literal::String(pattern.to_owned()), props.clone()]),
-    )])
-}
-
-/// Replace each placeholder with `resolve(pattern, props)`. As a spread, its entries
-/// land where the spread was, so later keys still win. `None` if any can't resolve.
-pub(crate) fn fill_pattern_raws(
-    value: &Literal,
-    resolve: &mut dyn FnMut(&str, &Literal) -> Option<Literal>,
-) -> Option<Literal> {
-    Some(match value {
-        Literal::Object(entries) => {
-            let mut out = Vec::with_capacity(entries.len());
-            for (key, entry) in entries {
-                if key.starts_with(PATTERN_RAW_KEY) {
-                    let Literal::Array(call) = entry else {
-                        return None;
-                    };
-                    let [Literal::String(pattern), props] = call.as_slice() else {
-                        return None;
-                    };
-                    let Literal::Object(styles) = resolve(pattern, props)? else {
-                        return None;
-                    };
-                    for (key, style) in styles {
-                        Literal::upsert_object_entry(&mut out, key, style);
-                    }
-                } else {
-                    let entry = fill_pattern_raws(entry, resolve)?;
-                    Literal::upsert_object_entry(&mut out, key.clone(), entry);
-                }
-            }
-            Literal::Object(out)
-        }
-        Literal::Array(items) => Literal::Array(
-            items
-                .iter()
-                .map(|item| fill_pattern_raws(item, resolve))
-                .collect::<Option<_>>()?,
-        ),
-        Literal::Conditional(branches) => Literal::Conditional(
-            branches
-                .iter()
-                .map(|branch| fill_pattern_raws(branch, resolve))
-                .collect::<Option<_>>()?,
-        ),
-        other => other.clone(),
-    })
+    /// An owned expression evaluated with the importing file's pattern host.
+    Deferred(DeferredValue),
 }
 
 /// `export const button = cva({ … })`. Enough for `button.raw(props)` without running the recipe.
@@ -577,10 +521,6 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             let imports = collect_imports(&parser_return.program);
             match_import_records(&imports, matchers)
         });
-        let mut defer_pattern_raw =
-            |pattern: &str, props: &Literal| Ok(Some(pattern_raw_placeholder(pattern, props)));
-        let defer_erased: &mut crate::scope::PatternRawTransformFn<'_> = &mut defer_pattern_raw;
-        let defer_cell = std::cell::RefCell::new(defer_erased);
         let resolver = Resolver::build_with_cross_file_lookup(crate::scope::ResolverBuildInput {
             program: &parser_return.program,
             matched: &matched,
@@ -590,7 +530,7 @@ impl<F: FileSystem + Clone> ResolverImpl<F> {
             cross_file: Some(context),
             source_path: Some(path.to_path_buf()),
             line_index: None,
-            pattern_raw_transform: Some(&defer_cell),
+            pattern_raw_transform: None,
             recipe_raw_resolve: None,
         });
 
@@ -1235,6 +1175,9 @@ fn collect_from_var(
 
 #[must_use]
 fn exported_value(name: &str, resolver: &Resolver<'_, '_>) -> Option<ExportEntry> {
+    if let Some(value) = resolver.resolve_deferred_root(name) {
+        return Some(ExportEntry::Deferred(value));
+    }
     let known_value = resolver.resolve_root_name(name);
 
     if matches!(
@@ -1252,7 +1195,7 @@ fn exported_value(name: &str, resolver: &Resolver<'_, '_>) -> Option<ExportEntry
 
     let tree = resolver.resolve_root_style_tree(name);
     // Projection drops unknown values, so the result can't stand in for the export.
-    let has_open = tree.as_ref().is_some_and(StyleTree::has_open);
+    let has_open = tree.as_ref().is_some_and(style_tree_has_open_value);
     let Some(style_value) = tree.and_then(into_project_literal) else {
         return known_value.map(|known| {
             if has_open {

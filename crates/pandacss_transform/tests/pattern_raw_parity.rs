@@ -668,3 +668,155 @@ fn css_with_a_static_member_beside_a_pattern_raw_in_an_imported_object() {
     padding_2px
     "#);
 }
+
+#[test]
+fn imported_pattern_spreads_keep_every_write_in_source_order() {
+    let source = "import { css } from '@panda/css'; import { styles } from './styles'; export const cls = css({ _hover: styles });";
+    let mut results = Vec::new();
+    for expression in [
+        "{ ...fade.raw({ inset: '4px' }), paddingInline: '8px', ...fade.raw({ inset: '4px' }) }",
+        "{ paddingInline: '2px', ...fade.raw({ inset: '4px' }), paddingInline: '8px' }",
+        "{ ...fade.raw({ inset: '4px' }), ...fade.raw({ inset: '8px' }) }",
+        "{ ...original, paddingInline: '8px', ...original }",
+    ] {
+        let styles = format!(
+            "import {{ fade }} from '@panda/patterns'; const original = fade.raw({{ inset: '4px' }}); export const styles = {expression};"
+        );
+        let (code, classes) = transform_and_css("a.ts", source, &[("styles.ts", &styles)]);
+        results.push(format!(
+            "{}\n--- hover css\n{}",
+            code.trim(),
+            hover_css(&classes)
+        ));
+    }
+    assert_snapshot!(results.join("\n--- next case\n"), @r#"
+    import { styles } from './styles'; export const cls = "hover:d_flex hover:padding-inline_4px";
+    --- hover css
+    hover:d_flex
+    hover:padding-inline_4px
+    --- next case
+    import { styles } from './styles'; export const cls = "hover:d_flex hover:padding-inline_8px";
+    --- hover css
+    hover:d_flex
+    hover:padding-inline_8px
+    --- next case
+    import { styles } from './styles'; export const cls = "hover:d_flex hover:padding-inline_8px";
+    --- hover css
+    hover:d_flex
+    hover:padding-inline_8px
+    --- next case
+    import { styles } from './styles'; export const cls = "hover:d_flex hover:padding-inline_4px";
+    --- hover css
+    hover:d_flex
+    hover:padding-inline_4px
+    "#);
+}
+
+#[test]
+fn imported_pattern_inputs_resolve_inner_patterns_before_the_outer_pattern() {
+    let source = "import { css } from '@panda/css'; import { styles } from './styles'; export const cls = css({ _hover: styles });";
+    for expression in [
+        "spaced.raw({ ...spaced.raw({ gap: '4px' }) })",
+        "spaced.raw(spaced.raw({ gap: '4px' }))",
+        "spaced.raw({ ...inner })",
+        "css.raw(spaced.raw({ gap: '4px' }))",
+        "identity(spaced.raw({ gap: '4px' }))",
+    ] {
+        let styles = format!(
+            "import {{ spaced }} from '@panda/patterns'; import {{ css }} from '@panda/css'; const identity = (value) => ({{ ...value }}); const inner = spaced.raw({{ gap: '4px' }}); export const styles = {expression};"
+        );
+        let (code, classes) = transform_and_css("a.ts", source, &[("styles.ts", &styles)]);
+        insta::allow_duplicates! {
+            assert_snapshot!(code.trim(), @r#"import { styles } from './styles'; export const cls = "hover:gap_4px hover:padding_2px";"#);
+            assert_snapshot!(hover_css(&classes), @"
+            hover:gap_4px
+            hover:padding_2px
+            ");
+        }
+        assert!(!classes.iter().any(|class| class.contains('\0')));
+    }
+}
+
+#[test]
+fn imported_pattern_values_survive_destructuring() {
+    let source = "import { css } from '@panda/css'; import { styles } from './styles'; export const cls = css({ _hover: styles });";
+    for binding in [
+        "const { root: styles } = { root: spaced.raw({ gap: '4px' }) };",
+        "const [styles] = [spaced.raw({ gap: '4px' })];",
+        "const { missing: styles = spaced.raw({ gap: '4px' }) } = {};",
+        "const { omit, ...styles } = { omit: 'ignored', ...spaced.raw({ gap: '4px' }) };",
+        "const [omit, ...items] = [null, spaced.raw({ gap: '4px' })]; const styles = items[0];",
+    ] {
+        let styles =
+            format!("import {{ spaced }} from '@panda/patterns'; {binding} export {{ styles }};");
+        let (code, classes) = transform_and_css("a.ts", source, &[("styles.ts", &styles)]);
+        insta::allow_duplicates! {
+            assert_snapshot!(code.trim(), @r#"import { styles } from './styles'; export const cls = "hover:gap_4px hover:padding_2px";"#);
+            assert_snapshot!(hover_css(&classes), @"
+            hover:gap_4px
+            hover:padding_2px
+            ");
+        }
+    }
+}
+
+#[test]
+fn imported_conditional_pattern_spreads_emit_every_possible_style() {
+    let source = "import { css } from '@panda/css'; import { styles } from './styles'; export const cls = css({ _hover: styles });";
+    for expression in [
+        "{ ...(active ? fade.raw({ inset: '4px' }) : fade.raw({ inset: '8px' })) }",
+        "{ paddingInline: '8px', ...(active && fade.raw({ inset: '4px' })) }",
+    ] {
+        let styles = format!(
+            "import {{ fade }} from '@panda/patterns'; export const styles = {expression};"
+        );
+        let (code, classes) = transform_and_css("a.ts", source, &[("styles.ts", &styles)]);
+        insta::allow_duplicates! {
+            assert_snapshot!(code.trim(), @"import { css } from '@panda/css'; import { styles } from './styles'; export const cls = css({ _hover: styles });");
+            assert_snapshot!(hover_css(&classes), @"
+            hover:d_flex
+            hover:padding-inline_4px
+            hover:padding-inline_8px
+            ");
+        }
+    }
+}
+
+#[test]
+fn pattern_values_stay_deferred_through_an_intermediate_module() {
+    let source = "import { css } from '@panda/css'; import { styles } from './styles'; export const cls = css({ _hover: styles });";
+    let original = "import { fade } from '@panda/patterns'; export const original = fade.raw({ inset: '4px' });";
+    let styles = "import { original } from './original'; export const styles = { ...original, paddingInline: '8px', ...original };";
+    let (code, classes) = transform_and_css(
+        "a.ts",
+        source,
+        &[("styles.ts", styles), ("original.ts", original)],
+    );
+    assert_snapshot!(code.trim(), @r#"import { styles } from './styles'; export const cls = "hover:d_flex hover:padding-inline_4px";"#);
+    assert_snapshot!(hover_css(&classes), @"
+    hover:d_flex
+    hover:padding-inline_4px
+    ");
+}
+
+#[test]
+fn an_unknown_pattern_member_does_not_hide_static_siblings() {
+    let source = "import { css } from '@panda/css'; import { styles } from './styles'; export const cls = css({ _hover: styles.label });";
+    let styles = "import { fade } from '@panda/patterns'; export const styles = { root: fade.raw({ inset: size }), label: { color: 'red' } };";
+    let (code, classes) = transform_and_css("a.ts", source, &[("styles.ts", styles)]);
+    assert_snapshot!(code.trim(), @r#"import { styles } from './styles'; export const cls = "hover:color_red";"#);
+    assert_snapshot!(hover_css(&classes), @"hover:color_red");
+}
+
+fn hover_css(classes: &[String]) -> String {
+    let mut classes: Vec<_> = classes
+        .iter()
+        .filter(|class| class.starts_with("hover:"))
+        .collect();
+    classes.sort();
+    classes
+        .into_iter()
+        .map(String::as_str)
+        .collect::<Vec<_>>()
+        .join("\n")
+}
