@@ -1,5 +1,37 @@
 # @pandacss/cli
 
+## 2.3.0
+
+### Minor Changes
+
+- aa90e4a: `panda analyze` now counts what your config uses, not just your source files.
+
+  - Shows where each name is used, like `3 files, globalCss` or `via animations.spin`
+  - Adds a `compositions` scope for text, layer, and animation styles
+  - Counts styles a design system brings in through build info
+  - Fix `removeUnusedKeyframes` dropping keyframes used only through an animation token
+  - Fix `removeUnusedKeyframes` dropping keyframes used under `globalCss` selectors like `p` or `h`
+
+### Patch Changes
+
+- Updated dependencies [aa90e4a]
+- Updated dependencies [675fa00]
+- Updated dependencies [1fb2ee8]
+- Updated dependencies [36b18da]
+- Updated dependencies [8c179ea]
+- Updated dependencies [f01a419]
+- Updated dependencies [f01a419]
+- Updated dependencies [dd1e618]
+- Updated dependencies [bc2b4cb]
+- Updated dependencies [0b93f20]
+- Updated dependencies [d1ee159]
+- Updated dependencies [93269f5]
+- Updated dependencies [5616e53]
+  - @pandacss/compiler@2.3.0
+  - @pandacss/compiler-shared@2.3.0
+  - @pandacss/types@2.3.0
+  - @pandacss/config@2.3.0
+
 ## 2.2.0
 
 ### Patch Changes

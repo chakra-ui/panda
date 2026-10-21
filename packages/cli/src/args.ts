@@ -143,8 +143,7 @@ export function normalizeCliFlags(args: unknown): Record<string, unknown> {
   if (flags['watch-debounce'] !== undefined && flags.watchDebounce === undefined) {
     flags.watchDebounce = flags['watch-debounce']
   }
-  if (flags['ui-host'] !== undefined && flags.uiHost === undefined) flags.uiHost = flags['ui-host']
-  if (flags['ui-port'] !== undefined && flags.uiPort === undefined) flags.uiPort = flags['ui-port']
+  if (flags['studio-url'] !== undefined && flags.studioUrl === undefined) flags.studioUrl = flags['studio-url']
   if (flags.color === false && flags.noColor === undefined) flags.noColor = true
   // Preserve kebab-case flags passed through the programmatic API.
   if (flags['no-color'] !== undefined && flags.noColor === undefined) flags.noColor = flags['no-color']
@@ -170,8 +169,7 @@ export function normalizeCliFlags(args: unknown): Record<string, unknown> {
     'trace-output',
     'trace-file',
     'watch-debounce',
-    'ui-host',
-    'ui-port',
+    'studio-url',
     'color',
     'no-color',
     'jsx-style-props',

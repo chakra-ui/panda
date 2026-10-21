@@ -118,6 +118,21 @@ fn default_resolve_options() -> ResolveOptions {
             .iter()
             .map(|s| (*s).to_string())
             .collect(),
+        // A `.js` specifier may name a `.ts` source, as TypeScript and bundlers allow. The written
+        // extension stays last, so a real `.js` file still resolves.
+        extension_alias: [
+            (".js", &[".ts", ".tsx", ".js", ".jsx"][..]),
+            (".mjs", &[".mts", ".mjs"]),
+            (".cjs", &[".cts", ".cjs"]),
+        ]
+        .iter()
+        .map(|(from, to)| {
+            (
+                (*from).to_string(),
+                to.iter().map(|s| (*s).to_string()).collect(),
+            )
+        })
+        .collect(),
         // Auto-discover tsconfig so `paths` aliases resolve (matches rolldown/tsc).
         tsconfig: Some(TsconfigDiscovery::Auto),
         ..ResolveOptions::default()

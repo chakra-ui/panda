@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, test } from 'vitest'
-import { button } from '../styled-system/recipes/button'
+import { button, type ButtonVariantProps } from '../styled-system/recipes/button'
 import { buttonWithCompoundVariants } from '../styled-system/recipes/button-with-compound-variants'
 
 // Both recipes are defined in ../preset.ts.
@@ -23,6 +23,19 @@ describe('recipe', () => {
         },
       ]
     `)
+  })
+
+  test('split variant props keeps a union of component props', () => {
+    type Props = { visual: 'solid' } & (
+      | { role: 'guest'; expiration: number }
+      | { role: 'admin'; permissions: string[] }
+    )
+    const split = (props: Props) => button.splitVariantProps(props)[1]
+
+    expectTypeOf(split).returns.toEqualTypeOf<
+      { role: 'guest'; expiration: number } | { role: 'admin'; permissions: string[] }
+    >()
+    expect(split({ visual: 'solid', role: 'guest', expiration: 1 })).toEqual({ role: 'guest', expiration: 1 })
   })
 
   test('solid variant styles', () => {
@@ -110,5 +123,17 @@ describe('recipe', () => {
 
     expectTypeOf(button.variantMap.visual).toEqualTypeOf<Array<'outline' | 'solid'>>()
     expect(visuals).toEqual(['solid', 'outline'])
+  })
+
+  test('raw returns the variant props it was given', () => {
+    expectTypeOf(button.raw({ visual: 'solid' })).toEqualTypeOf<ButtonVariantProps>()
+    expect(button.raw({ visual: 'solid' })).toEqual({ visual: 'solid' })
+  })
+
+  test('split variant props checks variant values', () => {
+    // @ts-expect-error `typo` isn't a visual variant
+    button.splitVariantProps({ visual: 'typo' })
+
+    expect(button.splitVariantProps({ id: 'x' })).toEqual([{}, { id: 'x' }])
   })
 })

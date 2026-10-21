@@ -44,3 +44,16 @@ fn custom_css_keys_follow_the_jsx_style_props_mode() {
         }
     }
 }
+
+#[test]
+fn corner_shape_is_a_css_property() {
+    assert!(is_css_property("cornerShape"));
+    assert!(is_css_property("cornerTopLeftShape"));
+    assert!(is_css_property("cornerInlineEndShape"));
+}
+
+#[test]
+fn shipped_newer_properties_are_css_properties() {
+    assert!(is_css_property("baselineSource"));
+    assert!(is_css_property("dynamicRangeLimit"));
+}

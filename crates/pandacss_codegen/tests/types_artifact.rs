@@ -529,7 +529,7 @@ fn emits_ts_source_types() {
     assert!(!system.contains("KhtmlBoxAlign"));
 
     assert_snapshot!(file(types, "types/recipe.ts"), @"
-    import type { ConditionalValue, SystemStyleObject } from './system';
+    import type { ConditionalValue, DistributiveOmit, Pretty, SystemStyleObject } from './system';
 
     export type RecipeVariantProps<T> = T extends (props?: infer Props) => unknown ? Props : never
 
@@ -543,29 +543,33 @@ fn emits_ts_source_types() {
       [K in keyof T]: Array<keyof T[K]>
     }
 
-    export interface RecipeRuntimeFn<Props extends object = object, Map extends object = object> {
+    export interface RecipeRuntimeFn<Props extends object = object, Map extends object = object, Raw = SystemStyleObject> {
       (props?: Props): string
       __type: Props
       variantMap: Map
       variantKeys: Array<keyof Props>
-      raw: (props?: Props) => SystemStyleObject
-      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
+      raw: (props?: Props) => Raw
+      splitVariantProps<T extends Props & Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
       getVariantProps: (props?: Props) => Props
       merge(recipe: RecipeRuntimeFn): RecipeRuntimeFn
     }
 
+    export type ConfigRecipeRuntimeFn<Props extends object = object, Map extends object = object> = RecipeRuntimeFn<Props, Map, Props>
+
     export type SlotRecord<Slot extends string, Value> = Partial<Record<Slot, Value>>
 
-    export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> {
+    export interface SlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object, Raw = Record<Slot, SystemStyleObject>> {
       (props?: Props): Record<Slot, string>
       __type: Props
       __slot: Slot
       variantMap: Map
       variantKeys: Array<keyof Props>
-      raw: (props?: Props) => Record<Slot, SystemStyleObject>
-      splitVariantProps<T extends Record<string, any>>(props: T): [Props, Omit<T, keyof Props>]
+      raw: (props?: Props) => Raw
+      splitVariantProps<T extends Props & Record<string, any>>(props: T): [Props, Pretty<DistributiveOmit<T, keyof Props>>]
       getVariantProps: (props?: Props) => Props
     }
+
+    export type ConfigSlotRecipeRuntimeFn<Slot extends string, Props extends object = object, Map extends object = object> = SlotRecipeRuntimeFn<Slot, Props, Map, Props>
 
     export type StringToBoolean<T> = T extends 'true' | 'false' ? boolean : T
 
@@ -589,7 +593,11 @@ fn emits_ts_source_types() {
     }
 
     export interface RecipeCreatorFn {
-      <T extends RecipeVariantRecord>(config: RecipeDefinition<T>): RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>>
+      <T extends RecipeVariantRecord>(config: RecipeDefinition<T>): CvaRuntimeFn<T>
+    }
+
+    export interface CvaRuntimeFn<T extends RecipeVariantRecord> extends RecipeRuntimeFn<RecipeSelection<T>, RecipeConfigVariantMap<T>> {
+      config: RecipeDefinition<T>
     }
 
     export type SlotRecipeVariantRecord<Slot extends string> = Record<string, Record<string, SlotRecord<Slot, SystemStyleObject>>>
@@ -604,7 +612,11 @@ fn emits_ts_source_types() {
     }
 
     export interface SlotRecipeCreatorFn {
-      <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>>
+      <Slot extends string, T extends SlotRecipeVariantRecord<Slot>>(config: SlotRecipeDefinition<Slot, T>): SvaRuntimeFn<Slot, T>
+    }
+
+    export interface SvaRuntimeFn<Slot extends string, T extends SlotRecipeVariantRecord<Slot>> extends SlotRecipeRuntimeFn<Slot, RecipeSelection<T>, RecipeConfigVariantMap<T>> {
+      config: SlotRecipeDefinition<Slot, T>
     }
     ");
 }
@@ -1173,4 +1185,49 @@ fn can_emit_type_import_extensions() {
         "}
         .trim()
     );
+}
+
+#[test]
+fn corner_shape_is_a_typed_style_property() {
+    let system = system_types(&input());
+    let lines = |needle: &str| {
+        system
+            .lines()
+            .filter(|line| line.contains(needle))
+            .map(str::trim)
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+
+    insta::assert_snapshot!(lines("  cornerBlockEndShape: "), @r#"cornerBlockEndShape: CssGlobals | "bevel" | "notch" | "round" | "scoop" | "square" | "squircle" | (string & {})"#);
+    insta::assert_snapshot!(lines("cornerShape"), @r#"
+    cornerShape: PropertyValueMap["cornerBlockEndShape"]
+    cornerShape?: ConditionalValue<PropertyValueMap["cornerShape"]>
+    "#);
+    insta::assert_snapshot!(lines("cornerTopLeftShape"), @r#"
+    cornerTopLeftShape: PropertyValueMap["cornerBlockEndShape"]
+    cornerTopLeftShape?: ConditionalValue<PropertyValueMap["cornerTopLeftShape"]>
+    "#);
+}
+
+#[test]
+fn baseline_source_and_dynamic_range_limit_are_typed_style_properties() {
+    let system = system_types(&input());
+    let lines = |needle: &str| {
+        system
+            .lines()
+            .filter(|line| line.contains(needle))
+            .map(str::trim)
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+
+    insta::assert_snapshot!(lines("baselineSource"), @r#"
+    baselineSource: CssGlobals | "auto" | "first" | "last" | (string & {})
+    baselineSource?: ConditionalValue<PropertyValueMap["baselineSource"]>
+    "#);
+    insta::assert_snapshot!(lines("dynamicRangeLimit"), @r#"
+    dynamicRangeLimit: CssGlobals | "constrained" | "no-limit" | "standard" | (string & {})
+    dynamicRangeLimit?: ConditionalValue<PropertyValueMap["dynamicRangeLimit"]>
+    "#);
 }

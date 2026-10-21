@@ -127,6 +127,8 @@ export interface Driver {
   codegen(options?: CodegenOptions): string[]
   /** Writes the design-system document. Never part of codegen output. */
   spec(options?: SpecOptions): string[]
+  /** The design-system document as JSON text, without writing it. */
+  specJson(): string | undefined
   /** Generate stylesheet CSS → `CompileOutput`; the caller routes the `css` string. */
   cssgen(options?: CompileOptions): CompileOutput
   /** CSS for selected cascade layers only. */
@@ -287,10 +289,10 @@ export abstract class BaseDriver implements Driver {
   }
 
   spec(options?: SpecOptions): string[] {
-    const artifact = this.#compiler.generateArtifact('specs', { overlay: this.codegenOverlay() })
-    if (!artifact?.files.length) return []
+    const artifact = this.#specArtifact()
+    if (!artifact) return []
 
-    const first = withSources(artifact.files[0]!, this.configSources())
+    const first = artifact.files[0]!
     const files = [{ ...artifact, files: [options?.outfile ? { ...first, path: options.outfile } : first] }]
 
     return this.#compiler.writeArtifacts({
@@ -299,6 +301,16 @@ export abstract class BaseDriver implements Driver {
       cwd: options?.cwd,
       artifacts: files,
     })
+  }
+
+  specJson(): string | undefined {
+    return this.#specArtifact()?.files[0]?.code
+  }
+
+  #specArtifact() {
+    const artifact = this.#compiler.generateArtifact('specs', { overlay: this.codegenOverlay() })
+    if (!artifact?.files.length) return undefined
+    return { ...artifact, files: [withSources(artifact.files[0]!, this.configSources())] }
   }
 
   protected codegenOverlay(): CodegenOverlay | undefined {

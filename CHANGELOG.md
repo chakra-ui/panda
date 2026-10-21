@@ -5,6 +5,79 @@ Each package keeps its own changelog. Start with [`@pandacss/dev`](./packages/de
 
 For Panda 1.x and earlier, see the [v1 changelog](https://github.com/chakra-ui/panda/blob/v1/CHANGELOG.md).
 
+## [2.3.0](#2.3.0) - 2026-10-19
+
+### Added
+
+- Add `jsxMatchTag` to choose which JSX components Panda reads style props from. Match by name or import path; the last
+  matching rule wins.
+
+  ```ts
+  export default defineConfig({
+    jsxMatchTag: [
+      { from: '@tanstack/react-table', ignore: true },
+      { tag: /Button$/, props: ['color'] },
+    ],
+  })
+  ```
+
+- `panda analyze` now counts what your config uses, not just your source files. It shows where each name is used, like
+  `3 files, globalCss` or `via animations.spin`, adds a `compositions` scope for text, layer, and animation styles, and
+  counts styles a design system brings in through build info.
+- Lint rules and `panda cssgen` report missing tokens in style strings, including references with fallbacks. Rules such
+  as `prefer-token` now check pattern style props too.
+- The MCP server picks up config and preset changes without a restart.
+
+### Changed
+
+- Panda no longer extracts data props from components it doesn't own. A prop like `columns` on a table component no
+  longer emits CSS or a `nested_property` warning when its value isn't a style:
+
+  ```tsx
+  <DataTable columns={[{ header: 'Name', accessorKey: 'name' }]} />
+  ```
+
+### Performance
+
+- Fix slow first builds with the PostCSS plugin in projects that have imports Panda can't resolve.
+
+### Fixed
+
+#### CSS output
+
+- Fix recipe variants emitting in alphabetical order. They follow your config again, so a later variant overrides an
+  earlier one. Slots, compound variants, `variantKeys`, and `variantMap` keep config order too.
+- Fix `removeUnusedKeyframes` dropping keyframes used only through an animation token, or under `globalCss` selectors
+  like `p` or `h`.
+- Fix `staticCss` wildcards on pattern props cutting nested token names short, like `red.500` becoming `500`.
+
+#### Config
+
+- Fix watch mode ignoring edits to a newly swapped-in preset.
+- Fix file paths on Windows starting with `\\?\`, so they match the paths Node and your bundler use.
+
+#### Transform
+
+- Fix `cva()` and `sva()` calls staying in the bundle when a variant or slot has an empty style, like `false: {}`.
+- Fix `transform: true` failing under Rspack and Rsbuild with `Can't resolve '@pandacss-internal/css'`.
+
+#### Codegen and types
+
+- Fix `.d.ts` builds for component libraries built on Panda's `jsx` helpers. Since 2.1.2, exporting a `withProvider` or
+  `withContext` component could fail with TS2742 or TS4023. Types like `SlotRecipeProviderComponent` and
+  `WithProviderOptions` are exported from `styled-system/jsx` again.
+- Fix `normalizeHTMLProps` returning `Record<string, unknown>` since 2.1.2. It returns `Record<string, any>` again, so
+  reading a prop off the result type-checks.
+- Fix `TS2590: Expression produces a union type that is too complex to represent` when `forwardProps` names a style prop
+  on a component with many props, like `styled('input', {}, { forwardProps: ['color'] })`.
+- Fix tokens whose name starts with their own category, like `colors.grey50`, being typed as `grey50`. They now
+  type-check under `strictTokens`.
+
+#### Tooling
+
+- Fix type errors when using `recommended()` from `@pandacss/eslint-plugin` in `eslint.config.ts`, and the
+  `extraction-diagnostics` rule crashing ESLint when a diagnostic has no location.
+
 ## [2.2.0](#2.2.0) - 2026-10-09
 
 ### Added
