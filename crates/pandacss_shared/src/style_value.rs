@@ -1,5 +1,5 @@
-//! Whitespace rules shared by the compiler and the generated runtime's `sanitizeStyleValue`,
-//! so a value's class name is the same at build time and in the browser.
+//! Whitespace rules for style values. CSS values keep quoted text; class names follow the
+//! generated runtime (`sanitizeStyleValue` + `withoutSpace`) so build and browser agree.
 
 use std::borrow::Cow;
 
@@ -19,8 +19,8 @@ pub fn is_js_whitespace(ch: char) -> bool {
     )
 }
 
-/// Collapses each whitespace run to one space, except inside quotes, where `content` and
-/// `grid-template-areas` text is kept as written.
+/// The CSS value: collapses each whitespace run to one space, except inside quotes, where
+/// `content` and `grid-template-areas` text is kept as written.
 #[must_use]
 pub fn sanitize_style_value(value: &str) -> Cow<'_, str> {
     if !needs_sanitizing(value) {
@@ -70,4 +70,24 @@ fn needs_sanitizing(value: &str) -> bool {
         }
     }
     false
+}
+
+/// The class value the generated runtime builds: every whitespace run collapses, quotes
+/// included, then the value is trimmed and spaces become `_`.
+#[must_use]
+pub fn class_value(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    let mut after_space = false;
+    for ch in value.trim_matches(is_js_whitespace).chars() {
+        if is_js_whitespace(ch) {
+            if !after_space {
+                out.push('_');
+                after_space = true;
+            }
+        } else {
+            out.push(ch);
+            after_space = false;
+        }
+    }
+    out
 }

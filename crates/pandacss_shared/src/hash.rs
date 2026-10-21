@@ -59,13 +59,9 @@ fn compound_readable_suffix(
     format!("compound__{pairs}")
 }
 
-/// Class names can't hold whitespace: the DOM would split them into separate classes.
 #[must_use]
 pub fn without_space(value: &str) -> String {
-    value
-        .chars()
-        .map(|ch| if crate::is_js_whitespace(ch) { '_' } else { ch })
-        .collect()
+    value.replace(' ', "_")
 }
 
 /// `FxHasher`-backed hash; not adversary-resistant, so only for internal

@@ -27,13 +27,13 @@ Three perf choices:
 
 ### Whitespace in string values
 
-The runtime `css()` also builds class names from values, so the compiler and the generated runtime must agree.
-`pandacss_shared::sanitize_style_value` and the runtime's `sanitizeStyleValue` apply one rule: collapse whitespace runs
-outside quotes to one space, keep quoted text as written (`content`, `grid-template-areas`). The encoder applies it in
-`leaf_to_atom_value`, so values from any source (extraction, config recipes, static CSS, pattern transforms) follow it.
-Class values then replace every JS whitespace character with `_` (`without_space`), since a class name can't hold
-whitespace. `crates/pandacss_shared/tests/fixtures/style-values.json` is the shared conformance list: Rust tests and the
-runtime parity test in `packages/compiler` both read it.
+The runtime `css()` also builds class names from values, so class names must match it exactly while CSS values stay
+faithful. `pandacss_shared::sanitize_style_value` makes the CSS value: whitespace runs outside quotes collapse to one
+space and quoted text is kept (`content`, `grid-template-areas`). The encoder applies it in `leaf_to_atom_value`, so
+every value source follows it. `pandacss_shared::class_value` makes the class value with the runtime's rule: every run
+collapses, quotes included, then spaces become `_`. Values that differ only inside quotes therefore share a class; the
+runtime can't tell them apart either. `crates/pandacss_shared/tests/fixtures/style-values.json` lists both forms; the
+Rust tests and the runtime parity test in `packages/compiler` read it.
 
 ## RecipeStyleEntry
 

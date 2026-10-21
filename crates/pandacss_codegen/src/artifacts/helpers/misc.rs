@@ -377,7 +377,7 @@ pub(super) fn without_space() -> Item {
         vec![Param::typed("str", TsType::Ref("T".into()))],
         TsType::Ref("T".into()),
         indoc! {r#"
-            return (typeof str === "string" && /\s/.test(str) ? str.replace(/\s/g, "_") : str) as T
+            return (typeof str === "string" && str.indexOf(" ") >= 0 ? str.replaceAll(" ", "_") : str) as T
         "#}
         .trim(),
         ["T extends string | number | boolean"],

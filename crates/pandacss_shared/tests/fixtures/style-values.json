@@ -15,13 +15,13 @@
     "name": "grid areas keep quoted spacing",
     "value": "\"col1  col2\" \"col3 col4\"",
     "sanitized": "\"col1  col2\" \"col3 col4\"",
-    "classValue": "\"col1__col2\"_\"col3_col4\""
+    "classValue": "\"col1_col2\"_\"col3_col4\""
   },
   {
     "name": "multi-line grid areas",
     "value": "\n  \"col1  col2\"\n  \"col3 col4\"\n",
     "sanitized": " \"col1  col2\" \"col3 col4\" ",
-    "classValue": "\"col1__col2\"_\"col3_col4\""
+    "classValue": "\"col1_col2\"_\"col3_col4\""
   },
   {
     "name": "tab inside double quotes",
@@ -33,19 +33,19 @@
     "name": "content in single quotes",
     "value": "'a  b'",
     "sanitized": "'a  b'",
-    "classValue": "'a__b'"
+    "classValue": "'a_b'"
   },
   {
     "name": "content with a function",
     "value": "attr(title)  \"  x  \"",
     "sanitized": "attr(title) \"  x  \"",
-    "classValue": "attr(title)_\"__x__\""
+    "classValue": "attr(title)_\"_x_\""
   },
   {
     "name": "unterminated quote keeps the rest",
     "value": "\"open  run",
     "sanitized": "\"open  run",
-    "classValue": "\"open__run"
+    "classValue": "\"open_run"
   },
   {
     "name": "no-break spaces collapse",

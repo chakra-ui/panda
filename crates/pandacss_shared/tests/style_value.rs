@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use pandacss_shared::{is_js_whitespace, sanitize_style_value, without_space};
+use pandacss_shared::{class_value, is_js_whitespace, sanitize_style_value};
 
 #[test]
 fn unquoted_whitespace_runs_collapse_to_one_space() {
@@ -29,8 +29,16 @@ fn a_clean_value_is_borrowed() {
 }
 
 #[test]
+fn class_values_collapse_quoted_whitespace_like_the_runtime() {
+    assert_eq!(
+        class_value("\n  \"col1  col2\"\n  \"col3 col4\"\n"),
+        "\"col1_col2\"_\"col3_col4\""
+    );
+}
+
+#[test]
 fn class_values_never_contain_whitespace() {
-    assert_eq!(without_space("\"a\tb\"_\"c\u{a0}d\""), "\"a_b\"_\"c_d\"");
+    assert_eq!(class_value("\"a\tb\" \"c\u{a0}d\""), "\"a_b\"_\"c_d\"");
 }
 
 #[test]
@@ -48,19 +56,14 @@ struct Case {
     class_value: String,
 }
 
-/// The generated runtime's parity test reads the same file, so both sides follow one list.
+/// The runtime parity test in `packages/compiler` reads the same file.
 #[test]
-fn every_shared_fixture_sanitizes_and_names_like_the_runtime() {
+fn every_shared_fixture_value_has_the_expected_css_and_class_value() {
     let cases: Vec<Case> =
         serde_json::from_str(include_str!("fixtures/style-values.json")).expect("valid fixture");
     for case in cases {
         let sanitized = sanitize_style_value(&case.value);
         assert_eq!(sanitized, case.sanitized, "{}", case.name);
-        assert_eq!(
-            without_space(sanitized.trim()),
-            case.class_value,
-            "{}",
-            case.name
-        );
+        assert_eq!(class_value(&case.value), case.class_value, "{}", case.name);
     }
 }

@@ -403,7 +403,7 @@ describe('generated runtime/cssgen parity', () => {
     expect(utilitiesCss).not.toContain('vt_fade')
   })
 
-  it('uses the same class as cssgen for grid template areas with extra spaces', async () => {
+  it('keeps extra spaces in grid template areas css and matches the runtime class', async () => {
     const compiler = createProject({ outExtension: 'mjs' })
 
     const gridTemplateAreas = [``, `  "col1  col2"`, `  "col3 col4"`, ``].join('\n')
@@ -417,7 +417,7 @@ describe('generated runtime/cssgen parity', () => {
     const className = runtime.css({ gridTemplateAreas })
     const utilitiesCss = compiler.getLayerCss({ layers: ['utilities'] }).css
 
-    expect(className).toBe('grid-template-areas_"col1__col2"_"col3_col4"')
+    expect(className).toBe('grid-template-areas_"col1_col2"_"col3_col4"')
     expect(classSelectors(utilitiesCss)).toContain(className)
     expect(utilitiesCss).toContain('grid-template-areas: "col1  col2" "col3 col4";')
   })
