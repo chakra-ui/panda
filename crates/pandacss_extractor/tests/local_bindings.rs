@@ -2,6 +2,7 @@
 
 use crate::common::panda_config;
 use indoc::indoc;
+use insta::assert_snapshot;
 use pandacss_extractor::{ExpressionKind, LocalDeclarationKind, extract, extract_transform};
 
 #[test]
@@ -234,4 +235,161 @@ fn a_non_raw_member_access_is_not_opaque_raw() {
     assert!(!binding.has_opaque_raw_access);
     assert!(binding.has_other_references);
     assert!(binding.has_non_call_references);
+}
+
+fn describe_bindings(source: &str) -> String {
+    let result = extract_transform(source, "fixture.tsx", &panda_config());
+    result
+        .module
+        .local_call_bindings
+        .iter()
+        .map(|binding| {
+            let init = &source[binding.init_span.start as usize..binding.init_span.end as usize];
+            format!(
+                "{} = {init}\n  calls: {}, raw calls: {}, escapes: {}, other uses: {}",
+                binding.local,
+                binding.calls.len(),
+                binding.raw_calls.len(),
+                binding.has_non_call_references,
+                binding.has_other_references,
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+#[test]
+fn collects_recipes_held_by_a_local_object() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = {
+          root: cva({ base: { color: 'red' } }),
+          label: cva({ variants: { on: { true: { opacity: '0.5' } } } }),
+          plain: 'not-a-recipe',
+        }
+        export const a = styles.root()
+        export const b = styles.label({ on: x })
+        export const c = styles.label.raw({ on: true })
+        export const d = styles.plain
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"
+    styles = cva({ base: { color: 'red' } })
+      calls: 1, raw calls: 0, escapes: false, other uses: false
+    styles = cva({ variants: { on: { true: { opacity: '0.5' } } } })
+      calls: 1, raw calls: 1, escapes: false, other uses: true
+    ");
+}
+
+#[test]
+fn using_a_member_as_a_value_marks_only_that_member() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = {
+          root: cva({ base: { color: 'red' } }),
+          label: cva({ base: { color: 'blue' } }),
+        }
+        export const alias = styles.root
+        export const cls = styles.label()
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"
+    styles = cva({ base: { color: 'red' } })
+      calls: 0, raw calls: 0, escapes: true, other uses: true
+    styles = cva({ base: { color: 'blue' } })
+      calls: 1, raw calls: 0, escapes: false, other uses: false
+    ");
+}
+
+#[test]
+fn passing_the_object_around_marks_every_member() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = {
+          root: cva({ base: { color: 'red' } }),
+          label: cva({ base: { color: 'blue' } }),
+        }
+        export const cls = styles.root()
+        register(styles)
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"
+    styles = cva({ base: { color: 'red' } })
+      calls: 1, raw calls: 0, escapes: true, other uses: true
+    styles = cva({ base: { color: 'blue' } })
+      calls: 0, raw calls: 0, escapes: true, other uses: true
+    ");
+}
+
+#[test]
+fn optional_chaining_on_the_object_marks_every_member() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = {
+          root: cva({ base: { color: 'red' } }),
+          label: cva({ base: { color: 'blue' } }),
+        }
+        export const cls = styles.root()
+        export const opt = styles?.label()
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"
+    styles = cva({ base: { color: 'red' } })
+      calls: 1, raw calls: 0, escapes: true, other uses: true
+    styles = cva({ base: { color: 'blue' } })
+      calls: 0, raw calls: 0, escapes: true, other uses: true
+    ");
+}
+
+#[test]
+fn skips_an_object_with_a_spread() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = { root: cva({ base: { color: 'red' } }), ...other }
+        export const cls = styles.root()
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"");
+}
+
+#[test]
+fn skips_an_object_with_a_computed_key() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = { root: cva({ base: { color: 'red' } }), [key]: 1 }
+        export const cls = styles.root()
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"");
+}
+
+#[test]
+fn skips_an_object_with_a_repeated_key() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const styles = { root: cva({ base: { color: 'red' } }), root: 1 }
+        export const cls = styles.root()
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"");
+}
+
+#[test]
+fn ignores_references_in_type_positions() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        const recipe = cva({ variants: { on: { true: { opacity: '0.5' } } } })
+        const styles = { root: cva({ variants: { on: { true: { opacity: '0.5' } } } }) }
+        type RecipeProps = Parameters<typeof recipe>[0]
+        type RootProps = Parameters<typeof styles.root>[0]
+        export const a = recipe({ on: true })
+        export const b = styles.root({ on: true })
+    "};
+
+    assert_snapshot!(describe_bindings(source), @"
+    recipe = cva({ variants: { on: { true: { opacity: '0.5' } } } })
+      calls: 1, raw calls: 0, escapes: false, other uses: false
+    styles = cva({ variants: { on: { true: { opacity: '0.5' } } } })
+      calls: 1, raw calls: 0, escapes: false, other uses: false
+    ");
 }

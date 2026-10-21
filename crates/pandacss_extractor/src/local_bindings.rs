@@ -1,4 +1,5 @@
-//! Same-file bindings whose initializer is a collected Panda call site.
+//! Same-file bindings whose initializer is a collected Panda call site, directly
+//! or as a property of a local object (`styles.x`).
 //!
 //! Transform-only IR: spans + compact expression facts, no Oxc nodes, so the
 //! allocator can drop after extraction. Join key to [`crate::ExtractedCall`] is
@@ -6,13 +7,14 @@
 
 use oxc_ast::AstKind;
 use oxc_ast::ast::{
-    BindingPattern, Expression, Program, VariableDeclaration, VariableDeclarationKind,
-    VariableDeclarator,
+    BindingPattern, Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKind,
+    VariableDeclaration, VariableDeclarationKind, VariableDeclarator,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::Semantic;
 use oxc_span::GetSpan;
 use oxc_syntax::node::NodeId;
+use oxc_syntax::symbol::SymbolId;
 use rustc_hash::FxHashSet;
 
 use crate::transform_facts::{ExpressionFacts, expression_facts};
@@ -21,11 +23,12 @@ use crate::{Span, span_from_oxc};
 /// A same-file binding initialized by a Panda call, plus every resolved reference.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LocalCallBinding {
+    /// For an object member, the object's name.
     pub local: String,
     /// Initializer call span — joins to [`crate::ExtractedCall::span`].
     pub init_span: Span,
     pub declaration: LocalDeclarationKind,
-    /// Plain `binding(...)` call sites, in source order.
+    /// `binding(...)` or `object.member(...)` call sites, in source order.
     pub calls: Vec<LocalBindingCall>,
     /// Direct `binding.raw(...)` call sites, in source order. Also counted in
     /// `has_other_references`, so existing consumers stay conservative.
@@ -97,49 +100,198 @@ impl<'a> BindingCollector<'a, '_> {
         let Some(init) = declarator.init.as_ref() else {
             return;
         };
-        let init_span = span_from_oxc(init.get_inner_expression().span());
-        if !self.init_spans.contains(&init_span) {
+        let init = init.get_inner_expression();
+        let init_span = span_from_oxc(init.span());
+        if self.init_spans.contains(&init_span) {
+            self.consider_call(&id.name, symbol_id, init_span, kind);
+        } else if let Expression::ObjectExpression(object) = init {
+            self.consider_object(&id.name, symbol_id, object, kind);
+        }
+    }
+
+    fn consider_call(
+        &mut self,
+        local: &str,
+        symbol_id: SymbolId,
+        init_span: Span,
+        kind: LocalDeclarationKind,
+    ) {
+        let mut facts = ReferenceFacts::default();
+        for reference in value_references(self.semantic, symbol_id) {
+            let node_id = reference.node_id();
+            let span = reference_span(self.semantic, node_id);
+            facts.record(classify_reference(self.semantic, node_id, span));
+        }
+
+        self.out.push(facts.into_binding(local, init_span, kind));
+    }
+
+    fn consider_object(
+        &mut self,
+        local: &str,
+        symbol_id: SymbolId,
+        object: &ObjectExpression<'a>,
+        kind: LocalDeclarationKind,
+    ) {
+        let Some(members) = object_call_members(object, self.init_spans) else {
+            return;
+        };
+        if members.is_empty() {
             return;
         }
 
-        let mut calls = Vec::new();
-        let mut raw_calls = Vec::new();
-        let mut has_opaque_raw_access = false;
-        let mut has_non_call_references = false;
-        let mut has_other_references = false;
-        for reference in self.semantic.symbol_references(symbol_id) {
+        let mut facts = vec![ReferenceFacts::default(); members.len()];
+        for reference in value_references(self.semantic, symbol_id) {
             let node_id = reference.node_id();
-            let ref_span = span_from_oxc(self.semantic.nodes().get_node(node_id).kind().span());
-            match classify_reference(self.semantic, node_id, ref_span) {
-                ReferenceKind::PlainCall(call) => calls.push(call),
-                ReferenceKind::RawCall(call) => {
-                    raw_calls.push(call);
-                    has_other_references = true;
+            let span = reference_span(self.semantic, node_id);
+
+            let Some(read) = static_member_read(self.semantic, node_id, span) else {
+                // Any other use of the object can reach every member.
+                for member_facts in &mut facts {
+                    member_facts.record(ReferenceKind::Other);
                 }
-                ReferenceKind::OpaqueRawAccess => {
-                    has_opaque_raw_access = true;
-                    has_non_call_references = true;
-                    has_other_references = true;
-                }
-                ReferenceKind::Other => {
-                    has_non_call_references = true;
-                    has_other_references = true;
-                }
+                continue;
+            };
+
+            if let Some(index) = members.iter().position(|member| member.key == read.key) {
+                facts[index].record(classify_reference(self.semantic, read.node_id, read.span));
             }
         }
-        calls.sort_by_key(|call| call.span.start);
-        raw_calls.sort_by_key(|call| call.span.start);
 
-        self.out.push(LocalCallBinding {
-            local: id.name.to_string(),
+        for (member, member_facts) in members.into_iter().zip(facts) {
+            self.out
+                .push(member_facts.into_binding(local, member.call_span, kind));
+        }
+    }
+}
+
+fn reference_span(semantic: &Semantic<'_>, node_id: NodeId) -> Span {
+    span_from_oxc(semantic.nodes().get_node(node_id).kind().span())
+}
+
+/// Type-position references are erased, so they don't count.
+fn value_references<'s>(
+    semantic: &'s Semantic<'_>,
+    symbol_id: SymbolId,
+) -> impl Iterator<Item = &'s oxc_semantic::Reference> + 's {
+    semantic
+        .symbol_references(symbol_id)
+        .filter(|reference| reference.is_value())
+}
+
+/// A property whose value is a collected Panda call: `root: cva(…)`.
+struct ObjectMember {
+    key: String,
+    call_span: Span,
+}
+
+/// `None` when a spread, computed or repeated key means `object.key` may not read this value.
+fn object_call_members(
+    object: &ObjectExpression<'_>,
+    init_spans: &FxHashSet<Span>,
+) -> Option<Vec<ObjectMember>> {
+    let mut keys = FxHashSet::default();
+    let mut members = Vec::new();
+
+    for property in &object.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return None;
+        };
+        if property.computed {
+            return None;
+        }
+
+        let key = property.key.static_name()?.into_owned();
+        if !keys.insert(key.clone()) {
+            return None;
+        }
+
+        if property.kind != PropertyKind::Init || property.method {
+            continue;
+        }
+        let call_span = span_from_oxc(property.value.get_inner_expression().span());
+        if init_spans.contains(&call_span) {
+            members.push(ObjectMember { key, call_span });
+        }
+    }
+
+    Some(members)
+}
+
+/// `object.key`, read without optional chaining.
+struct MemberRead<'s> {
+    node_id: NodeId,
+    span: Span,
+    key: &'s str,
+}
+
+fn static_member_read<'s>(
+    semantic: &'s Semantic<'_>,
+    node_id: NodeId,
+    object_span: Span,
+) -> Option<MemberRead<'s>> {
+    let AstKind::StaticMemberExpression(member) = semantic.nodes().parent_kind(node_id) else {
+        return None;
+    };
+    if member.optional || span_from_oxc(member.object.get_inner_expression().span()) != object_span
+    {
+        return None;
+    }
+
+    Some(MemberRead {
+        node_id: semantic.nodes().parent_id(node_id),
+        span: span_from_oxc(member.span),
+        key: member.property.name.as_str(),
+    })
+}
+
+#[derive(Clone, Default)]
+struct ReferenceFacts {
+    calls: Vec<LocalBindingCall>,
+    raw_calls: Vec<LocalBindingCall>,
+    has_opaque_raw_access: bool,
+    has_non_call_references: bool,
+    has_other_references: bool,
+}
+
+impl ReferenceFacts {
+    fn record(&mut self, kind: ReferenceKind) {
+        match kind {
+            ReferenceKind::PlainCall(call) => self.calls.push(call),
+            ReferenceKind::RawCall(call) => {
+                self.raw_calls.push(call);
+                self.has_other_references = true;
+            }
+            ReferenceKind::OpaqueRawAccess => {
+                self.has_opaque_raw_access = true;
+                self.has_non_call_references = true;
+                self.has_other_references = true;
+            }
+            ReferenceKind::Other => {
+                self.has_non_call_references = true;
+                self.has_other_references = true;
+            }
+        }
+    }
+
+    fn into_binding(
+        mut self,
+        local: &str,
+        init_span: Span,
+        declaration: LocalDeclarationKind,
+    ) -> LocalCallBinding {
+        self.calls.sort_by_key(|call| call.span.start);
+        self.raw_calls.sort_by_key(|call| call.span.start);
+        LocalCallBinding {
+            local: local.to_owned(),
             init_span,
-            declaration: kind,
-            calls,
-            raw_calls,
-            has_opaque_raw_access,
-            has_non_call_references,
-            has_other_references,
-        });
+            declaration,
+            calls: self.calls,
+            raw_calls: self.raw_calls,
+            has_opaque_raw_access: self.has_opaque_raw_access,
+            has_non_call_references: self.has_non_call_references,
+            has_other_references: self.has_other_references,
+        }
     }
 }
 
@@ -175,10 +327,8 @@ enum ReferenceKind {
 fn classify_reference(semantic: &Semantic<'_>, node_id: NodeId, ref_span: Span) -> ReferenceKind {
     match semantic.nodes().parent_kind(node_id) {
         AstKind::CallExpression(call) => {
-            let callee_is_ref = matches!(
-                call.callee.get_inner_expression(),
-                Expression::Identifier(id) if span_from_oxc(id.span) == ref_span
-            );
+            let callee_is_ref =
+                span_from_oxc(call.callee.get_inner_expression().span()) == ref_span;
             if !callee_is_ref || call.optional || call.type_arguments.is_some() {
                 return ReferenceKind::Other;
             }
