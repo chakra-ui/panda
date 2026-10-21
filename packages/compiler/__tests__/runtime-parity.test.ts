@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { loadGeneratedModule } from './generated-runtime'
-import { createProject } from './test-utils'
+import { createProject, createTransformProject } from './test-utils'
 
 type CssRuntime = {
   css: (styles: Record<string, unknown>) => string
@@ -466,5 +466,39 @@ describe('generated runtime/cssgen parity', () => {
     for (const value of styleValues) {
       expect(selectors, JSON.stringify(value)).toContain(runtime.css({ content: value }))
     }
+  })
+
+  it('rewrites quoted-whitespace values to the class the runtime and css use', async () => {
+    const compiler = createTransformProject({ outExtension: 'mjs' })
+
+    const gridTemplateAreas = '"col1  col2" "col3 col4"'
+    const source = `import { css } from '@panda/css'; export const cls = css({ gridTemplateAreas: ${JSON.stringify(gridTemplateAreas)} })`
+
+    compiler.parseFileSource('/virtual/app.ts', source)
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css({ gridTemplateAreas })
+    const transformed = compiler.transformSource({ path: 'src/app.ts', source })
+
+    expect(transformed.changed).toBe(true)
+    expect(transformed.code).toContain(JSON.stringify(className))
+    expect(classSelectors(compiler.getLayerCss({ layers: ['utilities'] }).css)).toContain(className)
+  })
+
+  it('uses the same hashed class as cssgen for quoted-whitespace values', async () => {
+    const compiler = createProject({ outExtension: 'mjs', hash: { className: true } })
+
+    const gridTemplateAreas = '"col1  col2" "col3 col4"'
+
+    compiler.parseFileSource(
+      '/virtual/app.ts',
+      `import { css } from '@panda/css'; css({ gridTemplateAreas: ${JSON.stringify(gridTemplateAreas)} })`,
+    )
+
+    const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
+    const className = runtime.css({ gridTemplateAreas })
+
+    expect(className).not.toContain('col1')
+    expect(classSelectors(compiler.getLayerCss({ layers: ['utilities'] }).css)).toContain(className)
   })
 })
