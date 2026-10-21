@@ -419,6 +419,7 @@ impl ArtifactGraph {
                 ConfigDependency::CodegenFormat,
                 ConfigDependency::CodegenImportExtensions,
                 ConfigDependency::Conditions,
+                ConfigDependency::DesignSystem,
                 ConfigDependency::JsxFactory,
                 ConfigDependency::JsxFramework,
                 ConfigDependency::JsxStyleProps,

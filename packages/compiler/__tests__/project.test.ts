@@ -166,6 +166,22 @@ describe('Compiler', () => {
     `)
   })
 
+  it('regenerates the types when the design system changes', () => {
+    const compiler = createProject({ designSystem: '@acme/ui' })
+
+    const affected = compiler.generateAffectedArtifacts(['designSystem'])
+    const register = affected
+      .find((artifact) => artifact.id === 'types')
+      ?.files.find((file) => file.path === 'types/register.d.ts')
+
+    expect(affected.map((artifact) => artifact.id)).toMatchInlineSnapshot(`
+      [
+        "types",
+      ]
+    `)
+    expect(register?.code).toContain('declare module "@acme/ui/types"')
+  })
+
   it('uses config forceImportExtension for generated import specifiers', () => {
     const compiler = createProject({ forceImportExtension: true })
 
