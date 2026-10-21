@@ -3,9 +3,12 @@
 '@pandacss/compiler-wasm': minor
 ---
 
-Apps that consume a design system now share its style types. Styles, tokens and keyframes the app adds are accepted
-wherever the design system's types are used, including in stacked design systems.
+Fix type errors when an app extends a design system. Tokens, keyframes or conditions the app added were rejected
+wherever the design system's types were used, like its component props. The design system's types now follow the
+app's, including through nested design systems.
 
 ```ts
-const styles: SystemStyleObject = css.raw({ animationName: 'appFade' }) // SystemStyleObject from '@acme/ui/types'
+import type { SystemStyleObject } from '@acme/ds/types'
+
+const styles: SystemStyleObject = css.raw({ animationName: 'appFade' }) // ✅ app keyframe, no longer an error
 ```
