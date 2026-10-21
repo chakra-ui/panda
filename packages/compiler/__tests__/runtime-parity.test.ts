@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { loadGeneratedModule } from './generated-runtime'
 import { createProject } from './test-utils'
@@ -6,13 +5,6 @@ import { createProject } from './test-utils'
 type CssRuntime = {
   css: (styles: Record<string, unknown>) => string
 }
-
-type StyleValueCase = { name: string; value: string }
-
-// Shared with the Rust sanitizer tests, so the compiler and the runtime follow one list.
-const styleValueCases: StyleValueCase[] = JSON.parse(
-  readFileSync(new URL('../../../crates/pandacss_shared/tests/fixtures/style-values.json', import.meta.url), 'utf8'),
-)
 
 function unescapeCss(selector: string) {
   return selector
@@ -441,22 +433,38 @@ describe('generated runtime/cssgen parity', () => {
     expect(utilitiesCss).toContain('content: "a\tb";')
   })
 
-  it('uses the same class as cssgen for every shared style value', async () => {
+  it('uses the same class as cssgen for tricky whitespace values', async () => {
+    const styleValues = [
+      '1px  solid   red',
+      '1rem\t\n 2rem',
+      '"col1  col2" "col3 col4"',
+      '\n  "col1  col2"\n  "col3 col4"\n',
+      '"a\tb"',
+      "'a  b'",
+      'attr(title)  "  x  "',
+      '"open  run',
+      '1px\u00a0\u00a0solid',
+      'a\u2028b',
+      'a\ufeffb',
+      'a\u0085b',
+      '1rem  2rem  !important',
+      '1px solid red',
+    ]
     const compiler = createProject({ outExtension: 'mjs' })
 
     compiler.parseFileSource(
       '/virtual/app.ts',
       [
         `import { css } from '@panda/css'`,
-        ...styleValueCases.map(({ value }) => `css({ content: ${JSON.stringify(value)} })`),
+        ...styleValues.map((value) => `css({ content: ${JSON.stringify(value)} })`),
       ].join('\n'),
     )
 
     const runtime = await loadGeneratedModule<CssRuntime>(compiler, { entry: 'css/css.mjs' })
     const selectors = classSelectors(compiler.getLayerCss({ layers: ['utilities'] }).css)
 
-    for (const { name, value } of styleValueCases) {
-      expect(selectors, name).toContain(runtime.css({ content: value }))
+    for (const value of styleValues) {
+      expect(selectors, JSON.stringify(value)).toContain(runtime.css({ content: value }))
     }
   })
 })

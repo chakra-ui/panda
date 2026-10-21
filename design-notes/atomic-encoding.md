@@ -32,8 +32,8 @@ faithful. `pandacss_shared::sanitize_style_value` makes the CSS value: whitespac
 space and quoted text is kept (`content`, `grid-template-areas`). The encoder applies it in `leaf_to_atom_value`, so
 every value source follows it. `pandacss_shared::class_value` makes the class value with the runtime's rule: every run
 collapses, quotes included, then spaces become `_`. Values that differ only inside quotes therefore share a class; the
-runtime can't tell them apart either. `crates/pandacss_shared/tests/fixtures/style-values.json` lists both forms; the
-Rust tests and the runtime parity test in `packages/compiler` read it.
+runtime can't tell them apart either. `pandacss_shared`'s `style_value` tests and the runtime parity test in
+`packages/compiler` cover the same tricky values.
 
 ## RecipeStyleEntry
 
