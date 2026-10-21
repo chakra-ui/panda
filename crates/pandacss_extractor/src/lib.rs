@@ -55,7 +55,7 @@ pub use imports::{
 pub use local_bindings::{LocalBindingCall, LocalCallBinding, LocalDeclarationKind};
 // Internal helpers that take Oxc-shaped inputs — kept out of the public
 // surface so consumers don't accidentally couple to oxc_ast / oxc_diagnostics.
-pub use cross_file::{CrossFileResolver, CrossFileSession, RetryOutcome};
+pub use cross_file::{CrossFileResolver, CrossFileSession, RetryOutcome, module_path_candidates};
 pub(crate) use export_names::collect_export_info;
 pub use export_names::{ExportInfo, ReExport};
 pub(crate) use imports::{collect_imports, collect_parser_diagnostics};

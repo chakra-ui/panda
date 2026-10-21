@@ -96,6 +96,7 @@ export interface BuildModuleEntry {
   recipes?: number[]
   tokenRefs?: number[]
   viewTransitions?: number[]
+  imports?: string[]
   /** Design-system dependency → imported export names (`*` = all). */
   dependencyImports?: Record<string, string[]>
 }

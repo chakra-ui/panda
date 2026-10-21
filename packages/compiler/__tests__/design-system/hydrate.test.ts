@@ -207,6 +207,34 @@ export function Orphan() {
   return lib.buildInfo.create({ panda: '^2.0.0' })
 }
 
+function composedLibBuildInfo() {
+  const lib = createProject()
+  lib.parseFileSource(
+    'checkbox.tsx',
+    [
+      "import { css } from '@panda/css'",
+      "import { Label } from './label'",
+      "export const Checkbox = () => <div className={css({ color: 'blue' })}><Label /></div>",
+    ].join('\n'),
+  )
+  lib.parseFileSource(
+    'label.tsx',
+    "import { css } from '@panda/css'\nexport const Label = () => <span className={css({ color: 'red' })} />",
+  )
+  lib.parseFileSource('field.tsx', "import { Hint } from './hint'\nexport const Field = () => <Hint />")
+  lib.parseFileSource(
+    'hint.tsx',
+    "import { css } from '@panda/css'\nexport const Hint = () => <small className={css({ color: 'green' })} />",
+  )
+  lib.parseFileSource(
+    'index.tsx',
+    ["export * from './checkbox'", "export * from './label'", "export * from './field'", "export * from './hint'"].join(
+      '\n',
+    ),
+  )
+  return lib.buildInfo.create({ panda: '^2.0.0' })
+}
+
 function styleLayers(driver: NodeDriver) {
   return {
     recipes: driver.getLayerCss({ layers: ['recipes'] }).css,
@@ -252,7 +280,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         "severity": "warning",
         "category": "designSystem",
         "file": "buildinfo.json",
-        "message": ""@acme/ds" build info uses schemaVersion 999; expected 7. Re-extracted 1 source file.",
+        "message": ""@acme/ds" build info uses schemaVersion 999; expected 8. Re-extracted 1 source file.",
         "help": [
           "Run \`panda lib\` in "@acme/ds" to rebuild panda/buildinfo.json.",
         ],
@@ -277,7 +305,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         {
           code: 'design_system_buildinfo_stale',
           severity: 'error',
-          message: expect.stringMatching(/uses schemaVersion 999; expected 7\. No fallback source files/),
+          message: expect.stringMatching(/uses schemaVersion 999; expected 8\. No fallback source files/),
         },
       ],
     })
@@ -294,7 +322,7 @@ describe('hydrateDesignSystem (consumer)', () => {
   it('re-extracts when build info is structurally invalid but files are present', async () => {
     cwd = createFixture({
       manifest: { files: ['./button.js'] },
-      buildInfo: { schemaVersion: 7 },
+      buildInfo: { schemaVersion: 8 },
     })
 
     const driver = await createNodeDriver({ cwd })
@@ -375,7 +403,7 @@ describe('hydrateDesignSystem (consumer)', () => {
         },
       }`,
       buildInfo: {
-        schemaVersion: 7,
+        schemaVersion: 8,
         panda: '^2.0.0',
         configFingerprint: 'cfg1-test',
         strings: ['colors.red'],
@@ -620,6 +648,57 @@ describe('hydrateDesignSystem (consumer)', () => {
         }
         ",
         }
+      `)
+    })
+
+    it('keeps the styles of the modules an imported component imports', async () => {
+      const { utilities } = await layersWithImport(
+        "import { Checkbox } from '@acme/ds'\nexport const App = () => <Checkbox />",
+        composedLibBuildInfo(),
+      )
+      expect(utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .color_blue {
+            color: blue;
+          }
+          .color_red {
+            color: red;
+          }
+        }
+        "
+      `)
+    })
+
+    it('hydrates only what a component without its own styles imports', async () => {
+      const { utilities } = await layersWithImport(
+        "import { Field } from '@acme/ds'\nexport const App = () => <Field />",
+        composedLibBuildInfo(),
+      )
+      expect(utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .color_green {
+            color: green;
+          }
+        }
+        "
+      `)
+    })
+
+    it('keeps the imports of every component when the app imports several', async () => {
+      const { utilities } = await layersWithImport(
+        "import { Label, Field } from '@acme/ds'\nexport const App = () => <><Label /><Field /></>",
+        composedLibBuildInfo(),
+      )
+      expect(utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .color_green {
+            color: green;
+          }
+          .color_red {
+            color: red;
+          }
+        }
+        "
       `)
     })
 
@@ -1298,6 +1377,32 @@ describe('hydrateDesignSystem (consumer)', () => {
       `)
     })
 
+    it('keeps @acme/ds Icon styles when an @acme/ui component reaches Icon through a sibling module', async () => {
+      cwd = createStackedFixture({
+        ui: {
+          'index.tsx': "export { CheckField } from './check-field'",
+          'check-field.tsx': [
+            "import { CheckIcon } from './check-icon'",
+            'export const CheckField = () => <CheckIcon />',
+          ].join('\n'),
+          'check-icon.tsx': [
+            "import { Icon } from '@acme/ds'",
+            "export const CheckIcon = () => <Icon name='check' />",
+          ].join('\n'),
+        },
+        app: ["import { CheckField } from '@acme/ui'", 'export const App = () => <CheckField />'].join('\n'),
+      })
+
+      expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .width_20px {
+            width: 20px;
+          }
+        }
+        "
+      `)
+    })
+
     it('keeps @acme/ds Icon styles when the app imports Icon re-exported from @acme/ui', async () => {
       cwd = createStackedFixture({
         ui: {
@@ -1624,7 +1729,7 @@ function createStackedFixture(options: StackedFixture): string {
 
 function validBuildInfo(): Record<string, unknown> {
   return {
-    schemaVersion: 7,
+    schemaVersion: 8,
     panda: '^2.0.0',
     configFingerprint: 'cfg1-test',
     strings: [],
