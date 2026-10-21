@@ -12,6 +12,7 @@
 mod adapter;
 mod calls;
 mod cross_file;
+mod deferred_value;
 mod design_system_imports;
 mod export_names;
 mod extract;
@@ -45,8 +46,8 @@ pub use extract::{
     CrossFileDependency, ExtractDebugResult, ExtractUsage, ExtractVerboseResult,
     ImportBindingFacts, ImportedRecipeFold, ImportedRecipeFoldKind, ModuleFacts, TokenRef,
     UnresolvedCrossFileDependency, analyze_module, extract, extract_debug, extract_in_session,
-    extract_transform, extract_transform_with_recipes, extract_verbose, extract_with_raw_resolvers,
-    extract_with_raw_resolvers_in_session,
+    extract_transform, extract_transform_with_raw_resolvers, extract_verbose,
+    extract_with_raw_resolvers, extract_with_raw_resolvers_in_session,
 };
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,

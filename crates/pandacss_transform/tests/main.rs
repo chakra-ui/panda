@@ -37,6 +37,7 @@ mod jsx_recipes_patterns;
 mod jsx_runtime;
 mod jsx_spread;
 mod keyframes;
+mod pattern_raw_parity;
 mod patterns;
 mod position_try;
 mod recipe_inline;

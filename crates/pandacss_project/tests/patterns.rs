@@ -657,3 +657,37 @@ fn extracted_jsx_carries_kind_from_config() {
         ]
     );
 }
+
+#[test]
+fn css_with_a_nested_pattern_raw_applies_pattern_defaults() {
+    let mut project = create_project(json!({
+        "patterns": {
+            "spaced": {
+                "properties": {
+                    "gap": { "type": "string" },
+                    "padding": { "type": "string" }
+                },
+                "defaultValues": { "gap": "8px", "padding": "2px" }
+            }
+        }
+    }));
+
+    project.parse_file(
+        "fixture.ts",
+        indoc! {r"
+            import { css } from '@panda/css';
+            import { spaced } from '@panda/patterns';
+
+            css(spaced.raw({ gap: '4px' }));
+        "},
+    );
+
+    assert_yaml_snapshot!(sorted_atoms(&project), @"
+    - prop: gap
+      value: 4px
+      conditions: []
+    - prop: padding
+      value: 2px
+      conditions: []
+    ");
+}

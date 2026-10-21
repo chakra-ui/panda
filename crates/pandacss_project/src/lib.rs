@@ -74,8 +74,8 @@ pub(crate) type ProjectConditionMatcher = pandacss_encoder::ConditionSet;
 
 use pandacss_shared::refcount::{refcount_add, refcount_remove};
 use pandacss_system::{
-    EncodedRecipes, EncodedRecipesCache, ParseTransforms, PatternTransformFn, System,
-    UtilityTransformFn, atom_value_summary, is_empty_style_object, literal_entries,
+    EncodedRecipes, EncodedRecipesCache, ParseTransforms, PatternStyles, PatternTransformFn,
+    System, UtilityTransformFn, atom_value_summary, is_empty_style_object, literal_entries,
     resolved_atom_value, with_callback_target,
 };
 
@@ -486,15 +486,14 @@ impl Project {
 
         let result = {
             let compiled = self.system.as_ref();
-            let has_pattern_transform = pattern_transform.is_some();
             let mut raw_transform = |name: &str, styles: &Literal| {
-                let (pattern_name, pattern_styles) = compiled.pattern_transform_input(name, styles);
-                let Some(transform) = pattern_transform.as_deref_mut() else {
-                    return Ok(Some(styles.clone()));
-                };
-                transform(pattern_name, pattern_styles.as_ref()).map_err(|diagnostic| {
-                    with_callback_target(diagnostic, "pattern", pattern_name, None)
-                })
+                compiled
+                    .pattern_styles(name, styles, pattern_transform.as_deref_mut())
+                    .map(|resolved| resolved.map(|resolved| resolved.styles))
+                    .map_err(|diagnostic| {
+                        let (pattern_name, _) = compiled.pattern_transform_input(name, styles);
+                        with_callback_target(diagnostic, "pattern", pattern_name, None)
+                    })
             };
             let mut resolve_recipe_raw = |factory: &str, config: &Literal, props: &Literal| {
                 pandacss_system::resolve_inline_recipe_raw(&self.system, factory, config, props)
@@ -504,7 +503,7 @@ impl Project {
                 path,
                 self.system.extractor_config(),
                 cross_file,
-                has_pattern_transform.then_some(&mut raw_transform),
+                Some(&mut raw_transform),
                 &mut resolve_recipe_raw,
             )
         };
@@ -726,22 +725,17 @@ impl Project {
                         .as_ref()
                         .filter(|literal| matches!(literal, Literal::Object(_)))
                         .unwrap_or(&empty_object);
-                    if let Some(transform) = pattern_transform.as_deref_mut() {
-                        let (pattern_name, pattern_styles) =
-                            compiled.pattern_transform_input(&call.name, arg);
-                        match transform(pattern_name, pattern_styles.as_ref()) {
-                            Ok(Some(style)) => {
-                                self.system.process_style_props(
-                                    &mut encoder,
-                                    &style,
-                                    ShorthandPolicy::Internal,
-                                );
-                            }
-                            Ok(None) => {}
-                            Err(diagnostic) => report.diagnostics.push(with_callback_target(
-                                diagnostic, "pattern", &call.name, None,
-                            )),
-                        }
+                    match compiled.pattern_styles(&call.name, arg, pattern_transform.as_deref_mut())
+                    {
+                        Ok(Some(resolved)) => self.system.process_style_props(
+                            &mut encoder,
+                            &resolved.styles,
+                            pattern_shorthand_policy(&resolved),
+                        ),
+                        Ok(None) => {}
+                        Err(diagnostic) => report.diagnostics.push(with_callback_target(
+                            diagnostic, "pattern", &call.name, None,
+                        )),
                     }
                 }
                 (MatchCategory::Recipe, _) => {
@@ -875,25 +869,17 @@ impl Project {
                 continue;
             }
 
-            let (style, shorthand_policy) =
-                if let Some(transform) = pattern_transform.as_deref_mut() {
-                    let (pattern_name, pattern_styles) =
-                        compiled.pattern_transform_input(&jsx.name, &jsx.data);
-                    match transform(pattern_name, pattern_styles.as_ref()) {
-                        Ok(Some(style)) => (style, ShorthandPolicy::Internal),
-                        Ok(None) => (jsx.data.clone(), ShorthandPolicy::UserFacing),
-                        Err(diagnostic) => {
-                            report
-                                .diagnostics
-                                .push(with_callback_target(diagnostic, "pattern", &jsx.name, None));
-                            (jsx.data.clone(), ShorthandPolicy::UserFacing)
-                        }
-                    }
-                } else {
-                    (jsx.data.clone(), ShorthandPolicy::UserFacing)
-                };
-            self.system
-                .process_style_props(&mut encoder, &style, shorthand_policy);
+            match compiled.pattern_styles(&jsx.name, &jsx.data, pattern_transform.as_deref_mut()) {
+                Ok(Some(resolved)) => self.system.process_style_props(
+                    &mut encoder,
+                    &resolved.styles,
+                    pattern_shorthand_policy(&resolved),
+                ),
+                Ok(None) => {}
+                Err(diagnostic) => report
+                    .diagnostics
+                    .push(with_callback_target(diagnostic, "pattern", &jsx.name, None)),
+            }
             report.jsx_usages += 1;
         }
 
@@ -2346,3 +2332,12 @@ pub use pandacss_recipes::{
     CompoundVariant, SlotCompoundVariant, SlotVariantGroup, SlotVariantOption, VariantGroup,
     VariantOption,
 };
+
+/// A transform's output may use shorthands; untransformed props are the user's own.
+fn pattern_shorthand_policy(resolved: &PatternStyles) -> ShorthandPolicy {
+    if resolved.transformed {
+        ShorthandPolicy::Internal
+    } else {
+        ShorthandPolicy::UserFacing
+    }
+}

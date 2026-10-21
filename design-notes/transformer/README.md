@@ -767,6 +767,15 @@ Pattern function calls such as `hstack(...)` follow the same broad rule as `css(
 
 `pattern.raw(...)` runs the pattern transform and folds to the style object it returns, defaults included.
 
+Every pattern usage, including a `.raw()` nested in `css()`, `cva()` or JSX, resolves through
+`System::pattern_styles`, so the build and the transform agree. Without the host callback, a pattern that needs a JS
+transform resolves to nothing, never to its props. A nested `.raw()` whose props hold a runtime branch or unknown value
+keeps the enclosing call. Pattern-dependent exports retain an owned expression plan, including ordered object writes,
+spreads, nested calls, and binding reads. The importing file resolves the plan with its own hook before producing a
+style value, so CSS follows the consumer's conditions and the cross-file cache never holds callback output. See
+[cross-file resolution](../cross-file-resolution.md). `tests/pattern_raw_parity.rs` checks transformed classes and
+consumer-specific emitted CSS independently.
+
 A pattern call collapses to a single value — one class string, or one object for `.raw` — so unlike `css(...)` it
 cannot print a runtime ternary. Any branch the runtime has to decide bails the call. The literal alone can't show this
 (a dropped spread and a folded `&&` both look like a plain object), so the planner consults the `StyleTree`.
