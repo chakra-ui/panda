@@ -2394,3 +2394,46 @@ fn build_info_round_trips_a_position_try_fallback_atom_and_block() {
         .collect();
     assert_eq!(idents, ["--pt_flip"]);
 }
+
+#[test]
+fn js_specifier_prefers_the_typescript_source_when_both_exist() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "field.tsx",
+        "import { Label } from './label.js'; export const Field = () => Label;",
+    );
+    project.parse_file("label.tsx", "export const Label = 1;");
+    project.parse_file("label.js", "export const Label = 1;");
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert_yaml_snapshot!(module_graph_view(&info), @"
+    exports:
+      Field: field.tsx
+      Label: label.tsx
+    imports:
+      field.tsx:
+        - label.tsx
+    ");
+}
+
+#[test]
+fn dotted_module_names_resolve_without_an_extension() {
+    let mut project = create_project(json!({}));
+    project.parse_file(
+        "button.tsx",
+        "import { buttonRecipe } from './button.recipe'; export const Button = () => buttonRecipe;",
+    );
+    project.parse_file("button.recipe.ts", "export const buttonRecipe = 1;");
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert_yaml_snapshot!(module_graph_view(&info), @"
+    exports:
+      Button: button.tsx
+      buttonRecipe: button.recipe.ts
+    imports:
+      button.tsx:
+        - button.recipe.ts
+    ");
+}

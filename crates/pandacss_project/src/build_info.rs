@@ -14,7 +14,8 @@ use pandacss_encoder::{
 };
 use pandacss_extractor::{
     CrossFileResolver, DesignSystemImportSelection, ExportInfo, ImportRecord, ReExport,
-    ScanImportsOptions, design_system_usage_from_import_records, scan_imports_with,
+    ScanImportsOptions, design_system_usage_from_import_records, module_path_candidates,
+    scan_imports_with,
 };
 use pandacss_fs::normalize_lexical;
 use pandacss_shared::{InlineKeyframe, PositionTryStyle, ViewTransitionStyle};
@@ -725,6 +726,7 @@ impl super::Project {
             &file_keyframes,
         );
         let resolver = self.system.extractor_config().cross_file.as_ref();
+        // Files added since the last lookup would otherwise stay unresolved.
         if let Some(resolver) = resolver {
             resolver.clear_resolution_cache();
         }
@@ -1038,8 +1040,6 @@ fn record_dependency_usage(
     usage
 }
 
-const SOURCE_EXTENSIONS: [&str; 8] = ["ts", "tsx", "js", "jsx", "mjs", "mts", "cjs", "cts"];
-
 struct ModuleKeys<'a> {
     normalized: BTreeMap<String, String>,
     canonical: FxHashMap<PathBuf, String>,
@@ -1089,31 +1089,7 @@ impl<'a> ModuleKeys<'a> {
             .join(specifier);
         let base = normalize_lexical(&base);
 
-        let mut candidates = vec![base.clone()];
-        match Path::new(specifier)
-            .extension()
-            .and_then(|ext| ext.to_str())
-        {
-            None => {
-                candidates.extend(SOURCE_EXTENSIONS.iter().map(|ext| format!("{base}.{ext}")));
-                candidates.extend(
-                    SOURCE_EXTENSIONS
-                        .iter()
-                        .map(|ext| format!("{base}/index.{ext}")),
-                );
-            }
-            Some(ext) => {
-                if let Some(stem) = base.strip_suffix(ext).and_then(|s| s.strip_suffix('.')) {
-                    candidates.extend(
-                        typescript_sources_for(ext)
-                            .iter()
-                            .map(|ts_ext| format!("{stem}.{ts_ext}")),
-                    );
-                }
-            }
-        }
-
-        candidates
+        module_path_candidates(&base)
             .into_iter()
             .find_map(|candidate| self.normalized.get(&candidate).cloned())
     }
@@ -1124,16 +1100,6 @@ impl<'a> ModuleKeys<'a> {
             .get(&resolved)
             .or_else(|| self.normalized.get(&normalize_lexical(&resolved)))
             .cloned()
-    }
-}
-
-fn typescript_sources_for(extension: &str) -> &'static [&'static str] {
-    match extension {
-        "js" => &["ts", "tsx"],
-        "jsx" => &["tsx"],
-        "mjs" => &["mts"],
-        "cjs" => &["cts"],
-        _ => &[],
     }
 }
 
