@@ -191,7 +191,8 @@ is absent. `./jsx` and `./jsx/*` appear only when `jsxFramework` is set:
 }
 ```
 
-`./types` has no runtime code. It's there so packages built on your design system can annotate the recipes they export.
+`./types` has no runtime code. Apps use it to share their types with your design system, and packages built on it use it
+to annotate their recipes.
 
 Don't hand-edit the generated subpaths. The next `panda lib` run overwrites them anyway.
 
