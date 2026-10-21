@@ -371,7 +371,6 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 ExportEntry::PureFn(func) => Some(func),
                 ExportEntry::Literal(_)
                 | ExportEntry::StyleFallback { .. }
-                | ExportEntry::PatternRaw { .. }
                 | ExportEntry::Recipe(_) => None,
             })
     }
@@ -677,13 +676,15 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         if flags.contains(SymbolFlags::Import) {
             // Rehydrate from Literal (`Conditional` → `Branches`, no foreign spans).
             return match self.resolve_import_entry(symbol_id)? {
-                ExportEntry::Literal(value) => Some(literal_to_style_tree(value)),
-                ExportEntry::StyleFallback { style_value, .. } => Some(
-                    StyleTree::OpenWithFallback(Box::new(literal_to_style_tree(style_value))),
-                ),
-                ExportEntry::PatternRaw { pattern, props } => self
-                    .pattern_raw_styles(&pattern, &props)
-                    .map(literal_to_style_tree),
+                ExportEntry::Literal(value) => {
+                    Some(literal_to_style_tree(self.fill_pattern_raws(&value)?))
+                }
+                ExportEntry::StyleFallback { style_value, .. } => {
+                    let style_value = self.fill_pattern_raws(&style_value)?;
+                    Some(StyleTree::OpenWithFallback(Box::new(
+                        literal_to_style_tree(style_value),
+                    )))
+                }
                 ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
             };
         }
@@ -734,9 +735,8 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     /// resolver. Default/namespace imports return `None`.
     fn resolve_import_symbol(&self, symbol_id: SymbolId) -> Option<Literal> {
         match self.resolve_import_entry(symbol_id)? {
-            ExportEntry::Literal(lit) => Some(lit),
-            ExportEntry::StyleFallback { known_value, .. } => known_value,
-            ExportEntry::PatternRaw { pattern, props } => self.pattern_raw_styles(&pattern, &props),
+            ExportEntry::Literal(lit) => self.fill_pattern_raws(&lit),
+            ExportEntry::StyleFallback { known_value, .. } => self.fill_pattern_raws(&known_value?),
             // A recipe is a function, not a value — only `.raw(props)` resolves it.
             ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
         }
@@ -801,6 +801,13 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         self.pattern_raw_styles(name, &style)
     }
 
+    /// An imported value with its `pattern.raw(…)` placeholders run through this file's host.
+    fn fill_pattern_raws(&self, value: &Literal) -> Option<Literal> {
+        crate::cross_file::fill_pattern_raws(value, &mut |pattern, props| {
+            self.pattern_raw_styles(pattern, props)
+        })
+    }
+
     /// Run `pattern.raw(props)` through the host. Without one, a pattern's output is
     /// unknown; its props are not its styles.
     fn pattern_raw_styles(&self, pattern: &str, props: &Literal) -> Option<Literal> {
@@ -812,39 +819,6 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
                 None
             }
         }
-    }
-
-    /// `export const x = pattern.raw(props)` with static props, left for the importing
-    /// file to run through its own host.
-    pub(crate) fn root_pattern_raw_call(&self, name: &str) -> Option<(String, Literal)> {
-        let symbol_id = self.semantic.scoping().get_root_binding(name.into())?;
-        if self.semantic.scoping().symbol_is_mutated(symbol_id) {
-            return None;
-        }
-        let AstKind::VariableDeclarator(declarator) =
-            self.semantic.symbol_declaration(symbol_id).kind()
-        else {
-            return None;
-        };
-        if !matches!(&declarator.id, BindingPattern::BindingIdentifier(_)) {
-            return None;
-        }
-        let Expression::CallExpression(call) = declarator.init.as_ref()?.get_inner_expression()
-        else {
-            return None;
-        };
-
-        let (pattern, MatchCategory::Pattern) = self.match_raw_style_call(call)? else {
-            return None;
-        };
-        let props = match call.arguments.first() {
-            Some(arg) => expression_to_style_tree(arg.as_expression()?, Some(self))?,
-            None => literal_to_style_tree(Literal::Object(Vec::new())),
-        };
-        if !props.is_static() {
-            return None;
-        }
-        Some((pattern.to_owned(), project_literal(&props)?))
     }
 
     /// The variant props of a recipe call: none, or one static object.

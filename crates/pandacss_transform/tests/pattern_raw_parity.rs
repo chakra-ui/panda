@@ -61,6 +61,21 @@ fn parity_project(main_path: &str, main_source: &str, siblings: &[(&str, &str)])
 }
 
 fn transform_and_check(main_path: &str, main_source: &str, siblings: &[(&str, &str)]) -> String {
+    transform_and_css(main_path, main_source, siblings).0
+}
+
+/// [`transform_and_check`] plus every class the build emitted CSS for, sorted.
+fn transform_with_css(main_path: &str, main_source: &str, siblings: &[(&str, &str)]) -> String {
+    let (code, mut css) = transform_and_css(main_path, main_source, siblings);
+    css.sort();
+    format!("{code}--- css\n{}", css.join("\n"))
+}
+
+fn transform_and_css(
+    main_path: &str,
+    main_source: &str,
+    siblings: &[(&str, &str)],
+) -> (String, Vec<String>) {
     let mut project = parity_project(main_path, main_source, siblings);
     let main_path = format!("/proj/{main_path}");
     for (path, source) in siblings
@@ -91,19 +106,20 @@ fn transform_and_check(main_path: &str, main_source: &str, siblings: &[(&str, &s
         },
     );
 
-    let emitted: FxHashSet<String> = project
+    let emitted: Vec<String> = project
         .atoms()
         .iter()
         .filter_map(|atom| project.system().atomic_class_name(atom))
         .collect();
+    let emitted_set: FxHashSet<&str> = emitted.iter().map(String::as_str).collect();
     for class in written_class_names(&output.code) {
         assert!(
-            emitted.contains(class),
+            emitted_set.contains(class),
             "`{class}` has no CSS; emitted: {emitted:?}"
         );
     }
 
-    output.code
+    (output.code, emitted)
 }
 
 fn written_class_names(code: &str) -> impl Iterator<Item = &str> {
@@ -204,9 +220,12 @@ fn css_with_a_pattern_raw_imported_from_another_file() {
         export const faded = fade.raw({ inset: '4px' });
     "};
 
-    assert_snapshot!(transform_and_check("a.ts", source, &[("faded.ts", faded)]), @r#"
+    assert_snapshot!(transform_with_css("a.ts", source, &[("faded.ts", faded)]), @r#"
     import { faded } from './faded';
     export const cls = "d_flex padding-inline_4px";
+    --- css
+    d_flex
+    padding-inline_4px
     "#);
 }
 
@@ -373,9 +392,14 @@ fn css_with_an_imported_pattern_raw_under_a_condition() {
         export const spacing = spaced.raw({ gap: '4px' });
     "};
 
-    assert_snapshot!(transform_and_check("a.ts", source, &[("spacing.ts", spacing)]), @r#"
+    assert_snapshot!(transform_with_css("a.ts", source, &[("spacing.ts", spacing)]), @r#"
     import { spacing } from './spacing';
     export const cls = "hover:gap_4px hover:padding_2px";
+    --- css
+    gap_4px
+    hover:gap_4px
+    hover:padding_2px
+    padding_2px
     "#);
 }
 
@@ -391,10 +415,14 @@ fn css_with_an_imported_pattern_raw_of_a_ternary_prop() {
         export const faded = fade.raw({ inset: active ? '4px' : '8px' });
     "};
 
-    assert_snapshot!(transform_and_check("a.ts", source, &[("faded.ts", faded)]), @"
+    assert_snapshot!(transform_with_css("a.ts", source, &[("faded.ts", faded)]), @"
     import { css } from '@panda/css';
     import { faded } from './faded';
     export const cls = css(faded);
+    --- css
+    d_flex
+    padding-inline_4px
+    padding-inline_8px
     ");
 }
 
@@ -410,10 +438,12 @@ fn css_with_an_imported_pattern_raw_of_partly_dynamic_props() {
         export const faded = fade.raw({ inset: size, color: 'red' });
     "};
 
-    assert_snapshot!(transform_and_check("a.ts", source, &[("faded.ts", faded)]), @"
+    assert_snapshot!(transform_with_css("a.ts", source, &[("faded.ts", faded)]), @"
     import { css } from '@panda/css';
     import { faded } from './faded';
     export const cls = css(faded);
+    --- css
+    d_flex
     ");
 }
 
@@ -495,7 +525,7 @@ fn a_transform_without_the_host_does_not_hide_imported_pattern_raw_values() {
     "#);
 }
 
-const NESTED_STYLES: &str = "import { fade } from '@panda/patterns';\nexport const styles = { root: fade.raw({ inset: '4px' }), label: { color: 'red' } };\nexport const list = [fade.raw({ inset: '2px' })];\nexport const merged = { ...fade.raw({ inset: '6px' }), color: 'red' };\n";
+const NESTED_STYLES: &str = "import { fade, spaced } from '@panda/patterns';\nexport const styles = { root: fade.raw({ inset: '4px' }), gap: spaced.raw({ gap: '4px' }), label: { color: 'red' } };\nconst original = spaced.raw({ gap: '6px' });\nexport const spacing = original;\nexport const list = [fade.raw({ inset: '2px' })];\nexport const merged = { ...fade.raw({ inset: '6px' }), color: 'red' };\n";
 
 #[test]
 fn css_with_a_pattern_raw_member_of_an_imported_object() {
@@ -505,11 +535,20 @@ fn css_with_a_pattern_raw_member_of_an_imported_object() {
         export const cls = css({ _hover: styles.root });
     "};
 
-    assert_snapshot!(transform_and_check("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @"
-    import { css } from '@panda/css';
+    assert_snapshot!(transform_with_css("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @r#"
     import { styles } from './styles';
-    export const cls = css({ _hover: styles.root });
-    ");
+    export const cls = "hover:d_flex hover:padding-inline_4px";
+    --- css
+    d_flex
+    gap_4px
+    gap_6px
+    hover:d_flex
+    hover:padding-inline_4px
+    padding-inline_2px
+    padding-inline_4px
+    padding-inline_6px
+    padding_2px
+    "#);
 }
 
 #[test]
@@ -520,11 +559,18 @@ fn css_with_a_pattern_raw_item_of_an_imported_array() {
         export const cls = css(list[0]);
     "};
 
-    assert_snapshot!(transform_and_check("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @"
-    import { css } from '@panda/css';
+    assert_snapshot!(transform_with_css("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @r#"
     import { list } from './styles';
-    export const cls = css(list[0]);
-    ");
+    export const cls = "d_flex padding-inline_2px";
+    --- css
+    d_flex
+    gap_4px
+    gap_6px
+    padding-inline_2px
+    padding-inline_4px
+    padding-inline_6px
+    padding_2px
+    "#);
 }
 
 #[test]
@@ -535,9 +581,90 @@ fn css_with_an_imported_object_spreading_a_pattern_raw() {
         export const cls = css({ _hover: merged });
     "};
 
-    assert_snapshot!(transform_and_check("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @"
-    import { css } from '@panda/css';
+    assert_snapshot!(transform_with_css("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @r#"
     import { merged } from './styles';
-    export const cls = css({ _hover: merged });
-    ");
+    export const cls = "hover:color_red hover:d_flex hover:padding-inline_6px";
+    --- css
+    d_flex
+    gap_4px
+    gap_6px
+    hover:color_red
+    hover:d_flex
+    hover:padding-inline_6px
+    padding-inline_2px
+    padding-inline_4px
+    padding-inline_6px
+    padding_2px
+    "#);
+}
+
+#[test]
+fn css_with_a_transformless_pattern_raw_member_of_an_imported_object() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { styles } from './styles';
+        export const cls = css({ _hover: styles.gap });
+    "};
+
+    assert_snapshot!(transform_with_css("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @r#"
+    import { styles } from './styles';
+    export const cls = "hover:gap_4px hover:padding_2px";
+    --- css
+    d_flex
+    gap_4px
+    gap_6px
+    hover:gap_4px
+    hover:padding_2px
+    padding-inline_2px
+    padding-inline_4px
+    padding-inline_6px
+    padding_2px
+    "#);
+}
+
+#[test]
+fn css_with_an_imported_alias_of_a_pattern_raw() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { spacing } from './styles';
+        export const cls = css({ _hover: spacing });
+    "};
+
+    assert_snapshot!(transform_with_css("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @r#"
+    import { spacing } from './styles';
+    export const cls = "hover:gap_6px hover:padding_2px";
+    --- css
+    d_flex
+    gap_4px
+    gap_6px
+    hover:gap_6px
+    hover:padding_2px
+    padding-inline_2px
+    padding-inline_4px
+    padding-inline_6px
+    padding_2px
+    "#);
+}
+
+#[test]
+fn css_with_a_static_member_beside_a_pattern_raw_in_an_imported_object() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+        import { styles } from './styles';
+        export const cls = css(styles.label);
+    "};
+
+    assert_snapshot!(transform_with_css("a.ts", source, &[("styles.ts", NESTED_STYLES)]), @r#"
+    import { styles } from './styles';
+    export const cls = "color_red";
+    --- css
+    color_red
+    d_flex
+    gap_4px
+    gap_6px
+    padding-inline_2px
+    padding-inline_4px
+    padding-inline_6px
+    padding_2px
+    "#);
 }
