@@ -3,7 +3,12 @@
 '@pandacss/compiler-wasm': patch
 ---
 
-Source transforms now compile a recipe kept in a local object, like `const styles = { button: cva({ ... }) }`, to a
-plain function when it's only called (`styles.button(...)`). Its config no longer ships in the bundle.
+Recipes kept in a local object now compile to plain functions, so their config no longer ships in the bundle.
 
-Type-only references, like `RecipeVariantProps<typeof styles.button>`, no longer keep a recipe's config either.
+```ts
+const styles = { button: cva({ ... }) }
+
+styles.button({ size: 'sm' })
+```
+
+This applies when the recipe is only called. Type-only uses, like `RecipeVariantProps<typeof styles.button>`, don't count.

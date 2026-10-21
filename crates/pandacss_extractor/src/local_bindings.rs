@@ -116,17 +116,16 @@ impl<'a> BindingCollector<'a, '_> {
         init_span: Span,
         kind: LocalDeclarationKind,
     ) {
-        let mut references = ReferenceFacts::default();
+        let mut facts = ReferenceFacts::default();
         for reference in value_references(self.semantic, symbol_id) {
             let node_id = reference.node_id();
-            let ref_span = span_from_oxc(self.semantic.nodes().get_node(node_id).kind().span());
-            references.record(classify_reference(self.semantic, node_id, ref_span));
+            let span = reference_span(self.semantic, node_id);
+            facts.record(classify_reference(self.semantic, node_id, span));
         }
-        self.out
-            .push(references.into_binding(local, init_span, kind));
+
+        self.out.push(facts.into_binding(local, init_span, kind));
     }
 
-    /// Any use of the object other than `object.member` counts against every member.
     fn consider_object(
         &mut self,
         local: &str,
@@ -134,37 +133,40 @@ impl<'a> BindingCollector<'a, '_> {
         object: &ObjectExpression<'a>,
         kind: LocalDeclarationKind,
     ) {
-        let Some(members) = call_members(object, self.init_spans) else {
+        let Some(members) = object_call_members(object, self.init_spans) else {
             return;
         };
         if members.is_empty() {
             return;
         }
-        let mut references = vec![ReferenceFacts::default(); members.len()];
+
+        let mut facts = vec![ReferenceFacts::default(); members.len()];
         for reference in value_references(self.semantic, symbol_id) {
             let node_id = reference.node_id();
-            let ref_span = span_from_oxc(self.semantic.nodes().get_node(node_id).kind().span());
-            match member_reference(self.semantic, node_id, ref_span) {
-                Some((member_id, member_span, name)) => {
-                    if let Some(index) = members.iter().position(|(key, _)| key == name) {
-                        references[index].record(classify_reference(
-                            self.semantic,
-                            member_id,
-                            member_span,
-                        ));
-                    }
+            let span = reference_span(self.semantic, node_id);
+
+            let Some(read) = static_member_read(self.semantic, node_id, span) else {
+                // Any other use of the object can reach every member.
+                for member_facts in &mut facts {
+                    member_facts.record(ReferenceKind::Other);
                 }
-                None => {
-                    for facts in &mut references {
-                        facts.record(ReferenceKind::Other);
-                    }
-                }
+                continue;
+            };
+
+            if let Some(index) = members.iter().position(|member| member.key == read.key) {
+                facts[index].record(classify_reference(self.semantic, read.node_id, read.span));
             }
         }
-        for ((_, init_span), facts) in members.into_iter().zip(references) {
-            self.out.push(facts.into_binding(local, init_span, kind));
+
+        for (member, member_facts) in members.into_iter().zip(facts) {
+            self.out
+                .push(member_facts.into_binding(local, member.call_span, kind));
         }
     }
+}
+
+fn reference_span(semantic: &Semantic<'_>, node_id: NodeId) -> Span {
+    span_from_oxc(semantic.nodes().get_node(node_id).kind().span())
 }
 
 /// Type-position references are erased, so they don't count.
@@ -177,13 +179,20 @@ fn value_references<'s>(
         .filter(|reference| reference.is_value())
 }
 
+/// A property whose value is a collected Panda call: `root: cva(…)`.
+struct ObjectMember {
+    key: String,
+    call_span: Span,
+}
+
 /// `None` when a spread, computed or repeated key means `object.key` may not read this value.
-fn call_members(
+fn object_call_members(
     object: &ObjectExpression<'_>,
     init_spans: &FxHashSet<Span>,
-) -> Option<Vec<(String, Span)>> {
+) -> Option<Vec<ObjectMember>> {
     let mut keys = FxHashSet::default();
     let mut members = Vec::new();
+
     for property in &object.properties {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             return None;
@@ -191,37 +200,49 @@ fn call_members(
         if property.computed {
             return None;
         }
+
         let key = property.key.static_name()?.into_owned();
         if !keys.insert(key.clone()) {
             return None;
         }
+
         if property.kind != PropertyKind::Init || property.method {
             continue;
         }
-        let span = span_from_oxc(property.value.get_inner_expression().span());
-        if init_spans.contains(&span) {
-            members.push((key, span));
+        let call_span = span_from_oxc(property.value.get_inner_expression().span());
+        if init_spans.contains(&call_span) {
+            members.push(ObjectMember { key, call_span });
         }
     }
+
     Some(members)
 }
 
-fn member_reference<'s>(
+/// `object.key`, read without optional chaining.
+struct MemberRead<'s> {
+    node_id: NodeId,
+    span: Span,
+    key: &'s str,
+}
+
+fn static_member_read<'s>(
     semantic: &'s Semantic<'_>,
     node_id: NodeId,
-    ref_span: Span,
-) -> Option<(NodeId, Span, &'s str)> {
+    object_span: Span,
+) -> Option<MemberRead<'s>> {
     let AstKind::StaticMemberExpression(member) = semantic.nodes().parent_kind(node_id) else {
         return None;
     };
-    if member.optional || span_from_oxc(member.object.get_inner_expression().span()) != ref_span {
+    if member.optional || span_from_oxc(member.object.get_inner_expression().span()) != object_span
+    {
         return None;
     }
-    Some((
-        semantic.nodes().parent_id(node_id),
-        span_from_oxc(member.span),
-        member.property.name.as_str(),
-    ))
+
+    Some(MemberRead {
+        node_id: semantic.nodes().parent_id(node_id),
+        span: span_from_oxc(member.span),
+        key: member.property.name.as_str(),
+    })
 }
 
 #[derive(Clone, Default)]
