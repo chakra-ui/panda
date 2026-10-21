@@ -1,6 +1,5 @@
-//! Same-file bindings whose initializer is a collected Panda call site, either
-//! directly (`const x = cva(…)`) or as a property of a local object literal
-//! (`const styles = { x: cva(…) }`, referenced as `styles.x`).
+//! Same-file bindings whose initializer is a collected Panda call site, directly
+//! or as a property of a local object (`styles.x`).
 //!
 //! Transform-only IR: spans + compact expression facts, no Oxc nodes, so the
 //! allocator can drop after extraction. Join key to [`crate::ExtractedCall`] is
@@ -24,13 +23,12 @@ use crate::{Span, span_from_oxc};
 /// A same-file binding initialized by a Panda call, plus every resolved reference.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LocalCallBinding {
-    /// Declared name. For an object member, the object's name, so an exported
-    /// object still counts as exporting its members.
+    /// For an object member, the object's name.
     pub local: String,
     /// Initializer call span — joins to [`crate::ExtractedCall::span`].
     pub init_span: Span,
     pub declaration: LocalDeclarationKind,
-    /// Plain `binding(...)` (or `object.member(...)`) call sites, in source order.
+    /// `binding(...)` or `object.member(...)` call sites, in source order.
     pub calls: Vec<LocalBindingCall>,
     /// Direct `binding.raw(...)` call sites, in source order. Also counted in
     /// `has_other_references`, so existing consumers stay conservative.
@@ -128,9 +126,7 @@ impl<'a> BindingCollector<'a, '_> {
             .push(references.into_binding(local, init_span, kind));
     }
 
-    /// Each member initialized by a Panda call gets its own binding, keyed by
-    /// the member's call span. `object.member` references count against that
-    /// member; any other use of the object counts against all of them.
+    /// Any use of the object other than `object.member` counts against every member.
     fn consider_object(
         &mut self,
         local: &str,
@@ -171,8 +167,7 @@ impl<'a> BindingCollector<'a, '_> {
     }
 }
 
-/// References that survive compilation. `typeof binding` in a type is erased,
-/// so it can't observe what the transform does to the value.
+/// Type-position references are erased, so they don't count.
 fn value_references<'s>(
     semantic: &'s Semantic<'_>,
     symbol_id: SymbolId,
@@ -182,9 +177,7 @@ fn value_references<'s>(
         .filter(|reference| reference.is_value())
 }
 
-/// Static keys of `object` whose value is a collected Panda call, with that
-/// call's span. `None` when a spread, computed or repeated key means
-/// `object.key` might not read the value written for it.
+/// `None` when a spread, computed or repeated key means `object.key` may not read this value.
 fn call_members(
     object: &ObjectExpression<'_>,
     init_spans: &FxHashSet<Span>,
@@ -213,8 +206,6 @@ fn call_members(
     Some(members)
 }
 
-/// `object.member` read through a non-optional static access: the member
-/// expression's node, span and property name.
 fn member_reference<'s>(
     semantic: &'s Semantic<'_>,
     node_id: NodeId,

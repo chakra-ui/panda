@@ -402,11 +402,10 @@ loader ordering.
 The class-merge helper is `cx`. Transformed source aliases it to `__pcx` so user `cx` bindings do not collide.
 
 Static recipes compile to recipe-specific functions. A recipe that escapes its module (exported, passed as a value,
-or read through a property other than a direct call) is wrapped in `attachRecipe as __pr`, which attaches the
-styled-system recipe surface (`raw`, `merge`, `config`, `variantKeys`, …) so the recipe keeps working inside the
-generated `styled` factory and `createSlotRecipeContext`. Call-only local recipes stay plain functions with no import.
-A recipe held by a local object literal counts as call-only when every use is `object.key(…)` or a foldable
-`object.key.raw(…)`, and references in TypeScript type positions never count as uses. With hashed class names, recipes stay on the runtime and
+or read through a property) is wrapped in `attachRecipe as __pr`, which attaches the styled-system recipe surface
+(`raw`, `merge`, `config`, `variantKeys`, …) so the recipe keeps working inside the generated `styled` factory and
+`createSlotRecipeContext`. Call-only local recipes stay plain functions with no import. A recipe in a local object
+counts as call-only when every use is `styles.key(…)` or `styles.key.raw(…)`; type-only references don't count. With hashed class names, recipes stay on the runtime and
 the file gets a `transform_hashed_recipe_skipped` warning. `local_call_bindings` decides
 which is which and backs the `.raw()` interlock.
 
