@@ -50,21 +50,25 @@ fn generates_artifacts_from_resolved_project_state() {
     let system = file_code(&artifact, "types/system.d.ts");
 
     assert_snapshot!(tokens, @r#"
-    export type ColorToken = "colorPalette.500" | "red.500"
+    import type { Registered } from './register';
 
-    export interface Tokens {
+    export type ColorToken = Registered<"ColorToken", "colorPalette.500" | "red.500">
+
+    interface LocalTokens {
       colors: ColorToken
     }
 
-    export type Token = `colors.${ColorToken}`
+    export interface Tokens extends Registered<"Tokens", LocalTokens> {}
 
-    export type ColorOpacityModifier = `${number}`
+    export type Token = Registered<"Token", `colors.${ColorToken}`>
 
-    export type ColorOpacityToken = `colors.${ColorToken}/${ColorOpacityModifier}`
+    export type ColorOpacityModifier = Registered<"ColorOpacityModifier", `${number}`>
+
+    export type ColorOpacityToken = Registered<"ColorOpacityToken", `colors.${ColorToken}/${ColorOpacityModifier}`>
 
     export type TokenPath = Token | ColorOpacityToken
 
-    export type ColorPalette = "red"
+    export type ColorPalette = Registered<"ColorPalette", "red">
 
     export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never
     "#);
@@ -73,7 +77,7 @@ fn generates_artifacts_from_resolved_project_state() {
     // system-types) — ~540 members, so assert its shape rather than full content.
     let code = system;
     assert!(code.contains("export type CssAny = CssGlobals | (string & {}) | number"));
-    assert!(code.contains("export interface SystemProperties {"));
+    assert!(code.contains("interface LocalSystemProperties {"));
     assert!(!code.contains("export interface CssProperties {"));
     assert!(
         code.contains(r#"  color?: ConditionalValue<ColorsValue | PropertyValueMap["color"]>"#)

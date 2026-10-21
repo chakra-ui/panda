@@ -88,6 +88,9 @@ pub struct UserConfig {
     pub exclude: Vec<String>,
     #[serde(default)]
     pub import_map: Option<ImportMap>,
+    /// Package specifier of the design system this project consumes directly.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub design_system: Option<String>,
     #[serde(default)]
     pub jsx_framework: Option<JsxFramework>,
     #[serde(default = "default_jsx_factory")]
@@ -158,6 +161,7 @@ impl Default for UserConfig {
             include: Vec::new(),
             exclude: Vec::new(),
             import_map: None,
+            design_system: None,
             jsx_framework: None,
             jsx_factory: default_jsx_factory(),
             jsx_style_props: None,

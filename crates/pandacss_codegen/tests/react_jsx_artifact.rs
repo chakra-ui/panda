@@ -92,6 +92,7 @@ fn emits_react_jsx_artifacts() {
         paths(artifact(&artifacts, ArtifactId::Types)),
         vec![
             "types/tokens.d.ts",
+            "types/register.d.ts",
             "types/system.d.ts",
             "types/pattern.d.ts",
             "types/recipe.d.ts",

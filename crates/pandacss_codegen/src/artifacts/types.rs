@@ -8,6 +8,7 @@ mod recipe_types;
 mod strict_props;
 
 use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::fmt::Write as _;
 
 use pandacss_config::{
     ConditionTypeData, JsxFramework, JsxStylePropsConfig, PatternPropertyTypeKind, PrimitiveType,
@@ -16,7 +17,7 @@ use pandacss_config::{
 
 use crate::{
     Artifact, ArtifactFile, ArtifactId, CodegenContext, ConfigDependency, DependencySet,
-    ExportDecl, ImportDecl, Item, ItemNode, Module,
+    ExportDecl, ImportDecl, ImportKind, ImportSpecifier, Item, ItemNode, Module,
     graph::{GenerateOptions, emit_module_files},
 };
 
@@ -52,6 +53,18 @@ pub fn files(ctx: CodegenContext<'_>, options: GenerateOptions) -> Vec<ArtifactF
             ConfigDependency::CodegenImportExtensions,
             ConfigDependency::Tokens,
             ConfigDependency::Themes,
+        ]),
+    ));
+
+    files.extend(emit_type_file(
+        "types/register",
+        &register_module(&ctx.types.tokens, ctx.config.design_system.as_deref()),
+        options,
+        DependencySet::from_slice(&[
+            ConfigDependency::CodegenFormat,
+            ConfigDependency::CodegenImportExtensions,
+            ConfigDependency::DesignSystem,
+            ConfigDependency::Tokens,
         ]),
     ));
 
@@ -178,9 +191,11 @@ fn condition_type_parts(
     };
 
     vec![format!(
-        "export interface Conditions {{\n{condition_members}\n}}\n\n\
-         export interface Breakpoints {{\n{breakpoint_members}\n}}\n\n\
-         export type ContainerName = {container_name}\n\
+        "interface LocalConditions {{\n{condition_members}\n}}\n\n\
+         export interface Conditions extends Registered<\"Conditions\", LocalConditions> {{}}\n\n\
+         interface LocalBreakpoints {{\n{breakpoint_members}\n}}\n\n\
+         export interface Breakpoints extends Registered<\"Breakpoints\", LocalBreakpoints> {{}}\n\n\
+         export type ContainerName = Registered<\"ContainerName\", {container_name}>\n\
          export type CssContainer = ContainerName | `${{ContainerName}} / inline-size` | `${{ContainerName}} / size` | AnyString\n\n\
          export type Condition = keyof Conditions\n\n\
          export type ConditionalValue<T> =\n  | T\n  | {array_member}\n  | {{ [K in Condition]?: ConditionalValue<T> }}\n  | undefined"
@@ -191,16 +206,15 @@ fn tokens_module(data: &TokenTypeData) -> Module {
     let mut parts = Vec::new();
 
     if data.categories.is_empty() {
-        parts.push("export type Token = string".to_owned());
-        parts.push("export type ColorOpacityModifier = `${number}`".to_owned());
-        parts.push("export type ColorOpacityToken = never".to_owned());
-        parts.push("export interface Tokens {}".to_owned());
+        parts.push(registered_type("Token", "string"));
+        parts.push(registered_type("ColorOpacityModifier", "`${number}`"));
+        parts.push(registered_type("ColorOpacityToken", "never"));
+        parts.push(registered_interface("Tokens", ""));
     } else {
         for category in data.categories.values() {
-            parts.push(format!(
-                "export type {} = {}",
-                category.type_name,
-                string_union(&category.values, "string")
+            parts.push(registered_type(
+                &category.type_name,
+                &string_union(&category.values, "string"),
             ));
         }
 
@@ -210,7 +224,7 @@ fn tokens_module(data: &TokenTypeData) -> Module {
             .map(|category| format!("  {}: {}", quote_member(&category.name), category.type_name))
             .collect::<Vec<_>>()
             .join("\n");
-        parts.push(format!("export interface Tokens {{\n{members}\n}}"));
+        parts.push(registered_interface("Tokens", &members));
 
         let token = data
             .categories
@@ -218,7 +232,7 @@ fn tokens_module(data: &TokenTypeData) -> Module {
             .map(|category| format!("`{}.${{{}}}`", category.name, category.type_name))
             .collect::<Vec<_>>()
             .join(" | ");
-        parts.push(format!("export type Token = {token}"));
+        parts.push(registered_type("Token", &token));
 
         let opacity_modifier = data
             .categories
@@ -228,9 +242,7 @@ fn tokens_module(data: &TokenTypeData) -> Module {
                 || "`${number}`".to_owned(),
                 |category| format!("`${{number}}` | {}", category.type_name),
             );
-        parts.push(format!(
-            "export type ColorOpacityModifier = {opacity_modifier}"
-        ));
+        parts.push(registered_type("ColorOpacityModifier", &opacity_modifier));
 
         let color_opacity_token = data
             .categories
@@ -245,19 +257,17 @@ fn tokens_module(data: &TokenTypeData) -> Module {
                     )
                 },
             );
-        parts.push(format!(
-            "export type ColorOpacityToken = {color_opacity_token}"
-        ));
+        parts.push(registered_type("ColorOpacityToken", &color_opacity_token));
     }
 
     parts.push("export type TokenPath = Token | ColorOpacityToken".to_owned());
 
     if data.color_palettes.is_empty() {
-        parts.push("export type ColorPalette = string".to_owned());
+        parts.push(registered_type("ColorPalette", "string"));
     } else {
-        parts.push(format!(
-            "export type ColorPalette = {}",
-            string_union(&data.color_palettes, "string")
+        parts.push(registered_type(
+            "ColorPalette",
+            &string_union(&data.color_palettes, "string"),
         ));
     }
 
@@ -266,7 +276,84 @@ fn tokens_module(data: &TokenTypeData) -> Module {
             .to_owned(),
     );
 
-    raw_type_module(parts.join("\n\n"))
+    Module::new()
+        .with_import(ImportDecl::ty(["Registered"], "./register"))
+        .with_item(type_raw(parts.join("\n\n")))
+}
+
+fn registered_type(name: &str, local: &str) -> String {
+    format!("export type {name} = Registered<\"{name}\", {local}>")
+}
+
+fn registered_interface(name: &str, members: &str) -> String {
+    let body = if members.is_empty() {
+        "{}".to_owned()
+    } else {
+        format!("{{\n{members}\n}}")
+    };
+    format!(
+        "interface Local{name} {body}\n\nexport interface {name} extends Registered<\"{name}\", Local{name}> {{}}"
+    )
+}
+
+/// `Register` lets an app that consumes this styled-system as a design system swap in its own
+/// types, so app styles and design-system components share one `SystemStyleObject`.
+fn register_module(tokens: &TokenTypeData, design_system: Option<&str>) -> Module {
+    let mut token_names = vec![
+        "Tokens".to_owned(),
+        "Token".to_owned(),
+        "ColorOpacityModifier".to_owned(),
+        "ColorOpacityToken".to_owned(),
+        "ColorPalette".to_owned(),
+    ];
+    token_names.extend(
+        tokens
+            .categories
+            .values()
+            .map(|category| category.type_name.clone()),
+    );
+    let system_names = [
+        "Conditions",
+        "Breakpoints",
+        "ContainerName",
+        "SystemProperties",
+    ];
+
+    let members = system_names
+        .iter()
+        .map(|name| (*name).to_owned())
+        .chain(token_names.iter().cloned())
+        .map(|name| format!("  {name}: {name}"))
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let mut code = format!(
+        "export interface Register {{}}\n\n\
+         export type Registered<K extends PropertyKey, Local> = Register extends {{ system: infer System }}\n  \
+         ? K extends keyof System\n    ? System[K]\n    : Local\n  : Local\n\n\
+         export interface PandaSystem {{\n{members}\n}}"
+    );
+    if let Some(design_system) = design_system {
+        // The import loads the design system's types, so a stacked design system's own
+        // registration applies even when the app imports nothing else from it.
+        let types = string_literal(&format!("{design_system}/types"));
+        let _ = write!(
+            code,
+            "\n\nimport type {{}} from {types}\n\ndeclare module {types} {{\n  interface Register {{\n    system: PandaSystem\n  }}\n}}"
+        );
+    }
+
+    Module::new()
+        .with_import(ImportDecl::ty(system_names, "./system"))
+        .with_import(ImportDecl {
+            kind: ImportKind::Type,
+            specifiers: token_names
+                .into_iter()
+                .map(ImportSpecifier::Named)
+                .collect(),
+            source: "./tokens".into(),
+        })
+        .with_item(type_raw(code))
 }
 
 fn value_alias_parts(
@@ -736,7 +823,8 @@ fn system_module(
     ]);
     parts.extend(css_datatype_type_parts());
     parts.extend(vec![
-        format!("export interface SystemProperties {{\n{system_members}\n}}"),
+        format!("interface LocalSystemProperties {{\n{system_members}\n}}"),
+        "export interface SystemProperties extends Registered<\"SystemProperties\", LocalSystemProperties> {}".into(),
         "export type CssVarValue = ConditionalValue<CssVars | AnyString | AnyNumber>".into(),
         "export type CssVarProperties = {\n  [K in `--${string}`]?: CssVarValue\n}".into(),
         "export type NestedStyles = {\n  [K in Selector | Condition]?: SystemStyleObject\n}".into(),
@@ -771,6 +859,7 @@ export interface GlobalFontface {
     parts.extend(jsx_style_type_parts(jsx_style_props));
 
     Module::new()
+        .with_import(ImportDecl::ty(["Registered"], "./register"))
         .with_import(ImportDecl::ty(["TokenValue"], "./tokens"))
         .with_item(type_raw(parts.join("\n\n")))
 }
@@ -925,7 +1014,13 @@ type WithHTMLProps<T> = DistributiveOmit<T, OmittedHTMLProps> & PatchedHTMLProps
 }
 
 fn index_module(ctx: CodegenContext<'_>) -> Module {
-    let mut sources = vec!["./tokens", "./system", "./pattern", "./recipe"];
+    let mut sources = vec![
+        "./register",
+        "./tokens",
+        "./system",
+        "./pattern",
+        "./recipe",
+    ];
     // Mirrors the jsx artifact's own framework gate.
     if ctx
         .config
@@ -941,10 +1036,6 @@ fn index_module(ctx: CodegenContext<'_>) -> Module {
             source: source.into(),
         })))
     })
-}
-
-fn raw_type_module(code: impl Into<String>) -> Module {
-    Module::new().with_item(type_raw(code))
 }
 
 fn value_alias_type(
