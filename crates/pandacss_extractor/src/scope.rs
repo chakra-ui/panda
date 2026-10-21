@@ -785,19 +785,17 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
     pub(crate) fn resolve_raw_style_call(&self, call: &CallExpression<'_>) -> Option<Literal> {
         let (name, category) = self.match_raw_style_call(call)?;
-        let style = call
-            .arguments
-            .first()?
-            .as_expression()
-            .and_then(|expr| expression_to_literal(expr, Some(self)))?;
+        let style = match call.arguments.first() {
+            Some(arg) => expression_to_literal(arg.as_expression()?, Some(self))?,
+            None => Literal::Object(Vec::new()),
+        };
 
         if category != MatchCategory::Pattern {
             return Some(style);
         }
 
-        let Some(transform) = self.pattern_raw_transform else {
-            return Some(style);
-        };
+        // Without the host, a pattern's output is unknown; its props are not its styles.
+        let transform = self.pattern_raw_transform?;
 
         match (transform.borrow_mut())(name, &style) {
             Ok(Some(transformed)) => Some(transformed),
@@ -926,16 +924,16 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         call: &CallExpression<'_>,
     ) -> Option<StyleTree> {
         let (name, category) = self.match_raw_style_call(call)?;
-        let style_arg = call.arguments.first()?.as_expression()?;
-        let tree = expression_to_style_tree(style_arg, Some(self))?;
+        let tree = match call.arguments.first() {
+            Some(arg) => expression_to_style_tree(arg.as_expression()?, Some(self))?,
+            None => literal_to_style_tree(Literal::Object(Vec::new())),
+        };
 
         if category != MatchCategory::Pattern {
             return Some(tree);
         }
 
-        let Some(transform) = self.pattern_raw_transform else {
-            return Some(tree);
-        };
+        let transform = self.pattern_raw_transform?;
         let style = project_literal(&tree)?;
         match (transform.borrow_mut())(name, &style) {
             Ok(Some(transformed)) => Some(literal_to_style_tree(transformed)),

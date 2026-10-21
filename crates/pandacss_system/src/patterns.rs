@@ -5,7 +5,9 @@ use regex::Regex;
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use pandacss_literal::Literal;
+use pandacss_shared::Diagnostic;
 
+use crate::PatternTransformFn;
 use crate::config::PatternDefinition;
 
 /// Maps a pattern's config name and every JSX tag/regex it matches to its entry.
@@ -32,7 +34,47 @@ pub(crate) struct PatternTransformInput<'a> {
     pub(crate) styles: Cow<'a, Literal>,
 }
 
+/// The style object a pattern produces for some props.
+pub struct PatternStyles {
+    pub styles: Literal,
+    /// `false` when the pattern has no transform and `styles` are the props
+    /// with defaults applied.
+    pub transformed: bool,
+}
+
 impl PatternRegistry {
+    /// What the runtime's `pattern.raw(props)` returns: defaults applied, then
+    /// the pattern's transform, or the props as-is when it has none. `Ok(None)`
+    /// when the pattern needs a transform the host didn't supply.
+    #[allow(
+        clippy::result_large_err,
+        reason = "propagates the host callback's Diagnostic unchanged"
+    )]
+    pub(crate) fn styles(
+        &self,
+        name: &str,
+        props: &Literal,
+        transform: Option<&mut PatternTransformFn<'_>>,
+    ) -> Result<Option<PatternStyles>, Diagnostic> {
+        let input = self.transform_input(name, props);
+        let transformed = match transform {
+            Some(transform) => transform(input.name, input.styles.as_ref())?,
+            None => None,
+        };
+
+        Ok(match transformed {
+            Some(styles) => Some(PatternStyles {
+                styles,
+                transformed: true,
+            }),
+            None if self.requires_transform(name) => None,
+            None => Some(PatternStyles {
+                styles: input.styles.into_owned(),
+                transformed: false,
+            }),
+        })
+    }
+
     pub(crate) fn from_definitions(definitions: &[PatternDefinition]) -> Self {
         let mut registry = Self::default();
         for definition in definitions {

@@ -125,17 +125,17 @@ impl ExpansionCtx<'_> {
         for (prop_name, values) in &per_property_values {
             for value in values {
                 let input = single_prop_object(prop_name, value);
-                let prepared = self.pattern_registry.transform_input(pattern_name, &input);
-                let transformed = match pattern_transform.as_deref_mut() {
-                    Some(transform) => match transform(prepared.name, prepared.styles.as_ref()) {
-                        Ok(Some(literal)) => literal,
-                        Ok(None) => continue,
-                        Err(diagnostic) => {
-                            diagnostics.push(diagnostic);
-                            continue;
-                        }
-                    },
-                    None => prepared.styles.into_owned(),
+                let transformed = match self.pattern_registry.styles(
+                    pattern_name,
+                    &input,
+                    pattern_transform.as_deref_mut(),
+                ) {
+                    Ok(Some(resolved)) => resolved.styles,
+                    Ok(None) => continue,
+                    Err(diagnostic) => {
+                        diagnostics.push(diagnostic);
+                        continue;
+                    }
                 };
                 let wrapped = if conditions.is_empty() {
                     transformed
