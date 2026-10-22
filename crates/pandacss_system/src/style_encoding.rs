@@ -4,12 +4,13 @@ use pandacss_encoder::{
 use pandacss_extractor::{ExtractedJsx, JsxKind};
 use pandacss_literal::Literal;
 use pandacss_recipes::{Recipe, SlotRecipe, VariantGroup};
+use pandacss_shared::Diagnostic;
 use pandacss_shared::css_properties::is_css_property;
 use pandacss_utility::{ShorthandPolicy, StyleNormalizer};
 
 use crate::{
-    PatternTransformFn, ProjectConditionMatcher, System, literal_entries, merge_style_entry,
-    merge_style_props,
+    PatternStyles, PatternTransformFn, ProjectConditionMatcher, System, literal_entries,
+    merge_style_entry, merge_style_props,
 };
 
 impl System {
@@ -298,25 +299,33 @@ impl System {
         args: &[Option<Literal>],
         pattern_transform: Option<&mut PatternTransformFn<'_>>,
     ) -> Option<Literal> {
-        let requires_transform = self.patterns.requires_transform(pattern_name);
-        if requires_transform && pattern_transform.is_none() {
-            return None;
-        }
         let empty = Literal::Object(Vec::new());
         let arg = match args.first().and_then(|arg| arg.as_ref()) {
             None => &empty,
-            Some(Literal::Object(_)) => args.first().and_then(|arg| arg.as_ref())?,
+            Some(arg @ Literal::Object(_)) => arg,
             Some(_) => return None,
         };
-        let prepared = self.patterns.transform_input(pattern_name, arg);
-        if let Some(transform) = pattern_transform {
-            match transform(prepared.name, prepared.styles.as_ref()) {
-                Ok(Some(style)) => Some(style),
-                Ok(None) | Err(_) => None,
-            }
-        } else {
-            Some(prepared.styles.into_owned())
-        }
+        let resolved = self.pattern_styles(pattern_name, arg, pattern_transform);
+        Some(resolved.ok()??.styles)
+    }
+
+    /// See [`PatternStyles`]. Every pattern usage resolves through this, so the
+    /// build and the source transform agree with the runtime.
+    ///
+    /// # Errors
+    ///
+    /// The host transform's diagnostic.
+    #[allow(
+        clippy::result_large_err,
+        reason = "propagates the host callback's Diagnostic unchanged"
+    )]
+    pub fn pattern_styles(
+        &self,
+        pattern_name: &str,
+        props: &Literal,
+        pattern_transform: Option<&mut PatternTransformFn<'_>>,
+    ) -> Result<Option<PatternStyles>, Diagnostic> {
+        self.patterns.styles(pattern_name, props, pattern_transform)
     }
 
     /// Resolve one encoded atom to the runtime `css()` class string.
@@ -445,20 +454,8 @@ impl System {
                 (!classes.is_empty()).then_some(classes)
             }
             JsxKind::Pattern => {
-                let requires_transform = compiled.patterns.requires_transform(&jsx.name);
-                if requires_transform && pattern_transform.is_none() {
-                    return None;
-                }
-                let prepared = compiled.patterns.transform_input(&jsx.name, data);
-                let styles = if let Some(transform) = pattern_transform {
-                    match transform(prepared.name, prepared.styles.as_ref()) {
-                        Ok(Some(style)) => style,
-                        Ok(None) | Err(_) => return None,
-                    }
-                } else {
-                    prepared.styles.into_owned()
-                };
-                self.class_names_for_style_literal(&styles)
+                let resolved = compiled.patterns.styles(&jsx.name, data, pattern_transform);
+                self.class_names_for_style_literal(&resolved.ok()??.styles)
             }
             JsxKind::Factory | JsxKind::Component => self.class_names_for_style_literal(data),
         }

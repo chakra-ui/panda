@@ -78,6 +78,8 @@ Some topics span several notes. Keep the detailed contract in one place and link
 - [Virtual styled-system](./virtual-styled-system.md) — DS publishes canonical `styled-system/`; `designSystems`
   resolves manifest preset + dual importMap (DS + app overlay) + overlay codegen for app extensions that need JS/TS
   modules.
+- [Design system types](./design-system-types.md) — generated `Register` so a design system's types resolve to the
+  consuming app's: `Registered` roots, direct-parent registration, chaining, and limits.
 - [Design systems — deferred and open questions](./design-system-deferred.md) — the ledger of what `designSystem` does
   not do yet and why: deferred pieces (nested-chain overlay, wasm overlay, build-info tree-shaking), known limitations
   (unresolved-token dead CSS, jsx conflict props type), and non-goals (plural `designSystem`, registry, runtime

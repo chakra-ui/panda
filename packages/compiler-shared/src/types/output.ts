@@ -21,6 +21,7 @@ export type CodegenDependency =
   | 'outExtension'
   | 'forceImportExtension'
   | 'conditions'
+  | 'designSystem'
   | 'hash'
   | 'jsxFactory'
   | 'jsxFramework'

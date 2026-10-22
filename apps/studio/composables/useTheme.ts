@@ -1,29 +1,49 @@
-export type Theme = "light" | "dark";
+import { usePersistentStorage } from '~/composables/usePersistentStorage'
+
+export type ColorScheme = 'light' | 'dark'
+export type ThemePreference = 'system' | ColorScheme
+
+const DARK_QUERY = '(prefers-color-scheme: dark)'
+
+/** Like next-themes: switch colors in one frame instead of letting every transition animate the change. */
+function withoutTransitions(change: () => void) {
+  const style = document.createElement('style')
+  style.textContent = ':not([data-part="indicator"]), ::before, ::after { transition: none !important; }'
+  document.head.appendChild(style)
+  change()
+  void getComputedStyle(document.body).opacity
+  requestAnimationFrame(() => requestAnimationFrame(() => style.remove()))
+}
 
 export function useTheme() {
-  const theme = useState<Theme>("theme", () => "light");
+  const stored = usePersistentStorage<ThemePreference>('theme', {
+    fallback: 'system',
+    parse: (raw) => (raw === 'light' || raw === 'dark' ? raw : 'system'),
+    serialize: (preference) => (preference === 'system' ? null : preference),
+  })
+  const scheme = useState<ColorScheme>('color-scheme', () => 'light')
 
-  function set(next: Theme) {
-    theme.value = next;
-    if (import.meta.client) {
-      document.documentElement.dataset.theme = next;
-      try {
-        localStorage.setItem("theme", next);
-      } catch {
-        // ignore
-      }
-    }
+  function apply() {
+    const preference = stored.value.value
+    const next = preference === 'system' ? (matchMedia(DARK_QUERY).matches ? 'dark' : 'light') : preference
+    scheme.value = next
+    if (document.documentElement.dataset.theme === next) return
+    withoutTransitions(() => (document.documentElement.dataset.theme = next))
   }
 
-  function toggle() {
-    set(theme.value === "dark" ? "light" : "dark");
+  function setPreference(next: ThemePreference) {
+    stored.value.value = next
+    apply()
   }
 
   function sync() {
-    if (import.meta.client) {
-      theme.value = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
-    }
+    stored.restore()
+    apply()
+    const media = matchMedia(DARK_QUERY)
+    const onChange = () => stored.value.value === 'system' && apply()
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
   }
 
-  return { theme, set, toggle, sync };
+  return { preference: stored.value, scheme, setPreference, sync }
 }

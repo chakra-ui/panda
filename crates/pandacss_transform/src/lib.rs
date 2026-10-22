@@ -23,7 +23,7 @@ mod recipe_inline;
 mod resolve;
 mod style_lower;
 
-use pandacss_extractor::extract_transform_with_recipes;
+use pandacss_extractor::extract_transform_with_raw_resolvers;
 use pandacss_literal::Literal;
 
 use pandacss_system::{ParseTransforms, System};
@@ -57,7 +57,7 @@ pub fn transform_source_with(
     path: &str,
     source: &str,
     options: &TransformOptions,
-    transforms: ParseTransforms<'_>,
+    mut transforms: ParseTransforms<'_>,
 ) -> TransformOutput {
     let span = tracing::trace_span!(
         target: "transform",
@@ -111,13 +111,19 @@ pub fn transform_source_with(
 
     let extracted = {
         let _span = tracing::trace_span!(target: "transform", "transform_extract").entered();
+        // Plan-time pattern rewrites swallow callback errors too; the parser reports them.
+        let mut resolve_pattern_raw = |name: &str, props: &Literal| {
+            let resolved = system.pattern_styles(name, props, transforms.pattern.as_deref_mut());
+            Ok(resolved.ok().flatten().map(|resolved| resolved.styles))
+        };
         let mut resolve_recipe_raw = |factory: &str, definition: &Literal, props: &Literal| {
             pandacss_system::resolve_inline_recipe_raw(system, factory, definition, props)
         };
-        extract_transform_with_recipes(
+        extract_transform_with_raw_resolvers(
             source,
             path,
             system.extractor_config(),
+            &mut resolve_pattern_raw,
             &mut resolve_recipe_raw,
         )
     };

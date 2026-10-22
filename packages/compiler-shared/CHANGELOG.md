@@ -1,5 +1,25 @@
 # @pandacss/compiler-shared
 
+## 2.3.0
+
+### Minor Changes
+
+- aa90e4a: `panda analyze` now counts what your config uses, not just your source files.
+
+  - Shows where each name is used, like `3 files, globalCss` or `via animations.spin`
+  - Adds a `compositions` scope for text, layer, and animation styles
+  - Counts styles a design system brings in through build info
+  - Fix `removeUnusedKeyframes` dropping keyframes used only through an animation token
+  - Fix `removeUnusedKeyframes` dropping keyframes used under `globalCss` selectors like `p` or `h`
+
+### Patch Changes
+
+- 675fa00: Fix slow first builds with the PostCSS plugin in projects that have imports Panda can't resolve.
+- 93269f5: Report missing tokens in style strings during linting and `panda cssgen`, including references with
+  fallbacks. Check pattern style props with rules such as `prefer-token`.
+- Updated dependencies [f01a419]
+  - @pandacss/types@2.3.0
+
 ## 2.2.0
 
 ### Patch Changes

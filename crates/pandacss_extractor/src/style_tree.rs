@@ -54,6 +54,26 @@ impl StyleTree {
     pub const fn is_open(&self) -> bool {
         matches!(self, Self::Open | Self::OpenWithFallback(_))
     }
+
+    /// No runtime branch or unknown value anywhere in the tree.
+    #[must_use]
+    pub(crate) fn is_static(&self) -> bool {
+        match self {
+            Self::String(_) | Self::Number(_) | Self::Bool(_) | Self::Null | Self::Token { .. } => {
+                true
+            }
+            Self::Object(object) => {
+                object.spreads.is_empty()
+                    && object.entries.iter().all(|(_, value)| value.is_static())
+            }
+            Self::Array(items) => items.iter().all(Self::is_static),
+            Self::Ternary { .. }
+            | Self::And { .. }
+            | Self::Branches(_)
+            | Self::Open
+            | Self::OpenWithFallback(_) => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -494,7 +514,7 @@ fn chain_to_style_tree(
     }
 }
 
-fn lookup_style_member(object: &StyleTree, key: &str) -> Option<StyleTree> {
+pub(crate) fn lookup_style_member(object: &StyleTree, key: &str) -> Option<StyleTree> {
     match object {
         StyleTree::Object(obj) => obj
             .entries
@@ -809,9 +829,9 @@ pub(crate) fn jsx_attributes_to_style_tree(
                 }
                 let value = match attr.value.as_ref() {
                     None => StyleTree::Bool(true),
-                    Some(JSXAttributeValue::StringLiteral(s)) => {
-                        StyleTree::String(crate::literal::collapse_whitespace(&s.value))
-                    }
+                    Some(JSXAttributeValue::StringLiteral(s)) => StyleTree::String(
+                        pandacss_shared::sanitize_style_value(&s.value).into_owned(),
+                    ),
                     Some(JSXAttributeValue::ExpressionContainer(container)) => {
                         match &container.expression {
                             JSXExpression::EmptyExpression(_) => continue,

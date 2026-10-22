@@ -12,7 +12,7 @@ use oxc_ast::ast::{
     UnaryExpression, UnaryOperator,
 };
 use pandacss_literal::Literal;
-use pandacss_shared::number_to_js_string;
+use pandacss_shared::{number_to_js_string, sanitize_style_value};
 
 use crate::Resolver;
 
@@ -25,7 +25,9 @@ pub(crate) fn expression_to_literal(
     resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
     match expr {
-        Expression::StringLiteral(s) => Some(Literal::String(collapse_whitespace(&s.value))),
+        Expression::StringLiteral(s) => {
+            Some(Literal::String(sanitize_style_value(&s.value).into_owned()))
+        }
         Expression::NumericLiteral(n) => Some(Literal::Number(n.value)),
         Expression::BooleanLiteral(b) => Some(Literal::Bool(b.value)),
         Expression::NullLiteral(_) => Some(Literal::Null),
@@ -64,30 +66,6 @@ pub(crate) fn expression_to_literal(
 
         _ => None,
     }
-}
-
-/// Collapse whitespace runs to a single space, like JS `trimWhitespace` —
-/// except *inside* quoted substrings, which stay untouched even though node
-/// collapses (and loses) them too. Matters for `content`, quoted font names.
-pub(crate) fn collapse_whitespace(value: &str) -> String {
-    let mut out = String::with_capacity(value.len());
-    let mut quote: Option<char> = None;
-    for ch in value.chars() {
-        if let Some(open) = quote {
-            out.push(ch);
-            if ch == open {
-                quote = None;
-            }
-        } else if ch == '"' || ch == '\'' {
-            quote = Some(ch);
-            out.push(ch);
-        } else if !ch.is_whitespace() {
-            out.push(ch);
-        } else if !out.ends_with(' ') {
-            out.push(' ');
-        }
-    }
-    out
 }
 
 pub(crate) fn object_to_literal(
@@ -481,5 +459,7 @@ pub(crate) fn template_literal_to_literal(
     }
     let tail = t.quasis.last()?;
     out.push_str(tail.value.cooked.as_ref()?.as_str());
-    Some(Literal::String(collapse_whitespace(&out).trim().to_owned()))
+    Some(Literal::String(
+        sanitize_style_value(&out).trim().to_owned(),
+    ))
 }

@@ -12,6 +12,7 @@
 mod adapter;
 mod calls;
 mod cross_file;
+mod deferred_value;
 mod design_system_imports;
 mod export_names;
 mod extract;
@@ -45,8 +46,8 @@ pub use extract::{
     CrossFileDependency, ExtractDebugResult, ExtractUsage, ExtractVerboseResult,
     ImportBindingFacts, ImportedRecipeFold, ImportedRecipeFoldKind, ModuleFacts, TokenRef,
     UnresolvedCrossFileDependency, analyze_module, extract, extract_debug, extract_in_session,
-    extract_transform, extract_transform_with_recipes, extract_verbose, extract_with_raw_resolvers,
-    extract_with_raw_resolvers_in_session,
+    extract_transform, extract_transform_with_raw_resolvers, extract_verbose,
+    extract_with_raw_resolvers, extract_with_raw_resolvers_in_session,
 };
 pub use imports::{
     ImportKind, ImportRecord, ImportScanResult, ImportSpecifier, ImportSpecifierKind,
@@ -55,7 +56,7 @@ pub use imports::{
 pub use local_bindings::{LocalBindingCall, LocalCallBinding, LocalDeclarationKind};
 // Internal helpers that take Oxc-shaped inputs — kept out of the public
 // surface so consumers don't accidentally couple to oxc_ast / oxc_diagnostics.
-pub use cross_file::{CrossFileResolver, CrossFileSession, RetryOutcome};
+pub use cross_file::{CrossFileResolver, CrossFileSession, RetryOutcome, module_path_candidates};
 pub(crate) use export_names::collect_export_info;
 pub use export_names::{ExportInfo, ReExport};
 pub(crate) use imports::{collect_imports, collect_parser_diagnostics};

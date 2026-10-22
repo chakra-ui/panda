@@ -2,7 +2,10 @@ use indoc::indoc;
 use insta::assert_yaml_snapshot;
 
 use crate::common::{matcher, panda_config};
-use pandacss_extractor::{ExtractUsage, ExtractorConfig, Matchers, extract};
+use pandacss_extractor::{
+    Diagnostic, ExtractUsage, ExtractorConfig, Matchers, extract, extract_with_raw_resolvers,
+};
+use pandacss_literal::Literal;
 
 fn run(source: &str) -> ExtractUsage {
     extract(source, "fixture.tsx", &panda_config())
@@ -14,7 +17,21 @@ fn run_styled_system(source: &str) -> ExtractUsage {
         pattern: matcher("styled-system/patterns", ["stack"]),
         ..Default::default()
     });
-    extract(source, "fixture.tsx", &config)
+    let mut stack = |_name: &str, props: &Literal| -> Result<Option<Literal>, Diagnostic> {
+        let mut styles = vec![("display".to_owned(), Literal::String("flex".to_owned()))];
+        if let Literal::Object(entries) = props {
+            styles.extend(entries.iter().cloned());
+        }
+        Ok(Some(Literal::Object(styles)))
+    };
+    let mut no_recipes = |_: &str, _: &Literal, _: &Literal| None;
+    extract_with_raw_resolvers(
+        source,
+        "fixture.tsx",
+        &config,
+        Some(&mut stack),
+        &mut no_recipes,
+    )
 }
 
 #[test]
@@ -130,6 +147,7 @@ fn pattern_raw_result_spread_inside_nested_selector_matches_issue_3278() {
       data:
         - bg: blue.100
           "& ul":
+            display: flex
             gap: 0.8rem
           "& li":
             bg: blue.200

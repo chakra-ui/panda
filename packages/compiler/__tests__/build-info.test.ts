@@ -30,7 +30,7 @@ describe('compiler.buildInfo', () => {
     // modules; `padding`/`margin` are module-local.
     expect(libBuildInfo()).toMatchInlineSnapshot(`
       {
-        "schemaVersion": 7,
+        "schemaVersion": 8,
         "panda": "^2.0.0",
         "configFingerprint": "cfg1-1d59a305c6c7d898",
         "strings": [
@@ -119,6 +119,52 @@ describe('compiler.buildInfo', () => {
     } as unknown as BuildInfoArtifact
 
     expect(app.buildInfo.validate(malformed)).toEqual({ ok: false, reason: 'corrupt' })
+  })
+
+  it('validate() reports malformed module imports as corrupt', () => {
+    const app = consumer()
+    const malformed = {
+      ...libBuildInfo(),
+      modules: { 'checkbox.tsx': { imports: 'label.tsx' } },
+    } as unknown as BuildInfoArtifact
+
+    expect(app.buildInfo.validate(malformed)).toEqual({ ok: false, reason: 'corrupt' })
+  })
+
+  it('modulesFor() adds every module the selected modules import, through cycles', () => {
+    const app = consumer()
+    const info = {
+      ...libBuildInfo(),
+      modules: {
+        'field.tsx': { imports: ['label.tsx', 'hint.tsx'] },
+        'label.tsx': { atoms: [0], imports: ['field.tsx'] },
+        'hint.tsx': { atoms: [1], imports: ['icon.tsx'] },
+        'icon.tsx': { atoms: [2] },
+        'card.tsx': { atoms: [0] },
+      },
+      exports: { Field: 'field.tsx', Label: 'label.tsx', Hint: 'hint.tsx', Card: 'card.tsx' },
+    }
+
+    expect(app.buildInfo.modulesFor(info, ['Hint'])).toEqual(['hint.tsx', 'icon.tsx'])
+    expect(app.buildInfo.modulesFor(info, ['Label'])).toEqual(['label.tsx', 'field.tsx', 'hint.tsx', 'icon.tsx'])
+    expect(app.buildInfo.modulesFor(info, ['Card', 'Unknown'])).toEqual(['card.tsx'])
+  })
+
+  it('create() records the modules each module imports', () => {
+    const lib = createProject()
+    lib.parseFileSource(
+      'checkbox.tsx',
+      "import { css } from '@panda/css'\nimport { Label } from './label'\nexport const Checkbox = () => [css({ color: 'blue' }), Label()]",
+    )
+    lib.parseFileSource(
+      'label.tsx',
+      "import { css } from '@panda/css'\nexport const Label = () => css({ color: 'red' })",
+    )
+
+    const info = lib.buildInfo.create({ panda: '^2.0.0' })
+
+    expect(info.modules['checkbox.tsx']?.imports).toEqual(['label.tsx'])
+    expect(consumer().buildInfo.modulesFor(info, ['Checkbox'])).toEqual(['checkbox.tsx', 'label.tsx'])
   })
 
   it('create() preserves token identity alongside the resolved value', () => {
@@ -337,6 +383,26 @@ describe('compiler.buildInfo', () => {
       'card.tsx': { atoms: [0, 1] },
     })
     expect(normalized.exports).toEqual({ Button: 'button.tsx', Card: 'card.tsx' })
+  })
+
+  it('normalize() rewrites module imports with their module keys', () => {
+    const app = consumer()
+    const info = {
+      ...libBuildInfo(),
+      modules: {
+        '/repo/lib/checkbox.tsx': { atoms: [0], imports: ['/repo/lib/label.tsx'] },
+        '/repo/lib/label.tsx': { atoms: [1] },
+      },
+    }
+
+    const normalized = app.buildInfo.normalize(info, {
+      mapModuleKey: (key) => key.replace('/repo/lib/', ''),
+    })
+
+    expect(normalized.modules).toEqual({
+      'checkbox.tsx': { atoms: [0], imports: ['label.tsx'] },
+      'label.tsx': { atoms: [1] },
+    })
   })
 
   it('emits exports for recipe-consuming components, resolvable by name to recipe CSS', () => {

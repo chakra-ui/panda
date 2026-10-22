@@ -404,7 +404,8 @@ The class-merge helper is `cx`. Transformed source aliases it to `__pcx` so user
 Static recipes compile to recipe-specific functions. A recipe that escapes its module (exported, passed as a value,
 or read through a property) is wrapped in `attachRecipe as __pr`, which attaches the styled-system recipe surface
 (`raw`, `merge`, `config`, `variantKeys`, …) so the recipe keeps working inside the generated `styled` factory and
-`createSlotRecipeContext`. Call-only local recipes stay plain functions with no import. With hashed class names, recipes stay on the runtime and
+`createSlotRecipeContext`. Call-only local recipes stay plain functions with no import. A recipe in a local object
+counts as call-only when every use is `styles.key(…)` or `styles.key.raw(…)`; type-only references don't count. With hashed class names, recipes stay on the runtime and
 the file gets a `transform_hashed_recipe_skipped` warning. `local_call_bindings` decides
 which is which and backs the `.raw()` interlock.
 
@@ -765,6 +766,15 @@ Pattern function calls such as `hstack(...)` follow the same broad rule as `css(
 - conditional object props when normalization stays within the branch budget
 
 `pattern.raw(...)` runs the pattern transform and folds to the style object it returns, defaults included.
+
+Every pattern usage, including a `.raw()` nested in `css()`, `cva()` or JSX, resolves through
+`System::pattern_styles`, so the build and the transform agree. Without the host callback, a pattern that needs a JS
+transform resolves to nothing, never to its props. A nested `.raw()` whose props hold a runtime branch or unknown value
+keeps the enclosing call. Pattern-dependent exports retain an owned expression plan, including ordered object writes,
+spreads, nested calls, and binding reads. The importing file resolves the plan with its own hook before producing a
+style value, so CSS follows the consumer's conditions and the cross-file cache never holds callback output. See
+[cross-file resolution](../cross-file-resolution.md). `tests/pattern_raw_parity.rs` checks transformed classes and
+consumer-specific emitted CSS independently.
 
 A pattern call collapses to a single value — one class string, or one object for `.raw` — so unlike `css(...)` it
 cannot print a runtime ternary. Any branch the runtime has to decide bails the call. The literal alone can't show this

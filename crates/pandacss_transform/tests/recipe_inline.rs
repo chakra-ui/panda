@@ -1884,6 +1884,61 @@ fn leaves_memoization_of_an_exported_recipe_to_attach_recipe() {
 }
 
 #[test]
+fn memoizes_a_recipe_called_through_a_local_object() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        const styles = {
+          button: cva({ variants: { size: { sm: { color: 'red' } } } }),
+        };
+        export const cls = styles.button({ size: 'sm' });
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.helper.needs_memo_recipe);
+    assert!(!output.helper.needs_attach_recipe);
+    assert_snapshot!(output.code, @r#"
+    import { memoRecipe as __pm } from '@pandacss-internal/css';
+    const styles = {
+      button: /* @__PURE__ */ __pm((p = {}) => { p ??= {}; const _p0 = p["size"], v0 = _p0 === void 0 ? void 0 : _p0; return ({ sm: "color_red" }[v0]) || ''; }, { size: ["sm"] }),
+    };
+    export const cls = styles.button({ size: 'sm' });
+    "#);
+}
+
+#[test]
+fn attaches_the_recipe_surface_when_its_object_is_exported() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        export const styles = {
+          button: cva({ variants: { size: { sm: { color: 'red' } } } }),
+        };
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.helper.needs_attach_recipe);
+    assert!(!output.helper.needs_memo_recipe);
+}
+
+#[test]
+fn attaches_the_recipe_surface_when_its_object_is_passed_around() {
+    let source = indoc! {r#"
+        import { cva } from '@panda/css';
+        const styles = {
+          button: cva({ variants: { size: { sm: { color: 'red' } } } }),
+        };
+        export const cls = styles.button({ size: 'sm' });
+        register(styles);
+    "#};
+
+    let output = transform("src/recipes.ts", source);
+
+    assert!(output.helper.needs_attach_recipe);
+    assert!(!output.helper.needs_memo_recipe);
+}
+
+#[test]
 fn does_not_memoize_a_recipe_without_variants() {
     let source = indoc! {r#"
         import { cva } from '@panda/css';

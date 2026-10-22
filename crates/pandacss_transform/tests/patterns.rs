@@ -919,3 +919,26 @@ fn pattern_raw_stays_intact_when_the_js_transform_declines() {
     assert!(!output.changed);
     assert_eq!(output.code, source);
 }
+
+#[test]
+fn css_with_a_nested_pattern_raw_stays_intact_without_the_pattern_transform() {
+    let project = stack_project();
+    let source = indoc! {r#"
+        import { css } from '@panda/css';
+        import { stack } from '@panda/patterns';
+        export const cls = css(stack.raw({ gap: '4px' }));
+    "#};
+
+    let output = transform_source(
+        project.system(),
+        "src/layout.tsx",
+        source,
+        &TransformOptions::default(),
+    );
+
+    assert_snapshot!(output.code, @"
+    import { css } from '@panda/css';
+    import { stack } from '@panda/patterns';
+    export const cls = css(stack.raw({ gap: '4px' }));
+    ");
+}

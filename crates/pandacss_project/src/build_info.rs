@@ -13,8 +13,9 @@ use pandacss_encoder::{
     RecipeStyleGroupSnapshot,
 };
 use pandacss_extractor::{
-    DesignSystemImportSelection, ExportInfo, ReExport, ScanImportsOptions,
-    design_system_usage_from_import_records, scan_imports_with,
+    CrossFileResolver, DesignSystemImportSelection, ExportInfo, ImportRecord, ReExport,
+    ScanImportsOptions, design_system_usage_from_import_records, module_path_candidates,
+    scan_imports_with,
 };
 use pandacss_fs::normalize_lexical;
 use pandacss_shared::{InlineKeyframe, PositionTryStyle, ViewTransitionStyle};
@@ -25,7 +26,7 @@ use crate::FileEntry;
 
 /// Bumped when the on-disk shape changes; a consumer with a different
 /// `SCHEMA_VERSION` falls back to re-extracting the library's source.
-pub const SCHEMA_VERSION: u32 = 7;
+pub const SCHEMA_VERSION: u32 = 8;
 
 /// Synthetic file-key prefix for atoms hydrated from a parent design system.
 /// Excluded from serialized build info so a published artifact carries only
@@ -200,6 +201,8 @@ pub struct ModuleEntry {
     pub position_try: Vec<u32>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub keyframes: Vec<u32>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub imports: Vec<String>,
     /// Design-system dependency → imported export names (`*` = all).
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub dependency_imports: BTreeMap<String, Vec<String>>,
@@ -713,7 +716,7 @@ impl super::Project {
         let (build_keyframes, file_keyframes) =
             collect_build_keyframes(&self.inline_keyframes, &mut interner);
 
-        let (mut modules, mut styled_modules) = Self::build_module_entries(
+        let mut modules = Self::build_module_entries(
             &self.files,
             &position,
             &recipe_index,
@@ -722,9 +725,16 @@ impl super::Project {
             &file_position_try,
             &file_keyframes,
         );
-        let usage = record_dependency_usage(&self.files, dependencies, &mut modules);
-        styled_modules.extend(usage.modules.iter().cloned());
-        let exports = ExportResolver::new(&self.files, styled_modules, usage.modules).resolve_all();
+        let resolver = self.system.extractor_config().cross_file.as_ref();
+        // Files added since the last lookup would otherwise stay unresolved.
+        if let Some(resolver) = resolver {
+            resolver.clear_resolution_cache();
+        }
+        let module_keys = ModuleKeys::new(&self.files, resolver);
+        let imports = scan_module_imports(&self.files);
+        record_module_imports(&imports, &module_keys, &mut modules);
+        let usage = record_dependency_usage(&imports, dependencies, &mut modules);
+        let exports = ExportResolver::new(&self.files, &module_keys, usage.modules).resolve_all();
 
         BuildInfo {
             schema_version: SCHEMA_VERSION,
@@ -755,9 +765,8 @@ impl super::Project {
         file_view_transitions: &FxHashMap<&str, Vec<u32>>,
         file_position_try: &FxHashMap<&str, Vec<u32>>,
         file_keyframes: &FxHashMap<&str, Vec<u32>>,
-    ) -> (BTreeMap<String, ModuleEntry>, FxHashSet<String>) {
+    ) -> BTreeMap<String, ModuleEntry> {
         let mut modules = BTreeMap::new();
-        let mut styled_modules = FxHashSet::default();
         for (path, entry) in files {
             if path.starts_with(HYDRATED_FILE_PREFIX) {
                 continue;
@@ -803,16 +812,6 @@ impl super::Project {
                 .cloned()
                 .unwrap_or_default();
 
-            if !atom_indices.is_empty()
-                || !recipe_indices.is_empty()
-                || !token_ref_indices.is_empty()
-                || !view_transition_indices.is_empty()
-                || !position_try_indices.is_empty()
-                || !keyframe_indices.is_empty()
-            {
-                styled_modules.insert(path.to_string());
-            }
-
             modules.insert(
                 path.to_string(),
                 ModuleEntry {
@@ -822,11 +821,12 @@ impl super::Project {
                     view_transitions: view_transition_indices,
                     position_try: position_try_indices,
                     keyframes: keyframe_indices,
+                    imports: Vec::new(),
                     dependency_imports: BTreeMap::new(),
                 },
             );
         }
-        (modules, styled_modules)
+        modules
     }
 
     /// Hydrates a library's pre-extracted atoms into this project (additive),
@@ -970,24 +970,49 @@ struct DependencyUsage {
     star_reexports: BTreeSet<String>,
 }
 
-fn record_dependency_usage(
+fn scan_module_imports(
     files: &FxHashMap<Arc<str>, FileEntry>,
-    dependencies: &[DesignSystemDependency],
-    modules: &mut BTreeMap<String, ModuleEntry>,
-) -> DependencyUsage {
-    let mut usage = DependencyUsage::default();
-    if dependencies.is_empty() {
-        return usage;
-    }
+) -> BTreeMap<String, Vec<ImportRecord>> {
     let options = ScanImportsOptions {
         reexports: true,
         dynamic: true,
     };
-    for (path, entry) in files {
-        if path.starts_with(HYDRATED_FILE_PREFIX) || entry.source.is_empty() {
+    files
+        .iter()
+        .filter(|(path, entry)| !path.starts_with(HYDRATED_FILE_PREFIX) && !entry.source.is_empty())
+        .map(|(path, entry)| {
+            let records = scan_imports_with(&entry.source, path, options).imports;
+            (path.to_string(), records)
+        })
+        .collect()
+}
+
+fn record_module_imports(
+    imports: &BTreeMap<String, Vec<ImportRecord>>,
+    module_keys: &ModuleKeys<'_>,
+    modules: &mut BTreeMap<String, ModuleEntry>,
+) {
+    for (path, records) in imports {
+        let Some(module) = modules.get_mut(path) else {
             continue;
-        }
-        let records = scan_imports_with(&entry.source, path, options).imports;
+        };
+        let targets: BTreeSet<String> = records
+            .iter()
+            .filter(|record| !record.type_only)
+            .filter_map(|record| module_keys.resolve(path, &record.module))
+            .filter(|target| target != path)
+            .collect();
+        module.imports = targets.into_iter().collect();
+    }
+}
+
+fn record_dependency_usage(
+    imports: &BTreeMap<String, Vec<ImportRecord>>,
+    dependencies: &[DesignSystemDependency],
+    modules: &mut BTreeMap<String, ModuleEntry>,
+) -> DependencyUsage {
+    let mut usage = DependencyUsage::default();
+    for (path, records) in imports {
         for dependency in dependencies {
             let roots: Vec<&str> = dependency.roots.iter().map(String::as_str).collect();
             let excluded: Vec<&str> = dependency
@@ -995,7 +1020,7 @@ fn record_dependency_usage(
                 .iter()
                 .map(String::as_str)
                 .collect();
-            let file_usage = design_system_usage_from_import_records(&records, &roots, &excluded);
+            let file_usage = design_system_usage_from_import_records(records, &roots, &excluded);
             if file_usage.star_reexport {
                 usage.star_reexports.insert(dependency.name.clone());
             }
@@ -1004,52 +1029,105 @@ fn record_dependency_usage(
                 DesignSystemImportSelection::Names { names } if names.is_empty() => continue,
                 DesignSystemImportSelection::Names { names } => names,
             };
-            if let Some(module) = modules.get_mut(path.as_ref()) {
+            if let Some(module) = modules.get_mut(path) {
                 module
                     .dependency_imports
                     .insert(dependency.name.clone(), names);
-                usage.modules.insert(path.to_string());
+                usage.modules.insert(path.clone());
             }
         }
     }
     usage
 }
 
-/// Resolves export surfaces across already-parsed project files. Modules that
-/// contribute styles (`styled_modules`) map to themselves; the rest resolve
-/// via re-export edges collected at extraction time.
-struct ExportResolver {
+struct ModuleKeys<'a> {
+    normalized: BTreeMap<String, String>,
+    canonical: FxHashMap<PathBuf, String>,
+    resolver: Option<&'a CrossFileResolver>,
+}
+
+impl<'a> ModuleKeys<'a> {
+    fn new(
+        files: &FxHashMap<Arc<str>, FileEntry>,
+        resolver: Option<&'a CrossFileResolver>,
+    ) -> Self {
+        let mut normalized = BTreeMap::new();
+        let mut canonical = FxHashMap::default();
+        for path in files.keys() {
+            if path.starts_with(HYDRATED_FILE_PREFIX) {
+                continue;
+            }
+            normalized
+                .entry(normalize_lexical(Path::new(path.as_ref())))
+                .or_insert_with(|| path.to_string());
+            if let Some(real) =
+                resolver.and_then(|resolver| resolver.dependency_key(Path::new(path.as_ref())))
+            {
+                canonical.entry(real).or_insert_with(|| path.to_string());
+            }
+        }
+        Self {
+            normalized,
+            canonical,
+            resolver,
+        }
+    }
+
+    fn resolve(&self, from: &str, specifier: &str) -> Option<String> {
+        self.resolve_relative(from, specifier)
+            .or_else(|| self.resolve_with_resolver(from, specifier))
+    }
+
+    fn resolve_relative(&self, from: &str, specifier: &str) -> Option<String> {
+        if !specifier.starts_with('.') {
+            return None;
+        }
+
+        let base = Path::new(from)
+            .parent()
+            .map_or_else(PathBuf::new, Path::to_path_buf)
+            .join(specifier);
+        let base = normalize_lexical(&base);
+
+        module_path_candidates(&base)
+            .into_iter()
+            .find_map(|candidate| self.normalized.get(&candidate).cloned())
+    }
+
+    fn resolve_with_resolver(&self, from: &str, specifier: &str) -> Option<String> {
+        let resolved = self.resolver?.resolve_path(Path::new(from), specifier)?;
+        self.canonical
+            .get(&resolved)
+            .or_else(|| self.normalized.get(&normalize_lexical(&resolved)))
+            .cloned()
+    }
+}
+
+/// Resolves export surfaces across already-parsed project files.
+struct ExportResolver<'a> {
     files: BTreeMap<String, ExportInfo>,
-    styled_modules: FxHashSet<String>,
+    module_keys: &'a ModuleKeys<'a>,
     dependency_modules: FxHashSet<String>,
-    /// Normalized path → original `Project.files` key (handles `./` prefixes).
-    normalized_files: BTreeMap<String, String>,
     surface_memo: BTreeMap<String, BTreeMap<String, String>>,
     export_memo: BTreeMap<(String, String), Option<String>>,
     resolving_surfaces: FxHashSet<String>,
     resolving_exports: FxHashSet<(String, String)>,
 }
 
-impl ExportResolver {
+impl<'a> ExportResolver<'a> {
     fn new(
         files: &FxHashMap<Arc<str>, FileEntry>,
-        styled_modules: FxHashSet<String>,
+        module_keys: &'a ModuleKeys<'a>,
         dependency_modules: FxHashSet<String>,
     ) -> Self {
-        let mut export_files = BTreeMap::new();
-        let mut normalized_files = BTreeMap::new();
-        for (path, entry) in files {
-            let path = path.to_string();
-            normalized_files
-                .entry(normalize_lexical(Path::new(&path)))
-                .or_insert_with(|| path.clone());
-            export_files.insert(path, entry.exports.clone());
-        }
+        let export_files = files
+            .iter()
+            .map(|(path, entry)| (path.to_string(), entry.exports.clone()))
+            .collect();
         Self {
             files: export_files,
-            styled_modules,
+            module_keys,
             dependency_modules,
-            normalized_files,
             surface_memo: BTreeMap::new(),
             export_memo: BTreeMap::new(),
             resolving_surfaces: FxHashSet::default(),
@@ -1083,7 +1161,7 @@ impl ExportResolver {
 
         // Star re-exports: merge the target module's public surface.
         for source in &info.export_all {
-            let Some(target) = self.resolve_source(path, source) else {
+            let Some(target) = self.module_keys.resolve(path, source) else {
                 continue;
             };
 
@@ -1101,11 +1179,8 @@ impl ExportResolver {
             }
         }
 
-        // Local exports from a style-contributing module map to that module.
-        if self.styled_modules.contains(path) {
-            for name in &info.local {
-                surface.insert(name.clone(), path.to_owned());
-            }
+        for name in &info.local {
+            surface.insert(name.clone(), path.to_owned());
         }
 
         self.resolving_surfaces.remove(path);
@@ -1125,7 +1200,7 @@ impl ExportResolver {
         }
 
         let info = self.files.get(path).cloned().unwrap_or_default();
-        let result = if self.styled_modules.contains(path) && info.local.iter().any(|n| n == name) {
+        let result = if info.local.iter().any(|n| n == name) {
             Some(path.to_owned())
         } else {
             // Walk named re-export edges first (more precise than star).
@@ -1141,7 +1216,7 @@ impl ExportResolver {
 
                     // Fall back to star re-exports for the same public name.
                     info.export_all.iter().find_map(|source| {
-                        let target = self.resolve_source(path, source)?;
+                        let target = self.module_keys.resolve(path, source)?;
                         self.resolve_export(&target, name)
                     })
                 })
@@ -1153,7 +1228,7 @@ impl ExportResolver {
     }
 
     fn resolve_re_export(&mut self, path: &str, re_export: &ReExport) -> Option<String> {
-        match self.resolve_source(path, &re_export.source) {
+        match self.module_keys.resolve(path, &re_export.source) {
             Some(target) => self.resolve_export(&target, &re_export.imported),
             // Re-exported from a design-system dependency: this module carries the edge.
             None => self
@@ -1161,35 +1236,5 @@ impl ExportResolver {
                 .contains(path)
                 .then(|| path.to_owned()),
         }
-    }
-
-    fn resolve_source(&self, from: &str, source: &str) -> Option<String> {
-        // Only resolve relative sources against already-parsed project keys — no FS walk.
-        if !source.starts_with('.') {
-            return None;
-        }
-
-        let base = Path::new(from)
-            .parent()
-            .map_or_else(PathBuf::new, Path::to_path_buf)
-            .join(source);
-        let base = normalize_lexical(&base);
-
-        let mut candidates = vec![base.clone()];
-
-        // Extension/index probing mirrors typical TS/JS resolution against known scan keys.
-        if Path::new(source).extension().is_none() {
-            for ext in ["ts", "tsx", "js", "jsx", "mjs", "mts", "cjs", "cts"] {
-                candidates.push(format!("{base}.{ext}"));
-            }
-
-            for ext in ["ts", "tsx", "js", "jsx", "mjs", "mts", "cjs", "cts"] {
-                candidates.push(format!("{base}/index.{ext}"));
-            }
-        }
-
-        candidates
-            .into_iter()
-            .find_map(|candidate| self.normalized_files.get(&candidate).cloned())
     }
 }

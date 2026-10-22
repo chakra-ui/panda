@@ -99,24 +99,28 @@ describe('custom token categories', () => {
     const types = generatedFile(build(), 'types/tokens.d.ts')
 
     expect(types).toMatchInlineSnapshot(`
-      "export type ColorToken = "colorPalette" | "red"
+      "import type { Registered } from './register';
 
-      export type IconSizeToken = "button" | "sm"
+      export type ColorToken = Registered<"ColorToken", "colorPalette" | "red">
 
-      export interface Tokens {
+      export type IconSizeToken = Registered<"IconSizeToken", "button" | "sm">
+
+      interface LocalTokens {
         colors: ColorToken
         iconSizes: IconSizeToken
       }
 
-      export type Token = \`colors.\${ColorToken}\` | \`iconSizes.\${IconSizeToken}\`
+      export interface Tokens extends Registered<"Tokens", LocalTokens> {}
 
-      export type ColorOpacityModifier = \`\${number}\`
+      export type Token = Registered<"Token", \`colors.\${ColorToken}\` | \`iconSizes.\${IconSizeToken}\`>
 
-      export type ColorOpacityToken = \`colors.\${ColorToken}/\${ColorOpacityModifier}\`
+      export type ColorOpacityModifier = Registered<"ColorOpacityModifier", \`\${number}\`>
+
+      export type ColorOpacityToken = Registered<"ColorOpacityToken", \`colors.\${ColorToken}/\${ColorOpacityModifier}\`>
 
       export type TokenPath = Token | ColorOpacityToken
 
-      export type ColorPalette = "red"
+      export type ColorPalette = Registered<"ColorPalette", "red">
 
       export type TokenValue<T extends string> = T extends keyof Tokens ? Tokens[T] : never"
     `)

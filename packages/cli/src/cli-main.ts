@@ -36,6 +36,7 @@ export async function main(argv = process.argv): Promise<void> {
         analyze: () => import('./commands/analyze').then((m) => m.analyzeCommand),
         codegen: () => import('./commands/codegen').then((m) => m.codegenCommand),
         cssgen: () => import('./commands/cssgen').then((m) => m.cssgenCommand),
+        studio: () => import('./commands/studio').then((m) => m.studioCommand),
       },
     })
 

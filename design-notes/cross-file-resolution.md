@@ -4,12 +4,12 @@
 
 `CrossFileResolver` lets the same-file `Resolver` follow `import { x } from './tokens'` references and fold the imported
 value. Module resolution itself is delegated to `oxc_resolver` (relative paths, extension probing, tsconfig paths,
-package.json `exports`). On-disk importers resolve from the file path so auto-discovered tsconfig aliases apply; virtual
-importers fall back to directory resolution. The resolver keeps a validated cache across the compiler lifetime and pins
-analyzed exports in a short-lived `CrossFileSession`. `parseFiles()` shares one session, so each imported revision is
-read and validated once across the ordered batch. Files in that batch are already visible to the resolver, so
-registering each path does not retry every previously unresolved import. A later batch observes changed files on its
-first lookup.
+package.json `exports` and `imports`, and TypeScript's `.js` → `.ts` extension aliasing). On-disk importers resolve from
+the file path so auto-discovered tsconfig aliases apply; virtual importers fall back to directory resolution. The
+resolver keeps a validated cache across the compiler lifetime and pins analyzed exports in a short-lived
+`CrossFileSession`. `parseFiles()` shares one session, so each imported revision is read and validated once across the
+ordered batch. Files in that batch are already visible to the resolver, so registering each path does not retry every
+previously unresolved import. A later batch observes changed files on its first lookup.
 
 ## Cache shape
 
@@ -28,6 +28,7 @@ struct CachedFileExports {
 enum ExportEntry {
     Literal(Literal),
     StyleFallback { known_value: Option<Literal>, style_value: Literal },
+    Deferred(DeferredValue),
     PureFn(OwnedPureFn),
     Recipe(ExportedRecipe),
 }
@@ -40,6 +41,33 @@ enum ExportEntry {
 unresolved. Partially static objects also keep their known members in `known_value` and their style projection in
 `style_value`. Imported fallbacks become `StyleTree::OpenWithFallback`, so encoding can collect their CSS while
 transformation preserves the runtime value.
+
+Pattern-dependent exports use a private `DeferredValue` expression plan instead of a literal. It owns only the container
+operations, binding reads, pattern calls, and closed pure calls needed after the AST is dropped. Object properties and
+spreads remain a sequence of writes, including repeated spreads of the same value. The importer resolves each operand
+before merging it, and resolves a pattern's input before invoking the host. Deferred nodes cannot appear in `Literal`,
+CSS, or callback arguments.
+
+```mermaid
+flowchart LR
+  Source[Export source] --> Plan[Owned expression plan in shared cache]
+  Plan --> Host[Resolve with importing file's current host]
+  Host --> Tree[StyleTree: known values and explicit unknowns]
+  Tree --> CSS[CSS extraction]
+  Tree --> Transform[Source transformation]
+```
+
+The shared cache never stores pattern callback output. Callback replacement needs no extra cross-file cache key; only
+the per-extraction symbol caches contain resolved results. Unknown pattern inputs stay unknown. Other static members and
+finite spread alternatives still contribute CSS, while unknown values prevent an unsafe rewrite.
+
+This follows the ordered spread handling in
+[tsrs](https://github.com/oxc-project/tsrs/blob/main/crates/tsrs_transformers/src/estransforms/objectrestspread.rs) and
+[esbuild](https://github.com/evanw/esbuild/blob/main/internal/js_parser/js_parser_lower.go).
+[Bun](https://github.com/oven-sh/bun/blob/main/src/js_parser/visit/visit_expr.rs) also keeps side-effect information
+when folding conditional expressions.
+[Vite](https://github.com/vitejs/vite/blob/main/packages/vite/src/node/server/transformRequest.ts) invalidates cached
+transform results when their environment changes; Panda avoids caching host-dependent results in this layer.
 
 The resolver reads and hashes the current source before using a cache entry. Matching source hashes avoid another parse
 and fold; changed sources replace the entry. Nested modules folded into this file (imported aliases used in an exported

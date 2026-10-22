@@ -10,7 +10,7 @@ use pandacss_extractor::{
 };
 use pandacss_literal::Literal;
 use pandacss_shared::parse_first_that_works_value;
-use pandacss_tokens::{TokenCategory, TokenDictionary, TokenSuggestion};
+use pandacss_tokens::{ResolvedTokenPath, TokenCategory, TokenDictionary, TokenSuggestion};
 use pandacss_utility::{Utility, token_references};
 use rustc_hash::FxHashMap;
 
@@ -390,14 +390,14 @@ impl StyleEntryCollector<'_, '_> {
                         _ => StyleEntryKind::Unknown,
                     }
                 };
-                let token_category = (kind == StyleEntryKind::Utility)
-                    .then(|| {
-                        self.cx
-                            .utility
-                            .and_then(|utility| utility.token_category(key))
-                            .map(TokenCategory::from_path_segment)
-                    })
-                    .flatten();
+                let token_lookup = (kind == StyleEntryKind::Utility).then(|| ValueTokenLookup {
+                    prop: key,
+                    category: self
+                        .cx
+                        .utility
+                        .and_then(|utility| utility.token_category(key))
+                        .map(TokenCategory::from_path_segment),
+                });
                 out.push(style_entry(&StyleEntryInput {
                     kind,
                     syntax,
@@ -410,7 +410,7 @@ impl StyleEntryCollector<'_, '_> {
                     path,
                     source_ref,
                     source_range,
-                    value_spans: self.value_spans(path, value, token_category.as_ref()),
+                    value_spans: self.value_spans(path, value, token_lookup.as_ref()),
                 }));
             }
             path.pop();
@@ -427,11 +427,11 @@ impl StyleEntryCollector<'_, '_> {
         &self,
         path: &[String],
         value: &Literal,
-        token_category: Option<&TokenCategory>,
+        token_lookup: Option<&ValueTokenLookup>,
     ) -> Vec<ValueSpanRef> {
         let mut out = Vec::new();
         let mut path = path.to_vec();
-        self.collect_value_spans(&mut path, value, token_category, &mut out);
+        self.collect_value_spans(&mut path, value, token_lookup, &mut out);
         out
     }
 
@@ -439,7 +439,7 @@ impl StyleEntryCollector<'_, '_> {
         &self,
         path: &mut Vec<String>,
         value: &Literal,
-        token_category: Option<&TokenCategory>,
+        token_lookup: Option<&ValueTokenLookup>,
         out: &mut Vec<ValueSpanRef>,
     ) {
         match value {
@@ -450,8 +450,8 @@ impl StyleEntryCollector<'_, '_> {
                     let token = self
                         .cx
                         .tokens
-                        .zip(token_category)
-                        .and_then(|(dict, category)| dict.resolve_token_path(category, text))
+                        .zip(token_lookup)
+                        .and_then(|(dict, lookup)| self.resolve_value_token(dict, lookup, text))
                         .map(token_value_ref);
                     out.push(ValueSpanRef {
                         value: text.clone(),
@@ -463,20 +463,39 @@ impl StyleEntryCollector<'_, '_> {
             Literal::Object(entries) => {
                 for (key, nested) in entries {
                     path.push(key.clone());
-                    self.collect_value_spans(path, nested, token_category, out);
+                    self.collect_value_spans(path, nested, token_lookup, out);
                     path.pop();
                 }
             }
             Literal::Array(items) => {
                 for (index, nested) in items.iter().enumerate() {
                     path.push(index.to_string());
-                    self.collect_value_spans(path, nested, token_category, out);
+                    self.collect_value_spans(path, nested, token_lookup, out);
                     path.pop();
                 }
             }
             _ => {}
         }
     }
+
+    fn resolve_value_token(
+        &self,
+        dict: &TokenDictionary,
+        lookup: &ValueTokenLookup,
+        text: &str,
+    ) -> Option<ResolvedTokenPath> {
+        if let Some(category) = &lookup.category {
+            return dict.resolve_token_path(category, text);
+        }
+        let token = self.cx.utility?.value_map_token(lookup.prop, text)?;
+        Some(dict.token_metadata(token, None))
+    }
+}
+
+/// How a utility's values map to tokens: a `values: 'spacing'` category, or a value map.
+struct ValueTokenLookup<'a> {
+    prop: &'a str,
+    category: Option<TokenCategory>,
 }
 
 /// A style object: keys are properties, conditions, or raw selectors.

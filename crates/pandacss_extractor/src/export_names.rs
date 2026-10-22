@@ -2,7 +2,7 @@
 //! map (export name → module key) so a consumer can resolve a barrel import
 //! (`import { Button } from '@acme/ds'`) to the module it must hydrate.
 
-use oxc_ast::ast::{BindingPattern, Declaration, ImportOrExportKind, Program, Statement};
+use oxc_ast::ast::{Declaration, ImportOrExportKind, Program, Statement};
 
 use crate::imports::module_export_name;
 
@@ -107,10 +107,17 @@ fn push_declaration_names(declaration: &Declaration<'_>, names: &mut Vec<String>
         }
         Declaration::VariableDeclaration(var) => {
             for declarator in &var.declarations {
-                if let BindingPattern::BindingIdentifier(id) = &declarator.id {
-                    names.push(id.name.to_string());
-                }
+                names.extend(
+                    declarator
+                        .id
+                        .get_binding_identifiers()
+                        .into_iter()
+                        .map(|id| id.name.to_string()),
+                );
             }
+        }
+        Declaration::TSEnumDeclaration(declaration) => {
+            names.push(declaration.id.name.to_string());
         }
         _ => {}
     }

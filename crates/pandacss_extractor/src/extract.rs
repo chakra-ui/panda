@@ -246,15 +246,17 @@ pub fn extract_transform(source: &str, path: &str, config: &ExtractorConfig) -> 
     extract_usage(outcome)
 }
 
-/// [`extract_transform`] plus the project-supplied resolver for imported
-/// inline `cva`/`sva` recipes, so `imported.raw(props)` folds to its styles.
-pub fn extract_transform_with_recipes<R>(
+/// [`extract_transform`] plus the project-supplied `.raw(...)` resolvers, so
+/// `pattern.raw(props)` and `imported.raw(props)` fold to their styles.
+pub fn extract_transform_with_raw_resolvers<P, R>(
     source: &str,
     path: &str,
     config: &ExtractorConfig,
+    pattern_transform: &mut P,
     recipe_resolve: &mut R,
 ) -> ExtractUsage
 where
+    P: FnMut(&str, &Literal) -> Result<Option<Literal>, Diagnostic>,
     R: FnMut(&str, &Literal, &Literal) -> Option<Literal>,
 {
     let _span = tracing::trace_span!(
@@ -264,8 +266,10 @@ where
         source_len = source.len()
     )
     .entered();
-    let erased: &mut RecipeRawResolveFn<'_> = recipe_resolve;
-    let cell: RecipeRawResolveCell<'_> = RefCell::new(erased);
+    let pattern_erased: &mut PatternRawTransformFn<'_> = pattern_transform;
+    let pattern_cell = RefCell::new(pattern_erased);
+    let recipe_erased: &mut RecipeRawResolveFn<'_> = recipe_resolve;
+    let recipe_cell: RecipeRawResolveCell<'_> = RefCell::new(recipe_erased);
     let session = cross_file_session(config);
     let outcome = run_extract(
         source,
@@ -273,7 +277,8 @@ where
         config,
         RunExtractOptions {
             cross_file: session.as_ref(),
-            recipe_raw_resolve: Some(&cell),
+            pattern_raw_transform: Some(&pattern_cell),
+            recipe_raw_resolve: Some(&recipe_cell),
             retain_transform_facts: true,
             skip_client_scripts: true,
             ..RunExtractOptions::default()

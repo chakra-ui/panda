@@ -1,5 +1,6 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 import { cva } from '../styled-system/css/cva'
+import type { RecipeRuntimeFn, SystemStyleObject } from '../styled-system/types'
 
 describe('cva', () => {
   const button = cva({
@@ -65,6 +66,19 @@ describe('cva', () => {
     `)
   })
 
+  test('split variant props keeps a union of component props', () => {
+    type Props = { visual: 'solid' } & (
+      | { role: 'guest'; expiration: number }
+      | { role: 'admin'; permissions: string[] }
+    )
+    const split = (props: Props) => button.splitVariantProps(props)[1]
+
+    expectTypeOf(split).returns.toEqualTypeOf<
+      { role: 'guest'; expiration: number } | { role: 'admin'; permissions: string[] }
+    >()
+    expect(split({ visual: 'solid', role: 'guest', expiration: 1 })).toEqual({ role: 'guest', expiration: 1 })
+  })
+
   test('get variant props', () => {
     const result = button.getVariantProps()
 
@@ -73,5 +87,21 @@ describe('cva', () => {
         "visual": "unstyled",
       }
     `)
+  })
+
+  test('exposes the config it was built from', () => {
+    expectTypeOf(button.config.defaultVariants).toEqualTypeOf<
+      { visual?: 'solid' | 'outline' | 'unstyled' | undefined } | undefined
+    >()
+    expect(button.config.defaultVariants).toEqual({ visual: 'unstyled' })
+  })
+
+  test('an isolated declaration annotation keeps raw as a style object', () => {
+    const annotated: RecipeRuntimeFn<{ visual?: 'solid' | 'outline' | 'unstyled' | undefined }> = cva({
+      variants: { visual: { solid: { color: 'white' }, outline: { borderWidth: '1px' }, unstyled: {} } },
+    })
+
+    expectTypeOf(annotated.raw()).toEqualTypeOf<SystemStyleObject>()
+    expect(annotated({ visual: 'solid' })).toBe('c_white')
   })
 })

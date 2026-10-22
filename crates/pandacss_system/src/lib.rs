@@ -23,6 +23,7 @@ pub use inline_recipe_raw::{
     InlineRecipeClasses, inline_recipe_classes, is_recipe_config, raw_call_variant_props,
     resolve_inline_recipe_raw,
 };
+pub use patterns::PatternStyles;
 pub use recipes::{EncodedRecipes, EncodedRecipesCache};
 pub use source_styles::{
     SourceStyleKind, SourceStylePathSegment, visit_call_style_objects, visit_call_style_strings,

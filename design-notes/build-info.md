@@ -31,7 +31,7 @@ recomputed on hydrate.
 
 ```jsonc
 {
-  "schemaVersion": 7,
+  "schemaVersion": 8,
   "panda": "^2.0.0",                               // peer range (collision guard); author-supplied
   "configFingerprint": "cfg1-…",                          // engine fingerprint of output-affecting config
   "strings": ["color", "red", "padding", "4px", "colors.brand", "vt_xxx"], // intern table
@@ -141,6 +141,13 @@ from `designSystemDependencies`, unreadable build info, or an `*` entry (a names
 that ancestor hydrates fully. `export * from '<dependency>'` is recorded in top-level `starReexportDependencies`
 instead: app imports that resolve to no middle module are forwarded to that dependency by name.
 
+Inside one package, `panda lib` records the modules each module loads (`modules[key].imports`): static and dynamic
+imports, `require()`, side-effect imports, and re-exports, skipping `import type`. `modulesFor()` adds every module
+reachable through those edges, so a selected `Checkbox` keeps the `Label` it renders from a sibling file. The closure
+feeds `dependencyImports` too, so parent styles reached through a sibling module survive. Specifiers resolve against the
+package's own scanned files: relative paths (with `./x.js` → `x.ts`/`x.tsx`), then the cross-file resolver for tsconfig
+`paths` aliases. A non-literal `import()` and modules outside `include` add no edge.
+
 If `imports` is non-empty but nothing resolves (missing `exports` map, typo), load **fails open** to full hydrate —
 better over-include CSS than ship an empty sheet. Modules that only publish `tokenRefs` stay selected under narrowing so
 token pruning still sees live refs.
@@ -148,11 +155,12 @@ token pruning still sees live refs.
 ### How names map to modules
 
 The barrel case needs `exports`, which the **engine** emits (it has the AST; the CLI would have to re-parse): export
-facts resolve to the style-contributing module (`pandacss_extractor::collect_export_info` → `FileEntry.exports` →
-`BuildInfo.exports`). A component consumed via JSX (`<Button>`) attributes its recipe to its module like any call, so
-its export resolves to the recipe-carrying module. Consumer lookup is O(1) via `modulesFor`. Covered today:
-locally-declared exports (`export function/const/class`, `export { local as Public }`), named re-exports
-(`export { X as Y } from './y'`), star re-exports (`export * from './y'`), and default re-exports
+facts resolve to the module that declares the export (`pandacss_extractor::collect_export_info` → `FileEntry.exports` →
+`BuildInfo.exports`), whether or not it has styles of its own; its `imports` carry the rest. A component consumed via
+JSX (`<Button>`) attributes its recipe to its module like any call, so its export resolves to the recipe-carrying
+module. Consumer lookup is O(1) via `modulesFor`. Covered today: locally-declared exports
+(`export function/const/class/enum`, destructured `export const { a, b } = …`, `export { local as Public }`), named
+re-exports (`export { X as Y } from './y'`), star re-exports (`export * from './y'`), and default re-exports
 (`export { default as Button } from './button'`). Namespace stars (`export * as DS from './ds'`) intentionally fall back
 to the namespace-import path for now; from a design-system dependency they map to the re-exporting module, whose `*`
 dependency import hydrates that whole dependency.
@@ -212,8 +220,8 @@ design-system config and would fail full-config equality. The host separately co
   The engine emits `exports` itself, so both bindings carry it.
 - **`panda buildinfo`** (CLI, `packages/cli/src/commands/buildinfo.ts`) is the only package-aware layer: loads config →
   `parseFiles` → `buildInfo.create({ panda })` → writes `panda.buildinfo.json`. It remaps the engine's absolute scan
-  keys to `cwd`-relative POSIX module ids — both `modules` keys and `exports` values; the `configFingerprint` is the
-  engine's fingerprint (no JS hashing).
+  keys to `cwd`-relative POSIX module ids — `modules` keys, module `imports`, and `exports` values; the
+  `configFingerprint` is the engine's fingerprint (no JS hashing).
 
 ## Design-system boundary
 
@@ -371,9 +379,10 @@ from `panda ship`: the `styles.css` / package scaffolding fallback for non-Panda
 - ✅ Atoms + **recipes/slot recipes** round-trip with per-module tree-shaking; patterns via atoms; recipe usage via
   **call _and_ JSX** (`<Button>`, `<Tabs.Root>`). Version guard, `modulesFor`. Tested at Rust + native + **wasm** levels
   (recipe CSS equality, tree-shaking).
-- ✅ **Engine `exports`** — export name → module for style-contributing modules, so a barrel import of a
-  recipe-consuming component resolves to (and hydrates) the right module. Covers local exports, named re-exports, star
-  re-exports, and default re-export aliases across already-parsed relative files.
+- ✅ **Engine `exports`** — export name → declaring module, so a barrel import of a recipe-consuming component resolves
+  to (and hydrates) the right module. Covers local exports, named re-exports, star re-exports, and default re-export
+  aliases across already-parsed relative or tsconfig-aliased files.
+- ✅ **Module imports** — `modules[key].imports` lets tree-shaking keep styles from modules a selected module loads.
 - ✅ **`panda buildinfo`** producer wired into `packages/cli`: portable artifact (relative `modules`/`exports`, stable
   `configFingerprint`), `--outfile` / `--minify` / `--panda`. Tested end-to-end (produce → read → hydrate → CSS).
 - ✅ **Cross-config token cascade test** — lib build info can be hydrated into a consumer with a different token value

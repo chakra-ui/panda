@@ -27,9 +27,10 @@ use pandacss_fs::{FileSystem, to_forward_slash};
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::Literal;
+use crate::deferred_value::DeferredValue;
 use crate::literal::expression_to_literal;
 use crate::pure_fn::{OwnedPureFn, lower_callable_expr, lower_function};
-use crate::style_tree::into_project_literal;
+use crate::style_tree::{into_project_literal, style_tree_has_open_value};
 use crate::{
     MatchCategory, MatchedImport, Matchers, TokenDictionary, collect_imports,
     extract::UnresolvedCrossFileDependency, imports::module_export_name, match_import_records,
@@ -47,6 +48,8 @@ pub(crate) enum ExportEntry {
     },
     PureFn(OwnedPureFn),
     Recipe(ExportedRecipe),
+    /// An owned expression evaluated with the importing file's pattern host.
+    Deferred(DeferredValue),
 }
 
 /// `export const button = cva({ … })`. Enough for `button.raw(props)` without running the recipe.
@@ -112,11 +115,49 @@ fn resolve_with<F: FileSystem + Clone>(
         .map(|resolution| forward_slash_path(&resolution.full_path()))
 }
 
+/// Extensions tried, in order, for a specifier written without one.
+const MODULE_EXTENSIONS: &[&str] = &[
+    ".tsx", ".ts", ".mts", ".cts", ".jsx", ".mjs", ".cjs", ".js", ".json",
+];
+
+/// Sources a written extension may name, TypeScript first, as `tsc` and bundlers resolve them.
+const EXTENSION_ALIASES: &[(&str, &[&str])] = &[
+    (".js", &[".ts", ".tsx", ".js", ".jsx"]),
+    (".jsx", &[".tsx", ".jsx"]),
+    (".mjs", &[".mts", ".mjs"]),
+    (".cjs", &[".cts", ".cjs"]),
+];
+
+/// Paths a joined specifier may resolve to, in the order the resolver tries them.
+#[must_use]
+pub fn module_path_candidates(base: &str) -> Vec<String> {
+    if let Some((stem, sources)) = EXTENSION_ALIASES
+        .iter()
+        .find_map(|(written, sources)| base.strip_suffix(written).map(|stem| (stem, sources)))
+    {
+        return sources.iter().map(|ext| format!("{stem}{ext}")).collect();
+    }
+    std::iter::once(base.to_owned())
+        .chain(MODULE_EXTENSIONS.iter().map(|ext| format!("{base}{ext}")))
+        .chain(
+            MODULE_EXTENSIONS
+                .iter()
+                .map(|ext| format!("{base}/index{ext}")),
+        )
+        .collect()
+}
+
 fn default_resolve_options() -> ResolveOptions {
     ResolveOptions {
-        extensions: [".tsx", ".ts", ".jsx", ".mjs", ".cjs", ".js", ".json"]
+        extensions: MODULE_EXTENSIONS.iter().map(|s| (*s).to_string()).collect(),
+        extension_alias: EXTENSION_ALIASES
             .iter()
-            .map(|s| (*s).to_string())
+            .map(|(from, to)| {
+                (
+                    (*from).to_string(),
+                    to.iter().map(|s| (*s).to_string()).collect(),
+                )
+            })
             .collect(),
         // Auto-discover tsconfig so `paths` aliases resolve (matches rolldown/tsc).
         tsconfig: Some(TsconfigDiscovery::Auto),
@@ -1134,6 +1175,9 @@ fn collect_from_var(
 
 #[must_use]
 fn exported_value(name: &str, resolver: &Resolver<'_, '_>) -> Option<ExportEntry> {
+    if let Some(value) = resolver.resolve_deferred_root(name) {
+        return Some(ExportEntry::Deferred(value));
+    }
     let known_value = resolver.resolve_root_name(name);
 
     if matches!(
@@ -1149,14 +1193,23 @@ fn exported_value(name: &str, resolver: &Resolver<'_, '_>) -> Option<ExportEntry
         return known_value.map(ExportEntry::Literal);
     }
 
-    let Some(style_value) = resolver
-        .resolve_root_style_tree(name)
-        .and_then(into_project_literal)
-    else {
-        return known_value.map(ExportEntry::Literal);
+    let tree = resolver.resolve_root_style_tree(name);
+    // Projection drops unknown values, so the result can't stand in for the export.
+    let has_open = tree.as_ref().is_some_and(style_tree_has_open_value);
+    let Some(style_value) = tree.and_then(into_project_literal) else {
+        return known_value.map(|known| {
+            if has_open {
+                ExportEntry::StyleFallback {
+                    style_value: known.clone(),
+                    known_value: Some(known),
+                }
+            } else {
+                ExportEntry::Literal(known)
+            }
+        });
     };
 
-    if known_value.as_ref() == Some(&style_value) {
+    if !has_open && known_value.as_ref() == Some(&style_value) {
         return Some(ExportEntry::Literal(style_value));
     }
 

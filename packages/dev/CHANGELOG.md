@@ -1,5 +1,28 @@
 # @pandacss/dev
 
+## 2.3.0
+
+### Patch Changes
+
+- Updated dependencies [aa90e4a]
+- Updated dependencies [675fa00]
+- Updated dependencies [1fb2ee8]
+- Updated dependencies [36b18da]
+- Updated dependencies [8c179ea]
+- Updated dependencies [f01a419]
+- Updated dependencies [f01a419]
+- Updated dependencies [dd1e618]
+- Updated dependencies [bc2b4cb]
+- Updated dependencies [0b93f20]
+- Updated dependencies [d1ee159]
+- Updated dependencies [93269f5]
+- Updated dependencies [5616e53]
+  - @pandacss/cli@2.3.0
+  - @pandacss/compiler@2.3.0
+  - @pandacss/types@2.3.0
+  - @pandacss/postcss@2.3.0
+  - @pandacss/config@2.3.0
+
 ## 2.2.0
 
 ### Patch Changes

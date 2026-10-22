@@ -5,6 +5,7 @@ const CODEGEN_DEPENDENCIES = new Set<string>([
   'outExtension',
   'forceImportExtension',
   'conditions',
+  'designSystem',
   'hash',
   'jsxFactory',
   'jsxFramework',
