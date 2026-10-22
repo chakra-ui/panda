@@ -18,7 +18,7 @@ export interface PandaPluginOptions {
   configPath?: string
   /** Where codegen artifacts are written. Defaults to the config `outdir`. */
   outdir?: string
-  /** Generate runtime helpers and types. Set to `false` when another package owns them. Defaults to `true`. */
+  /** Generate runtime helpers and types. Defaults to `true`. */
   codegen?: boolean
   /**
    * Opt-in source rewrite (`css()` → class strings, etc.). Default: `false`.

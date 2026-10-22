@@ -64,13 +64,6 @@ describe('@pandacss/rollup', () => {
     `)
   })
 
-  it('generates code by default', async () => {
-    const driver = createDriver([])
-    mocks.createNodeDriver.mockResolvedValue(driver)
-    await (pandacss({ cwd: '/project' })[0] as unknown as TestPlugin).buildStart.call(createContext())
-    expect(driver.codegen).toHaveBeenCalledWith({ cwd: '/project', outdir: undefined })
-  })
-
   it('stops before emitting CSS when compilation fails', async () => {
     const driver = createDriver([{ severity: 'error', code: 'config_load_error', message: 'bad config' }])
     mocks.createNodeDriver.mockResolvedValue(driver)
@@ -208,6 +201,7 @@ describe('@pandacss/rollup', () => {
     const plugin = pandacss({ cwd: '/project', outdir: 'styled-system' })[0] as unknown as TestPlugin
 
     await plugin.buildStart.call(createContext())
+    expect(driver.codegen).toHaveBeenCalledWith({ cwd: '/project', outdir: 'styled-system' })
     driver.codegen.mockClear()
     await plugin.watchChange('/project/node_modules/@acme/ds/panda/lib.json', { event: 'update' })
 
