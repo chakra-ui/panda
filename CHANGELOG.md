@@ -5,6 +5,79 @@ Each package keeps its own changelog. Start with [`@pandacss/dev`](./packages/de
 
 For Panda 1.x and earlier, see the [v1 changelog](https://github.com/chakra-ui/panda/blob/v1/CHANGELOG.md).
 
+## [2.4.0](#2.4.0) - 2026-10-22
+
+### Added
+
+- Add `panda studio`. It opens Panda Studio in your browser, connected to your project, and updates as you save. Usage
+  comes from your full `panda.config`, the same as `panda analyze`.
+
+  ```sh
+  panda studio            # opens http://localhost:6420
+  panda studio --no-open  # prints the link instead
+  ```
+
+- Add `cornerShape` (and its per-corner variants), `baselineSource` and `dynamicRangeLimit` to the generated types.
+
+  ```ts
+  css({ borderRadius: '50%', cornerShape: 'squircle' })
+  ```
+
+### Changed
+
+- Recipe conditions now follow the order you write them, so the one written last wins, including `_hover` and `_active`.
+
+  ```ts
+  base: {
+    _dark: { color: 'white' },
+    '&[data-active]': { color: 'red' }, // written last, wins on an active element in dark mode
+  }
+  ```
+
+### Performance
+
+- Recipes kept in a local object now compile to plain functions, so their config no longer ships in the bundle. This
+  applies when the recipe is only called; type-only uses, like `RecipeVariantProps<typeof styles.button>`, don't count.
+
+  ```ts
+  const styles = { button: cva({ ... }) }
+
+  styles.button({ size: 'sm' })
+  ```
+
+### Fixed
+
+#### CSS output
+
+- Fix styles not applying when a value has extra spaces or tabs inside quotes, such as `gridTemplateAreas`. The class on
+  the element now matches the generated CSS, and quoted text keeps its spacing.
+- Fix `optimize.treeshakeDesignSystem` dropping the styles of design-system modules that an imported component imports,
+  like a `Label` rendered by a `Checkbox`. Design systems need to rerun `panda lib` to regenerate their build info.
+
+#### Extraction
+
+- Fix values imported from another file being dropped when the import uses a `.js` specifier for a `.ts` or `.tsx`
+  source, as TypeScript and bundlers allow. `.mjs`, `.cjs`, `.jsx`, extensionless imports and package.json `imports`
+  maps now resolve the same way.
+
+#### Transform
+
+- Fix source transforms reading a pattern's `.raw()` props as styles when it's passed to `css()`, like
+  `css(fade.raw({ inset: 56 }), { overflowX: 'auto' })`. Patterns without a `transform` now emit CSS, and
+  `defaultValues` apply to `pattern.raw()` inside `css()`.
+
+#### Codegen and types
+
+- Fix type errors when your app extends a design system. Tokens, keyframes or conditions your app added are now accepted
+  by the design system's types, like its component props, including through nested design systems.
+- Fix recipe types: `splitVariantProps` keeps union props and checks variant values, config recipe `raw()` returns its
+  variant props, and `cva()` / `sva()` results expose `config`.
+
+#### Tooling
+
+- Fix source inspection missing the token on values of utilities that build their values from `theme()`, like `mt: '2'`
+  or `mx: { base: '-2' }`.
+
 ## [2.3.0](#2.3.0) - 2026-10-19
 
 ### Added
