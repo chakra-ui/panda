@@ -1,5 +1,24 @@
 # @pandacss/compiler-shared
 
+## 2.4.0
+
+### Patch Changes
+
+- 53f924c: Add `panda studio`. It opens Panda Studio in your browser, connected to your project, and updates it as you
+  save. Usage comes from your full `panda.config`, the same as `panda analyze`.
+
+  ```sh
+  panda studio            # opens http://localhost:6420
+  panda studio --no-open  # prints the link instead
+  ```
+
+  The driver also gets `specJson()`, which returns the design-system document without writing a file.
+
+- 5105a71: `optimize.treeshakeDesignSystem` now keeps the styles of design-system modules that an imported component
+  imports, like a `Label` rendered by a `Checkbox`. Design systems need to rerun `panda lib` to regenerate their build
+  info.
+- @pandacss/types@2.4.0
+
 ## 2.3.0
 
 ### Minor Changes
