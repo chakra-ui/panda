@@ -16,6 +16,18 @@ afterEach(() => {
 })
 
 describe('@pandacss/webpack design-system watch', () => {
+  it('keeps codegen disabled at startup and after config changes', async () => {
+    const { driver, PandaWebpackPlugin } = await setupPlugin()
+    const { watchRun } = applyPlugin(new PandaWebpackPlugin({ cwd: '/project', codegen: false }))
+    await watchRun?.({})
+    driver.isConfigFile.mockReturnValue(true)
+    await watchRun?.({ modifiedFiles: new Set(['/project/panda.config.ts']) })
+
+    expect(driver.codegen).not.toHaveBeenCalled()
+    expect(driver.reload).toHaveBeenCalledOnce()
+    expect(driver.parseFiles).toHaveBeenCalledTimes(2)
+  })
+
   it('registers design-system artifacts and source files from the CSS root', async () => {
     const { driver, pandaCssLoader } = await setupLoader()
     const addDependency = vi.fn()
@@ -64,6 +76,7 @@ describe('@pandacss/webpack design-system watch', () => {
       path: '/project/node_modules/@acme/ds/src/button.css.ts',
       kind: 'change',
     })
+    expect(driver.codegen).toHaveBeenCalledWith({ cwd: '/project', outdir: undefined })
     expect(driver.reload).not.toHaveBeenCalled()
     expect(driver.applyChange).not.toHaveBeenCalled()
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('while loading the design system'))

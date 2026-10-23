@@ -404,6 +404,25 @@ describe('@pandacss/bun in Bun.build', () => {
     expect((await bun.load(project.path('src/index.css')))?.contents).toContain('13px')
   })
 
+  it('keeps codegen disabled across builds while refreshing CSS', async () => {
+    const project = createProject(`{ padding: '4px' }`)
+    dir = project.dir
+    const plugin = pandacss({ cwd: project.dir, codegen: false, outdir: 'output' })
+    const first = createBun()
+    await plugin.setup(first.builder)
+    expect((await first.load(project.path('src/index.css')))?.contents).toContain('4px')
+    expect(project.exists('output')).toBe(false)
+
+    project.write('panda.config.ts', CONFIG.replace("outdir: 'styled-system'", "outdir: 'system'"))
+    project.write('src/app.ts', app(`{ padding: '8px' }`).replace('../styled-system/css', '../system/css'))
+    const second = createBun()
+    await plugin.setup(second.builder)
+
+    expect((await second.load(project.path('src/index.css')))?.contents).toContain('8px')
+    expect(project.exists('output')).toBe(false)
+    expect(project.exists('system')).toBe(false)
+  })
+
   it('picks up a config edit when the same plugin runs a second build', async () => {
     const project = createProject()
     dir = project.dir

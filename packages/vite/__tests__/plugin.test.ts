@@ -385,6 +385,22 @@ describe('@pandacss/vite', () => {
     }
     throw new Error('timed out waiting for codegen in updated config outdir')
   })
+
+  it('keeps codegen disabled while CSS updates after a config reload', async () => {
+    dir = createFixture(`{ color: 'red' }`)
+    server = await startServer(dir, { codegen: false })
+
+    expect(await readCss(server)).toContain('red')
+    expect(existsSync(join(dir, 'styled-system'))).toBe(false)
+
+    writeFileSync(join(dir, 'App.tsx'), APP(`{ color: 'blue' }`))
+    const configFile = join(dir, 'panda.config.ts')
+    writeFileSync(configFile, configSource('system'))
+    server.watcher.emit('change', configFile)
+
+    expect(await waitForCss(server, 'blue')).toContain('blue')
+    expect(existsSync(join(dir, 'system'))).toBe(false)
+  })
 })
 
 describe('@pandacss/vite with sources outside the root', () => {

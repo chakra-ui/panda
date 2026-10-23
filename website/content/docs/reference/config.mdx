@@ -395,6 +395,16 @@ is the equivalent of:
 }
 ```
 
+If another package owns all your generated runtime helpers and types, set `codegen: false` in your PostCSS, Vite,
+Rollup, webpack or Bun plugin options. Codegen defaults to `true`; CSS generation and updates run either way.
+
+```ts
+pandacss({ codegen: false })
+```
+
+Keep codegen enabled if your app needs local generated helpers or types. The shared package owns codegen updates when
+you disable it. This option does not affect `panda codegen`.
+
 Pass an array to match imports from more than one root, for example a shared design system package alongside the app's
 own local `styled-system` output:
 

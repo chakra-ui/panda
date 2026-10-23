@@ -11,6 +11,8 @@ export interface PandaRollupOptions {
   configPath?: string
   /** Where codegen artifacts are written. Defaults to the config `outdir`. */
   outdir?: string
+  /** Generate runtime helpers and types. Defaults to `true`. */
+  codegen?: boolean
   /** File name of the emitted stylesheet asset. Defaults to `panda.css`. */
   fileName?: string
   /**
@@ -21,7 +23,7 @@ export interface PandaRollupOptions {
   lib?: boolean
   /**
    * Opt-in source rewrite (`css()` → class strings, etc.). Default: `false`.
-   * Codegen and stylesheet emit always run.
+   * Stylesheet emission runs independently of codegen.
    */
   transform?: boolean
 }
@@ -51,7 +53,7 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
     if (!ready) {
       ready = (async () => {
         driver = await createNodeDriver({ cwd, configPath })
-        driver.codegen({ cwd, outdir })
+        if (options.codegen !== false) driver.codegen({ cwd, outdir })
         driver.parseFiles()
       })()
     }
@@ -82,11 +84,11 @@ export function pandacss(options: PandaRollupOptions = {}): Plugin[] {
       const designSystemFile = driver.isDesignSystemFile(id)
       if (designSystemFile) {
         const changed = await driver.syncDesignSystemFileChange(sourceChange)
-        if (changed && designSystemFile === 'artifact') driver.codegen({ cwd, outdir })
+        if (changed && designSystemFile === 'artifact' && options.codegen !== false) driver.codegen({ cwd, outdir })
       } else if (driver.isConfigFile(id)) {
         const diff = await driver.reload()
         if (diff.hasChanged) {
-          driver.codegen({ cwd, outdir })
+          if (options.codegen !== false) driver.codegen({ cwd, outdir })
           driver.parseFiles()
         }
       } else if (driver.isSourceFile(id)) {

@@ -120,6 +120,46 @@ describe('@pandacss/postcss', () => {
     `)
   })
 
+  it('skips codegen but still emits CSS when codegen is disabled', async () => {
+    const { driver, run } = await setup()
+    const result = await run(CSS_ROOT, { codegen: false, outdir: 'out' })
+    await run(CSS_ROOT, { codegen: false, outdir: 'out' })
+
+    expect(driver.codegen).not.toHaveBeenCalled()
+    expect(driver.cssgen).toHaveBeenCalledTimes(2)
+    expect(result.css).toMatchInlineSnapshot(
+      `"@layer reset, base, tokens, recipes, utilities;.text_red { color: red }"`,
+    )
+  })
+
+  it('keeps codegen disabled after a config change', async () => {
+    let stamp = '1:10'
+    vi.doMock('../src/fs-stamp', () => ({ readFileStamp: () => stamp }))
+    const { driver, run } = await setup()
+    driver.reload.mockResolvedValue({ hasChanged: true, dependencies: [], recipes: [], patterns: [], changes: [] })
+    await run(CSS_ROOT, { codegen: false })
+
+    stamp = '2:20'
+    driver.cssgen.mockReturnValue({ css: '.text_blue { color: blue }', diagnostics: [] })
+    const result = await run(CSS_ROOT, { codegen: false })
+
+    expect(driver.reload).toHaveBeenCalledOnce()
+    expect(driver.codegen).not.toHaveBeenCalled()
+    expect(result.css).toMatchInlineSnapshot(
+      `"@layer reset, base, tokens, recipes, utilities;.text_blue { color: blue }"`,
+    )
+  })
+
+  it('does not mark a shared driver outdir as generated when codegen is disabled', async () => {
+    const { driver, run } = await setup()
+    await run(CSS_ROOT, { codegen: false })
+    expect(driver.codegen).not.toHaveBeenCalled()
+
+    await run(CSS_ROOT, { codegen: true })
+    await run(CSS_ROOT, { codegen: false })
+    expect(driver.codegen).toHaveBeenCalledOnce()
+  })
+
   it('emits compiler warnings with severity and code', async () => {
     const { driver, run } = await setup()
     driver.cssgen.mockReturnValueOnce({

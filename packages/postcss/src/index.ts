@@ -13,6 +13,8 @@ export interface PluginOptions {
   cwd?: string
   /** Where codegen artifacts are written. Defaults to the config `outdir`. */
   outdir?: string
+  /** Generate runtime helpers and types. Defaults to `true`. */
+  codegen?: boolean
   /** Allow selected `node_modules` CSS files through the processing guard. */
   allow?: RegExp[]
 }
@@ -65,7 +67,7 @@ const pandacss: PluginCreator<PluginOptions> = (options: PluginOptions = {}) => 
     )
     if (pandaLayerStatements.length === 0) return
 
-    ensureCodegen(state, { cwd, outdir: options.outdir })
+    if (options.codegen !== false) ensureCodegen(state, { cwd, outdir: options.outdir })
     syncProjectSources(state)
     registerDependencies(driver, result, cwd, fileName)
     emitDiagnostics(root, result, driver.designSystemDiagnostics ?? [])
