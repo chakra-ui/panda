@@ -1528,6 +1528,53 @@ describe('NodeDriver with symlinked paths', () => {
     await expectEditAndAdd(join(dir, 'apps/demo'), join(dir, 'real-ui/src'), join(dir, 'real-ui/src'))
   })
 
+  it('maps several real-path events in one batch back to their tracked spellings', async () => {
+    const dir = writeMonorepo('batch-link', { linkPackage: true })
+    writeFileSync(join(dir, 'real-ui/src/Badge.tsx'), card('teal'))
+    const driver = await createNodeDriver({ cwd: join(dir, 'apps/demo') })
+    driver.parseFiles()
+
+    writeFileSync(join(dir, 'real-ui/src/Card.tsx'), card('orchid'))
+    writeFileSync(join(dir, 'real-ui/src/Badge.tsx'), card('salmon'))
+    expect(
+      driver.applyChanges([
+        { path: join(dir, 'real-ui/src/Card.tsx'), kind: 'change' },
+        { path: join(dir, 'real-ui/src/Badge.tsx'), kind: 'change' },
+      ]),
+    ).toEqual([true, true])
+
+    expect(driver.compiler.getFile(join(dir, 'real-ui/src/Card.tsx'))).toBeNull()
+    expect(driver.compiler.getFile(join(dir, 'real-ui/src/Badge.tsx'))).toBeNull()
+    expect(driver.cssgen().css).toContain('orchid')
+    expect(driver.cssgen().css).toContain('salmon')
+  })
+
+  it('follows a symlinked package retargeted between change batches', async () => {
+    const dir = join(root, 'retarget')
+    writeFileTree(dir, {
+      'apps/demo/panda.config.ts': `export default {
+        include: ['./src/**/*.tsx', '../../packages/ui/src/**/*.tsx'],
+        importMap: { css: ['@panda/css'] },
+      }`,
+      'apps/demo/src/App.tsx': card('red'),
+      'v1/src/Card.tsx': card('peru'),
+      'v2/src/Card.tsx': card('tomato'),
+    })
+    mkdirSync(join(dir, 'packages'))
+    symlinkSync(join(dir, 'v1'), join(dir, 'packages/ui'), 'dir')
+    const driver = await createNodeDriver({ cwd: join(dir, 'apps/demo') })
+    driver.parseFiles()
+    driver.applyChanges([{ path: join(dir, 'v1/src/Card.tsx'), kind: 'change' }])
+
+    unlinkSync(join(dir, 'packages/ui'))
+    symlinkSync(join(dir, 'v2'), join(dir, 'packages/ui'), 'dir')
+    driver.applyChanges([{ path: join(dir, 'v2/src/Card.tsx'), kind: 'change' }])
+
+    // The real path maps back to the tracked symlinked spelling instead of being tracked twice.
+    expect(driver.compiler.getFile(join(dir, 'v2/src/Card.tsx'))).toBeNull()
+    expect(driver.cssgen().css).toContain('tomato')
+  })
+
   it('scans files under the cwd as given when cwd is a symlink', async () => {
     writeMonorepo('scan-link')
     const driver = await createNodeDriver({ cwd: join(link, 'scan-link/apps/demo') })

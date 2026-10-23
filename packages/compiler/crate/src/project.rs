@@ -239,6 +239,8 @@ pub struct Compiler {
     /// resolver and used by `glob`/`scan` to discover + read source files.
     fs: pandacss_fs::OsFileSystem,
     paths: OsPathSystem,
+    /// Compiled source globs for `isSourceFile`; the config never changes for one `Compiler`.
+    source_globs: pandacss_fs::SourceGlobs,
 }
 
 /// JS utility transform ref: `(resolvedValue, originalValue) -> styleObject`.
@@ -320,6 +322,7 @@ impl Compiler {
         let callbacks = CallbackHost::from_config(&user_config);
         let project = pandacss_project::Project::new(system);
         let fs = pandacss_fs::OsFileSystem::default();
+        let source_globs = pandacss_compiler::source_globs(&user_config);
         Ok(Self {
             inner: apply_project_options(project, &opts, &fs),
             config: config_snapshot,
@@ -327,6 +330,7 @@ impl Compiler {
             callbacks,
             fs,
             paths: OsPathSystem,
+            source_globs,
         })
     }
 }

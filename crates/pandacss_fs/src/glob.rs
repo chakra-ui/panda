@@ -56,6 +56,7 @@ fn relative_lexical(path: &Path, base: &Path) -> PathBuf {
 }
 
 /// Matches absolute paths if absolute, else `cwd`-relative ones (with `..`).
+#[derive(Clone)]
 struct ExcludeGlob {
     pattern: String,
     absolute: bool,
@@ -203,6 +204,22 @@ impl SourceMatcher {
         }
     }
 
+    /// The same globs with `cwd` and every include root passed through `resolve`.
+    fn with_roots(&self, resolve: impl Fn(&Path) -> PathBuf) -> Self {
+        Self {
+            cwd: resolve(&self.cwd),
+            include: self
+                .include
+                .iter()
+                .map(|glob| IncludeGlob {
+                    root: resolve(&glob.root),
+                    glob: glob.glob.clone(),
+                })
+                .collect(),
+            exclude: self.exclude.clone(),
+        }
+    }
+
     pub(crate) fn walk_roots(&self) -> Vec<PathBuf> {
         let mut roots: Vec<PathBuf> = self.include.iter().map(|glob| glob.root.clone()).collect();
         roots.sort();
@@ -267,50 +284,123 @@ impl Default for GlobOptions {
 
 /// Classifies one path against the discovery globs without walking the tree —
 /// the single-path companion to [`default_walk`], for one watch event rather
-/// than a full scan. Lexical; see [`matches_globs_in`] for symlinks.
+/// than a full scan. Lexical; [`SourceGlobs::matches_in`] also follows symlinks.
 #[must_use]
 pub fn matches_globs(path: &Path, opts: &GlobOptions) -> bool {
-    let matcher = SourceMatcher::new(opts, Path::to_path_buf);
-    is_source(&matcher, &lexical(&opts.cwd.join(path)))
+    SourceGlobs::new(opts.clone()).matches(path)
 }
 
-/// [`matches_globs`] on real paths, so symlinked spellings match.
-#[must_use]
-pub fn matches_globs_in<F: FileSystem + ?Sized>(fs: &F, path: &Path, opts: &GlobOptions) -> bool {
-    if matches_globs(path, opts) {
-        return true;
+/// The discovery globs of one set of options, compiled once. They depend only
+/// on the options, never on the filesystem, so they stay valid as long as the
+/// options do. Symlinks are resolved on each call, so changes to them are seen.
+pub struct SourceGlobs {
+    opts: GlobOptions,
+    lexical: SourceMatcher,
+}
+
+impl SourceGlobs {
+    /// Compiles the include and exclude globs of `opts`.
+    #[must_use]
+    pub fn new(opts: GlobOptions) -> Self {
+        let lexical = SourceMatcher::new(&opts, Path::to_path_buf);
+        Self { opts, lexical }
     }
-    let matcher = SourceMatcher::new(opts, |path| real_path(fs, path));
-    is_source(&matcher, &real_path(fs, &lexical(&opts.cwd.join(path))))
+
+    /// The options these globs were compiled from.
+    #[must_use]
+    pub fn options(&self) -> &GlobOptions {
+        &self.opts
+    }
+
+    /// Whether `path`, spelled as given, is a source file.
+    #[must_use]
+    pub fn matches(&self, path: &Path) -> bool {
+        is_source(&self.lexical, &lexical(&self.opts.cwd.join(path)))
+    }
+
+    /// Whether `path`, as given or by its real path, is a source file. On a
+    /// lexical miss, `cwd` and the include roots are resolved again, so a
+    /// symlink created or retargeted since [`Self::new`] is followed.
+    #[must_use]
+    pub fn matches_in<F: FileSystem + ?Sized>(&self, fs: &F, path: &Path) -> bool {
+        let path = lexical(&self.opts.cwd.join(path));
+        if is_source(&self.lexical, &path) {
+            return true;
+        }
+        let real = self.lexical.with_roots(|root| real_path(fs, root));
+        is_source(&real, &real_path(fs, &path))
+    }
 }
 
-/// Paths that may name the same file as `path`: as given, its real path, and
-/// that real path under each symlinked `cwd` or include root.
-#[must_use]
-pub fn path_aliases<F: FileSystem + ?Sized>(
+/// The tracked spelling of each path: the path itself when `is_tracked`
+/// accepts it, else the first of its aliases that does, else the path
+/// unchanged. Aliases are the path's real path and that real path under each
+/// symlinked `cwd` or include root. Roots are resolved at most once per call,
+/// and only when some path is untracked.
+pub fn resolve_tracked_paths<F: FileSystem + ?Sized>(
     fs: &F,
-    path: &Path,
     opts: &GlobOptions,
-) -> Vec<PathBuf> {
-    let cwd = lexical(&opts.cwd);
-    let given = lexical(&cwd.join(path));
-    let real = real_path(fs, &given);
-    let roots = opts
-        .include
-        .iter()
-        .map(|pattern| lexical(&cwd.join(base_dir(&canonical_glob(pattern)))));
-    let mut aliases = vec![given, real.clone()];
-    for root in std::iter::once(cwd.clone()).chain(roots) {
-        let real_root = real_path(fs, &root);
-        if real_root == root {
-            continue;
-        }
-        if let Ok(rest) = real.strip_prefix(&real_root) {
-            aliases.push(root.join(rest));
-        }
+    paths: Vec<String>,
+    is_tracked: impl Fn(&str) -> bool,
+) -> Vec<String> {
+    let mut roots = None;
+    paths
+        .into_iter()
+        .map(|path| {
+            if is_tracked(&path) {
+                return path;
+            }
+            roots
+                .get_or_insert_with(|| AliasRoots::new(fs, opts))
+                .aliases(fs, Path::new(&path))
+                .into_iter()
+                .map(|alias| alias.to_string_lossy().into_owned())
+                .find(|alias| is_tracked(alias))
+                .unwrap_or(path)
+        })
+        .collect()
+}
+
+/// Symlinked `cwd` and include roots with their real paths, resolved once for
+/// one [`resolve_tracked_paths`] call. Kept private so the snapshot cannot
+/// outlive the call and miss a later symlink change.
+struct AliasRoots {
+    cwd: PathBuf,
+    symlinked: Vec<(PathBuf, PathBuf)>,
+}
+
+impl AliasRoots {
+    fn new<F: FileSystem + ?Sized>(fs: &F, opts: &GlobOptions) -> Self {
+        let cwd = lexical(&opts.cwd);
+        let roots = opts
+            .include
+            .iter()
+            .map(|pattern| lexical(&cwd.join(base_dir(&canonical_glob(pattern)))));
+        let mut seen = rustc_hash::FxHashSet::default();
+        let symlinked = std::iter::once(cwd.clone())
+            .chain(roots)
+            .filter(|root| seen.insert(root.clone()))
+            .filter_map(|root| {
+                let real_root = real_path(fs, &root);
+                (real_root != root).then_some((root, real_root))
+            })
+            .collect();
+        Self { cwd, symlinked }
     }
-    aliases.dedup();
-    aliases
+
+    /// `path` as given, its real path, and that real path under each symlinked root.
+    fn aliases<F: FileSystem + ?Sized>(&self, fs: &F, path: &Path) -> Vec<PathBuf> {
+        let given = lexical(&self.cwd.join(path));
+        let real = real_path(fs, &given);
+        let mut aliases = vec![given, real.clone()];
+        for (root, real_root) in &self.symlinked {
+            if let Ok(rest) = real.strip_prefix(real_root) {
+                aliases.push(root.join(rest));
+            }
+        }
+        aliases.dedup();
+        aliases
+    }
 }
 
 fn is_source(matcher: &SourceMatcher, path: &Path) -> bool {

@@ -51,6 +51,8 @@ pub struct WasmCompiler {
     /// read the source files the host staged via `addFile`.
     fs: MemoryFileSystem,
     paths: PosixPathSystem,
+    /// Compiled source globs for `isSourceFile`; the config never changes for one compiler.
+    source_globs: pandacss_fs::SourceGlobs,
 }
 
 struct CallbackHost {
@@ -118,6 +120,7 @@ impl WasmCompiler {
         .map_err(crate::error::load_system_error)?;
         let callbacks = CallbackHost::from_config(&user_config);
         let project = pandacss_project::Project::new(system);
+        let source_globs = pandacss_compiler::source_globs(&user_config);
 
         Ok(Self {
             inner: with_wasm_fs(project, fs),
@@ -126,6 +129,7 @@ impl WasmCompiler {
             callbacks,
             fs: fs.inner.clone(),
             paths: PosixPathSystem,
+            source_globs,
         })
     }
 }

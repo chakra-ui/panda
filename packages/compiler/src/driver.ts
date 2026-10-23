@@ -297,8 +297,11 @@ export class NodeDriver extends BaseDriver {
   }
 
   applyChanges(changes: SourceChange[]): boolean[] {
+    const paths =
+      this.compiler.resolveSourcePaths?.(changes.map((change) => change.path)) ??
+      changes.map((change) => this.compiler.resolveSourcePath(change.path))
     return this.applySourceChanges(
-      changes.map((change) => ({ ...change, path: this.compiler.resolveSourcePath(change.path) })),
+      changes.map((change, index) => ({ ...change, path: paths[index] })),
       'project',
     )
   }

@@ -160,10 +160,12 @@ The directory-pruning rule matters for performance. Without it, an exclude patte
 call `read_dir` on every nested directory before filtering — orders of magnitude slower on real projects.
 
 Roots and results are lexically normalized (`a/../b` → `b`). `SourceMatcher` holds these rules and is shared by both
-walkers and `matches_globs`, so a watch event classifies a file exactly as `scan()` found it. `isSourceFile` uses
-`matches_globs_in`, which compares real paths. `resolveSourcePath` maps a symlinked spelling of a tracked file back to
-its entry via `path_aliases`: the real path re-rooted under each symlinked root, so cost scales with roots, not files.
-`scan()` keeps paths spelled under the `cwd` it was given.
+walkers and `matches_globs`, so a watch event classifies a file exactly as `scan()` found it. `isSourceFile` uses a
+`SourceGlobs` built once per compiler: the globs are compiled once, and only the real-path fallback resolves the roots
+on each call. `resolveSourcePaths` maps a symlinked spelling of a tracked file back to its entry via
+`pandacss_fs::resolve_tracked_paths`: the real path re-rooted under each symlinked root. Roots are resolved once per
+call, so a batch of changes pays for them once, and the next call sees any symlink change. `scan()` keeps paths spelled
+under the `cwd` it was given.
 
 **`OsFileSystem` overrides `glob`** to run one `walkdir` per hoisted root instead of recursive `read_dir`. Same
 `fast-glob` matchers, faster directory traversal on native.
@@ -174,8 +176,8 @@ entered yet. So a file is reported once, under its real spelling when the walk r
 links or cycles can't multiply the walk (a 16-package workspace under `../**/src/*.ts` went from 65,535 paths to 16).
 Links to targets outside the walked tree are still followed. One accepted gap, shared with TypeScript's `include`: if a
 link's name is what makes a file match (`app/src -> ../lib/code` under `*/src/*.ts`) and the target was already entered
-under its real path, the link spelling is skipped. Symlinked files are reported under the link path, as before. The default walker stays in place for `MemoryFileSystem`
-(read_dir on a HashMap is already O(1) per dir).
+under its real path, the link spelling is skipped. Symlinked files are reported under the link path, as before. The
+default walker stays in place for `MemoryFileSystem` (read_dir on a HashMap is already O(1) per dir).
 
 ## Crate layout
 
