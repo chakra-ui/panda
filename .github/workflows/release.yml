@@ -35,6 +35,7 @@ jobs:
         with:
           publish: pnpm release
           title: Version Packages (v1)
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
