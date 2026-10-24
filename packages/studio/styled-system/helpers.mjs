@@ -49,13 +49,16 @@ function withoutSpace(str) {
 // src/memo.ts
 var memo = (fn) => {
   const cache = /* @__PURE__ */ new Map();
+  const stringCache = /* @__PURE__ */ new Map();
   const get = (...args) => {
-    const key = JSON.stringify(args);
-    if (cache.has(key)) {
-      return cache.get(key);
+    const isSingleString = args.length === 1 && typeof args[0] === "string";
+    const store = isSingleString ? stringCache : cache;
+    const key = isSingleString ? args[0] : JSON.stringify(args);
+    if (store.has(key)) {
+      return store.get(key);
     }
     const result = fn(...args);
-    cache.set(key, result);
+    store.set(key, result);
     return result;
   };
   return get;
