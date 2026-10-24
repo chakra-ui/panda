@@ -1,5 +1,13 @@
 # @pandacss/compiler-shared
 
+## 2.5.0
+
+### Patch Changes
+
+- f1af4f6: Fix slow first builds with the PostCSS plugin in projects with many `include` entries (74s to 8s on 10k
+  sources).
+- @pandacss/types@2.5.0
+
 ## 2.4.0
 
 ### Patch Changes
