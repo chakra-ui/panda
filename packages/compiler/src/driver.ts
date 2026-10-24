@@ -11,6 +11,8 @@ import {
   type DesignSystemWatchTarget,
   type Diagnostic,
   type DiffConfigResult,
+  type ParseFileReport,
+  type ScanOptions,
   type SourceChange,
   type WriteCssOptions,
   type WriteCssResult,
@@ -296,10 +298,14 @@ export class NodeDriver extends BaseDriver {
     this.syncDesignSystemTreeShake()
   }
 
+  override parseFiles(options?: ScanOptions): ParseFileReport[] {
+    const reports = super.parseFiles(options)
+    this.recordSourceChange(true)
+    return reports
+  }
+
   applyChanges(changes: SourceChange[]): boolean[] {
-    const paths =
-      this.compiler.resolveSourcePaths?.(changes.map((change) => change.path)) ??
-      changes.map((change) => this.compiler.resolveSourcePath(change.path))
+    const paths = this.compiler.resolveSourcePaths(changes.map((change) => change.path))
     return this.applySourceChanges(
       changes.map((change, index) => ({ ...change, path: paths[index] })),
       'project',

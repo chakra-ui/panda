@@ -265,8 +265,8 @@ export interface Compiler {
   isSourceFile(path: string): boolean
   /** The tracked path for `path`, following symlinks. */
   resolveSourcePath(path: string): string
-  /** `resolveSourcePath` for each path, resolving include roots once. Absent on older native builds. */
-  resolveSourcePaths?(paths: string[]): string[]
+  /** `resolveSourcePath` for each path, resolving include roots once. */
+  resolveSourcePaths(paths: string[]): string[]
   parseFiles(paths: string[]): ParseFileReport[]
   parseFile(path: string): ParseFileReport
   parseFileSource(path: string, source: string): ParseFileReport

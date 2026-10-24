@@ -1198,6 +1198,28 @@ describe('hydrateDesignSystem (consumer)', () => {
       expectSyncedToAlertImport(driver)
     })
 
+    it('syncs design-system imports after a rescan picks up an edited file', async () => {
+      cwd = createFixture({
+        config: TREESHAKE_CONFIG,
+        app: ["import { Badge } from '@acme/ds'", 'export const App = () => <Badge>New</Badge>'].join('\n'),
+        buildInfo: componentLibBuildInfo(),
+      })
+      const driver = await createNodeDriver({ cwd })
+      driver.cssgen()
+
+      writeFileSync(
+        join(cwd, 'App.tsx'),
+        [
+          "import { Alert } from '@acme/ds'",
+          "export const App = () => <Alert title='Heads up' description='Details' />",
+        ].join('\n'),
+      )
+      driver.parseFiles()
+      driver.cssgen()
+
+      expectSyncedToAlertImport(driver)
+    })
+
     it('syncs changed design-system imports before writeCss emits CSS', async () => {
       const { driver, root } = await swapBadgeImportForAlert()
 
