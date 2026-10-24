@@ -567,7 +567,7 @@ Setup is where this feature succeeds or fails. Diagnostics should say what happe
 | `design_system_cycle`                  | error         | the chain revisits a package                                    |
 | `design_system_parent_not_found`       | error         | a manifest parent does not resolve from the manifest dir        |
 | `design_system_buildinfo_stale`        | warning/error | build info is unusable; fallback re-extracts or fails closed    |
-| `design_system_option_mismatch`        | warning/error | class-name options differ; fallback re-extracts or fails closed |
+| `design_system_option_mismatch`        | warning/error | unsupported class-name override; re-extracts or fails closed    |
 | `design_system_token_conflict`         | info          | design system and app define overlapping token paths            |
 | `design_system_artifact_conflict`      | warning       | design system and app both define the same recipe/pattern       |
 | `design_system_export_overwritten`     | warning       | `panda lib` overwrote a differing package.json export subpath   |

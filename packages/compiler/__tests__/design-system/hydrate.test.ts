@@ -342,7 +342,22 @@ describe('hydrateDesignSystem (consumer)', () => {
     expect(stale?.message).toMatch(/could not be read:.*Re-extracted 1 source file\./)
   })
 
-  it('re-extracts source with consumer class-name options instead of loading incompatible build info', async () => {
+  it('inherits the design system prefix when the app leaves it unset', async () => {
+    cwd = createFixture({
+      preset: `export default { prefix: 'acme', theme: { tokens: {} } }`,
+      app: "import { css } from '@acme/ds/css'\nexport const App = () => css({ color: 'red' })",
+    })
+
+    const driver = await createNodeDriver({ cwd })
+
+    expect((driver.designSystemDiagnostics ?? []).map((entry) => entry.code)).not.toContain(
+      'design_system_option_mismatch',
+    )
+    driver.parseFiles()
+    expect(driver.cssgen().css).toContain('.acme-color_red')
+  })
+
+  it('warns that design system components render unstyled when the app sets its own hash', async () => {
     cwd = createFixture({
       config: `export default { designSystem: '@acme/ds', hash: true, include: ['**/*.tsx'] }`,
       manifest: { files: ['./button.js'] },
@@ -362,9 +377,9 @@ describe('hydrateDesignSystem (consumer)', () => {
       {
         "severity": "warning",
         "category": "designSystem",
-        "message": ""@acme/ds" was built with different hash. Re-extracted 1 source file with the consumer options.",
+        "message": ""@acme/ds" was built with a different \`hash\`. Its components keep the class names they were built with, so they render unstyled.",
         "help": [
-          "Match hash with "@acme/ds", or rebuild it with \`panda lib\`.",
+          "Leave \`hash\` unset to inherit it from "@acme/ds".",
         ],
       }
     `)

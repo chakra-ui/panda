@@ -169,12 +169,12 @@ Without this, the app and the design system would each ship their own copy of `c
 doubling that runtime in the bundle for no reason. So your local `styled-system` only regenerates what you actually
 added, and re-exports everything else from `@acme/ds`:
 
-| You author in the app                                                       | `css()`, `cva()`, `cx`    | Recipes and patterns the design system already owns |
-| --------------------------------------------------------------------------- | ------------------------- | --------------------------------------------------- |
-| Nothing                                                                     | Re-export from `@acme/ds` | Re-export                                           |
-| Tokens, utilities, conditions, or breakpoints                               | Generated locally         | Still re-exported                                   |
-| `prefix`, `hash`, `separator`, `jsxFramework`, `jsxStyleProps`, or `syntax` | Full local tree           | Full local tree                                     |
-| A nested design system (the package itself extends another)                 | Full local tree           | Full local tree                                     |
+| You author in the app                                       | `css()`, `cva()`, `cx`    | Recipes and patterns the design system already owns |
+| ----------------------------------------------------------- | ------------------------- | --------------------------------------------------- |
+| Nothing                                                     | Re-export from `@acme/ds` | Re-export                                           |
+| Tokens, utilities, conditions, or breakpoints               | Generated locally         | Still re-exported                                   |
+| `jsxFramework`, `jsxStyleProps`, or `syntax`                | Full local tree           | Full local tree                                     |
+| A nested design system (the package itself extends another) | Full local tree           | Full local tree                                     |
 
 ## Add your own recipes
 
@@ -214,19 +214,21 @@ Name a recipe the design system already ships and your version wins. Panda repor
 
 ## Isolate styles with a prefix
 
-Say two independently-built bundles both load on the same page, two micro-frontends, or an app plus a widget it embeds.
-If both compiled from the same design system, they emit identical class names by default (`.button`, `--colors-brand`).
-The cascade only keeps one. Set `prefix` so they stop colliding:
+Say two bundles built from different versions of the design system load on the same page, two micro-frontends, or an app
+plus a widget it embeds. By default both emit `.button` and `--colors-brand` with different rules, and the cascade only
+keeps one. Set `prefix` in the design system, keyed to its major version:
 
-```ts filename="panda.config.ts"
+```ts filename="packages/ds/panda.config.ts"
 export default defineConfig({
-  designSystem: '@acme/ds',
-  prefix: 'app' // .button → .app-button
+  prefix: 'acme-ds-v1' // .button → .acme-ds-v1-button
 })
 ```
 
-A prefix that differs from the design system's own regenerates the whole runtime locally. That's the "full local tree"
-row in the table above. Cross-version collisions, scoping tokens, and the limits of `prefix`:
+Apps inherit it through `designSystem`, so leave `prefix`, `hash`, and `separator` unset in the app. The design system's
+components are already built against its own `styled-system`. If the app overrides these options, its CSS uses class
+names those components never produce, and they render unstyled. Panda warns with `design_system_option_mismatch`.
+
+Deriving the prefix from `package.json`, scoping tokens, and the limits of `prefix`:
 [Style isolation](/docs/styling/style-isolation).
 
 ## Nested design systems
