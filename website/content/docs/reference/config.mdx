@@ -402,6 +402,11 @@ Rollup, webpack or Bun plugin options. Codegen defaults to `true`; CSS generatio
 pandacss({ codegen: false })
 ```
 
+<Callout type="warning">
+  The `codegen` option ships in `2.5.0` of the bundler plugins. On `2.4.0` and earlier, the plugins ignore it and still
+  run codegen.
+</Callout>
+
 Keep codegen enabled if your app needs local generated helpers or types. The shared package owns codegen updates when
 you disable it. This option does not affect `panda codegen`.
 
