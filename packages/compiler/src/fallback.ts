@@ -158,6 +158,9 @@ class FallbackCompiler implements Compiler {
   resolveSourcePath(path: string) {
     return path
   }
+  resolveSourcePaths(paths: string[]) {
+    return paths
+  }
   parseFiles(_paths: string[]) {
     return []
   }

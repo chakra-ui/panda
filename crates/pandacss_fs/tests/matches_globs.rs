@@ -1,4 +1,4 @@
-//! Single-path classifier used by `isSourceFile` (watch routing). No tree walk.
+//! Single-path lexical classifier behind `isSourceFile` (`SourceGlobs`, watch routing). No tree walk.
 
 use std::path::{Path, PathBuf};
 

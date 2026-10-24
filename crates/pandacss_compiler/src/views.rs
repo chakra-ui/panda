@@ -1,5 +1,5 @@
 use pandacss_config::{SelectorTypeData, Spec, TypeData, UserConfig};
-use pandacss_fs::{GlobOptions, PathSystem};
+use pandacss_fs::{FileSystem, GlobOptions, PathSystem, SourceGlobs};
 use pandacss_project::Project;
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::Utility;
@@ -113,6 +113,29 @@ pub fn source_glob_options(
             .into(),
         absolute: true,
     }
+}
+
+/// The project-source globs of `user_config`, compiled once for `isSourceFile`
+/// and shared with [`resolve_tracked_paths`] so both read the same options.
+#[must_use]
+pub fn source_globs(user_config: &UserConfig) -> SourceGlobs {
+    SourceGlobs::new(source_glob_options(
+        user_config,
+        SourceGlobOverrides::default(),
+    ))
+}
+
+/// The spelling `project` tracks for each path: the path itself, else its
+/// first tracked symlink alias, else the path unchanged. See
+/// [`pandacss_fs::resolve_tracked_paths`].
+#[must_use]
+pub fn resolve_tracked_paths<F: FileSystem + ?Sized>(
+    project: &Project,
+    fs: &F,
+    opts: &GlobOptions,
+    paths: Vec<String>,
+) -> Vec<String> {
+    pandacss_fs::resolve_tracked_paths(fs, opts, paths, |path| project.get_file(path).is_some())
 }
 
 /// Whether CSS declares this compiler's configured Panda layer order.

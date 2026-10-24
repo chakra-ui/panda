@@ -1218,6 +1218,7 @@ dependencies = [
  "indoc",
  "insta",
  "lru",
+ "oxc_resolver",
  "pandacss_codegen",
  "pandacss_config",
  "pandacss_encoder",

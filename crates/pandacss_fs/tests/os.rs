@@ -402,3 +402,123 @@ fn real_dir(path: &std::path::Path) -> PathBuf {
         path.canonicalize().unwrap()
     }
 }
+
+#[cfg(unix)]
+#[test]
+fn resolve_tracked_paths_maps_a_batch_back_through_symlinked_roots() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    fs::create_dir_all(root.join("real/src")).unwrap();
+    fs::create_dir_all(root.join("shared")).unwrap();
+    fs::write(root.join("real/src/a.tsx"), "").unwrap();
+    fs::write(root.join("shared/b.tsx"), "").unwrap();
+    fs::write(root.join("shared/c.tsx"), "").unwrap();
+    // The project is opened through `app`, and its `linked` include root is itself a symlink.
+    link(&root.join("real"), &root.join("app"));
+    link(&root.join("shared"), &root.join("real/linked"));
+
+    let osfs = OsFileSystem::default();
+    let opts = GlobOptions {
+        include: vec!["src/**/*.tsx".into(), "linked/**/*.tsx".into()],
+        cwd: root.join("app"),
+        ..Default::default()
+    };
+    let spelled = |path: &str| root.join(path).to_string_lossy().into_owned();
+    let tracked = [
+        spelled("app/src/a.tsx"),
+        spelled("app/linked/b.tsx"),
+        spelled("app/linked/c.tsx"),
+    ];
+    let is_tracked = |path: &str| tracked.iter().any(|known| known == path);
+
+    // Real-path spellings from one batch map back under the symlinked cwd and include root.
+    let resolved = pandacss_fs::resolve_tracked_paths(
+        &osfs,
+        &opts,
+        vec![
+            spelled("real/src/a.tsx"),
+            spelled("shared/b.tsx"),
+            spelled("shared/c.tsx"),
+            spelled("shared/untracked.tsx"),
+        ],
+        is_tracked,
+    );
+
+    assert_eq!(
+        resolved,
+        [
+            spelled("app/src/a.tsx"),
+            spelled("app/linked/b.tsx"),
+            spelled("app/linked/c.tsx"),
+            spelled("shared/untracked.tsx"),
+        ]
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn source_globs_match_given_and_real_spellings() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    fs::create_dir_all(root.join("app/src")).unwrap();
+    fs::create_dir_all(root.join("shared")).unwrap();
+    fs::write(root.join("app/src/a.tsx"), "").unwrap();
+    fs::write(root.join("app/src/a.test.tsx"), "").unwrap();
+    fs::write(root.join("shared/b.tsx"), "").unwrap();
+    fs::write(root.join("shared/b.test.tsx"), "").unwrap();
+    fs::write(root.join("shared/b.css"), "").unwrap();
+    link(&root.join("shared"), &root.join("app/linked"));
+
+    let osfs = OsFileSystem::default();
+    let globs = pandacss_fs::SourceGlobs::new(GlobOptions {
+        include: vec!["src/**/*.tsx".into(), "linked/**/*.tsx".into()],
+        exclude: vec!["**/*.test.tsx".into()],
+        cwd: root.join("app"),
+        ..Default::default()
+    });
+
+    for (path, expected) in [
+        (root.join("app/src/a.tsx"), true),
+        (PathBuf::from("src/a.tsx"), true),
+        (root.join("app/src/a.test.tsx"), false),
+        // Real spellings of files under the symlinked include root.
+        (root.join("shared/b.tsx"), true),
+        (root.join("shared/b.test.tsx"), false),
+        (root.join("shared/b.css"), false),
+    ] {
+        assert_eq!(
+            globs.matches_in(&osfs, &path),
+            expected,
+            "{}",
+            path.display()
+        );
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn source_globs_follow_an_include_root_retargeted_after_they_were_built() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = real_dir(tmp.path());
+    for dir in ["app", "v1/src", "v2/src"] {
+        fs::create_dir_all(root.join(dir)).unwrap();
+    }
+    fs::write(root.join("v1/src/a.tsx"), "").unwrap();
+    fs::write(root.join("v2/src/b.tsx"), "").unwrap();
+    link(&root.join("v1"), &root.join("app/ui"));
+
+    let osfs = OsFileSystem::default();
+    let globs = pandacss_fs::SourceGlobs::new(GlobOptions {
+        include: vec!["ui/src/**/*.tsx".into()],
+        cwd: root.join("app"),
+        ..Default::default()
+    });
+    assert!(globs.matches_in(&osfs, &root.join("v1/src/a.tsx")));
+    assert!(!globs.matches_in(&osfs, &root.join("v2/src/b.tsx")));
+
+    fs::remove_file(root.join("app/ui")).unwrap();
+    link(&root.join("v2"), &root.join("app/ui"));
+
+    assert!(!globs.matches_in(&osfs, &root.join("v1/src/a.tsx")));
+    assert!(globs.matches_in(&osfs, &root.join("v2/src/b.tsx")));
+}

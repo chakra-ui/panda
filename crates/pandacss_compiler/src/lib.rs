@@ -55,5 +55,6 @@ pub use setup::{LoadedSystem, load_system};
 pub use usages::{inspect_file_source, suggest_semantic_tokens, suggest_tokens};
 pub use views::{
     LayerNames, SourceEntry, SourceGlobOverrides, compiler_spec, has_layer_declaration,
-    layer_names, source_entries, source_glob_options, strip_layer_order_statements,
+    layer_names, resolve_tracked_paths, source_entries, source_glob_options, source_globs,
+    strip_layer_order_statements,
 };
