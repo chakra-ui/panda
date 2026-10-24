@@ -1,5 +1,14 @@
 # @pandacss/mcp
 
+## 2.5.0
+
+### Patch Changes
+
+- Updated dependencies [f1af4f6]
+- Updated dependencies [90f9425]
+- Updated dependencies [f1af4f6]
+  - @pandacss/compiler@2.5.0
+
 ## 2.4.0
 
 ### Patch Changes
