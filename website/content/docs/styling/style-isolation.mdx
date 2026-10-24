@@ -4,8 +4,7 @@ description: Load multiple Panda-built bundles on one page without class or toke
 ---
 
 Two independently built Panda bundles on the same page can emit the same class name, or the same CSS variable, with
-different rules behind them. The cascade keeps one and silently drops the other. `prefix` and `cssVarRoot` stop
-that.
+different rules behind them. The cascade keeps one and silently drops the other. `prefix` and `cssVarRoot` stop that.
 
 ## When you need this
 
@@ -26,16 +25,21 @@ Two bundles load the same styles, and one adds a local override:
 
 ```css
 /* bundle 1 */
-.ds-background { background-color: blue; }
-.local-override { background-color: red; }
+.ds-background {
+  background-color: blue;
+}
+.local-override {
+  background-color: red;
+}
 
 /* bundle 2 */
-.ds-background { background-color: blue; }
+.ds-background {
+  background-color: blue;
+}
 ```
 
-Load order decides whether `.local-override` wins. Fix it with a
-[cascade layer](/docs/styling/cascade-layers): unlayered styles always beat layered ones, so the override wins
-regardless of load order.
+Load order decides whether `.local-override` wins. Fix it with a [cascade layer](/docs/styling/cascade-layers):
+unlayered styles always beat layered ones, so the override wins regardless of load order.
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -53,16 +57,26 @@ values:
 
 ```css
 /* v1's bundle */
-:root { --colors-brand: #ea580c; }
-.button { background: var(--colors-brand); padding: 8px 12px; }
+:root {
+  --colors-brand: #ea580c;
+}
+.button {
+  background: var(--colors-brand);
+  padding: 8px 12px;
+}
 
 /* v2's bundle */
-:root { --colors-brand: #2563eb; }
-.button { background: var(--colors-brand); padding: 20px 40px; }
+:root {
+  --colors-brand: #2563eb;
+}
+.button {
+  background: var(--colors-brand);
+  padding: 20px 40px;
+}
 ```
 
-Same selector, different rule. Layers do not help here: both versions emit into the same layer, and within a layer
-load order still decides. This is what `prefix` is for.
+Same selector, different rule. Layers do not help here: both versions emit into the same layer, and within a layer load
+order still decides. This is what `prefix` is for.
 
 ## Set a prefix
 
@@ -104,18 +118,16 @@ export default defineConfig({
 })
 ```
 
-A 2.x release rotates the prefix on its own. Patch and minor releases share one, which matches how you already
-reason about breaking changes.
+A 2.x release rotates the prefix on its own. Patch and minor releases share one, which matches how you already reason
+about breaking changes.
 
 ## Who sets the prefix
 
-- **The library ships a static CSS file** ([Consume without Panda](/docs/design-systems/consume-without-panda)):
-  the library sets it, keyed to its own package and major version, because the CSS is frozen at the library's build
-  time.
-- **The apps run Panda** ([Consume with Panda](/docs/design-systems/consume-with-panda)): each app sets its own
-  prefix, keyed to the app's identity. The design system does not bake one in. Two apps pinning different design
-  system versions then emit `.app1-button` and `.app2-button`, and version isolation falls out without anyone
-  tracking versions.
+- **The library ships a static CSS file** ([Consume without Panda](/docs/design-systems/consume-without-panda)): the
+  library sets it, keyed to its own package and major version, because the CSS is frozen at the library's build time.
+- **The apps run Panda** ([Consume with Panda](/docs/design-systems/consume-with-panda)): each app sets its own prefix,
+  keyed to the app's identity. The design system does not bake one in. Two apps pinning different design system versions
+  then emit `.app1-button` and `.app2-button`, and version isolation falls out without anyone tracking versions.
 
 ```ts filename="apps/checkout/panda.config.ts"
 export default defineConfig({
@@ -145,8 +157,8 @@ Elements outside `.acme-v1-scope` cannot resolve the tokens. Optional: `prefix` 
 
 ## Tokens still collide
 
-Atomic classes from raw values never collide, because the value is in the name (`.bg_\#ea580c`). Token references
-are the trap:
+Atomic classes from raw values never collide, because the value is in the name (`.bg_\#ea580c`). Token references are
+the trap:
 
 ```tsx
 const button = cva({
@@ -155,9 +167,9 @@ const button = cva({
 // both versions emit .bg_brand { background: var(--colors-brand) }
 ```
 
-The class names match across versions, so nothing clashes structurally. But each version declares `--colors-brand`
-with a different value, the cascade picks one, and the losing bundle renders with the wrong brand color. `prefix`
-fixes this too, by renaming the variable.
+The class names match across versions, so nothing clashes structurally. But each version declares `--colors-brand` with
+a different value, the cascade picks one, and the losing bundle renders with the wrong brand color. `prefix` fixes this
+too, by renaming the variable.
 
 ## Verify the output
 
@@ -167,13 +179,13 @@ Grep the emitted CSS for the names that used to collide:
 grep -E "^\.button|--colors-brand:" styled-system/styles.css
 ```
 
-Every match should carry your prefix. If not, check that `prefix` sits at the top level of `defineConfig`, not
-inside `theme`, and regenerate.
+Every match should carry your prefix. If not, check that `prefix` sits at the top level of `defineConfig`, not inside
+`theme`, and regenerate.
 
 ## What prefix does not solve
 
-- **Same-prefix collisions.** Two bundles that both pick `prefix: 'design'` collide as if neither had one. Choose
-  it like a package name.
+- **Same-prefix collisions.** Two bundles that both pick `prefix: 'design'` collide as if neither had one. Choose it
+  like a package name.
 - **Reset collisions.** Preflight targets raw element selectors, so two resets fight regardless of prefix. Set
   `preflight: false` in bundles that ship into a host page, and let the host own the reset.
 - **Hand-written CSS.** `prefix` applies to what Panda emits, nothing else.
