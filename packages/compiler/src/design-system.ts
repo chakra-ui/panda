@@ -337,10 +337,12 @@ function optionMismatchDiagnostic(
   sourceCount: number,
   severity: 'warning' | 'error',
 ): Diagnostic {
-  const options = ds.optionMismatch?.join(', ') ?? 'class-name options'
+  const keys = ds.optionMismatch ?? []
+  const options = keys.length > 0 ? keys.map((key) => `\`${key}\``).join(', ') : 'class-name options'
+  const name = JSON.stringify(ds.name)
   const outcome =
     sourceCount > 0
-      ? ` Re-extracted ${sourceCount} source ${sourceCount === 1 ? 'file' : 'files'} with the consumer options.`
+      ? ' Its components keep the class names they were built with, so they render unstyled.'
       : ' No fallback source files were available, so the prebuilt class names cannot be used safely.'
 
   return {
@@ -348,8 +350,8 @@ function optionMismatchDiagnostic(
     severity,
     category: 'designSystem',
     file: ds.manifestPath,
-    message: `${JSON.stringify(ds.name)} was built with different ${options}.${outcome}`,
-    help: [`Match ${options} with ${JSON.stringify(ds.name)}, or rebuild it with \`panda lib\`.`],
+    message: `${name} was built with ${keys.length === 1 ? 'a ' : ''}different ${options}.${outcome}`,
+    help: [`Leave ${options} unset to inherit ${keys.length === 1 ? 'it' : 'them'} from ${name}.`],
   }
 }
 

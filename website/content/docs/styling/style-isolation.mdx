@@ -123,18 +123,18 @@ about breaking changes.
 
 ## Who sets the prefix
 
-- **The library ships a static CSS file** ([Consume without Panda](/docs/design-systems/consume-without-panda)): the
-  library sets it, keyed to its own package and major version, because the CSS is frozen at the library's build time.
-- **The apps run Panda** ([Consume with Panda](/docs/design-systems/consume-with-panda)): each app sets its own prefix,
-  keyed to the app's identity. The design system does not bake one in. Two apps pinning different design system versions
-  then emit `.app1-button` and `.app2-button`, and version isolation falls out without anyone tracking versions.
+The design system does, keyed to its package and major version as above. Its components are built against its own
+`styled-system`, so their class names are fixed when you publish.
 
-```ts filename="apps/checkout/panda.config.ts"
-export default defineConfig({
-  designSystem: '@acme/ds',
-  prefix: 'checkout' // .button → .checkout-button
-})
-```
+- **The library ships a static CSS file** ([Consume without Panda](/docs/design-systems/consume-without-panda)): the
+  prefix is in the CSS the apps load.
+- **The apps run Panda** ([Consume with Panda](/docs/design-systems/consume-with-panda)): apps inherit the prefix
+  through `designSystem`. Leave `prefix`, `hash`, and `separator` unset in the app. If the app overrides them, its CSS
+  uses names the design system's components never produce, and those components render unstyled. Panda warns with
+  `design_system_option_mismatch`.
+
+Two apps pinning different major versions then emit `.acme-ds-v1-button` and `.acme-ds-v2-button`, with nothing to set
+in either app.
 
 ## Scope tokens with cssVarRoot
 

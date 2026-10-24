@@ -182,8 +182,9 @@ Build compatibility:
 
 - `design_system_buildinfo_stale` (warning or error): the design system's build is out of date. Run `panda lib` in its
   package. It's a warning when Panda could fall back to the source files.
-- `design_system_option_mismatch` (warning or error): the design system was built with different options than your
-  project.
+- `design_system_option_mismatch` (warning or error): your project's `prefix`, `hash`, or `separator` differs from the
+  design system's. Its components keep their built class names and render unstyled. Leave these options unset to inherit
+  them.
 - `design_system_utility_unregistered` (warning): the design system uses a utility your config doesn't define. Add its
   preset.
 - `design_system_artifact_conflict` (warning): your config and the design system define a recipe or pattern with the
