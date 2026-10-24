@@ -40,7 +40,7 @@
   "dependencies": {
     "@pandacss/logger": "workspace:*",
     "@pandacss/types": "workspace:*",
-    "browserslist": "4.28.1",
+    "browserslist": "4.29.4",
     "lightningcss": "1.31.1"
   },
   "engines": {
