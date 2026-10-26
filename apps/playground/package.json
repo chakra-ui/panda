@@ -26,7 +26,7 @@
     "@pandacss/preset-base": "2.1.1",
     "@pandacss/preset-panda": "2.1.1",
     "@pandacss/preset-typography": "workspace:*",
-    "@prisma/client": "5.9.1",
+    "@prisma/client": "7.10.1",
     "@textea/json-viewer": "4.0.1",
     "merge-anything": "6.0.6",
     "monaco-editor": "0.56.0",
