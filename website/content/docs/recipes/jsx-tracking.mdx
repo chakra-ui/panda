@@ -7,6 +7,10 @@ Config recipes emit CSS for `<Button size="lg" />` only if Panda can treat that 
 **component name**, not the import. A local function named `Button` is enough, even if it never imported
 `styled-system/recipes`.
 
+Tracking needs [`jsxFramework`](/docs/reference/config#jsxframework). Without it, Panda skips JSX tags, so
+`<Button size="lg" />` emits nothing and no warning tells you. If you don't set it,
+[pregenerate the variants with `staticCss`](#skip-tracking-with-staticcss).
+
 `cva` and `sva` do not need this. Defining them already emits every variant, so a missed JSX tag does not leave you
 without CSS.
 
