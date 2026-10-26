@@ -42,17 +42,47 @@ pub enum StyleTree {
     /// Encode expands all branches; transform cannot rewrite (no local test).
     Branches(Vec<StyleTree>),
     /// Transform cannot rewrite this value, and encode has no fallback.
-    Open,
+    Open {
+        span: Span,
+    },
     /// A runtime-unknown value with a known fallback. Transform bails; encode
     /// uses the fallback.
-    OpenWithFallback(Box<StyleTree>),
+    OpenWithFallback {
+        span: Span,
+        fallback: Box<StyleTree>,
+    },
 }
 
 impl StyleTree {
     /// True for rewrite-critical open leaves (`Open` / `OpenWithFallback`).
     #[must_use]
     pub const fn is_open(&self) -> bool {
-        matches!(self, Self::Open | Self::OpenWithFallback(_))
+        matches!(self, Self::Open { .. } | Self::OpenWithFallback { .. })
+    }
+
+    #[must_use]
+    pub const fn open_span(&self) -> Option<Span> {
+        match self {
+            Self::Open { span } | Self::OpenWithFallback { span, .. } => Some(*span),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn open_at(expr: &Expression<'_>) -> Self {
+        Self::Open {
+            span: span_from_oxc(expr.span()),
+        }
+    }
+
+    fn anchor_open(self, anchor: Span) -> Self {
+        match self {
+            Self::Open { .. } => Self::Open { span: anchor },
+            Self::OpenWithFallback { fallback, .. } => Self::OpenWithFallback {
+                span: anchor,
+                fallback,
+            },
+            other => other,
+        }
     }
 
     /// No runtime branch or unknown value anywhere in the tree.
@@ -70,8 +100,8 @@ impl StyleTree {
             Self::Ternary { .. }
             | Self::And { .. }
             | Self::Branches(_)
-            | Self::Open
-            | Self::OpenWithFallback(_) => false,
+            | Self::Open { .. }
+            | Self::OpenWithFallback { .. } => false,
         }
     }
 }
@@ -99,10 +129,16 @@ pub enum StyleSpread {
     },
     /// Opaque object member or spread. Encode skips it; transform needs the
     /// span to tell which source spread it came from.
-    Open { span: Span },
+    Open { span: Span, kind: OpenSpreadKind },
     /// Dynamic `...(a || b)` or `...(a ?? b)` with a known fallback. Transform
     /// bails; encode merges the fallback.
     OpenWithFallback { fallback: StyleTree },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OpenSpreadKind {
+    Spread,
+    Property,
 }
 
 impl StyleSpread {
@@ -175,8 +211,8 @@ pub fn project_literal(tree: &StyleTree) -> Option<Literal> {
             }
             Some(Literal::Array(out))
         }
-        StyleTree::Open => None,
-        StyleTree::OpenWithFallback(inner) => project_literal(inner),
+        StyleTree::Open { .. } => None,
+        StyleTree::OpenWithFallback { fallback, .. } => project_literal(fallback),
         StyleTree::And { value, .. } => project_literal(value),
         StyleTree::Ternary {
             consequent,
@@ -215,10 +251,11 @@ pub(crate) fn into_project_literal(tree: StyleTree) -> Option<Literal> {
                 .map(|item| into_project_literal(item).unwrap_or(Literal::Null))
                 .collect(),
         )),
-        StyleTree::Open => None,
-        StyleTree::OpenWithFallback(inner) | StyleTree::And { value: inner, .. } => {
-            into_project_literal(*inner)
+        StyleTree::Open { .. } => None,
+        StyleTree::OpenWithFallback {
+            fallback: inner, ..
         }
+        | StyleTree::And { value: inner, .. } => into_project_literal(*inner),
         StyleTree::Ternary {
             consequent,
             alternate,
@@ -373,6 +410,14 @@ pub(crate) fn expression_to_style_tree(
     expr: &Expression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<StyleTree> {
+    fold_expression_style_tree(expr, resolver)
+        .map(|tree| tree.anchor_open(span_from_oxc(expr.span())))
+}
+
+fn fold_expression_style_tree(
+    expr: &Expression<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+) -> Option<StyleTree> {
     match expr {
         Expression::ParenthesizedExpression(p) => expression_to_style_tree(&p.expression, resolver),
         Expression::TSAsExpression(e) => expression_to_style_tree(&e.expression, resolver),
@@ -391,13 +436,13 @@ pub(crate) fn expression_to_style_tree(
                     expression_to_style_tree(&c.alternate, resolver)
                 };
             }
-            let consequent =
-                expression_to_style_tree(&c.consequent, resolver).unwrap_or(StyleTree::Open);
-            let alternate =
-                expression_to_style_tree(&c.alternate, resolver).unwrap_or(StyleTree::Open);
+            let consequent = expression_to_style_tree(&c.consequent, resolver)
+                .unwrap_or_else(|| StyleTree::open_at(&c.consequent));
+            let alternate = expression_to_style_tree(&c.alternate, resolver)
+                .unwrap_or_else(|| StyleTree::open_at(&c.alternate));
             if matches!(
                 (&consequent, &alternate),
-                (StyleTree::Open, StyleTree::Open)
+                (StyleTree::Open { .. }, StyleTree::Open { .. })
             ) {
                 return None;
             }
@@ -445,9 +490,13 @@ pub(crate) fn expression_to_style_tree(
                     })
                 }
                 LogicalOperator::Or | LogicalOperator::Coalesce => {
+                    let span = span_from_oxc(l.span);
                     Some(match expression_to_style_tree(&l.right, resolver) {
-                        Some(right) => StyleTree::OpenWithFallback(Box::new(right)),
-                        None => StyleTree::Open,
+                        Some(right) => StyleTree::OpenWithFallback {
+                            span,
+                            fallback: Box::new(right),
+                        },
+                        None => StyleTree::Open { span },
                     })
                 }
             }
@@ -525,8 +574,12 @@ pub(crate) fn lookup_style_member(object: &StyleTree, key: &str) -> Option<Style
             let idx = key.parse::<usize>().ok()?;
             items.get(idx).cloned()
         }
-        StyleTree::OpenWithFallback(fallback) => lookup_style_member(fallback, key)
-            .map(|member| StyleTree::OpenWithFallback(Box::new(member))),
+        StyleTree::OpenWithFallback { span, fallback } => {
+            lookup_style_member(fallback, key).map(|member| StyleTree::OpenWithFallback {
+                span: *span,
+                fallback: Box::new(member),
+            })
+        }
         _ => None,
     }
 }
@@ -550,7 +603,10 @@ fn array_to_style_tree(
             element => {
                 let expr = element.as_expression()?;
                 // Projection keeps breakpoint arity; transform must retain unknown slots.
-                items.push(expression_to_style_tree(expr, resolver).unwrap_or(StyleTree::Open));
+                items.push(
+                    expression_to_style_tree(expr, resolver)
+                        .unwrap_or_else(|| StyleTree::open_at(expr)),
+                );
             }
         }
     }
@@ -570,6 +626,7 @@ fn object_to_style_tree(
                 let Some(key) = property_key_to_string(&prop.key, prop.computed, resolver) else {
                     spreads.push(StyleSpread::Open {
                         span: span_from_oxc(prop.span),
+                        kind: OpenSpreadKind::Property,
                     });
                     continue;
                 };
@@ -583,12 +640,19 @@ fn object_to_style_tree(
                 if prop.method || prop.kind != PropertyKind::Init {
                     spreads.push(StyleSpread::Open {
                         span: span_from_oxc(prop.span),
+                        kind: OpenSpreadKind::Property,
                     });
                     continue;
                 }
                 match expression_to_style_tree(&prop.value, resolver) {
                     Some(value) => upsert_style_entry(&mut entries, key, value),
-                    None => upsert_open_style_entry(&mut entries, key),
+                    None => {
+                        upsert_open_style_entry(
+                            &mut entries,
+                            key,
+                            span_from_oxc(prop.value.span()),
+                        );
+                    }
                 }
             }
             ObjectPropertyKind::SpreadProperty(spread) => {
@@ -648,10 +712,10 @@ fn push_style_spread(
                 merge_static_spread_object(entries, spreads, branch, resolver);
                 return;
             }
-            let consequent =
-                expression_to_style_tree(&c.consequent, resolver).unwrap_or(StyleTree::Open);
-            let alternate =
-                expression_to_style_tree(&c.alternate, resolver).unwrap_or(StyleTree::Open);
+            let consequent = expression_to_style_tree(&c.consequent, resolver)
+                .unwrap_or_else(|| StyleTree::open_at(&c.consequent));
+            let alternate = expression_to_style_tree(&c.alternate, resolver)
+                .unwrap_or_else(|| StyleTree::open_at(&c.alternate));
             spreads.push(StyleSpread::Ternary {
                 test: span_from_oxc(c.test.span()),
                 consequent,
@@ -686,8 +750,8 @@ fn push_style_spread(
             }
             match l.operator {
                 LogicalOperator::And => {
-                    let value =
-                        expression_to_style_tree(&l.right, resolver).unwrap_or(StyleTree::Open);
+                    let value = expression_to_style_tree(&l.right, resolver)
+                        .unwrap_or_else(|| StyleTree::open_at(&l.right));
                     spreads.push(StyleSpread::And {
                         test: span_from_oxc(l.left.span()),
                         value,
@@ -699,7 +763,10 @@ fn push_style_spread(
                         Some(fallback) => {
                             spreads.push(StyleSpread::OpenWithFallback { fallback });
                         }
-                        None => spreads.push(StyleSpread::Open { span: open_span }),
+                        None => spreads.push(StyleSpread::Open {
+                            span: open_span,
+                            kind: OpenSpreadKind::Spread,
+                        }),
                     }
                 }
             }
@@ -712,9 +779,14 @@ fn push_style_spread(
                 }
                 spreads.extend(inner.spreads);
             }
-            Some(StyleTree::Open) | None => spreads.push(StyleSpread::Open { span: open_span }),
-            Some(StyleTree::OpenWithFallback(inner)) => {
-                spreads.push(StyleSpread::OpenWithFallback { fallback: *inner });
+            Some(StyleTree::Open { .. }) | None => spreads.push(StyleSpread::Open {
+                span: open_span,
+                kind: OpenSpreadKind::Spread,
+            }),
+            Some(StyleTree::OpenWithFallback { fallback, .. }) => {
+                spreads.push(StyleSpread::OpenWithFallback {
+                    fallback: *fallback,
+                });
             }
             // Ignore known non-object values. Keep unknown expressions opaque
             // so transforms preserve their evaluation.
@@ -759,24 +831,29 @@ fn mark_spreads_overridden(spreads: &mut [StyleSpread], key: &str) {
 
 fn upsert_style_entry(entries: &mut Vec<(String, StyleTree)>, key: String, value: StyleTree) {
     if let Some(entry) = entries.iter_mut().find(|(existing, _)| existing == &key) {
-        entry.1 = if entry.1.is_open() {
-            StyleTree::OpenWithFallback(Box::new(value))
-        } else {
-            value
+        entry.1 = match entry.1.open_span() {
+            Some(span) => StyleTree::OpenWithFallback {
+                span,
+                fallback: Box::new(value),
+            },
+            None => value,
         };
     } else {
         entries.push((key, value));
     }
 }
 
-fn upsert_open_style_entry(entries: &mut Vec<(String, StyleTree)>, key: String) {
+fn upsert_open_style_entry(entries: &mut Vec<(String, StyleTree)>, key: String, span: Span) {
     if let Some(entry) = entries.iter_mut().find(|(existing, _)| existing == &key) {
         if !entry.1.is_open() {
-            let fallback = std::mem::replace(&mut entry.1, StyleTree::Open);
-            entry.1 = StyleTree::OpenWithFallback(Box::new(fallback));
+            let fallback = std::mem::replace(&mut entry.1, StyleTree::Open { span });
+            entry.1 = StyleTree::OpenWithFallback {
+                span,
+                fallback: Box::new(fallback),
+            };
         }
     } else {
-        entries.push((key, StyleTree::Open));
+        entries.push((key, StyleTree::Open { span }));
     }
 }
 
@@ -839,7 +916,8 @@ pub(crate) fn jsx_attributes_to_style_tree(
                                 let Some(expr) = other.as_expression() else {
                                     continue;
                                 };
-                                expression_to_style_tree(expr, resolver).unwrap_or(StyleTree::Open)
+                                expression_to_style_tree(expr, resolver)
+                                    .unwrap_or_else(|| StyleTree::open_at(expr))
                             }
                         }
                     }
@@ -979,8 +1057,8 @@ pub fn style_tree_has_rewrite_sites(tree: &StyleTree) -> bool {
         StyleTree::Array(items) | StyleTree::Branches(items) => {
             items.iter().any(style_tree_has_rewrite_sites)
         }
-        StyleTree::Open
-        | StyleTree::OpenWithFallback(_)
+        StyleTree::Open { .. }
+        | StyleTree::OpenWithFallback { .. }
         | StyleTree::String(_)
         | StyleTree::Number(_)
         | StyleTree::Bool(_)
@@ -1083,8 +1161,8 @@ pub fn style_tree_has_open_spread(tree: &StyleTree) -> bool {
             ..
         } => style_tree_has_open_spread(consequent) || style_tree_has_open_spread(alternate),
         StyleTree::And { value, .. } => style_tree_has_open_spread(value),
-        StyleTree::Open
-        | StyleTree::OpenWithFallback(_)
+        StyleTree::Open { .. }
+        | StyleTree::OpenWithFallback { .. }
         | StyleTree::String(_)
         | StyleTree::Number(_)
         | StyleTree::Bool(_)
@@ -1114,8 +1192,8 @@ pub fn style_tree_has_runtime_branch(tree: &StyleTree) -> bool {
                 .any(|(_, v)| style_tree_has_runtime_branch(v))
         }
         StyleTree::Array(items) => items.iter().any(style_tree_has_runtime_branch),
-        StyleTree::Open
-        | StyleTree::OpenWithFallback(_)
+        StyleTree::Open { .. }
+        | StyleTree::OpenWithFallback { .. }
         | StyleTree::String(_)
         | StyleTree::Number(_)
         | StyleTree::Bool(_)
@@ -1144,7 +1222,7 @@ enum BranchScope {
 
 fn contains_open_values(tree: &StyleTree, scope: BranchScope) -> bool {
     match tree {
-        StyleTree::Open | StyleTree::OpenWithFallback(_) => true,
+        StyleTree::Open { .. } | StyleTree::OpenWithFallback { .. } => true,
         StyleTree::Object(obj) => {
             obj.spreads.iter().any(|s| match s {
                 StyleSpread::Open { .. } | StyleSpread::OpenWithFallback { .. } => true,
@@ -1240,7 +1318,9 @@ mod tests {
             StyleTree::Branches(vec![
                 StyleTree::String("red".into()),
                 StyleTree::String("red".into()),
-                StyleTree::Open,
+                StyleTree::Open {
+                    span: Span { start: 0, end: 1 },
+                },
             ]),
             StyleTree::Object(StyleObject {
                 entries: Vec::new(),
@@ -1255,7 +1335,9 @@ mod tests {
                 spreads: vec![StyleSpread::Ternary {
                     test: Span { start: 0, end: 1 },
                     consequent: StyleTree::String("red".into()),
-                    alternate: StyleTree::Open,
+                    alternate: StyleTree::Open {
+                        span: Span { start: 0, end: 1 },
+                    },
                     overridden: Vec::new(),
                 }],
             }),
@@ -1266,9 +1348,15 @@ mod tests {
                 }],
             }),
             StyleTree::Object(StyleObject {
-                entries: vec![("color".into(), StyleTree::Open)],
+                entries: vec![(
+                    "color".into(),
+                    StyleTree::Open {
+                        span: Span { start: 0, end: 1 },
+                    },
+                )],
                 spreads: vec![StyleSpread::Open {
                     span: Span { start: 0, end: 1 },
+                    kind: OpenSpreadKind::Spread,
                 }],
             }),
         ] {
@@ -1306,7 +1394,9 @@ mod tests {
         let tree = StyleTree::Ternary {
             test: Span { start: 0, end: 1 },
             consequent: Box::new(StyleTree::Number(1.0)),
-            alternate: Box::new(StyleTree::Open),
+            alternate: Box::new(StyleTree::Open {
+                span: Span { start: 0, end: 1 },
+            }),
         };
         assert_eq!(project_literal(&tree), Some(Literal::Number(1.0)));
     }
@@ -1348,14 +1438,20 @@ mod tests {
         let (_, value) = obj.entries.iter().find(|(k, _)| k == "color").unwrap();
         assert_eq!(
             value,
-            &StyleTree::OpenWithFallback(Box::new(StyleTree::String("gray".into())))
+            &StyleTree::OpenWithFallback {
+                span: Span { start: 10, end: 30 },
+                fallback: Box::new(StyleTree::String("gray".into())),
+            }
         );
         assert_eq!(project_literal(value), Some(Literal::String("gray".into())));
     }
 
     #[test]
     fn project_literal_open_with_fallback_peels() {
-        let tree = StyleTree::OpenWithFallback(Box::new(StyleTree::String("gray".into())));
+        let tree = StyleTree::OpenWithFallback {
+            span: Span { start: 0, end: 1 },
+            fallback: Box::new(StyleTree::String("gray".into())),
+        };
         assert_eq!(project_literal(&tree), Some(Literal::String("gray".into())));
     }
 

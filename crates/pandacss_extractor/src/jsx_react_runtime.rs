@@ -129,6 +129,7 @@ pub(crate) fn extract_call(
     ctx: &VisitorContext<'_, '_>,
     runtime: &ReactRuntimeImports,
     extractor: &Extractor<'_, '_, '_>,
+    dynamic_style_values: Option<&mut Vec<crate::DynamicStyleValue>>,
 ) -> Option<ExtractedJsx> {
     if !runtime.is_jsx_call(&call.callee, ctx.resolver, ctx.config.has_jsx_framework) {
         return None;
@@ -148,6 +149,16 @@ pub(crate) fn extract_call(
     if let (Some(props), Some(tree)) = (resolved.props, style.as_mut()) {
         crate::style_tree::retain_style_tree_props(tree, &|key| props.contains(key));
     }
+    let kind = crate::jsx::jsx_kind(&ctx.config.matchers, &resolved.name, &resolved.alias);
+    if let Some(out) = dynamic_style_values {
+        crate::dynamic_values::collect_jsx(
+            kind,
+            resolved.panda_owned,
+            resolved.emit_empty,
+            style.as_ref(),
+            out,
+        );
+    }
     let retain = extractor.retain_transform_facts;
     let retention = if retain {
         ProjectionRetention::Retain
@@ -164,7 +175,6 @@ pub(crate) fn extract_call(
         return None;
     }
 
-    let kind = crate::jsx::jsx_kind(&ctx.config.matchers, &resolved.name, &resolved.alias);
     Some(ExtractedJsx {
         category: resolved.category,
         kind,

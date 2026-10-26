@@ -33,7 +33,7 @@ pub enum StyleTree {
     And { test: Span, value: Box<StyleTree> },
     Branches(Vec<StyleTree>), // span-less (cross-file / Literal::Conditional)
     Open { span: Span },
-    OpenWithFallback(Box<StyleTree>),
+    OpenWithFallback { span: Span, fallback: Box<StyleTree> },
 }
 ```
 
@@ -43,16 +43,20 @@ pub enum StyleTree {
   structure and spans; printers read the source during lowering.
 - **`Branches`** — encode expands all arms (`Literal::Conditional`). Transform cannot rewrite them without a local
   condition span. Used for cross-file imports and `Literal` rehydration.
-- **`Open`** — transform cannot rewrite it, and encode has no fallback. Used for unresolvable arms, computed properties,
-  methods, accessors, and opaque spreads. `project_literal(Open)` returns `None`, so encode skips the property. Carries
-  the span of the source spread that produced it, which is how the partial fold tells one `{...props}` from another.
+- **`Open`** — transform cannot rewrite it, and encode has no fallback. Used for unresolvable values and arms.
+  `project_literal(Open)` returns `None`, so encode skips the property.
 - **`OpenWithFallback`** — transform cannot rewrite it, but encode can use a known fallback. Used for dynamic left
-  operands of `||` and `??`, and duplicate properties with an unresolved value. `project_literal(inner)` returns the
-  fallback.
+  operands of `||` and `??`, binding defaults, and duplicate properties with an unresolved value.
+  `project_literal(inner)` returns the fallback.
+- **Open spans** — both carry the span of the unknown value in the file being extracted. A value that is open as a whole
+  is anchored where it's used (`expression_to_style_tree` re-anchors it), so `color={tone}` points at `tone` even when
+  `tone` is a defaulted parameter. Members of a resolved container keep the span where they're written. Cross-file
+  values anchor at the import binding. Tooling reads these spans; transform and encode ignore them.
 
-`StyleSpread` uses the same split. `Open` represents an opaque member or spread. `OpenWithFallback { fallback }`
-represents dynamic `...(a || b)` and `...(a ?? b)`. Transform bails on both; encode merges a known fallback with
-last-write-wins behavior.
+`StyleSpread` uses the same split. `Open { span, kind }` represents an opaque spread (`kind: Spread`) or a member Panda
+can't key, such as a computed property, method, or accessor (`kind: Property`). Its span tells one `{...props}` from
+another in the partial fold. `OpenWithFallback { fallback }` represents dynamic `...(a || b)` and `...(a ?? b)`.
+Transform bails on both; encode merges a known fallback with last-write-wins behavior.
 
 Static inline object spreads merge into `entries` and do not consume a `StyleSpread` slot. JSX spread planning skips
 them only when every source key is an extractable style prop; runtime-bearing or opaque spreads still bail.
@@ -140,10 +144,22 @@ A missing StyleTree on a dynamic conditional is an extraction bug. Do not restor
      whole-argument branch may reinsert its key. Open values and combinations above 16 leaves retain runtime calls.
    - A missing tree uses the static path only.
 
-With a dynamic left operand, `||` and `??` produce `OpenWithFallback(right)` when the right side folds. Transform bails,
-while encode uses the right side for `data`. If the right side does not fold, the result is `Open`.
+With a dynamic left operand, `||` and `??` produce `OpenWithFallback { fallback: right }` when the right side folds.
+Transform bails, while encode uses the right side for `data`. If the right side does not fold, the result is `Open`.
 Unknown array slots also retain `Open` in the tree; projection emits `Null` for those slots to keep breakpoint arity
 without letting transform silently drop runtime values.
+
+## Dynamic values for tooling
+
+Verbose extraction (`extract_verbose`, used by `inspect_file_source`) walks each style tree before projection and
+records every open value as a `DynamicStyleValue { kind, path, span }`: `value` (`Open`), `fallback`
+(`OpenWithFallback`), `property` (`StyleSpread::Open` with `kind: Property`), and `argument` (a whole `css()` or pattern
+argument that doesn't fold). It runs before the "nothing to emit" early returns, so fully dynamic calls and JSX elements
+are covered. Opaque spreads, unknown objects in spread position, recipe and token calls, recipe JSX, and JSX tags Panda
+doesn't own (`!panda_owned && !emit_empty`) are skipped. Values dedupe by span. The build path doesn't collect them.
+
+Framework template attributes (Vue/Svelte/Astro markup) fold through `Literal`, not `StyleTree`, so their dynamic
+bindings are not recorded yet. The lint plugin only targets JS/TS/JSX today.
 
 ## Resolved questions
 

@@ -14,7 +14,7 @@ use oxc_semantic::SymbolId;
 use crate::literal::property_key_to_string;
 use crate::pure_fn::{OwnedPureFn, apply_pure_fn};
 use crate::style_tree::{expression_to_style_tree, literal_to_style_tree, project_literal};
-use crate::{Literal, MatchCategory, Resolver, StyleObject, StyleTree};
+use crate::{Literal, MatchCategory, Resolver, Span, StyleObject, StyleTree};
 
 /// Private export plan; pattern callbacks run only when the importer resolves it.
 #[derive(Debug, Clone)]
@@ -90,63 +90,70 @@ impl DeferredValue {
 
     /// Evaluate in the importing extraction; never retain callback output in the export cache.
     #[must_use]
-    pub(crate) fn resolve(&self, resolver: &Resolver<'_, '_>) -> StyleTree {
+    pub(crate) fn resolve(&self, resolver: &Resolver<'_, '_>, anchor: Span) -> StyleTree {
+        let open = StyleTree::Open { span: anchor };
         match self {
             Self::Literal(value) => literal_to_style_tree(value.clone()),
-            Self::Unknown => StyleTree::Open,
-            Self::Fallback(value) => StyleTree::OpenWithFallback(Box::new(value.resolve(resolver))),
-            Self::Alternatives(values) => {
-                StyleTree::Branches(values.iter().map(|value| value.resolve(resolver)).collect())
-            }
+            Self::Unknown => open,
+            Self::Fallback(value) => StyleTree::OpenWithFallback {
+                span: anchor,
+                fallback: Box::new(value.resolve(resolver, anchor)),
+            },
+            Self::Alternatives(values) => StyleTree::Branches(
+                values
+                    .iter()
+                    .map(|value| value.resolve(resolver, anchor))
+                    .collect(),
+            ),
             Self::PatternRaw { name, props } => {
-                let props = props.resolve(resolver);
+                let props = props.resolve(resolver, anchor);
                 if !props.is_static() {
-                    return StyleTree::Open;
+                    return open;
                 }
                 project_literal(&props)
                     .and_then(|props| resolver.pattern_raw_styles(name, &props))
-                    .map_or(StyleTree::Open, literal_to_style_tree)
+                    .map_or(open, literal_to_style_tree)
             }
             Self::Call { function, args } => {
                 let args: Option<Vec<_>> = args
                     .iter()
                     .map(|arg| {
-                        let tree = arg.resolve(resolver);
+                        let tree = arg.resolve(resolver, anchor);
                         tree.is_static().then(|| project_literal(&tree)).flatten()
                     })
                     .collect();
                 args.and_then(|args| apply_pure_fn(function, &args))
-                    .map_or(StyleTree::Open, literal_to_style_tree)
+                    .map_or(open, literal_to_style_tree)
             }
-            Self::Object(parts) => resolve_object(parts, resolver),
-            Self::Array(parts) => resolve_array(parts, resolver),
+            Self::Object(parts) => resolve_object(parts, resolver, anchor),
+            Self::Array(parts) => resolve_array(parts, resolver, anchor),
             Self::Binding { source, path } => {
-                resolve_binding(source.resolve(resolver), path, resolver)
+                resolve_binding(source.resolve(resolver, anchor), path, resolver, anchor)
             }
             Self::Member { object, key } => {
-                let object = object.resolve(resolver);
-                let key = key.resolve(resolver);
+                let object = object.resolve(resolver, anchor);
+                let key = key.resolve(resolver, anchor);
                 if !key.is_static() {
-                    return StyleTree::Open;
+                    return open;
                 }
                 project_literal(&key)
                     .and_then(|key| key.to_property_key())
                     .and_then(|key| crate::style_tree::lookup_style_member(&object, &key))
-                    .unwrap_or(StyleTree::Open)
+                    .unwrap_or(open)
             }
         }
     }
 }
 
-fn resolve_object(parts: &[ObjectPart], resolver: &Resolver<'_, '_>) -> StyleTree {
+fn resolve_object(parts: &[ObjectPart], resolver: &Resolver<'_, '_>, anchor: Span) -> StyleTree {
     let mut entries = Vec::with_capacity(parts.len());
     let mut open_spread = false;
     for part in parts {
         match part {
             ObjectPart::Property(key, value) => {
-                upsert(&mut entries, key.clone(), value.resolve(resolver));
+                upsert(&mut entries, key.clone(), value.resolve(resolver, anchor));
             }
-            ObjectPart::Spread(value) => match value.resolve(resolver) {
+            ObjectPart::Spread(value) => match value.resolve(resolver, anchor) {
                 StyleTree::Object(object) if object.spreads.is_empty() => {
                     for (key, value) in object.entries {
                         upsert(&mut entries, key, value);
@@ -179,7 +186,10 @@ fn resolve_object(parts: &[ObjectPart], resolver: &Resolver<'_, '_>) -> StyleTre
         spreads: Vec::new(),
     });
     if open_spread {
-        StyleTree::OpenWithFallback(Box::new(object))
+        StyleTree::OpenWithFallback {
+            span: anchor,
+            fallback: Box::new(object),
+        }
     } else {
         object
     }
@@ -214,14 +224,14 @@ fn upsert(entries: &mut Vec<(String, StyleTree)>, key: String, value: StyleTree)
     }
 }
 
-fn resolve_array(parts: &[ArrayPart], resolver: &Resolver<'_, '_>) -> StyleTree {
+fn resolve_array(parts: &[ArrayPart], resolver: &Resolver<'_, '_>, anchor: Span) -> StyleTree {
     let mut items = Vec::with_capacity(parts.len());
     for part in parts {
         match part {
-            ArrayPart::Item(value) => items.push(value.resolve(resolver)),
-            ArrayPart::Spread(value) => match value.resolve(resolver) {
+            ArrayPart::Item(value) => items.push(value.resolve(resolver, anchor)),
+            ArrayPart::Spread(value) => match value.resolve(resolver, anchor) {
                 StyleTree::Array(values) => items.extend(values),
-                _ => return StyleTree::Open,
+                _ => return StyleTree::Open { span: anchor },
             },
         }
     }
@@ -435,11 +445,13 @@ fn resolve_binding(
     source: StyleTree,
     path: &[BindingStep],
     resolver: &Resolver<'_, '_>,
+    anchor: Span,
 ) -> StyleTree {
+    let open = || StyleTree::Open { span: anchor };
     let mut value = Some(source);
     for step in path {
         value = match (step, value) {
-            (BindingStep::Default(fallback), None) => Some(fallback.resolve(resolver)),
+            (BindingStep::Default(fallback), None) => Some(fallback.resolve(resolver, anchor)),
             (BindingStep::Default(_), known) => known,
             (BindingStep::Property(key), Some(StyleTree::Object(object)))
                 if object.spreads.is_empty() =>
@@ -455,7 +467,7 @@ fn resolve_binding(
                 .ok()
                 .and_then(|index| items.into_iter().nth(index)),
             (BindingStep::Property(key), Some(other)) => {
-                Some(crate::style_tree::lookup_style_member(&other, key).unwrap_or(StyleTree::Open))
+                Some(crate::style_tree::lookup_style_member(&other, key).unwrap_or_else(open))
             }
             (BindingStep::ObjectRest(excluded), Some(StyleTree::Object(mut object)))
                 if object.spreads.is_empty() =>
@@ -466,10 +478,10 @@ fn resolve_binding(
             (BindingStep::ArrayRest(start), Some(StyleTree::Array(items))) => {
                 Some(StyleTree::Array(items.into_iter().skip(*start).collect()))
             }
-            _ => Some(StyleTree::Open),
+            _ => Some(open()),
         };
     }
-    value.unwrap_or(StyleTree::Open)
+    value.unwrap_or_else(open)
 }
 
 fn folded(expr: &Expression<'_>, resolver: &Resolver<'_, '_>) -> DeferredValue {

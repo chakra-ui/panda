@@ -7,6 +7,7 @@ use crate::calls::{collect_calls_verbose, collect_calls_with_token_refs};
 use crate::jsx::{collect_jsx, collect_jsx_verbose};
 use std::cell::RefCell;
 
+use crate::dynamic_values::DynamicStyleValue;
 use crate::scope::{
     PatternRawTransformCell, PatternRawTransformFn, RecipeRawResolveCell, RecipeRawResolveFn,
     Resolver,
@@ -155,8 +156,23 @@ pub struct ExtractVerboseResult {
     pub diagnostics: Vec<Diagnostic>,
     pub token_refs: Vec<TokenRef>,
     pub style_source_refs: Vec<StyleSourceRef>,
+    pub dynamic_style_values: Vec<DynamicStyleValue>,
     #[serde(skip)]
     pub exports: ExportInfo,
+}
+
+#[derive(Default)]
+pub(crate) struct VerboseFacts {
+    pub(crate) style_source_refs: Vec<StyleSourceRef>,
+    pub(crate) dynamic_style_values: Vec<DynamicStyleValue>,
+}
+
+impl VerboseFacts {
+    fn append(&mut self, mut other: Self) {
+        self.style_source_refs.append(&mut other.style_source_refs);
+        self.dynamic_style_values
+            .append(&mut other.dynamic_style_values);
+    }
 }
 
 /// Kitchen-sink extraction result — includes raw imports and matched
@@ -417,7 +433,8 @@ pub fn extract_verbose(source: &str, path: &str, config: &ExtractorConfig) -> Ex
         jsx: outcome.jsx,
         diagnostics: outcome.diagnostics,
         token_refs: outcome.token_refs,
-        style_source_refs: outcome.style_source_refs,
+        style_source_refs: outcome.verbose.style_source_refs,
+        dynamic_style_values: outcome.verbose.dynamic_style_values,
         exports: outcome.exports,
     }
 }
@@ -431,7 +448,7 @@ struct ExtractResult {
     jsx: Vec<ExtractedJsx>,
     diagnostics: Vec<Diagnostic>,
     token_refs: Vec<TokenRef>,
-    style_source_refs: Vec<StyleSourceRef>,
+    verbose: VerboseFacts,
     exports: ExportInfo,
     dependencies: Vec<CrossFileDependency>,
     unresolved_dependencies: Vec<UnresolvedCrossFileDependency>,
@@ -494,7 +511,7 @@ fn run_extract(
             &mut result,
         );
         result.calls.sort_by_key(|call| call.span.start);
-        for source_ref in &mut result.style_source_refs {
+        for source_ref in &mut result.verbose.style_source_refs {
             if source_ref.owner.kind == crate::source_refs::StyleSourceOwnerKind::Call
                 && let Ok(index) = result
                     .calls
@@ -505,6 +522,7 @@ fn run_extract(
         }
         result.token_refs = dedupe_token_refs(std::mem::take(&mut result.token_refs));
     }
+    crate::dynamic_values::dedupe(&mut result.verbose.dynamic_style_values);
     result
 }
 
@@ -599,19 +617,19 @@ fn extract_astro_script(
     let ctx = VisitorContext::new(&matched, config)
         .with_resolver(&resolver)
         .with_imports(&imports);
-    let (calls, diagnostics, token_refs, style_source_refs) = if options.verbose {
+    let (calls, diagnostics, token_refs, verbose) = if options.verbose {
         collect_calls_verbose(&parser_return.program, &ctx, line_index)
     } else {
         let (calls, diagnostics, token_refs) =
             collect_calls_with_token_refs(&parser_return.program, &ctx, line_index, false);
-        (calls, diagnostics, token_refs, Vec::new())
+        (calls, diagnostics, token_refs, VerboseFacts::default())
     };
     result.calls.extend(calls);
     result.diagnostics.extend(diagnostics);
     result.diagnostics.extend(resolver.take_diagnostics());
     result.token_refs.extend(token_refs);
     result.token_refs.extend(resolver.take_token_refs());
-    result.style_source_refs.extend(style_source_refs);
+    result.verbose.append(verbose);
     for dependency in resolver.take_cross_file_deps() {
         if !result.dependencies.contains(&dependency) {
             result.dependencies.push(dependency);
@@ -714,7 +732,7 @@ fn run_extract_adapted(
             jsx: Vec::new(),
             diagnostics,
             token_refs: Vec::new(),
-            style_source_refs: Vec::new(),
+            verbose: VerboseFacts::default(),
             exports,
             dependencies: Vec::new(),
             unresolved_dependencies: Vec::new(),
@@ -743,33 +761,34 @@ fn run_extract_adapted(
         .with_resolver(&resolver)
         .with_imports(&imports);
 
-    let (calls, call_diagnostics, mut token_refs, mut style_source_refs) =
-        if consumes_imported_recipe || collects_calls {
-            let span = tracing::trace_span!(target: "extract", "extract_calls", call_count = tracing::field::Empty);
-            let _entered = span.enter();
-            let result = if verbose {
-                collect_calls_verbose(&parser_return.program, &ctx, &line_index)
-            } else {
-                let (calls, diagnostics, token_refs) = collect_calls_with_token_refs(
-                    &parser_return.program,
-                    &ctx,
-                    &line_index,
-                    retain_transform_facts,
-                );
-                (calls, diagnostics, token_refs, Vec::new())
-            };
-            span.record("call_count", result.0.len());
-            result
+    let (calls, call_diagnostics, mut token_refs, mut verbose_facts) = if consumes_imported_recipe
+        || collects_calls
+    {
+        let span = tracing::trace_span!(target: "extract", "extract_calls", call_count = tracing::field::Empty);
+        let _entered = span.enter();
+        let result = if verbose {
+            collect_calls_verbose(&parser_return.program, &ctx, &line_index)
         } else {
-            (Vec::new(), Vec::new(), Vec::new(), Vec::new())
+            let (calls, diagnostics, token_refs) = collect_calls_with_token_refs(
+                &parser_return.program,
+                &ctx,
+                &line_index,
+                retain_transform_facts,
+            );
+            (calls, diagnostics, token_refs, VerboseFacts::default())
         };
+        span.record("call_count", result.0.len());
+        result
+    } else {
+        (Vec::new(), Vec::new(), Vec::new(), VerboseFacts::default())
+    };
 
     let mut jsx = if should_collect_jsx(config) {
         let span = tracing::trace_span!(target: "extract", "extract_jsx", jsx_count = tracing::field::Empty);
         let _entered = span.enter();
         let jsx = if verbose {
-            let (jsx, refs) = collect_jsx_verbose(&parser_return.program, &ctx);
-            style_source_refs.extend(refs);
+            let (jsx, facts) = collect_jsx_verbose(&parser_return.program, &ctx);
+            verbose_facts.append(facts);
             jsx
         } else {
             collect_jsx(&parser_return.program, &ctx, retain_transform_facts)
@@ -837,7 +856,7 @@ fn run_extract_adapted(
         jsx,
         diagnostics,
         token_refs,
-        style_source_refs,
+        verbose: verbose_facts,
         exports,
         dependencies,
         unresolved_dependencies,

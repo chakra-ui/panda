@@ -151,6 +151,15 @@ export interface TokenValueRef {
   semanticCategory: boolean
 }
 
+export type DynamicValueKind = 'value' | 'fallback' | 'property' | 'argument'
+
+export interface DynamicValueSite {
+  kind: DynamicValueKind
+  path: string[]
+  span: Span
+  range: SourceRange
+}
+
 export interface InspectionCall extends ExtractedCall {
   range: SourceRange
 }
@@ -167,6 +176,7 @@ export interface FileInspectionResult {
   tokenRefs: TokenRefSite[]
   componentEntries: ComponentEntryRef[]
   styleEntries: StyleEntryRef[]
+  dynamicValues: DynamicValueSite[]
 }
 
 /**

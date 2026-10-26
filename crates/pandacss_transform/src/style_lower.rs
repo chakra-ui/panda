@@ -269,8 +269,8 @@ fn collect_preserved_source_spans(tree: &StyleTree, spans: &mut Vec<Span>) {
                 collect_preserved_source_spans(item, spans);
             }
         }
-        StyleTree::Open
-        | StyleTree::OpenWithFallback(_)
+        StyleTree::Open { .. }
+        | StyleTree::OpenWithFallback { .. }
         | StyleTree::String(_)
         | StyleTree::Number(_)
         | StyleTree::Bool(_)
@@ -1015,7 +1015,7 @@ fn collect_sites(obj: &StyleObject, path: &mut Vec<PathSeg>, sites: &mut Vec<Sit
 
     for (key, value) in &obj.entries {
         match value {
-            StyleTree::Open | StyleTree::OpenWithFallback(_) => return None,
+            StyleTree::Open { .. } | StyleTree::OpenWithFallback { .. } => return None,
             StyleTree::Ternary {
                 test,
                 consequent,
@@ -1081,7 +1081,7 @@ fn collect_array_sites(
 ) -> Option<()> {
     for (i, item) in items.iter().enumerate() {
         match item {
-            StyleTree::Open | StyleTree::OpenWithFallback(_) => return None,
+            StyleTree::Open { .. } | StyleTree::OpenWithFallback { .. } => return None,
             StyleTree::Ternary {
                 test,
                 consequent,
@@ -1453,8 +1453,8 @@ fn base_entries_from_style_object(obj: &StyleObject) -> Vec<(String, Literal)> {
     let mut out = Vec::new();
     for (key, value) in &obj.entries {
         match value {
-            StyleTree::Open
-            | StyleTree::OpenWithFallback(_)
+            StyleTree::Open { .. }
+            | StyleTree::OpenWithFallback { .. }
             | StyleTree::Ternary { .. }
             | StyleTree::And { .. } => {}
             StyleTree::Object(nested) => {
@@ -1480,8 +1480,8 @@ fn base_entries_from_array(items: &[StyleTree]) -> Vec<Literal> {
     items
         .iter()
         .map(|item| match item {
-            StyleTree::Open
-            | StyleTree::OpenWithFallback(_)
+            StyleTree::Open { .. }
+            | StyleTree::OpenWithFallback { .. }
             | StyleTree::Ternary { .. }
             | StyleTree::And { .. } => Literal::Null,
             StyleTree::Object(nested) => Literal::Object(base_entries_from_style_object(nested)),
