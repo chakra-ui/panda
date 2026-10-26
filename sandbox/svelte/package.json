@@ -19,7 +19,7 @@
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/vite": "workspace:*",
     "@sveltejs/adapter-auto": "7.0.1",
-    "@sveltejs/kit": "2.70.3",
+    "@sveltejs/kit": "3.1.0",
     "@sveltejs/vite-plugin-svelte": "6.2.4",
     "eslint-plugin-svelte3": "4.0.0",
     "prettier-plugin-svelte": "3.5.2",
