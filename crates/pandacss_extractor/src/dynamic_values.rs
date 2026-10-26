@@ -1,9 +1,12 @@
-use oxc_ast::ast::Argument;
+use oxc_ast::ast::{
+    Argument, ArrayExpressionElement, Expression, ObjectPropertyKind, PropertyKind,
+};
 use oxc_span::GetSpan;
 use serde::Serialize;
 
+use crate::literal::{expression_to_literal, property_key_to_string};
 use crate::style_tree::{OpenSpreadKind, StyleSpread, StyleTree};
-use crate::{JsxKind, MatchCategory, Span, span_from_oxc};
+use crate::{JsxKind, MatchCategory, Resolver, Span, span_from_oxc};
 
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
@@ -46,6 +49,10 @@ pub(crate) fn collect_call(
     }
 }
 
+pub(crate) fn reports_jsx_tag(kind: JsxKind, panda_owned: bool, configured: bool) -> bool {
+    kind != JsxKind::Recipe && (panda_owned || configured)
+}
+
 pub(crate) fn collect_jsx(
     kind: JsxKind,
     panda_owned: bool,
@@ -53,11 +60,82 @@ pub(crate) fn collect_jsx(
     tree: Option<&StyleTree>,
     out: &mut Vec<DynamicStyleValue>,
 ) {
-    if kind == JsxKind::Recipe || !(panda_owned || configured) {
+    if !reports_jsx_tag(kind, panda_owned, configured) {
         return;
     }
     if let Some(tree) = tree {
         collect_tree(tree, &mut Vec::new(), out);
+    }
+}
+
+pub(crate) fn collect_literal_container(
+    expr: &Expression<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+    path: &mut Vec<String>,
+    out: &mut Vec<DynamicStyleValue>,
+) {
+    match expr.get_inner_expression() {
+        Expression::ObjectExpression(object) => {
+            for property in &object.properties {
+                let ObjectPropertyKind::ObjectProperty(property) = property else {
+                    continue;
+                };
+                let key = (!property.method && property.kind == PropertyKind::Init)
+                    .then(|| property_key_to_string(&property.key, property.computed, resolver))
+                    .flatten();
+                let Some(key) = key else {
+                    push(
+                        DynamicStyleValueKind::Property,
+                        path,
+                        span_from_oxc(property.span),
+                        out,
+                    );
+                    continue;
+                };
+                path.push(key);
+                collect_literal_member(&property.value, resolver, path, out);
+                path.pop();
+            }
+        }
+        Expression::ArrayExpression(array) => {
+            for (index, element) in array.elements.iter().enumerate() {
+                if matches!(
+                    element,
+                    ArrayExpressionElement::Elision(_) | ArrayExpressionElement::SpreadElement(_)
+                ) {
+                    continue;
+                }
+                let Some(element) = element.as_expression() else {
+                    continue;
+                };
+                path.push(index.to_string());
+                collect_literal_member(element, resolver, path, out);
+                path.pop();
+            }
+        }
+        _ => {}
+    }
+}
+
+fn collect_literal_member(
+    expr: &Expression<'_>,
+    resolver: Option<&Resolver<'_, '_>>,
+    path: &mut Vec<String>,
+    out: &mut Vec<DynamicStyleValue>,
+) {
+    match expr.get_inner_expression() {
+        Expression::ObjectExpression(_) | Expression::ArrayExpression(_) => {
+            collect_literal_container(expr, resolver, path, out);
+        }
+        _ if expression_to_literal(expr, resolver).is_none() => {
+            push(
+                DynamicStyleValueKind::Value,
+                path,
+                span_from_oxc(expr.span()),
+                out,
+            );
+        }
+        _ => {}
     }
 }
 

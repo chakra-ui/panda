@@ -5,6 +5,7 @@
 //! directly into the same `ExtractedJsx` shape the JSX visitor emits.
 
 use crate::adapter::{AdaptedSource, SfcFormat};
+use crate::dynamic_values::{self, DynamicStyleValue, DynamicStyleValueKind};
 use crate::{
     ExtractedJsx, ExtractorConfig, ImportSpecifierKind, JsxTagAction, Literal, MatchCategory,
     MatchedImport, Span,
@@ -23,6 +24,7 @@ use pandacss_sfc::markup::{
 use pandacss_sfc::{TemplateAttributeValue, TemplateElement};
 use rustc_hash::FxHashMap;
 use std::borrow::Cow;
+use std::cell::RefCell;
 
 #[derive(Clone, Copy)]
 enum Framework {
@@ -58,6 +60,7 @@ pub(crate) fn collect_template_styles(
     program: &Program<'_>,
     resolver: &crate::Resolver<'_, '_>,
     retain_transform_facts: bool,
+    dynamic_style_values: Option<&mut Vec<DynamicStyleValue>>,
 ) -> Vec<ExtractedJsx> {
     if !config.has_jsx_framework {
         return Vec::new();
@@ -80,6 +83,7 @@ pub(crate) fn collect_template_styles(
         last_container: None,
         ranges: MarkupRanges::new(template_markup_ranges(source, adapted)),
         literals: FxHashMap::default(),
+        dynamic_containers: dynamic_style_values.is_some().then(FxHashMap::default),
     };
     literal_index.visit_program(program);
     let context = TemplateContext {
@@ -91,6 +95,8 @@ pub(crate) fn collect_template_styles(
         config,
         cross_file: resolver.cross_file_context(),
         literals: literal_index.literals,
+        dynamic_containers: literal_index.dynamic_containers.unwrap_or_default(),
+        dynamic: dynamic_style_values.is_some().then(RefCell::default),
         retain_transform_facts,
     };
     let imports = if config.jsx.tag_rules_use_from() {
@@ -109,13 +115,17 @@ pub(crate) fn collect_template_styles(
         config,
         context: &context,
     };
-    match format {
+    let out = match format {
         SfcFormat::Vue => collect_vue_template_styles(source, &scan),
         SfcFormat::Svelte => collect_svelte_template_styles(source, &scan),
         SfcFormat::Astro | SfcFormat::Mdx => {
             collect_markup_template_styles(source, &adapted.template_elements, &scan)
         }
+    };
+    if let (Some(out), Some(collected)) = (dynamic_style_values, context.dynamic) {
+        out.append(&mut collected.into_inner());
     }
+    out
 }
 
 fn mask_script_blocks(source: &str, scripts: &[pandacss_sfc::markup::TagBlock]) -> String {
@@ -135,13 +145,84 @@ struct TemplateContext<'a> {
     config: &'a ExtractorConfig,
     cross_file: Option<&'a crate::cross_file::CrossFileContext<'a>>,
     literals: FxHashMap<(u32, u32), Literal>,
+    dynamic_containers: FxHashMap<(u32, u32), Vec<DynamicStyleValue>>,
+    dynamic: Option<RefCell<Vec<DynamicStyleValue>>>,
     retain_transform_facts: bool,
+}
+
+impl TemplateContext<'_> {
+    fn dynamic_len(&self) -> usize {
+        self.dynamic
+            .as_ref()
+            .map_or(0, |dynamic| dynamic.borrow().len())
+    }
+
+    fn settle_dynamic(&self, resolved: &ResolvedTemplateTag<'_>, before: usize) {
+        let Some(dynamic) = &self.dynamic else {
+            return;
+        };
+        let mut dynamic = dynamic.borrow_mut();
+        let kind = crate::jsx::jsx_kind(&self.config.matchers, &resolved.name, &resolved.alias);
+        if !dynamic_values::reports_jsx_tag(kind, resolved.panda_owned, resolved.emit_empty) {
+            dynamic.truncate(before);
+            return;
+        }
+        if let Some(props) = resolved.props {
+            let mut index = before;
+            dynamic.retain(|value| {
+                let keep =
+                    index < before || value.path.first().is_some_and(|key| props.contains(key));
+                index += 1;
+                keep
+            });
+        }
+    }
+
+    fn record_dynamic_attr(
+        &self,
+        tag_name: &str,
+        name: &str,
+        value: AttrValue<'_>,
+        literal: Option<&Literal>,
+    ) {
+        let Some(dynamic) = &self.dynamic else {
+            return;
+        };
+        let (AttrValue::Static(expression) | AttrValue::Expr(expression)) = value else {
+            return;
+        };
+        if !self.config.jsx.should_extract_prop(tag_name, name) {
+            return;
+        }
+        let Some(span) = source_span(self.raw_source, expression) else {
+            return;
+        };
+        let mut dynamic = dynamic.borrow_mut();
+        if let Some(members) = self.dynamic_containers.get(&(span.start, span.end)) {
+            dynamic.extend(members.iter().map(|member| {
+                DynamicStyleValue {
+                    kind: member.kind,
+                    path: std::iter::once(name.to_owned())
+                        .chain(member.path.iter().cloned())
+                        .collect(),
+                    span: member.span,
+                }
+            }));
+        } else if literal.is_none() {
+            dynamic.push(DynamicStyleValue {
+                kind: DynamicStyleValueKind::Value,
+                path: vec![name.to_owned()],
+                span,
+            });
+        }
+    }
 }
 
 struct TemplateLiteralIndex<'resolver, 'ast, 'callback> {
     resolver: &'resolver crate::Resolver<'ast, 'callback>,
     ranges: MarkupRanges,
     literals: FxHashMap<(u32, u32), Literal>,
+    dynamic_containers: Option<FxHashMap<(u32, u32), Vec<DynamicStyleValue>>>,
     format: SfcFormat,
     source: &'resolver str,
     last_container: Option<usize>,
@@ -197,21 +278,45 @@ impl<'ast> Visit<'ast> for TemplateLiteralIndex<'_, 'ast, '_> {
                     &self.source[..range.1 as usize],
                     span.end as usize,
                 );
-                if lexer.next_token(false).kind == pandacss_sfc::js::TokenKind::Eof
-                    && let Some(literal) = expression_to_literal(expression, Some(self.resolver))
-                {
-                    self.literals.insert(range, literal);
+                if lexer.next_token(false).kind == pandacss_sfc::js::TokenKind::Eof {
+                    self.record_dynamic_container(range, expression);
+                    if let Some(literal) = expression_to_literal(expression, Some(self.resolver)) {
+                        self.literals.insert(range, literal);
+                    }
                 }
             }
             walk::walk_expression(self, expression);
             return;
         }
-        if self.ranges.contains(span.start, span.end)
-            && let Some(literal) = expression_to_literal(expression, Some(self.resolver))
-        {
-            self.literals.insert((span.start, span.end), literal);
+        if self.ranges.contains(span.start, span.end) {
+            self.record_dynamic_container((span.start, span.end), expression);
+            if let Some(literal) = expression_to_literal(expression, Some(self.resolver)) {
+                self.literals.insert((span.start, span.end), literal);
+            }
         }
         walk::walk_expression(self, expression);
+    }
+}
+
+impl TemplateLiteralIndex<'_, '_, '_> {
+    fn record_dynamic_container(&mut self, range: (u32, u32), expression: &Expression<'_>) {
+        let Some(containers) = self.dynamic_containers.as_mut() else {
+            return;
+        };
+        if !matches!(
+            expression.get_inner_expression(),
+            Expression::ObjectExpression(_) | Expression::ArrayExpression(_)
+        ) {
+            return;
+        }
+        let mut members = Vec::new();
+        dynamic_values::collect_literal_container(
+            expression,
+            Some(self.resolver),
+            &mut Vec::new(),
+            &mut members,
+        );
+        containers.insert(range, members);
     }
 }
 
@@ -284,6 +389,7 @@ fn collect_markup_template_styles(
         else {
             continue;
         };
+        let dynamic_before = scan.context.dynamic_len();
         let mut entries = Vec::new();
         for attribute in &element.attributes {
             let value = match &attribute.value {
@@ -337,6 +443,7 @@ fn collect_markup_template_styles(
                 &mut entries,
             );
         }
+        scan.context.settle_dynamic(&resolved, dynamic_before);
         push_template_jsx(
             &mut out,
             scan,
@@ -432,6 +539,7 @@ fn collect_tag(
         return Tag::Collected(tag_end + 1);
     };
 
+    let dynamic_before = scan.context.dynamic_len();
     let mut entries = Vec::new();
     collect_attrs(
         source,
@@ -444,6 +552,7 @@ fn collect_tag(
     if let Some(props) = resolved.props {
         entries.retain(|(key, _)| props.contains(key));
     }
+    scan.context.settle_dynamic(&resolved, dynamic_before);
 
     push_template_jsx(
         out,
@@ -720,15 +829,18 @@ fn merge_vue_attr(
     // Vue 3.4 same-name shorthand: a valueless bound attr (`:size`) means
     // `:size="size"` with the arg camelized — resolve the identifier through
     // the script context instead of treating it as a boolean.
-    let value = if is_expr && matches!(value, AttrValue::Bool) {
+    let literal = if is_expr && matches!(value, AttrValue::Bool) {
         parse_expression_literal(&camelize(name), Some(context))
     } else {
         attr_literal(value, is_expr, context)
     };
-    let Some(value) = value else {
+    if is_expr {
+        context.record_dynamic_attr(tag_name, name, value, literal.as_ref());
+    }
+    let Some(literal) = literal else {
         return;
     };
-    merge_style_prop(entries, &config.jsx, tag_name, name, value);
+    merge_style_prop(entries, &config.jsx, tag_name, name, literal);
 }
 
 /// Vue's `camelize`: `foo-bar` -> `fooBar`.
@@ -752,10 +864,14 @@ fn merge_svelte_attr(
         return;
     }
     let is_expr = matches!(value, AttrValue::Expr(_));
-    let Some(value) = attr_literal(value, is_expr, context) else {
+    let literal = attr_literal(value, is_expr, context);
+    if is_expr {
+        context.record_dynamic_attr(tag_name, raw_name, value, literal.as_ref());
+    }
+    let Some(literal) = literal else {
         return;
     };
-    merge_style_prop(entries, &config.jsx, tag_name, raw_name, value);
+    merge_style_prop(entries, &config.jsx, tag_name, raw_name, literal);
 }
 
 fn is_template_transport_attr(name: &str) -> bool {

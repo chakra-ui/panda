@@ -190,6 +190,7 @@ pub fn extract_jsx(
         &parser_return.program,
         &resolver,
         true,
+        None,
     ));
     ExtractedJsxResult {
         jsx,

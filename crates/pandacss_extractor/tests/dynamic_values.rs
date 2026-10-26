@@ -248,3 +248,79 @@ fn spans_point_into_astro_frontmatter_and_client_scripts() {
     value bg `window.surface`
     ");
 }
+
+#[test]
+fn reports_vue_template_bindings() {
+    let source = indoc! {r#"
+        <script setup lang="ts">
+        import { Box, Stack } from '@panda/jsx';
+        import { Icon } from 'icons';
+        const brand = 'red.500';
+        </script>
+        <template>
+          <Box :color="tone" bg="red" :p="brand" :m="open ? '2' : '4'" />
+          <Box v-bind:color="tone2" @click="toggle" v-if="shown" :class="classes" />
+          <Box :css="{ color: tone3, bg: 'red', p: ['2', gap] }" v-bind="rest" />
+          <Stack :gap="gap2" :direction="tone4 || 'row'" />
+          <Button :size="size" />
+          <Icon :color="tone5" />
+        </template>
+    "#};
+    assert_snapshot!(dynamic_values(source, "Card.vue", &jsx_config()), @"
+    value color `tone`
+    value color `tone2`
+    value css.color `tone3`
+    value css.p.1 `gap`
+    value gap `gap2`
+    value direction `tone4 || 'row'`
+    ");
+}
+
+#[test]
+fn reports_svelte_markup_attributes() {
+    let source = indoc! {r#"
+        <script lang="ts">
+        import { Box } from '@panda/jsx';
+        import { Icon } from 'icons';
+        const brand = 'red.500';
+        </script>
+
+        <Box color={tone} bg="red" p={brand} class={classes} {...rest} />
+        <Box css={{ color: tone2, bg: 'red' }} />
+        <Button size={size} />
+        <Icon color={tone3} />
+    "#};
+    assert_snapshot!(dynamic_values(source, "Card.svelte", &jsx_config()), @"
+    value color `tone`
+    value css.color `tone2`
+    ");
+}
+
+#[test]
+fn reports_astro_and_mdx_markup_attributes() {
+    let astro = indoc! {r#"
+        ---
+        import { Box } from '@panda/jsx';
+        const brand = 'red.500';
+        ---
+        <Box color={Astro.props.tone} bg="red" p={brand} />
+        <Box css={{ color: tone2 }} />
+        <Button size={size} />
+    "#};
+    assert_snapshot!(dynamic_values(astro, "Card.astro", &jsx_config()), @"
+    value color `Astro.props.tone`
+    value css.color `tone2`
+    ");
+
+    let mdx = indoc! {r#"
+        import { Box } from '@panda/jsx'
+
+        # Title
+
+        <Box color={tone} bg="red" css={{ p: gap, m: '2' }} />
+    "#};
+    assert_snapshot!(dynamic_values(mdx, "page.mdx", &jsx_config()), @"
+    value color `tone`
+    value css.p `gap`
+    ");
+}

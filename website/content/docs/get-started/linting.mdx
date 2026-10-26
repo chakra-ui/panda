@@ -157,9 +157,9 @@ css({
 css(styles) // ❌ the whole argument is unknown
 ```
 
-It checks `css`, `cva`, `sva`, pattern calls, and style props on Panda's JSX components. Recipe variants, spreads like
-`{...props}`, and components Panda doesn't own aren't reported. See [dynamic styling](/docs/styling/dynamic-styling) for
-ways to fix each case.
+It checks `css`, `cva`, `sva`, pattern calls, and style props on Panda's JSX components, including Vue, Svelte, Astro,
+and MDX templates when you lint those files. Recipe variants, spreads like `{...props}`, and components Panda doesn't
+own aren't reported. See [dynamic styling](/docs/styling/dynamic-styling) for ways to fix each case.
 
 #### file-not-included
 

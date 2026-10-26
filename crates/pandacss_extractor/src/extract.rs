@@ -814,6 +814,7 @@ fn run_extract_adapted(
             &parser_return.program,
             &resolver,
             retain_transform_facts,
+            verbose.then_some(&mut verbose_facts.dynamic_style_values),
         );
         span.record("template_count", templates.len());
         jsx.extend(templates);

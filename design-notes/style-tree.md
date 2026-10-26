@@ -158,8 +158,10 @@ argument that doesn't fold). It runs before the "nothing to emit" early returns,
 are covered. Opaque spreads, unknown objects in spread position, recipe and token calls, recipe JSX, and JSX tags Panda
 doesn't own (`!panda_owned && !emit_empty`) are skipped. Values dedupe by span. The build path doesn't collect them.
 
-Framework template attributes (Vue/Svelte/Astro markup) fold through `Literal`, not `StyleTree`, so their dynamic
-bindings are not recorded yet. The lint plugin only targets JS/TS/JSX today.
+Framework template attributes (Vue, Svelte, Astro, and MDX markup) fold through `Literal`, not `StyleTree`, so they
+report from that path's own result. A bound attribute whose final `Literal` is `None` is a `value`. Inline objects and
+arrays report each member `object_to_literal` skips, using the same per-member `expression_to_literal` test. There is no
+`fallback` kind there, because `tone || 'red'` drops the whole value in templates. The tag gate is the same as JSX.
 
 ## Resolved questions
 
