@@ -180,8 +180,8 @@ importers:
         specifier: 3.0.3
         version: 3.0.3
       '@projectwallace/format-css':
-        specifier: ^2.0.0
-        version: 2.1.1
+        specifier: ^3.0.0
+        version: 3.2.1
       concurrently:
         specifier: 9.2.4
         version: 9.2.4
@@ -6862,9 +6862,14 @@ packages:
   '@prisma/get-platform@5.9.1':
     resolution: {integrity: sha512-6OQsNxTyhvG+T2Ksr8FPFpuPeL4r9u0JF0OZHUBI/Uy9SS43sPyAIutt4ZEAyqWQt104ERh70EZedkHZKsnNbg==}
 
-  '@projectwallace/format-css@2.1.1':
-    resolution: {integrity: sha512-CgcNIWbxxNYsQptpWZVn3oCjrq7RUM/CKflAsK2yO8tffgu/OK0INbZKmLtehlmbI8L6xDGyL0dg/4eogaGGTg==}
-    engines: {node: '>=18.0.0'}
+  '@projectwallace/css-parser@0.18.12':
+    resolution: {integrity: sha512-U3sOKtSXuoY5cgtTiAn4TrS4uyLDDk+ezvk55ExjXpajZ4vkaCCEiwdYqIV4Z8aaLh5izCrskEM9w9Ddk5wwpw==}
+    engines: {pnpm: '>=11.0.0'}
+
+  '@projectwallace/format-css@3.2.1':
+    resolution: {integrity: sha512-BwBt5nTTD8qHW5KQKxHOcDmaYGZfPbf3w1/pDnc9SCCmDty+paSsqRx9MrVMzNoLP5r2xTwIrQ0P4DopkiBKIQ==}
+    engines: {node: '>=20.12.0', pnpm: '>=11.0.0'}
+    hasBin: true
 
   '@remix-run/css-bundle@2.17.5':
     resolution: {integrity: sha512-7PA5nak53LYYJZUXMO6cLozEa05w5KOPPIPEJhpuhf3HCFet1MykXjQ1xtm9V8rkiJlPk75cwwg/aTAT18lVkw==}
@@ -23878,9 +23883,11 @@ snapshots:
     dependencies:
       '@prisma/debug': 5.9.1
 
-  '@projectwallace/format-css@2.1.1':
+  '@projectwallace/css-parser@0.18.12': {}
+
+  '@projectwallace/format-css@3.2.1':
     dependencies:
-      css-tree: 3.2.1
+      '@projectwallace/css-parser': 0.18.12
 
   '@remix-run/css-bundle@2.17.5': {}
 
