@@ -9,30 +9,17 @@ author: esther
 tags: [design-systems, ai, guides]
 ---
 
-AI has made it ridiculously easy to build interfaces. You can describe a page, give an agent a few instructions, and
-have something working in just a few minutes.
+AI has made it ridiculously easy to build interfaces. All you need to do is describe a page, and an agent can have
+something working in a few minutes.
 
-But getting AI to build something that actually fits into your existing design system? That's where the real challenge
-is.
+However, getting it to fit your existing design system is the hard part. You end up with buttons that look slightly
+different, spacing that feels off, and hardcoded colors that were never part of your design system. The more pages you
+generate, the messier it gets.
 
-Ask it to build a new page, and you might end up with buttons that look slightly different, spacing that feels off, or a
-bunch of hardcoded colors that weren't part of your design system.
+So how do you get AI to stop guessing and follow the same design rules as the rest of your app?
 
-And the more pages you generate, the messier things can get.
-
-So how do you get AI to stop guessing and start following the same design rules as the rest of your app?
-
-That's what we're going to explore in this tutorial.
-
-We'll follow one small piece of a billing app called **Ledger**: the badge that shows whether an invoice is paid,
-overdue, or failed. At each step, you'll see how the code an agent writes for that badge changes.
-
-I tried this with **Ledger**, a small billing app. We'll use an invoice status badge to walk through the setup. Then
-we'll ask an agent to build a whole billing settings page with it. I'll show you the Panda CSS setup, how we pointed the
-agent to it, and what happened when we added checks to catch mistakes.
-
-The goal is a design system your AI agent can actually understand and follow the next time you ask it to create
-something.
+I tried this with _Ledger_, a small billing app. We'll use its invoice status badge to walk through the Panda CSS setup,
+then ask an agent to build a full billing settings page and see what it does.
 
 ## Why AI agents ignore your design system
 
@@ -174,8 +161,7 @@ Read more in the [Agent Skills docs](/docs/get-started/agent-skills).
 }
 ```
 
-Read more in the [MCP Server docs](/docs/get-started/mcp-server), including the config path for Cursor, VS Code, and
-other clients.
+Read more in the [MCP Server docs](/docs/get-started/mcp-server).
 
 ## Step 3: Catch styling mistakes before they ship
 
@@ -236,17 +222,17 @@ Then run the same commands in CI, so nothing outside the system merges, whether 
 use Claude Code, a [hook](https://code.claude.com/docs/en/hooks) can also lint every file the agent edits and send the
 errors straight back to it.
 
-## Putting it to the test: Does the AI actually follow the design system?
+## Putting it to the test
 
 So, we've set up our tokens, created reusable recipes, given the agent instructions, and added checks to catch mistakes.
 
 But does all of this actually make a difference in the code AI generates?
 
-To find out, we ran a small experiment using Claude Code (Sonnet 5.5) and our Ledger app.
+To find out, we ran a small experiment using Claude Code and our Ledger app.
 
 We gave the agent the same task three times before setting up the design system rules, and three more times afterward.
 
-The task was: **Build a billing settings page that matches the rest of the app.**
+The prompt was, **"Build a billing settings page that matches the rest of the app."**
 
 For each page the agent built, we counted the hardcoded hex colors in the code (values like `#fecaca` instead of a
 token):
@@ -259,29 +245,28 @@ token):
 
 After the changes, the agent used the existing recipes for every badge, button, card, and input it created.
 
-And here's the interesting part: **at a glance, the pages looked very similar.**
+And here's the interesting part: **the pages looked almost identical.**
 
-**Before: Hardcoded colors everywhere**
+**Before: Hardcoded styles everywhere**
 
 ![Billing settings page generated before adding design system rules](/blog/ai-design-system-billing-before.png)
 
-_Before: the billing page the agent built with no design system to follow. Note the darker cancel button, the heavier
-text, and the invoice list outside a card._
+_Before: the billing page the agent built with no design system to follow._
 
 ```tsx
 <section
   className={css({
     bg: 'white',
     border: '1px solid #fecaca',
-    borderRadius: '8px',
-    padding: '20px 24px'
+    borderRadius: '10px',
+    padding: '20px'
   })}
 >
   <h2
     className={css({
-      fontSize: '14px',
+      fontSize: '16px',
       fontWeight: 600,
-      marginBottom: '12px',
+      mb: '12px',
       color: '#b91c1c'
     })}
   >
@@ -290,12 +275,12 @@ text, and the invoice list outside a card._
   {/* ... */}
   <button
     className={css({
-      bg: '#b91c1c',
+      bg: '#dc2626',
       color: 'white',
-      px: '4',
-      py: '2',
-      rounded: 'md',
-      fontSize: 'sm'
+      padding: '8px 14px',
+      borderRadius: '8px',
+      fontSize: '14px',
+      _hover: { bg: '#b91c1c' }
     })}
   >
     Cancel subscription
@@ -303,11 +288,9 @@ text, and the invoice list outside a card._
 </section>
 ```
 
-The agent picked every color itself and hardcoded the section's sizes, like `'14px'` and `'20px 24px'`. Only the
-button's spacing, radius, and font size came from Panda's default tokens.
+The agent made all the styling decisions itself. It chose the colors, spacing, border radius, and typography.
 
-It even introduced a new red, `#fecaca`, that wasn't used anywhere else in the app, and gave the cancel button
-`#b91c1c`, a red the app only used for badge text.
+It even introduced a new red, `#fecaca`, that wasn't used anywhere else in the app.
 
 Now compare that with what it generated after we set everything up.
 
