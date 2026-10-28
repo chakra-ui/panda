@@ -1,5 +1,22 @@
 # @pandacss/postcss
 
+## 2.5.0
+
+### Minor Changes
+
+- 86f78a2: Add `codegen: false` to bundler plugins so apps importing a shared styled-system can skip generating a local
+  copy while still generating CSS.
+
+### Patch Changes
+
+- f1af4f6: The first PostCSS build now parses every source file in one batch, the way `panda cssgen` does, instead of
+  adding them one at a time.
+- Updated dependencies [f1af4f6]
+- Updated dependencies [90f9425]
+- Updated dependencies [f1af4f6]
+  - @pandacss/compiler@2.5.0
+  - @pandacss/compiler-shared@2.5.0
+
 ## 2.4.0
 
 ### Patch Changes
