@@ -241,7 +241,12 @@ fn partial_fold_rewrite(
     let StyleTree::Object(object) = jsx.style.as_ref()? else {
         return None;
     };
-    let [StyleSpread::Open { span: open_span }] = object.spreads.as_slice() else {
+    let [
+        StyleSpread::Open {
+            span: open_span, ..
+        },
+    ] = object.spreads.as_slice()
+    else {
         return None;
     };
     let opaque = opaque_spread_binding(parsed, &extractor.jsx, &jsx.name, class_attr, *open_span)?;

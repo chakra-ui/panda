@@ -46,9 +46,9 @@ pub use host::{
     utility_value_source_json,
 };
 pub use inspection::{
-    ComponentEntryKind, ComponentEntryRef, FileInspectionResult, StyleEntryFixability,
-    StyleEntryKind, StyleEntryOrigin, StyleEntryRef, StyleEntrySyntax, TokenRefSite, UsageKind,
-    UsageSite,
+    ComponentEntryKind, ComponentEntryRef, DynamicValueSite, FileInspectionResult,
+    StyleEntryFixability, StyleEntryKind, StyleEntryOrigin, StyleEntryRef, StyleEntrySyntax,
+    TokenRefSite, UsageKind, UsageSite,
 };
 pub use output::{WriteError, write_output_file, write_relative_files};
 pub use setup::{LoadedSystem, load_system};

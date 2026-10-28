@@ -5,11 +5,11 @@
 use crate::{
     Diagnostic, ExpressionFacts, ExtractorConfig, ImportSpecifierKind, JsxKind, JsxTagAction,
     Literal, MatchCategory, MatchedImport, Matchers, Span, StyleObject, StyleTree, VisitorContext,
+    dynamic_values,
+    extract::VerboseFacts,
     jsx_react_runtime,
     matcher::member_display,
-    source_refs::{
-        StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, collect_jsx_attribute_source_refs,
-    },
+    source_refs::{StyleSourceOwner, StyleSourceOwnerKind, collect_jsx_attribute_source_refs},
     span_from_oxc,
     style_tree::{
         ProjectionRetention, jsx_attributes_to_style_tree, project_style, retain_style_tree_props,
@@ -190,6 +190,7 @@ pub fn extract_jsx(
         &parser_return.program,
         &resolver,
         true,
+        None,
     ));
     ExtractedJsxResult {
         jsx,
@@ -208,7 +209,7 @@ pub(crate) fn collect_jsx(
         ctx,
         out: &mut out,
         react_runtime,
-        style_source_refs: None,
+        verbose: None,
         styled_bindings: collect_styled_bindings(program, ctx),
         retain_transform_facts,
     };
@@ -219,20 +220,20 @@ pub(crate) fn collect_jsx(
 pub(crate) fn collect_jsx_verbose(
     program: &Program<'_>,
     ctx: &VisitorContext<'_, '_>,
-) -> (Vec<ExtractedJsx>, Vec<StyleSourceRef>) {
+) -> (Vec<ExtractedJsx>, VerboseFacts) {
     let mut out = Vec::new();
-    let mut style_source_refs = Vec::new();
+    let mut verbose = VerboseFacts::default();
     let react_runtime = jsx_react_runtime::ReactRuntimeImports::from_program(program);
     let mut extractor = Extractor {
         ctx,
         out: &mut out,
         react_runtime,
-        style_source_refs: Some(&mut style_source_refs),
+        verbose: Some(&mut verbose),
         styled_bindings: collect_styled_bindings(program, ctx),
         retain_transform_facts: false,
     };
     extractor.visit_program(program);
-    (out, style_source_refs)
+    (out, verbose)
 }
 
 fn collect_jsx_attrs(attributes: &[JSXAttributeItem<'_>]) -> Vec<JsxAttr> {
@@ -301,7 +302,7 @@ pub(crate) struct Extractor<'walk, 'ctx, 'cb> {
     ctx: &'walk VisitorContext<'ctx, 'cb>,
     out: &'walk mut Vec<ExtractedJsx>,
     react_runtime: jsx_react_runtime::ReactRuntimeImports,
-    style_source_refs: Option<&'walk mut Vec<StyleSourceRef>>,
+    verbose: Option<&'walk mut VerboseFacts>,
     styled_bindings: StyledBindings,
     pub(crate) retain_transform_facts: bool,
 }
@@ -643,10 +644,21 @@ impl Extractor<'_, '_, '_> {
 
 impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
-        if let Some(extracted) =
-            jsx_react_runtime::extract_call(call, self.ctx, &self.react_runtime, self)
-        {
+        let mut dynamic_style_values = Vec::new();
+        let collect_dynamic = self.verbose.is_some().then_some(&mut dynamic_style_values);
+        if let Some(extracted) = jsx_react_runtime::extract_call(
+            call,
+            self.ctx,
+            &self.react_runtime,
+            self,
+            collect_dynamic,
+        ) {
             self.out.push(extracted);
+        }
+        if let Some(verbose) = self.verbose.as_deref_mut() {
+            verbose
+                .dynamic_style_values
+                .append(&mut dynamic_style_values);
         }
         walk::walk_call_expression(self, call);
     }
@@ -676,6 +688,16 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             if let (Some(props), Some(tree)) = (rule_props, style.as_mut()) {
                 retain_style_tree_props(tree, &|key| props.contains(key));
             }
+            let kind = jsx_kind(&self.ctx.config.matchers, &tag_name, &alias);
+            if let Some(verbose) = self.verbose.as_deref_mut() {
+                dynamic_values::collect_jsx(
+                    kind,
+                    panda_owned,
+                    emit_empty,
+                    style.as_ref(),
+                    &mut verbose.dynamic_style_values,
+                );
+            }
             let retain = self.retain_transform_facts;
             let retention = if retain {
                 ProjectionRetention::Retain
@@ -693,8 +715,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 return;
             }
 
-            let kind = jsx_kind(&self.ctx.config.matchers, &tag_name, &alias);
-            if let Some(style_source_refs) = self.style_source_refs.as_deref_mut() {
+            if let Some(verbose) = self.verbose.as_deref_mut() {
                 let owner = StyleSourceOwner {
                     kind: StyleSourceOwnerKind::Jsx,
                     index: u32::try_from(self.out.len()).unwrap_or(u32::MAX),
@@ -706,7 +727,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                     &self.ctx.config.jsx,
                     &tag_name,
                     owner,
-                    style_source_refs,
+                    &mut verbose.style_source_refs,
                 );
             }
 

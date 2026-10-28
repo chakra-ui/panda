@@ -54,6 +54,7 @@ including the ones marked **default** below, oxlint won't turn them on for you:
   "rules": {
     "@pandacss/no-invalid-token-paths": "error",
     "@pandacss/no-invalid-nesting": "error",
+    "@pandacss/no-dynamic-styling": "warn",
     "@pandacss/file-not-included": "error",
     "@pandacss/no-deprecated": "warn",
     "@pandacss/no-debug": "warn",
@@ -79,6 +80,7 @@ Alpha: needs `oxlint` and `@oxlint/plugins`, and binds one Panda project per run
 | --------------------------- | -------------------- | -------- |
 | `no-invalid-token-paths`    | default              | error    |
 | `no-invalid-nesting`        | default              | error    |
+| `no-dynamic-styling`        | default              | warn     |
 | `file-not-included`         | default              | error    |
 | `no-deprecated`             | default              | warn     |
 | `no-debug`                  | default              | warn     |
@@ -137,6 +139,28 @@ css({ '&:hover': { color: 'red.500' } })
 css({ _hover: { color: 'red.500' } })
 ```
 
+#### no-dynamic-styling
+
+Panda only generates CSS for values it can read at build time. This rule reports each value it can't, so you see the
+missing CSS in the editor instead of at runtime. Constants and imports Panda can resolve are fine.
+
+```tsx
+const brand = 'red.500'
+
+css({
+  bg: brand, // ✅ Panda resolves the constant
+  color: color, // ❌ runtime value, no CSS
+  borderColor: tone || 'gray.200', // ❌ only gray.200 gets CSS
+  [property]: 'red.100' // ❌ unknown property name
+})
+
+css(styles) // ❌ the whole argument is unknown
+```
+
+It checks `css`, `cva`, `sva`, pattern calls, and style props on Panda's JSX components, including Vue, Svelte, Astro,
+and MDX templates when you lint those files. Recipe variants, spreads like `{...props}`, and components Panda doesn't
+own aren't reported. See [dynamic styling](/docs/styling/dynamic-styling) for ways to fix each case.
+
 #### file-not-included
 
 A file that calls Panda's style functions but sits outside the config's `include` globs extracts nothing. Every `css()`
@@ -153,9 +177,8 @@ export default defineConfig({
 
 #### extraction-diagnostics
 
-Relays the compiler's own diagnostics into the editor: a typo'd condition key, a value extraction can't resolve
-statically, anything the build would warn about. This is the rule that surfaces
-[dynamic styling](/docs/styling/dynamic-styling) mistakes at lint time instead of at runtime.
+Relays the compiler's own diagnostics into the editor: a typo'd condition key, a parse error, anything the build would
+warn about. Dynamic values are reported by [`no-dynamic-styling`](#no-dynamic-styling) instead.
 
 ```tsx
 // ❌ '_hver' is not a condition, the compiler ignores it

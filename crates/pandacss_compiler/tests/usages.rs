@@ -1535,3 +1535,57 @@ fn spacing_values_from_a_theme_function_link_their_token() {
     mt auto -> -
     ");
 }
+
+#[test]
+fn inspection_reports_dynamic_style_values_with_ranges() {
+    let fixture = system_with(json!({
+        "jsxFramework": "react",
+        "patterns": {
+            "stack": { "properties": { "gap": { "property": "gap" } } }
+        },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "jsx": ["Button"],
+                    "variants": { "size": { "sm": { "p": "2" }, "lg": { "p": "4" } } }
+                }
+            }
+        }
+    }));
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        import { Button, Stack, styled } from '@panda/jsx'
+        import { Icon } from 'icons'
+        css({ color: tone, bg: 'red' })
+        css(styles)
+        const a = <styled.div color={hue} />
+        const b = <Stack gap={gap} />
+        const c = <Button size={size} />
+        const d = <Icon color={tone} />
+    "};
+    let result = inspect_file_source(&fixture, "a.tsx", source);
+
+    let sites = result
+        .dynamic_values
+        .iter()
+        .map(|site| {
+            format!(
+                "{:?} {} `{}` {}:{}-{}:{}",
+                site.kind,
+                site.path.join("."),
+                span_text(source, Some(site.span)),
+                site.range.start.line,
+                site.range.start.column,
+                site.range.end.line,
+                site.range.end.column
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert_snapshot!(sites, @"
+    Value color `tone` 4:14-4:18
+    Argument  `styles` 5:5-5:11
+    Value color `hue` 6:30-6:33
+    Value gap `gap` 7:23-7:26
+    ");
+}

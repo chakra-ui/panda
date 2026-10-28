@@ -32,6 +32,7 @@ describe('createPandaPlugin', () => {
       'file-not-included',
       'no-invalid-token-paths',
       'no-invalid-nesting',
+      'no-dynamic-styling',
       'no-deprecated',
       'no-debug',
       'prefer-token',

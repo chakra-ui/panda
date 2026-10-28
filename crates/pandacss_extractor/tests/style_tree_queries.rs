@@ -21,7 +21,9 @@ fn spanless_alternatives_are_runtime_branches_without_local_rewrite_sites() {
 
 #[test]
 fn whole_tree_analysis_checks_open_values_in_spanless_alternatives() {
-    let tree = StyleTree::Branches(vec![StyleTree::Open]);
+    let tree = StyleTree::Branches(vec![StyleTree::Open {
+        span: Span { start: 0, end: 1 },
+    }]);
 
     assert_yaml_snapshot!(json!({
         "open_value": style_tree_has_open_value(&tree),
@@ -38,7 +40,9 @@ fn open_values_in_conditional_spread_arms_are_visible() {
         entries: vec![],
         spreads: vec![StyleSpread::And {
             test: Span { start: 0, end: 5 },
-            value: StyleTree::Open,
+            value: StyleTree::Open {
+                span: Span { start: 6, end: 9 },
+            },
             overridden: vec![],
         }],
     });

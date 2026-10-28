@@ -107,11 +107,14 @@ because component APIs commonly forward style objects through props (`css`, `inp
 ambiguous to warn on reliably. JSX import-map entries or recipe component names alone should not suppress it. The
 message should describe extraction behavior, not claim the user's runtime code is invalid.
 
+The lint plugin's `no-dynamic-styling` rule owns this case in the editor, so `extraction-diagnostics` filters it out.
+The rule reads per-value spans from inspection (see [style-tree](./style-tree.md#dynamic-values-for-tooling)), which
+also covers partly dynamic objects and projects with `jsxFramework`.
+
 Recipe calls are excluded from `panda_call_unextractable` because they always emit base + `defaultVariants` CSS even
-when variant args are dynamic. That case is covered by `recipe_variant_dynamic` instead — see
-[recipe-variant-diagnostics](./recipe-variant-diagnostics.md). That diagnostic stays enabled with `jsxFramework`
-configured; it only fires when a prop key is a known recipe variant (`variant_props`), not for ambiguous style-object
-forwarding.
+when variant args are dynamic. That case is planned as `recipe_variant_dynamic` (not implemented yet) — see
+[recipe-variant-diagnostics](./recipe-variant-diagnostics.md). It would stay enabled with `jsxFramework` configured and
+only fire when a prop key is a known recipe variant (`variant_props`), not for ambiguous style-object forwarding.
 
 `transform_callback_failed` should include the callback target when available, such as the utility/pattern name and the
 value being transformed. This keeps JS callback failures actionable without requiring the host to reconstruct the Rust
