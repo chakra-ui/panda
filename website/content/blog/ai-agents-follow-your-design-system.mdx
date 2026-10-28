@@ -27,9 +27,9 @@ That's what we're going to explore in this tutorial.
 We'll follow one small piece of a billing app called **Ledger**: the badge that shows whether an invoice is paid,
 overdue, or failed. At each step, you'll see how the code an agent writes for that badge changes.
 
-I tried this with **Ledger**, a small billing app. We'll start with a simple task of asking an agent to create an
-invoice status badge. Next, we use the same setup to ask an agent to build a whole billing settings page. I'll show you
-the Panda CSS setup, how we pointed the agent to it, and what happened when we added checks to catch mistakes.
+I tried this with **Ledger**, a small billing app. We'll use an invoice status badge to walk through the setup. Then
+we'll ask an agent to build a whole billing settings page with it. I'll show you the Panda CSS setup, how we pointed the
+agent to it, and what happened when we added checks to catch mistakes.
 
 The goal is a design system your AI agent can actually understand and follow the next time you ask it to create
 something.
@@ -43,10 +43,6 @@ Here's the kind of badge an agent writes when it can't see your design system:
   Failed
 </span>
 ```
-
-![A pale red rounded badge with the word Failed in dark red text](/blog/ai-agents-badge-hardcoded.png)
-
-_The badge above, rendered: it looks fine, but every value in it is hardcoded._
 
 From the code above, nothing is obviously broken. The badge renders, and the colors might even look right. However, the
 values are hardcoded directly into the component. If you decide to change the app's color palette, this badge won't
@@ -137,7 +133,7 @@ There's another step that's easy to overlook: update the existing UI to use the 
 nearby code. This means, if your app still has three different handwritten badge implementations, you've left three
 competing examples for it to follow.
 
-In our example, if the pages use `badge()`, the agent will also use `badge()` too, without being told.
+In our test, once the pages used `badge()`, the agent used it too, without being told.
 
 ## Step 2: Help your agent find and use your design system
 
@@ -250,7 +246,7 @@ To find out, we ran a small experiment using Claude Code (Sonnet 5.5) and our Le
 
 We gave the agent the same task three times before setting up the design system rules, and three more times afterward.
 
-The prompt was: **Build a billing settings page that matches the rest of the app.**
+The task was: **Build a billing settings page that matches the rest of the app.**
 
 For each page the agent built, we counted the hardcoded hex colors in the code (values like `#fecaca` instead of a
 token):
@@ -265,7 +261,7 @@ After the changes, the agent used the existing recipes for every badge, button, 
 
 And here's the interesting part: **at a glance, the pages looked very similar.**
 
-**Before: Hardcoded styles everywhere**
+**Before: Hardcoded colors everywhere**
 
 ![Billing settings page generated before adding design system rules](/blog/ai-design-system-billing-before.png)
 
@@ -307,7 +303,8 @@ text, and the invoice list outside a card._
 </section>
 ```
 
-The agent made all the styling decisions itself. It chose the colors, spacing, border radius, and typography.
+The agent picked every color itself and hardcoded the section's sizes, like `'14px'` and `'20px 24px'`. Only the
+button's spacing, radius, and font size came from Panda's default tokens.
 
 It even introduced a new red, `#fecaca`, that wasn't used anywhere else in the app, and gave the cancel button
 `#b91c1c`, a red the app only used for badge text.
