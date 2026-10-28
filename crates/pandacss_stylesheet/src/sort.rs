@@ -742,6 +742,26 @@ fn pseudo_priority(pseudo: &str) -> u16 {
         .unwrap_or(40)
 }
 
+fn skip_parenthesized(bytes: &[u8], start: usize) -> usize {
+    if bytes.get(start) != Some(&b'(') {
+        return start;
+    }
+    let mut depth = 0u32;
+    for (index, &byte) in bytes.iter().enumerate().skip(start) {
+        match byte {
+            b'(' => depth += 1,
+            b')' => {
+                depth -= 1;
+                if depth == 0 {
+                    return index + 1;
+                }
+            }
+            _ => {}
+        }
+    }
+    bytes.len()
+}
+
 /// Iterate the pseudo-*classes* (`:hover`, `:focus`, …) in a selector,
 /// skipping pseudo-*elements* (`::before`) which don't affect class priority.
 fn pseudo_classes(selector: &str) -> PseudoClasses<'_> {
@@ -781,8 +801,13 @@ impl<'a> Iterator for PseudoClasses<'a> {
                 }
             }
             if end > start + 1 {
-                self.position = end;
-                return Some(&self.selector[start..end]);
+                let pseudo = &self.selector[start..end];
+                self.position = if pseudo == ":has" {
+                    skip_parenthesized(bytes, end)
+                } else {
+                    end
+                };
+                return Some(pseudo);
             }
         }
         None
