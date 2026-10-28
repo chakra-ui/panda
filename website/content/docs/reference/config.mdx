@@ -867,6 +867,10 @@ The global CSS variables for your project. A plain string emits the variable dir
 
 JS Framework for generated JSX elements.
 
+It also turns on JSX tracking. Without it, Panda reads no style props, recipe variants, or pattern props from JSX tags.
+A preset or design system that sets it passes it on to your config. If you don't want generated JSX, use
+[`staticCss`](/docs/recipes/jsx-tracking#skip-tracking-with-staticcss) for the recipes you render.
+
 ```json
 {
   "jsxFramework": "react"
