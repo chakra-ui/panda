@@ -18,7 +18,7 @@
     "@pandacss/preset-base": "workspace:*",
     "@pandacss/preset-panda": "workspace:*",
     "@pandacss/vite": "workspace:*",
-    "@sveltejs/adapter-auto": "7.0.1",
+    "@sveltejs/adapter-auto": "8.0.0",
     "@sveltejs/kit": "3.1.0",
     "@sveltejs/vite-plugin-svelte": "6.2.4",
     "eslint-plugin-svelte3": "4.0.0",
