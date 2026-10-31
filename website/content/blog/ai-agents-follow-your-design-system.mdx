@@ -183,14 +183,11 @@ Then add the [Panda ESLint plugin](/docs/get-started/linting), which checks your
 ```js filename="eslint.config.mjs"
 import panda from '@pandacss/eslint-plugin'
 
-const pandaConfig = await panda.configs.recommended({ configPath: './panda.config.ts' })
-
 export default [
   // ...your existing config
+  await panda.configs.recommended({ configPath: './panda.config.ts' }),
   {
-    ...pandaConfig,
     rules: {
-      ...pandaConfig.rules,
       '@pandacss/prefer-token': ['error', { categories: ['colors', 'spacing', 'radii', 'fontSizes'] }]
     }
   }
@@ -200,10 +197,10 @@ export default [
 Run it on the original badge and the lint output might look like this:
 
 ```txt
-error  Hardcoded colors value "#fee2e2". Matching tokens: red.100, status.failed.bg (themed)
-error  Hardcoded spacing value "8px". Matching tokens: 2
-error  Hardcoded radii value "9999px". Matching tokens: full
-error  Hardcoded fontSizes value "12px". Matching tokens: xs
+error  Hardcoded colors value "#fee2e2". Matching tokens: red.100, status.failed.bg (themed).
+error  Hardcoded spacing value "8px". Matching tokens: 2.
+error  Hardcoded radii value "9999px". Matching tokens: full.
+error  Hardcoded fontSizes value "12px". Matching tokens: xs.
 ```
 
 When a hardcoded value exactly matches an existing token, the rule can suggest a replacement. For example, Ledger
@@ -242,6 +239,9 @@ token):
 | 1       | 11               | 0               |
 | 2       | 20               | 0               |
 | 3       | 17               | 0               |
+
+The `AGENTS.md` rule and `strictTokens` both rule out hex colors, so the zeros were expected. With three runs each,
+treat this as a signal, not a benchmark.
 
 After the changes, the agent used the existing recipes for every badge, button, card, and input it created.
 
