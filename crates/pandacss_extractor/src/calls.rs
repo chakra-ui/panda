@@ -4,7 +4,8 @@
 
 use crate::{
     Diagnostic, ExtractorConfig, ImportSpecifierKind, Literal, MatchCategory, MatchedImport, Span,
-    StyleTree, TokenRef,
+    StyleTree, TokenRef, dynamic_values,
+    extract::VerboseFacts,
     matcher::member_display,
     scope::flatten_static_member_path,
     source_refs::{
@@ -184,7 +185,7 @@ fn collect_calls_inner(
         diagnostics: &mut diagnostics,
         line_index,
         token_refs: None,
-        style_source_refs: None,
+        verbose: None,
         retain_transform_facts: true,
     };
     extractor.visit_program(program);
@@ -206,7 +207,7 @@ pub(crate) fn collect_calls_with_token_refs(
         diagnostics: &mut diagnostics,
         line_index: Some(line_index),
         token_refs: Some(&mut token_refs),
-        style_source_refs: None,
+        verbose: None,
         retain_transform_facts,
     };
     extractor.visit_program(program);
@@ -221,23 +222,23 @@ pub(crate) fn collect_calls_verbose(
     Vec<ExtractedCall>,
     Vec<Diagnostic>,
     Vec<TokenRef>,
-    Vec<StyleSourceRef>,
+    VerboseFacts,
 ) {
     let mut calls = Vec::new();
     let mut diagnostics = Vec::new();
     let mut token_refs = Vec::new();
-    let mut style_source_refs = Vec::new();
+    let mut verbose = VerboseFacts::default();
     let mut extractor = Extractor {
         ctx,
         out: &mut calls,
         diagnostics: &mut diagnostics,
         line_index: Some(line_index),
         token_refs: Some(&mut token_refs),
-        style_source_refs: Some(&mut style_source_refs),
+        verbose: Some(&mut verbose),
         retain_transform_facts: false,
     };
     extractor.visit_program(program);
-    (calls, diagnostics, token_refs, style_source_refs)
+    (calls, diagnostics, token_refs, verbose)
 }
 
 struct Extractor<'walk, 'ctx, 'cb> {
@@ -246,7 +247,7 @@ struct Extractor<'walk, 'ctx, 'cb> {
     diagnostics: &'walk mut Vec<Diagnostic>,
     line_index: Option<&'walk crate::LineIndex<'walk>>,
     token_refs: Option<&'walk mut Vec<TokenRef>>,
-    style_source_refs: Option<&'walk mut Vec<StyleSourceRef>>,
+    verbose: Option<&'walk mut VerboseFacts>,
     retain_transform_facts: bool,
 }
 
@@ -400,6 +401,24 @@ fn dynamic_style_value_diagnostic(
     diagnostic
 }
 
+impl Extractor<'_, '_, '_> {
+    fn collect_dynamic_values(
+        &mut self,
+        category: MatchCategory,
+        call: &CallExpression<'_>,
+        style_args: &[Option<StyleTree>],
+    ) {
+        if let Some(verbose) = self.verbose.as_deref_mut() {
+            dynamic_values::collect_call(
+                category,
+                &call.arguments,
+                style_args,
+                &mut verbose.dynamic_style_values,
+            );
+        }
+    }
+}
+
 impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
         if let (Some(resolver), Some(token_refs)) =
@@ -446,6 +465,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 .iter()
                 .map(|arg| argument_to_style_tree(arg, resolver))
                 .collect();
+            self.collect_dynamic_values(category, call, &style_args);
             let retain = self.retain_transform_facts;
             let retention = if retain {
                 ProjectionRetention::Retain
@@ -463,7 +483,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
             };
 
             if should_emit_call(category, &data, jsx_recipe_ident.as_deref()) {
-                if let Some(style_source_refs) = self.style_source_refs.as_deref_mut() {
+                if let Some(verbose) = self.verbose.as_deref_mut() {
                     let owner = StyleSourceOwner {
                         kind: StyleSourceOwnerKind::Call,
                         index: u32::try_from(self.out.len()).unwrap_or(u32::MAX),
@@ -473,7 +493,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                         call,
                         self.ctx.resolver,
                         owner,
-                        style_source_refs,
+                        &mut verbose.style_source_refs,
                     );
                 }
                 self.out.push(ExtractedCall {

@@ -3,7 +3,7 @@ import { FILE_START_LOC, type Inspect, type RuleContextWithReport, type RuleModu
 
 export const extractionDiagnosticsRuleName = 'extraction-diagnostics'
 
-const unknownTokenReferenceCode = 'unknown_token_reference'
+const ownedByOtherRules = new Set(['unknown_token_reference', 'panda_call_unextractable'])
 
 export interface ExtractionDiagnosticsRuleOptions {
   inspect: Inspect
@@ -28,7 +28,7 @@ export function createExtractionDiagnosticsRule(options: ExtractionDiagnosticsRu
           if (!inspection) return
           reportDiagnostics(
             context,
-            inspection.diagnostics.filter((diagnostic) => diagnostic.code !== unknownTokenReferenceCode),
+            inspection.diagnostics.filter((diagnostic) => !ownedByOtherRules.has(diagnostic.code)),
           )
         },
       }

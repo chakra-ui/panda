@@ -746,12 +746,16 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
 
         if flags.contains(SymbolFlags::Import) {
             // Rehydrate from Literal (`Conditional` → `Branches`, no foreign spans).
+            let anchor = crate::span_from_oxc(scoping.symbol_span(symbol_id));
             return match self.resolve_import_entry(symbol_id)? {
                 ExportEntry::Literal(value) => Some(literal_to_style_tree(value)),
-                ExportEntry::StyleFallback { style_value, .. } => Some(
-                    StyleTree::OpenWithFallback(Box::new(literal_to_style_tree(style_value))),
-                ),
-                ExportEntry::Deferred(value) => Some(value.resolve(self)),
+                ExportEntry::StyleFallback { style_value, .. } => {
+                    Some(StyleTree::OpenWithFallback {
+                        span: anchor,
+                        fallback: Box::new(literal_to_style_tree(style_value)),
+                    })
+                }
+                ExportEntry::Deferred(value) => Some(value.resolve(self, anchor)),
                 ExportEntry::PureFn(_) | ExportEntry::Recipe(_) => None,
             };
         }
@@ -805,7 +809,8 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
             ExportEntry::Literal(lit) => Some(lit),
             ExportEntry::StyleFallback { known_value, .. } => known_value,
             ExportEntry::Deferred(value) => {
-                let tree = value.resolve(self);
+                let anchor = crate::span_from_oxc(self.semantic.scoping().symbol_span(symbol_id));
+                let tree = value.resolve(self, anchor);
                 tree.is_static().then(|| project_literal(&tree)).flatten()
             }
             // A recipe is a function, not a value — only `.raw(props)` resolves it.
@@ -1013,7 +1018,9 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
         // The pattern sees concrete props; a runtime branch or unknown value would be
         // flattened away, so the call has to stay.
         if !tree.is_static() {
-            return Some(StyleTree::Open);
+            return Some(StyleTree::Open {
+                span: crate::span_from_oxc(call.span),
+            });
         }
 
         let style = project_literal(&tree)?;
@@ -1208,7 +1215,10 @@ impl<'a, 'cb> Resolver<'a, 'cb> {
     /// A binding's default is one possible value, like `value ?? default`.
     fn default_style_tree(&self, default: &Expression<'_>) -> Option<StyleTree> {
         let tree = expression_to_style_tree(default, Some(self))?;
-        Some(StyleTree::OpenWithFallback(Box::new(tree)))
+        Some(StyleTree::OpenWithFallback {
+            span: crate::span_from_oxc(default.span()),
+            fallback: Box::new(tree),
+        })
     }
 
     /// Resolve one symbol bound by a parameter against its `TSTypeLiteral`

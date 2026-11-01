@@ -189,7 +189,16 @@ class FallbackCompiler implements Compiler {
     return []
   }
   inspectFileSource(_path: string, _source: string): Omit<FileInspectionResult, 'path'> {
-    return { usages: [], diagnostics: [], calls: [], jsx: [], tokenRefs: [], componentEntries: [], styleEntries: [] }
+    return {
+      usages: [],
+      diagnostics: [],
+      calls: [],
+      jsx: [],
+      tokenRefs: [],
+      componentEntries: [],
+      styleEntries: [],
+      dynamicValues: [],
+    }
   }
   transformSource(input: NativeTransformSourceInput): TransformSourceResult {
     return {

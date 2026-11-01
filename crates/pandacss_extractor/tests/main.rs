@@ -3,6 +3,7 @@ mod common;
 mod conditional_output;
 mod cross_file;
 mod css_property;
+mod dynamic_values;
 mod extract;
 mod first_that_works_calls;
 mod framework_astro;

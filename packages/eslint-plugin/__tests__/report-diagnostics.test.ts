@@ -14,6 +14,7 @@ test('reports a diagnostic without a location at the top of the file', () => {
       tokenRefs: [],
       componentEntries: [],
       styleEntries: [],
+      dynamicValues: [],
     }),
   })
 

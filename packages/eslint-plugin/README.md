@@ -132,6 +132,9 @@ These rules are on in `recommended`:
   ignores. Suggests prefixing `&`.
 - `file-not-included` (error) — a file uses Panda but sits outside your config `include`, so its styles never get
   generated.
+- `no-dynamic-styling` (warn) — a style value Panda can't read at build time, so it generates no CSS for it, e.g.
+  `css({ color })` with `color` from state. Constants Panda resolves are fine. Recipe variants, spreads, and components
+  Panda doesn't own aren't reported.
 - `no-deprecated` (warn) — use of a deprecated token, utility, recipe, or pattern. If you set
   `deprecated: 'use X instead'` in config, that message shows up in the lint error.
 - `prefer-token` (warn) — a raw value where a token exists, with the token to use. In `recommended` it's scoped to

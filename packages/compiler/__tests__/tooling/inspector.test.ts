@@ -11,6 +11,7 @@ const emptyInspection = (path = 'app.tsx'): FileInspectionResult => ({
   tokenRefs: [],
   componentEntries: [],
   styleEntries: [],
+  dynamicValues: [],
 })
 
 describe('FileInspector', () => {

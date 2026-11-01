@@ -3,6 +3,7 @@ import {
   fileNotIncludedRuleName,
   noDebugRuleName,
   noDeprecatedRuleName,
+  noDynamicStylingRuleName,
   noInvalidNestingRuleName,
   noInvalidTokenPathsRuleName,
   preferTokenRuleName,
@@ -30,6 +31,7 @@ const RECOMMENDED_RULES: Record<string, RuleEntry> = {
   [fileNotIncludedRuleName]: 'error',
   [noInvalidTokenPathsRuleName]: 'error',
   [noInvalidNestingRuleName]: 'error',
+  [noDynamicStylingRuleName]: 'warn',
   [noDeprecatedRuleName]: 'warn',
   [noDebugRuleName]: 'warn',
   // Default to flagging hardcoded colors only (the old `no-hardcoded-color`);

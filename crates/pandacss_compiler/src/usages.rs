@@ -15,9 +15,9 @@ use pandacss_utility::{Utility, token_references};
 use rustc_hash::FxHashMap;
 
 use crate::inspection::{
-    FileInspectionResult, StyleEntryInput, StyleEntryKind, StyleEntryOwner, StyleEntryRef,
-    StyleEntrySyntax, UsageKind, UsageSite, ValueSpanRef, call_view, component_entry, jsx_view,
-    style_entry, token_ref_site, token_value_ref,
+    DynamicValueSite, FileInspectionResult, StyleEntryInput, StyleEntryKind, StyleEntryOwner,
+    StyleEntryRef, StyleEntrySyntax, UsageKind, UsageSite, ValueSpanRef, call_view,
+    component_entry, jsx_view, style_entry, token_ref_site, token_value_ref,
 };
 use pandacss_config::UserConfig;
 use pandacss_encoder::ConditionSet;
@@ -131,6 +131,16 @@ pub fn inspect_file_source(
         token_refs,
         component_entries,
         style_entries,
+        dynamic_values: result
+            .dynamic_style_values
+            .into_iter()
+            .map(|value| DynamicValueSite {
+                kind: value.kind,
+                range: line_index.locate_range(value.span.start, value.span.end),
+                path: value.path,
+                span: value.span,
+            })
+            .collect(),
     }
 }
 

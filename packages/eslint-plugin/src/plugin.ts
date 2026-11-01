@@ -8,6 +8,7 @@ import {
   createNoDebugRule,
   createNoDeprecatedRule,
   createNoDescendantSelectorsRule,
+  createNoDynamicStylingRule,
   createNoImportantRule,
   createNoInvalidTokenPathsRule,
   createNoMarginPropertiesRule,
@@ -24,6 +25,7 @@ import {
   noDebugRuleName,
   noDeprecatedRuleName,
   noDescendantSelectorsRuleName,
+  noDynamicStylingRuleName,
   noImportantRuleName,
   noInvalidNestingRuleName,
   noInvalidTokenPathsRuleName,
@@ -139,6 +141,7 @@ export function bindRules(linter: Linter, project: Project): Record<string, Rule
     }),
     [noInvalidTokenPathsRuleName]: createNoInvalidTokenPathsRule({ inspect }),
     [noInvalidNestingRuleName]: createNoInvalidNestingRule({ inspect }),
+    [noDynamicStylingRuleName]: createNoDynamicStylingRule({ inspect }),
     [noDeprecatedRuleName]: createNoDeprecatedRule({
       inspect,
       tokens: spec.tokens.deprecated,

@@ -635,7 +635,10 @@ they rely on the resolved compiler model rather than string matching.
   CSS.
 - `no-invalid-nesting` ✅ (D, v1) — selector-shaped key with a nested object that Panda left `unknown` (missing `&`).
   Recommended (error); suggests prefixing `&`.
-- `no-dynamic-styling` 🟢 (D, v1) — values the compiler can't statically extract.
+- `no-dynamic-styling` ✅ (D, v1) — values the compiler can't statically extract. Reads `dynamicValues` from the
+  inspection result, so it reports exactly what encode dropped: unreadable values, the runtime side of `||`/`??`,
+  computed keys, and whole `css()`/pattern arguments. Opaque spreads, recipe variants, and JSX tags Panda doesn't own
+  are skipped. It owns `panda_call_unextractable`, which `extraction-diagnostics` filters out.
 - `no-property-renaming` 🟢 (D, v1) · `no-unsafe-token-fn-usage` 🟢 (D, v1).
 
 ### Deprecation
@@ -718,10 +721,10 @@ Port status of the v1 rules (recommended ones default-on, the rest opt-in):
 - Shipped ✅: `file-not-included`, `no-debug`, `no-deprecated-tokens` (→ `no-deprecated`), `no-hardcoded-color` (→
   `prefer-token` colors preset), `no-invalid-token-paths`, `no-important`, `no-margin-properties`,
   `no-physical-properties`, `prefer-unified-property-style` (→ `no-shorthand-longhand-mix`),
-  `prefer-shorthand-properties` + `prefer-longhand-properties` (→ `consistent-property-style`), `no-invalid-nesting`.
-- High-value next (Tier 1, data exists): `no-unsafe-token-fn-usage` 🟢 (`tokenRefs[].needsCssVar`), `no-dynamic-styling`
-  🟢 (compiler diagnostics), `no-property-renaming` 🟡, `no-config-function-in-source` 🟡 (needs `imports` on the
-  inspection result).
+  `prefer-shorthand-properties` + `prefer-longhand-properties` (→ `consistent-property-style`), `no-invalid-nesting`,
+  `no-dynamic-styling`.
+- High-value next (Tier 1, data exists): `no-unsafe-token-fn-usage` 🟢 (`tokenRefs[].needsCssVar`),
+  `no-property-renaming` 🟡, `no-config-function-in-source` 🟡 (needs `imports` on the inspection result).
 - Consolidated / renamed: `no-escape-hatch` → `no-arbitrary-values`; ad-hoc restrictions → `restrict-styles`.
 - Stylistic (Tier 3, fixable): `prefer-atomic-properties`, `prefer-composite-properties`.
   `prefer-unified-property-style` shipped as `no-shorthand-longhand-mix`; `prefer-{shorthand,longhand}-properties`

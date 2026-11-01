@@ -3,7 +3,7 @@
 use pandacss_extractor::StyleSourceOwnerKind;
 use pandacss_extractor::StyleSourceRef;
 use pandacss_extractor::{
-    ExtractedCall, ExtractedJsx, JsxKind, LineIndex, MatchCategory, TokenRef,
+    DynamicStyleValueKind, ExtractedCall, ExtractedJsx, JsxKind, LineIndex, MatchCategory, TokenRef,
 };
 use pandacss_literal::Literal;
 use pandacss_tokens::{ResolvedTokenPath, TokenDictionary};
@@ -23,6 +23,16 @@ pub struct FileInspectionResult {
     pub token_refs: Vec<TokenRefSite>,
     pub component_entries: Vec<ComponentEntryRef>,
     pub style_entries: Vec<StyleEntryRef>,
+    pub dynamic_values: Vec<DynamicValueSite>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicValueSite {
+    pub kind: DynamicStyleValueKind,
+    pub path: Vec<String>,
+    pub span: Span,
+    pub range: SourceRange,
 }
 
 #[derive(Debug, Clone, Serialize)]

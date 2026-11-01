@@ -14,6 +14,7 @@ mod calls;
 mod cross_file;
 mod deferred_value;
 mod design_system_imports;
+mod dynamic_values;
 mod export_names;
 mod extract;
 mod imports;
@@ -73,10 +74,10 @@ pub use pandacss_shared::{
     diagnostic_codes,
 };
 pub use style_tree::{
-    StyleObject, StyleSpread, StyleTree, has_nested_spread_branches, project_literal,
-    style_tree_has_open_local_value, style_tree_has_open_spread, style_tree_has_open_value,
-    style_tree_has_rewrite_sites, style_tree_has_runtime_branch, style_tree_has_value_and,
-    style_tree_is_open, style_tree_object_entry,
+    OpenSpreadKind, StyleObject, StyleSpread, StyleTree, has_nested_spread_branches,
+    project_literal, style_tree_has_open_local_value, style_tree_has_open_spread,
+    style_tree_has_open_value, style_tree_has_rewrite_sites, style_tree_has_runtime_branch,
+    style_tree_has_value_and, style_tree_is_open, style_tree_object_entry,
 };
 pub use transform_facts::{
     ConditionalExpressionFacts, ExpressionFacts, ExpressionKind, LogicalExpressionFacts,
@@ -85,6 +86,7 @@ pub use transform_facts::{
 
 // Internal-only: keep `VisitorContext` accessible to sibling modules but out
 // of the public API.
+pub use dynamic_values::{DynamicStyleValue, DynamicStyleValueKind};
 pub(crate) use matcher::VisitorContext;
 pub(crate) use scope::Resolver;
 pub use source::LineIndex;

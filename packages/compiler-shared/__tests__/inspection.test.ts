@@ -52,6 +52,7 @@ function file(input: Partial<FileInspectionResult> = {}): FileInspectionResult {
     tokenRefs: [],
     componentEntries: [],
     styleEntries: [],
+    dynamicValues: [],
     ...input,
   }
 }
