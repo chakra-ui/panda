@@ -457,3 +457,123 @@ fn a_conditional_semantic_token_depends_on_both_aliases_it_names_in_reverse_orde
         );
     });
 }
+
+fn composition_theme(lead: &serde_json::Value) -> UserConfig {
+    config(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c", "shorthand": "c", "values": "colors" } },
+        "theme": {
+            "tokens": { "colors": { "semantic": { "text": {
+                "neutral": { "main": { "value": "#111" } },
+                "neutralMain": { "value": "#111", "deprecated": true }
+            } } } },
+            "textStyles": { "lead": { "value": lead } }
+        }
+    }))
+}
+
+#[test]
+fn a_composition_does_not_depend_on_an_alias_its_shorthand_overrides() {
+    let config = composition_theme(&json!({
+        "color": "semantic.text.neutralMain",
+        "c": "semantic.text.neutral.main"
+    }));
+    references_for(&config, |references| {
+        let found =
+            references.dependencies(&StyleReference::Composition("textStyles.lead".to_owned()));
+        assert!(
+            found.contains(&token("colors.semantic.text.neutral.main")),
+            "{found:?}"
+        );
+        assert!(
+            !found.contains(&token("colors.semantic.text.neutralMain")),
+            "{found:?}"
+        );
+    });
+}
+
+#[test]
+fn a_composition_does_not_depend_on_an_alias_its_longhand_overrides() {
+    let config = composition_theme(&json!({
+        "c": "semantic.text.neutralMain",
+        "color": "semantic.text.neutral.main"
+    }));
+    references_for(&config, |references| {
+        let found =
+            references.dependencies(&StyleReference::Composition("textStyles.lead".to_owned()));
+        assert!(
+            found.contains(&token("colors.semantic.text.neutral.main")),
+            "{found:?}"
+        );
+        assert!(
+            !found.contains(&token("colors.semantic.text.neutralMain")),
+            "{found:?}"
+        );
+    });
+}
+
+#[test]
+fn a_composition_depends_on_both_aliases_when_conditions_keep_both() {
+    let config = composition_theme(&json!({
+        "color": "semantic.text.neutralMain",
+        "_hover": { "c": "semantic.text.neutral.main" }
+    }));
+    references_for(&config, |references| {
+        let found =
+            references.dependencies(&StyleReference::Composition("textStyles.lead".to_owned()));
+        assert!(
+            found.contains(&token("colors.semantic.text.neutral.main")),
+            "{found:?}"
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutralMain")),
+            "{found:?}"
+        );
+    });
+}
+
+fn recipe_token_requirements(base: &serde_json::Value) -> String {
+    let config = config(json!({
+        "importMap": { "recipe": ["@panda/recipes"] },
+        "utilities": { "color": { "className": "c", "shorthand": "c", "values": "colors" } },
+        "theme": {
+            "tokens": { "colors": { "semantic": { "text": {
+                "neutral": { "main": { "value": "#111" } },
+                "neutralMain": { "value": "#111", "deprecated": true }
+            } } } },
+            "recipes": { "label": { "className": "label", "base": base } }
+        }
+    }));
+    let mut project = crate::common::project_with_source(
+        &config,
+        "import { label } from '@panda/recipes'; label();",
+    );
+    let snapshots = project.stylesheet_snapshots(&config);
+    pandacss_stylesheet::collect_style_requirements(&crate::common::project_input(
+        &config, &snapshots,
+    ))
+    .requirements
+    .iter()
+    .filter(|requirement| requirement.kind == "token")
+    .map(|requirement| requirement.name.clone())
+    .collect::<Vec<_>>()
+    .join("\n")
+}
+
+#[test]
+fn a_recipe_does_not_require_an_alias_its_shorthand_overrides() {
+    let tokens = recipe_token_requirements(&json!({
+        "color": "semantic.text.neutralMain",
+        "c": "semantic.text.neutral.main"
+    }));
+    assert_eq!(tokens, "colors.semantic.text.neutral.main");
+}
+
+#[test]
+fn a_recipe_does_not_require_an_alias_its_longhand_overrides() {
+    let tokens = recipe_token_requirements(&json!({
+        "c": "semantic.text.neutralMain",
+        "color": "semantic.text.neutral.main"
+    }));
+    assert_eq!(tokens, "colors.semantic.text.neutral.main");
+}

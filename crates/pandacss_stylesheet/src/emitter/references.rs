@@ -215,8 +215,8 @@ struct ReferenceCollector<'r, 'a> {
     owner: &'r StyleReferences<'a>,
     seen: FxHashSet<StyleReference>,
     references: Vec<StyleReference>,
-    /// Variable → every token path the style wrote for it. Aliases can share a
-    /// variable, so the variable alone can't say which ones were written.
+    /// Variable → every token path written for the value being resolved next. Aliases
+    /// can share a variable, so the variable alone can't say which ones were written.
     written: FxHashMap<String, Vec<String>>,
 }
 
@@ -274,14 +274,21 @@ impl ReferenceSink for ReferenceCollector<'_, '_> {
         }
     }
 
-    fn authored(&mut self, prop: &str, value: &str) {
-        let literal = Literal::String(value.to_owned());
-        let Some(resolved) = self.owner.cx.utility.resolve_utility_value(prop, &literal) else {
-            return;
-        };
-        for path in &resolved.tokens {
-            self.write_path(path);
+    fn authored_declaration(&mut self, prop: &str, value: &str, authored: &[(&str, &str)]) {
+        for (authored_prop, authored_value) in authored {
+            let literal = Literal::String((*authored_value).to_owned());
+            if let Some(resolved) = self
+                .owner
+                .cx
+                .utility
+                .resolve_utility_value(authored_prop, &literal)
+            {
+                for path in &resolved.tokens {
+                    self.write_path(path);
+                }
+            }
         }
+        self.declaration(prop, value);
     }
 
     fn value(&mut self, value: &str) {
@@ -299,6 +306,7 @@ impl ReferenceSink for ReferenceCollector<'_, '_> {
         for path in paths {
             self.push(StyleReference::Token(path));
         }
+        self.written.clear();
     }
 
     fn property(&mut self, prop: &str) {
