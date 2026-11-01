@@ -195,37 +195,106 @@ const MAX_BRANCH_CALLS: usize = 64;
 
 /// Apply a pure fn to already-folded call arguments.
 pub(crate) fn apply_pure_fn(func: &OwnedPureFn, args: &[Literal]) -> Option<Literal> {
-    apply_once(func, args).or_else(|| {
-        let calls = args.iter().try_fold(1usize, |calls, arg| {
-            let branches = arg.runtime_values().len();
-            calls
-                .checked_mul(branches)
-                .filter(|&calls| calls <= MAX_BRANCH_CALLS)
-        })?;
-        (calls > 1).then(|| apply_per_branch(func, args)).flatten()
-    })
+    apply_once(func, args).or_else(|| apply_per_branch(func, args, &mut MAX_BRANCH_CALLS.clone()))
 }
 
-/// A body that branches on a `Conditional` argument runs once per runtime value.
-fn apply_per_branch(func: &OwnedPureFn, args: &[Literal]) -> Option<Literal> {
-    let index = args
-        .iter()
-        .position(|arg| matches!(arg, Literal::Conditional(_)))?;
+/// A body that reads an either/or value, passed in or captured, runs once per runtime value.
+fn apply_per_branch(func: &OwnedPureFn, args: &[Literal], budget: &mut usize) -> Option<Literal> {
     let mut results: Vec<Literal> = Vec::new();
-    for value in args[index].runtime_values() {
-        let mut branch_args = args.to_vec();
-        branch_args[index] = value.clone();
-        let result =
-            apply_once(func, &branch_args).or_else(|| apply_per_branch(func, &branch_args))?;
-        for value in result.runtime_values() {
-            if !results.contains(value) {
-                results.push(value.clone());
-            }
+    let split_arg = args
+        .iter()
+        .enumerate()
+        .find_map(|(index, arg)| Some((index, arg.split_first_branch()?)));
+    if let Some((index, variants)) = split_arg {
+        for variant in variants {
+            let mut branch_args = args.to_vec();
+            branch_args[index] = variant;
+            push_runtime_values(&mut results, &apply_branch(func, &branch_args, budget)?);
+        }
+    } else {
+        let variants = func
+            .clone()
+            .first_branching_value_mut()?
+            .split_first_branch()?;
+        for variant in variants {
+            let mut branch = func.clone();
+            *branch.first_branching_value_mut()? = variant;
+            push_runtime_values(&mut results, &apply_branch(&branch, args, budget)?);
         }
     }
     match results.len() {
         0 | 1 => results.pop(),
         _ => Some(Literal::Conditional(results)),
+    }
+}
+
+fn apply_branch(func: &OwnedPureFn, args: &[Literal], budget: &mut usize) -> Option<Literal> {
+    *budget = budget.checked_sub(1)?;
+    apply_once(func, args).or_else(|| apply_per_branch(func, args, budget))
+}
+
+fn push_runtime_values(results: &mut Vec<Literal>, result: &Literal) {
+    for value in result.runtime_values() {
+        if !results.contains(value) {
+            results.push(value.clone());
+        }
+    }
+}
+
+impl OwnedPureFn {
+    fn first_branching_value_mut(&mut self) -> Option<&mut Literal> {
+        self.defaults
+            .iter_mut()
+            .flatten()
+            .chain(&mut self.locals)
+            .chain(std::iter::once(&mut self.body))
+            .find_map(OwnedPureExpr::first_branching_value_mut)
+    }
+}
+
+impl OwnedPureExpr {
+    /// The first baked capture that differs by runtime branch. Nested callees split their own.
+    fn first_branching_value_mut(&mut self) -> Option<&mut Literal> {
+        match self {
+            Self::Value(value) => value.has_conditional().then_some(value),
+            Self::Param(_) => None,
+            Self::Template { exprs: items, .. }
+            | Self::Array(items)
+            | Self::Call { args: items, .. } => {
+                items.iter_mut().find_map(Self::first_branching_value_mut)
+            }
+            Self::BinaryAdd(left, right)
+            | Self::Binary { left, right, .. }
+            | Self::Logical { left, right, .. }
+            | Self::Index {
+                object: left,
+                index: right,
+            }
+            | Self::Default {
+                value: left,
+                fallback: right,
+            } => left
+                .first_branching_value_mut()
+                .or_else(|| right.first_branching_value_mut()),
+            Self::Unary { arg: inner, .. }
+            | Self::Member { object: inner, .. }
+            | Self::Read { object: inner, .. } => inner.first_branching_value_mut(),
+            Self::Conditional {
+                test,
+                consequent,
+                alternate,
+            } => test
+                .first_branching_value_mut()
+                .or_else(|| consequent.first_branching_value_mut())
+                .or_else(|| alternate.first_branching_value_mut()),
+            Self::Object(entries) => entries.iter_mut().find_map(|entry| match entry {
+                OwnedObjectEntry::Property(OwnedKey::Computed(key), value) => key
+                    .first_branching_value_mut()
+                    .or_else(|| value.first_branching_value_mut()),
+                OwnedObjectEntry::Property(OwnedKey::Static(_), value)
+                | OwnedObjectEntry::Spread(value) => value.first_branching_value_mut(),
+            }),
+        }
     }
 }
 

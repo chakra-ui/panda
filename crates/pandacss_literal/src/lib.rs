@@ -83,6 +83,41 @@ impl Literal {
         }
     }
 
+    /// One copy per runtime value of the first `Conditional` in the tree, or `None` when there is none.
+    #[must_use]
+    pub fn split_first_branch(&self) -> Option<Vec<Self>> {
+        match self {
+            Self::Conditional(_) => Some(self.runtime_values().into_iter().cloned().collect()),
+            Self::Object(entries) => entries.iter().enumerate().find_map(|(index, (_, value))| {
+                let variants = value.split_first_branch()?;
+                Some(
+                    variants
+                        .into_iter()
+                        .map(|variant| {
+                            let mut entries = entries.clone();
+                            entries[index].1 = variant;
+                            Self::Object(entries)
+                        })
+                        .collect(),
+                )
+            }),
+            Self::Array(items) => items.iter().enumerate().find_map(|(index, item)| {
+                let variants = item.split_first_branch()?;
+                Some(
+                    variants
+                        .into_iter()
+                        .map(|variant| {
+                            let mut items = items.clone();
+                            items[index] = variant;
+                            Self::Array(items)
+                        })
+                        .collect(),
+                )
+            }),
+            _ => None,
+        }
+    }
+
     /// True if this is a String or Token (behaves like a string for coercion/equality).
     #[must_use]
     pub fn is_string_like(&self) -> bool {

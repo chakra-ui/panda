@@ -1235,11 +1235,29 @@ fn a_helper_with_too_many_argument_combinations_is_left_unknown() {
     let source = indoc! {r"
         import { css } from '@panda/css';
 
-        const pick = (a, b, c, d, e, f, g) => (a === 1 ? '8' : '4');
+        const pick = (a, b, c, d, e, f, g) => `${a}${b}${c}${d}${e}${f}${g}px`;
         const v = x ? 1 : 2;
         css({ p: pick(v, v, v, v, v, v, v) });
     "};
     assert_yaml_snapshot!(run(source).calls, @"[]");
+}
+
+#[test]
+fn a_helper_branching_on_one_of_many_ternary_arguments_keeps_both_results() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const pick = (a, b, c, d, e, f, g) => (a === 1 ? '8' : '4');
+        const v = x ? 1 : 2;
+        css({ p: pick(v, v, v, v, v, v, v) });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @r#"
+    - p:
+        kind: conditional
+        branches:
+          - "8"
+          - "4"
+    "#);
 }
 
 #[test]
@@ -1259,4 +1277,134 @@ fn a_helper_within_the_argument_combination_limit_keeps_every_result() {
           - "8"
           - "4"
     "#);
+}
+
+#[test]
+fn a_helper_reading_a_captured_ternary_variable_keeps_both_results() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const tone = loud ? 'loud' : 'quiet';
+        const color = () => (tone === 'quiet' ? 'blue.500' : 'orange.500');
+        css({ bg: color() });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - orange.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn a_helper_function_copying_a_captured_ternary_into_a_local_keeps_both_results() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const tone = loud ? 'loud' : 'quiet';
+        function color() {
+          const current = tone;
+          return current === 'quiet' ? 'blue.500' : 'orange.500';
+        }
+        css({ bg: color() });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - orange.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn a_helper_reading_a_ternary_inside_a_captured_object_keeps_both_results() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const theme = { tone: loud ? 'loud' : 'quiet' };
+        const color = () => (theme.tone === 'quiet' ? 'blue.500' : 'orange.500');
+        css({ bg: color() });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - orange.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn a_helper_calling_a_helper_that_reads_a_captured_ternary_keeps_both_results() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const tone = loud ? 'loud' : 'quiet';
+        const base = () => (tone === 'quiet' ? 'blue.500' : 'orange.500');
+        const color = () => base();
+        css({ bg: color() });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - orange.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn a_helper_given_an_object_with_a_ternary_field_keeps_both_results() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const pad = ({ size }) => (size === 'lg' ? '8' : '4');
+        css({ p: pad({ size: big ? 'lg' : 'sm' }) });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @r#"
+    - p:
+        kind: conditional
+        branches:
+          - "8"
+          - "4"
+    "#);
+}
+
+#[test]
+fn a_helper_reading_a_captured_ternary_and_a_ternary_argument_keeps_every_result() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const tone = loud ? 'loud' : 'quiet';
+        const color = (strong) => (tone === 'quiet' ? (strong ? 'blue.700' : 'blue.500') : 'orange.500');
+        css({ bg: color(bold ? true : false) });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - orange.500
+          - blue.700
+          - blue.500
+    ");
+}
+
+#[test]
+fn a_helper_returning_a_captured_ternary_unchanged_keeps_both_values() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const tone = loud ? 'blue.500' : 'orange.500';
+        const color = () => tone;
+        css({ bg: color() });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - blue.500
+          - orange.500
+    ");
 }

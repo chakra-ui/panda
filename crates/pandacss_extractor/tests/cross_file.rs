@@ -1327,6 +1327,34 @@ fn imported_pure_arrow_call_folds() {
 }
 
 #[test]
+fn imported_helper_reading_a_captured_ternary_keeps_both_results() {
+    let (fs, main) = project(
+        indoc::indoc! {r"
+            import { getColor } from './helpers';
+            import { css } from '@panda/css';
+            css({ color: getColor() });
+        "},
+        &[(
+            "helpers.ts",
+            indoc::indoc! {r"
+                const tone = loud ? 'loud' : 'quiet';
+                export const getColor = () => (tone === 'quiet' ? 'blue.500' : 'orange.500');
+            "},
+        )],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main)), @"
+    calls:
+      - name: css
+        data:
+          - color:
+              kind: conditional
+              branches:
+                - orange.500
+                - blue.500
+    ");
+}
+
+#[test]
 fn imported_pure_helper_with_locals_folds() {
     let (fs, main) = project(
         indoc::indoc! {r"
