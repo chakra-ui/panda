@@ -1535,3 +1535,43 @@ fn spacing_values_from_a_theme_function_link_their_token() {
     mt auto -> -
     ");
 }
+
+fn aliased_tokens() -> Fixture {
+    system_with(json!({
+        "theme": {
+            "tokens": {
+                "colors": { "semantic": { "text": {
+                    "neutral": { "main": { "value": "#111" } },
+                    "neutralMain": { "value": "#111", "deprecated": true }
+                } } }
+            }
+        },
+        "utilities": { "color": { "className": "c", "values": "colors" } }
+    }))
+}
+
+#[test]
+fn a_token_keeps_the_path_written_when_a_deprecated_alias_shares_its_variable() {
+    let result = inspect_file_source(
+        &aliased_tokens(),
+        "a.tsx",
+        "import { css } from '@panda/css'\ncss({ color: 'semantic.text.neutral.main' })",
+    );
+    assert_snapshot!(summary(&result), @"
+    Property color
+    Token colors.semantic.text.neutral.main
+    ");
+}
+
+#[test]
+fn a_deprecated_alias_keeps_the_path_written_when_it_shares_a_variable() {
+    let result = inspect_file_source(
+        &aliased_tokens(),
+        "a.tsx",
+        "import { css } from '@panda/css'\ncss({ color: 'semantic.text.neutralMain' })",
+    );
+    assert_snapshot!(summary(&result), @"
+    Property color
+    Token colors.semantic.text.neutralMain
+    ");
+}

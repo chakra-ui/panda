@@ -234,3 +234,99 @@ fn a_composition_depends_on_what_its_conditional_styles_use() {
         assert!(found.contains(&token("colors.night")), "{found:?}");
     });
 }
+
+fn aliased_theme(tokens: &serde_json::Value) -> UserConfig {
+    config(json!({
+        "utilities": {
+            "color": { "className": "c", "values": "colors" },
+            "borderColor": { "className": "bc", "values": "colors" }
+        },
+        "theme": {
+            "tokens": { "colors": { "semantic": { "text": tokens } } },
+            "semanticTokens": {
+                "colors": { "fg": { "value": "{colors.semantic.text.neutral.main}" } }
+            }
+        }
+    }))
+}
+
+fn canonical_first() -> UserConfig {
+    aliased_theme(&json!({
+        "neutral": { "main": { "value": "#111" } },
+        "neutralMain": { "value": "#111", "deprecated": true }
+    }))
+}
+
+fn deprecated_first() -> UserConfig {
+    aliased_theme(&json!({
+        "neutralMain": { "value": "#111", "deprecated": true },
+        "neutral": { "main": { "value": "#111" } }
+    }))
+}
+
+#[test]
+fn a_token_is_reported_by_its_written_path_when_a_later_alias_shares_its_variable() {
+    references_for(&canonical_first(), |references| {
+        assert_eq!(
+            references.property("color", &json!("semantic.text.neutral.main")),
+            [
+                StyleReference::Utility("color".to_owned()),
+                token("colors.semantic.text.neutral.main")
+            ]
+        );
+    });
+}
+
+#[test]
+fn a_deprecated_alias_is_reported_by_its_written_path_when_declared_first() {
+    references_for(&deprecated_first(), |references| {
+        assert_eq!(
+            references.property("color", &json!("semantic.text.neutralMain")),
+            [
+                StyleReference::Utility("color".to_owned()),
+                token("colors.semantic.text.neutralMain")
+            ]
+        );
+    });
+}
+
+#[test]
+fn a_canonical_token_is_reported_by_its_written_path_when_the_alias_is_declared_first() {
+    references_for(&deprecated_first(), |references| {
+        assert_eq!(
+            references.property("color", &json!("semantic.text.neutral.main")),
+            [
+                StyleReference::Utility("color".to_owned()),
+                token("colors.semantic.text.neutral.main")
+            ]
+        );
+    });
+}
+
+#[test]
+fn a_braced_token_reference_keeps_its_written_path_when_an_alias_shares_its_variable() {
+    references_for(&canonical_first(), |references| {
+        let found = references.property(
+            "border",
+            &json!("1px solid {colors.semantic.text.neutral.main}"),
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutral.main")),
+            "{found:?}"
+        );
+        assert!(
+            !found.contains(&token("colors.semantic.text.neutralMain")),
+            "{found:?}"
+        );
+    });
+}
+
+#[test]
+fn a_semantic_token_depends_on_the_path_it_was_defined_with_when_an_alias_shares_its_variable() {
+    references_for(&canonical_first(), |references| {
+        assert_eq!(
+            references.dependencies(&token("colors.fg")),
+            [token("colors.semantic.text.neutral.main")]
+        );
+    });
+}

@@ -943,6 +943,8 @@ pub(crate) trait ReferenceSink {
     fn value(&mut self, value: &str);
     /// An authored style key, before lowering.
     fn property(&mut self, _prop: &str) {}
+    /// An authored value, before lowering turns its token paths into variables.
+    fn authored(&mut self, _prop: &str, _value: &str) {}
     /// A `textStyle`, `layerStyle`, or `animationStyle` value.
     fn composition(&mut self, _prop: &'static str, _name: &str) {}
     /// Emission lowers composition styles in place; reports keep them as one reference.
@@ -1029,9 +1031,16 @@ fn collect_token_reference_vars(
     let Some(token_dictionary) = token_dictionary else {
         return;
     };
-    collect_wrapped_token_reference_vars(value, token_dictionary, refs);
-    collect_token_function_vars(value, token_dictionary, refs);
-    collect_direct_token_reference_var(value, token_dictionary, refs);
+    visit_token_reference_paths(value, &mut |path| {
+        collect_token_path_var(path, token_dictionary, refs);
+    });
+}
+
+/// Token paths a value names: `{colors.red.500}`, `token(colors.red.500)`, or a bare path.
+fn visit_token_reference_paths(value: &str, visit: &mut impl FnMut(&str)) {
+    visit_wrapped_token_reference_paths(value, visit);
+    visit_token_function_paths(value, visit);
+    visit_direct_token_reference_path(value, visit);
 }
 
 fn collect_token_ref_vars(
@@ -1047,31 +1056,19 @@ fn collect_token_ref_vars(
     }
 }
 
-fn collect_wrapped_token_reference_vars(
-    value: &str,
-    token_dictionary: &TokenDictionary,
-    refs: &mut FxHashSet<String>,
-) {
+fn visit_wrapped_token_reference_paths(value: &str, visit: &mut impl FnMut(&str)) {
     let mut rest = value;
     while let Some(start) = rest.find('{') {
         let after_open = &rest[start + 1..];
         let Some(end) = after_open.find('}') else {
             return;
         };
-        collect_token_path_var(
-            strip_token_modifier(after_open[..end].trim()),
-            token_dictionary,
-            refs,
-        );
+        visit(strip_token_modifier(after_open[..end].trim()));
         rest = &after_open[end + 1..];
     }
 }
 
-fn collect_token_function_vars(
-    value: &str,
-    token_dictionary: &TokenDictionary,
-    refs: &mut FxHashSet<String>,
-) {
+fn visit_token_function_paths(value: &str, visit: &mut impl FnMut(&str)) {
     let mut rest = value;
     while let Some(start) = rest.find("token(") {
         let after_open = &rest[start + "token(".len()..];
@@ -1081,22 +1078,18 @@ fn collect_token_function_vars(
         let path = after_open[..end]
             .split_once(',')
             .map_or(after_open[..end].trim(), |(path, _)| path.trim());
-        collect_token_path_var(strip_token_modifier(path), token_dictionary, refs);
+        visit(strip_token_modifier(path));
         rest = &after_open[end + 1..];
     }
 }
 
-fn collect_direct_token_reference_var(
-    value: &str,
-    token_dictionary: &TokenDictionary,
-    refs: &mut FxHashSet<String>,
-) {
+fn visit_direct_token_reference_path(value: &str, visit: &mut impl FnMut(&str)) {
     let trimmed = value.trim();
     if trimmed
         .bytes()
         .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'))
     {
-        collect_token_path_var(strip_token_modifier(trimmed), token_dictionary, refs);
+        visit(strip_token_modifier(trimmed));
     }
 }
 
@@ -1265,11 +1258,15 @@ impl<'a> EmitContext<'a> {
         let mut entries = Vec::with_capacity(group.entries.len());
         for entry in &group.entries {
             sink.property(self.utility.resolve_shorthand(&entry.prop));
+            let value = atom_value_to_string(&entry.value);
+            if let Some(value) = value.as_deref() {
+                sink.authored(&entry.prop, value);
+            }
 
             if let Some(prop) = composition_prop(&entry.prop)
-                && let Some(name) = atom_value_to_string(&entry.value)
+                && let Some(name) = value.as_deref()
             {
-                sink.composition(prop, &name);
+                sink.composition(prop, name);
                 if !sink.expands_compositions() {
                     continue;
                 }
@@ -1358,6 +1355,7 @@ impl<'a> EmitContext<'a> {
         let Some(raw) = raw.as_deref() else {
             return;
         };
+        sink.authored(atom.prop(), raw);
 
         // Expand like emission does, or a member's tokens look unused and get pruned.
         if let Some(members) = parse_first_that_works_value(raw)
@@ -1421,6 +1419,9 @@ impl<'a> EmitContext<'a> {
         };
         for (key, value) in entries {
             sink.property(self.utility.resolve_shorthand(key));
+            if self.resolved_condition_paths(key).is_none() && !is_nested_selector_key(key) {
+                visit_scalar_strings(value, &mut |value| sink.authored(key, value));
+            }
 
             if let Some(prop) = composition_prop(key) {
                 visit_scalar_strings(value, &mut |name| sink.composition(prop, name));
@@ -1514,6 +1515,9 @@ impl<'a> EmitContext<'a> {
         };
         for entry in entries {
             sink.property(self.utility.resolve_shorthand(&entry.prop));
+            if let Some(value) = atom_value_to_string(&entry.value) {
+                sink.authored(&entry.prop, &value);
+            }
         }
         let base_rule = LoweredTarget::new("&");
         for rule in self.style_rules_for_entries(&[base_rule], entries, importance) {

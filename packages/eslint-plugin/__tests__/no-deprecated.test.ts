@@ -20,6 +20,11 @@ const ruleTester = await createPandaRuleTester(`export default {
         red: { 500: { value: '#f00' } },
         old: { value: '#000', deprecated: true },
         legacy: { value: '#111', deprecated: 'use colors.red.500 instead' },
+        // Both paths write --colors-text-neutral-main.
+        text: {
+          neutral: { main: { value: '#222' } },
+          neutralMain: { value: '#222', deprecated: true },
+        },
       },
     },
     recipes: {
@@ -49,6 +54,11 @@ ruleTester.run('no-deprecated', {
     {
       filename: 'app.tsx',
       code: ["import { css } from '@panda/css'", "css({ color: 'red.500', _hover: { color: 'red.500' } })"].join('\n'),
+    },
+    // A deprecated alias that shares the token's CSS variable isn't what was written.
+    {
+      filename: 'app.tsx',
+      code: ["import { css } from '@panda/css'", "css({ color: 'text.neutral.main' })"].join('\n'),
     },
   ],
   invalid: [
@@ -95,6 +105,12 @@ ruleTester.run('no-deprecated', {
       filename: 'app.tsx',
       code: ["import { css } from '@panda/css'", "css({ color: ['old', 'red.500'] })"].join('\n'),
       errors: [tokenDeprecated],
+    },
+    // A deprecated alias is still flagged when it shares the token's CSS variable.
+    {
+      filename: 'app.tsx',
+      code: ["import { css } from '@panda/css'", "css({ color: 'text.neutralMain' })"].join('\n'),
+      errors: [{ message: 'Panda token "colors.text.neutralMain" is deprecated.' }],
     },
     // Token with an author message.
     {
