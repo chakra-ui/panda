@@ -123,6 +123,8 @@ export interface BuildInfoArtifact {
   viewTransitions?: BuildViewTransition[]
   modules: Record<string, BuildModuleEntry>
   exports?: Record<string, string>
+  /** Names declared by more than one module: exposing module → declaring module. */
+  sharedExports?: Record<string, Record<string, string>>
   /** Design-system dependencies re-exported with `export *`. */
   starReexportDependencies?: string[]
   /** Dependencies tracked in module `dependencyImports`. */
@@ -219,12 +221,19 @@ export interface DesignSystemValidateOptions {
   pandaVersion?: string
 }
 
+/** An export the app imports; `from` is where in the package it points (`dist/alpha.js` or `alpha`). */
+export interface DesignSystemImport {
+  name: string
+  from?: string
+}
+
+/** A bare string is a name imported from the package root. */
+export type DesignSystemImportInput = string | DesignSystemImport
+
 export interface DesignSystemLoadOptions {
   buildInfo: BuildInfoArtifact
-  /**
-   * Export names imported by the consumer; omit for namespace/all-module hydration.
-   */
-  imports?: string[]
+  /** Imports from the consumer; omit for namespace/all-module hydration. */
+  imports?: DesignSystemImportInput[]
   pandaVersion?: string
 }
 
@@ -257,11 +266,11 @@ export interface Compiler {
   scan(options?: ScanOptions): string[]
   /**
    * Per-package DS import selections from one scan of `include` sources.
-   * Each entry is `null` = hydrate all, or export names to narrow.
+   * Each entry is `null` = hydrate all, or the imports to narrow to.
    */
   designSystemImportSelections(
     packages: Array<{ packageRoots: string[]; excludeModules?: string[] }>,
-  ): Array<string[] | null>
+  ): Array<DesignSystemImport[] | null>
   isSourceFile(path: string): boolean
   /** The tracked path for `path`, following symlinks. */
   resolveSourcePath(path: string): string

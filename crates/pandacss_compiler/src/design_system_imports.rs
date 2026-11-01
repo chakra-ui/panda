@@ -6,11 +6,12 @@ use std::path::Path;
 
 use pandacss_config::UserConfig;
 use pandacss_extractor::{
-    DesignSystemImportSelection, DesignSystemPackageQuery,
+    CrossFileResolver, DesignSystemImport, DesignSystemPackageQuery,
     collect_design_system_imports_for_packages,
 };
 use pandacss_fs::FileSystem;
 use pandacss_project::Project;
+use rustc_hash::FxHashMap;
 use serde::Deserialize;
 
 use crate::{SourceGlobOverrides, source_glob_options};
@@ -26,7 +27,7 @@ pub struct DesignSystemImportQuery {
 }
 
 /// Per-package import selections from one scan of the `include` sources.
-/// Each entry is `None` = hydrate everything, or the export names to narrow to.
+/// Each entry is `None` = hydrate everything, or the imports to narrow to.
 ///
 /// # Errors
 /// Returns the glob error when the source scan fails (e.g. a missing `cwd`).
@@ -35,7 +36,7 @@ pub fn design_system_import_selections<F: FileSystem>(
     fs: &F,
     user_config: &UserConfig,
     packages: &[DesignSystemImportQuery],
-) -> io::Result<Vec<Option<Vec<String>>>> {
+) -> io::Result<Vec<Option<Vec<DesignSystemImport>>>> {
     let paths = fs.glob(&source_glob_options(
         user_config,
         SourceGlobOverrides::default(),
@@ -70,15 +71,60 @@ pub fn design_system_import_selections<F: FileSystem>(
         })
         .collect();
 
-    Ok(collect_design_system_imports_for_packages(
+    let selections = collect_design_system_imports_for_packages(
         sources
             .iter()
             .map(|(path, source)| (path.as_str(), source.as_str())),
         &queries,
+    );
+    let resolver = project.system().extractor_config().cross_file.as_ref();
+    let importer = sources.first().map(|(path, _)| Path::new(path));
+    Ok(selections
+        .into_iter()
+        .zip(&root_lists)
+        .map(|(selection, roots)| {
+            let mut imports = selection.into_load_imports()?;
+            if let (Some(resolver), Some(importer)) = (resolver, importer) {
+                let mut files_by_subpath = FxHashMap::default();
+                for import in &mut imports {
+                    let Some(subpath) = import.from.take() else {
+                        continue;
+                    };
+                    let file = files_by_subpath
+                        .entry(subpath.clone())
+                        .or_insert_with(|| package_file(fs, resolver, importer, roots, &subpath))
+                        .clone();
+                    import.from = Some(file.unwrap_or(subpath));
+                }
+            }
+            Some(imports)
+        })
+        .collect())
+}
+
+/// `<root>/<subpath>` resolved through the package `exports` map, relative to the package.
+fn package_file<F: FileSystem>(
+    fs: &F,
+    resolver: &CrossFileResolver,
+    importer: &Path,
+    roots: &[&str],
+    subpath: &str,
+) -> Option<String> {
+    let file = roots
+        .iter()
+        .find_map(|root| resolver.resolve_path(importer, &format!("{root}/{subpath}")))?;
+    let package_dir = file
+        .ancestors()
+        .skip(1)
+        .find(|dir| fs.exists(&dir.join("package.json")))?;
+    let relative = file.strip_prefix(package_dir).ok()?;
+    Some(
+        relative
+            .components()
+            .map(|part| part.as_os_str().to_string_lossy())
+            .collect::<Vec<_>>()
+            .join("/"),
     )
-    .into_iter()
-    .map(DesignSystemImportSelection::into_load_imports)
-    .collect())
 }
 
 /// Prefer the project's in-memory source (watch `applyChange`) over the filesystem.

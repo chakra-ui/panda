@@ -20,6 +20,12 @@ pub struct DesignSystemImportPackageQuery {
     pub exclude_modules: Option<Vec<String>>,
 }
 
+#[napi(object)]
+pub struct DesignSystemImport {
+    pub name: String,
+    pub from: Option<String>,
+}
+
 #[napi]
 impl Compiler {
     /// Read a source file from the native filesystem and parse it.
@@ -94,7 +100,7 @@ impl Compiler {
     }
 
     /// Per-package import selections from one scan of `include` sources.
-    /// Each entry is `null` = hydrate all, or export names to narrow.
+    /// Each entry is `null` = hydrate all, or the imports to narrow to.
     ///
     /// # Errors
     /// Returns an error when the scan fails (e.g. a non-existent `cwd`).
@@ -106,7 +112,7 @@ impl Compiler {
     pub fn design_system_import_selections(
         &self,
         packages: Vec<DesignSystemImportPackageQuery>,
-    ) -> napi::Result<Vec<Option<Vec<String>>>> {
+    ) -> napi::Result<Vec<Option<Vec<DesignSystemImport>>>> {
         let packages: Vec<pandacss_compiler::DesignSystemImportQuery> = packages
             .into_iter()
             .map(|pkg| pandacss_compiler::DesignSystemImportQuery {
@@ -120,6 +126,22 @@ impl Compiler {
             &self.user_config,
             &packages,
         )
+        .map(|selections| {
+            selections
+                .into_iter()
+                .map(|selection| {
+                    selection.map(|imports| {
+                        imports
+                            .into_iter()
+                            .map(|import| DesignSystemImport {
+                                name: import.name,
+                                from: import.from,
+                            })
+                            .collect()
+                    })
+                })
+                .collect()
+        })
         .map_err(|err| napi::Error::from_reason(format!("scan failed: {err}")))
     }
 

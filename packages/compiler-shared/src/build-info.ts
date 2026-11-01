@@ -6,6 +6,8 @@ import type {
   BuildInfoHydrateResult,
   BuildInfoNormalizeOptions,
   BuildInfoDesignSystemDependency,
+  DesignSystemImport,
+  DesignSystemImportInput,
 } from './types'
 
 /**
@@ -43,13 +45,12 @@ export class BuildInfo {
     return { ok: true }
   }
 
-  modulesFor(info: BuildInfoArtifact, exportNames: string[]): string[] {
+  modulesFor(info: BuildInfoArtifact, imports: DesignSystemImportInput[]): string[] {
     const resolve = moduleResolver(info)
     const modules = new Set<string>()
 
-    for (const name of exportNames) {
-      const module = resolve(name)
-      if (module) modules.add(module)
+    for (const input of imports) {
+      for (const module of resolve(toImport(input))) modules.add(module)
     }
 
     for (const module of modules) {
@@ -60,9 +61,10 @@ export class BuildInfo {
   }
 
   /** Names that resolve to no module here and may come from a star re-export. */
-  unresolvedExports(info: BuildInfoArtifact, exportNames: string[]): string[] {
+  unresolvedExports(info: BuildInfoArtifact, imports: DesignSystemImportInput[]): string[] {
     const resolve = moduleResolver(info)
-    return exportNames.filter((name) => !resolve(name))
+    const names = imports.map(toImport).filter((input) => resolve(input).length === 0)
+    return [...new Set(names.map((input) => input.name))]
   }
 
   /** Modules that publish token refs — keep them under treeshake. */
@@ -100,15 +102,27 @@ export class BuildInfo {
         : entry
     }
 
-    if (!info.exports) return { ...info, modules }
+    const normalized: BuildInfoArtifact = { ...info, modules }
 
-    const exports: Record<string, string> = {}
-
-    for (const [name, key] of Object.entries(info.exports)) {
-      exports[name] = options.mapModuleKey(key)
+    if (info.exports) {
+      normalized.exports = {}
+      for (const [name, key] of Object.entries(info.exports)) {
+        normalized.exports[name] = options.mapModuleKey(key)
+      }
     }
 
-    return { ...info, modules, exports }
+    if (info.sharedExports) {
+      normalized.sharedExports = {}
+      for (const [name, byModule] of Object.entries(info.sharedExports)) {
+        const mapped: Record<string, string> = {}
+        for (const [exposing, declaring] of Object.entries(byModule)) {
+          mapped[options.mapModuleKey(exposing)] = options.mapModuleKey(declaring)
+        }
+        normalized.sharedExports[name] = mapped
+      }
+    }
+
+    return normalized
   }
 
   hydrate(info: BuildInfoArtifact, options: BuildInfoHydrateOptions): BuildInfoHydrateResult {
@@ -144,6 +158,8 @@ function hasBuildInfoShape(info: Record<string, unknown>): boolean {
     (info.viewTransitions === undefined || Array.isArray(info.viewTransitions)) &&
     isRecord(info.modules) &&
     (info.exports === undefined || isRecord(info.exports)) &&
+    (info.sharedExports === undefined ||
+      (isRecord(info.sharedExports) && Object.values(info.sharedExports).every(isRecord))) &&
     (info.recipes === undefined || isRecord(info.recipes)) &&
     (info.designSystemDependencies === undefined || isStringArray(info.designSystemDependencies)) &&
     (info.starReexportDependencies === undefined || isStringArray(info.starReexportDependencies)) &&
@@ -166,23 +182,60 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function moduleResolver(info: BuildInfoArtifact): (name: string) => string | undefined {
+function toImport(input: DesignSystemImportInput): DesignSystemImport {
+  return typeof input === 'string' ? { name: input } : input
+}
+
+function moduleResolver(info: BuildInfoArtifact): (input: DesignSystemImport) => string[] {
   const exports = isRecord(info.exports) ? info.exports : {}
-  const moduleKeys = isRecord(info.modules) ? new Set(Object.keys(info.modules)) : new Set<string>()
-  return (name) => {
-    const fromExport = exports[name]
-    return typeof fromExport === 'string' ? fromExport : resolveModuleKey(name, moduleKeys)
+  const shared = isRecord(info.sharedExports) ? info.sharedExports : {}
+  const moduleKeys = isRecord(info.modules) ? Object.keys(info.modules) : []
+
+  return ({ name, from }) => {
+    const byModule = shared[name]
+    if (isRecord(byModule)) {
+      const exposing = Object.keys(byModule)
+      const matched = from === undefined ? [] : closestModules(exposing, from)
+      const declaring = (matched.length > 0 ? matched : exposing).map((key) => byModule[key])
+      return [...new Set(declaring.filter((key): key is string => typeof key === 'string'))]
+    }
+    const exported = exports[name]
+    if (typeof exported === 'string') return [exported]
+    return closestModules(moduleKeys, from ?? name)
   }
 }
 
-const MODULE_KEY_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.cjs'] as const
+const MODULE_EXTENSION = /\.(?:d\.)?[cm]?[jt]sx?$/
 
-/** Resolve a subpath stem (`badge`) or key (`badge.tsx`) against `modules` keys. */
-function resolveModuleKey(name: string, moduleKeys: Set<string>): string | undefined {
-  if (moduleKeys.has(name)) return name
-  for (const ext of MODULE_KEY_EXTENSIONS) {
-    const key = name.endsWith(ext) ? name : `${name}${ext}`
-    if (moduleKeys.has(key)) return key
+/** Module keys whose path ends with the most segments of `path`, ignoring extensions and `index`. */
+function closestModules(moduleKeys: string[], path: string): string[] {
+  const target = pathSegments(path)
+  let best = 0
+  let matches: string[] = []
+
+  for (const key of moduleKeys) {
+    const segments = pathSegments(key)
+    let shared = 0
+    while (
+      shared < target.length &&
+      shared < segments.length &&
+      target[target.length - 1 - shared] === segments[segments.length - 1 - shared]
+    ) {
+      shared++
+    }
+    if (shared === 0 || shared < best) continue
+    if (shared > best) {
+      best = shared
+      matches = []
+    }
+    matches.push(key)
   }
-  return undefined
+
+  return matches
+}
+
+function pathSegments(path: string): string[] {
+  const segments = path.replace(MODULE_EXTENSION, '').split('/').filter(Boolean)
+  if (segments.length > 1 && segments.at(-1) === 'index') segments.pop()
+  return segments
 }

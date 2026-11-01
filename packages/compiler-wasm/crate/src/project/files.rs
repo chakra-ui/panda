@@ -59,7 +59,7 @@ impl WasmCompiler {
     }
 
     /// Per-package import selections from one scan. Each entry is `null` = all,
-    /// or export names to narrow.
+    /// or the imports to narrow to.
     ///
     /// # Errors
     /// Returns a JS error when the scan fails or serialization fails.

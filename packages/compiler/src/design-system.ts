@@ -2,6 +2,7 @@ import {
   type BuildInfoArtifact,
   type BuildInfoDesignSystemDependency,
   type Compiler,
+  type DesignSystemImport,
   type Diagnostic,
 } from '@pandacss/compiler-shared'
 import {
@@ -40,7 +41,7 @@ export interface HydrateDesignSystemOptions {
   /** Narrow hydrate to export names imported from each design-system package. */
   treeshake?: boolean
   /** Precomputed selections — skips a second scan (watch sync). */
-  importSelections?: Array<string[] | null>
+  importSelections?: Array<DesignSystemImport[] | null>
 }
 
 export interface HydrateDesignSystemResult {
@@ -76,7 +77,7 @@ export function hydrateDesignSystem(
   }
 }
 
-type ModuleSelection = { kind: 'all' } | { kind: 'none' } | { kind: 'names'; names: string[] }
+type ModuleSelection = { kind: 'all' } | { kind: 'none' } | { kind: 'names'; imports: DesignSystemImport[] }
 
 const ALL_MODULES: ModuleSelection = { kind: 'all' }
 const NO_MODULES: ModuleSelection = { kind: 'none' }
@@ -85,8 +86,8 @@ const NO_MODULES: ModuleSelection = { kind: 'none' }
 function withDependencyImports(
   compiler: Compiler,
   chain: ResolvedDesignSystem[],
-  appSelections: Array<string[] | null | undefined>,
-): Array<string[] | null> {
+  appSelections: Array<DesignSystemImport[] | null | undefined>,
+): Array<DesignSystemImport[] | null> {
   const selections = appSelections.map(selectionFromScan)
 
   for (let i = chain.length - 1; i > 0; i--) {
@@ -98,38 +99,41 @@ function withDependencyImports(
       const imported = info
         ? compiler.designSystem.dependencyImports(info, selectionToImports(selected), chain[ancestorIndex]!.name)
         : undefined
-      selections[ancestorIndex] = mergeSelection(selections[ancestorIndex]!, selectionFromImports(imported))
+      selections[ancestorIndex] = mergeSelection(selections[ancestorIndex]!, selectionFromNames(imported))
     }
   }
 
   return selections.map(selectionToScan)
 }
 
-function selectionFromScan(selection: string[] | null | undefined): ModuleSelection {
+function selectionFromScan(selection: DesignSystemImport[] | null | undefined): ModuleSelection {
   if (selection == null) return ALL_MODULES
-  return selection.length === 0 ? NO_MODULES : { kind: 'names', names: selection }
+  return selection.length === 0 ? NO_MODULES : { kind: 'names', imports: selection }
 }
 
-function selectionFromImports(imports: string[] | undefined): ModuleSelection {
-  if (imports === undefined) return ALL_MODULES
-  return imports.length === 0 ? NO_MODULES : { kind: 'names', names: imports }
+function selectionFromNames(names: string[] | undefined): ModuleSelection {
+  if (names === undefined) return ALL_MODULES
+  return selectionFromScan(names.map((name) => ({ name })))
 }
 
-function selectionToImports(selection: ModuleSelection): string[] | undefined {
+function selectionToImports(selection: ModuleSelection): DesignSystemImport[] | undefined {
   if (selection.kind === 'all') return undefined
-  return selection.kind === 'none' ? [] : selection.names
+  return selection.kind === 'none' ? [] : selection.imports
 }
 
-function selectionToScan(selection: ModuleSelection): string[] | null {
-  if (selection.kind === 'all') return null
-  return selection.kind === 'none' ? [] : selection.names
+function selectionToScan(selection: ModuleSelection): DesignSystemImport[] | null {
+  return selectionToImports(selection) ?? null
 }
 
 function mergeSelection(current: ModuleSelection, added: ModuleSelection): ModuleSelection {
   if (current.kind === 'all' || added.kind === 'all') return ALL_MODULES
   if (current.kind === 'none') return added
   if (added.kind === 'none') return current
-  return { kind: 'names', names: [...new Set([...current.names, ...added.names])] }
+  const imports = new Map<string, DesignSystemImport>()
+  for (const entry of [...current.imports, ...added.imports]) {
+    imports.set(`${entry.from ?? ''}\0${entry.name}`, entry)
+  }
+  return { kind: 'names', imports: [...imports.values()] }
 }
 
 function readBuildInfo(compiler: Compiler, ds: ResolvedDesignSystem): BuildInfoArtifact | undefined {
@@ -152,8 +156,11 @@ export function designSystemDependencies(chain: ResolvedDesignSystem[] | undefin
   }))
 }
 
-/** One scan for the whole chain. `null` = full hydrate; `string[]` = narrow. */
-export function collectImportSelections(compiler: Compiler, chain: ResolvedDesignSystem[]): Array<string[] | null> {
+/** One scan for the whole chain. `null` = full hydrate; otherwise the imports to narrow to. */
+export function collectImportSelections(
+  compiler: Compiler,
+  chain: ResolvedDesignSystem[],
+): Array<DesignSystemImport[] | null> {
   return compiler.designSystemImportSelections(
     chain.map((ds) => ({
       packageRoots: getPackageRoots(ds),
@@ -164,7 +171,7 @@ export function collectImportSelections(compiler: Compiler, chain: ResolvedDesig
 
 export function treeshakeKeyFromSelections(
   chain: ResolvedDesignSystem[],
-  selections: Array<string[] | null> | undefined,
+  selections: Array<DesignSystemImport[] | null> | undefined,
 ): string {
   if (!selections?.length) return ''
   return chain.map((ds, i) => `${ds.name}:${JSON.stringify(selections[i] ?? null)}`).join('|')
@@ -198,7 +205,7 @@ function hydrateLevel(
   ds: ResolvedDesignSystem,
   pandaVersion: string | undefined,
   consumerTokenPaths: string[],
-  imports: string[] | undefined,
+  imports: DesignSystemImport[] | undefined,
 ): Diagnostic[] {
   const compat = compiler.designSystem.validate(ds.manifest, { pandaVersion })
 
@@ -217,7 +224,7 @@ function hydrateArtifacts(
   compiler: Compiler,
   ds: ResolvedDesignSystem,
   pandaVersion: string | undefined,
-  imports: string[] | undefined,
+  imports: DesignSystemImport[] | undefined,
 ): Diagnostic[] {
   if (ds.optionMismatch && ds.optionMismatch.length > 0) {
     const diagnostic = recoverFromSources(compiler, ds, (sourceCount, severity) =>

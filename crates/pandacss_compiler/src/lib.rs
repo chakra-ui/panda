@@ -51,6 +51,7 @@ pub use inspection::{
     UsageSite,
 };
 pub use output::{WriteError, write_output_file, write_relative_files};
+pub use pandacss_extractor::DesignSystemImport;
 pub use setup::{LoadedSystem, load_system};
 pub use usages::{inspect_file_source, suggest_semantic_tokens, suggest_tokens};
 pub use views::{

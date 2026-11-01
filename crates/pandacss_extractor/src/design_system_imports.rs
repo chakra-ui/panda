@@ -8,22 +8,50 @@ use crate::imports::{
     ImportKind, ImportRecord, ImportSpecifierKind, ScanImportsOptions, scan_imports_with,
 };
 
-/// `All` = full hydrate; `Names` = only these export names (may be empty).
+/// `All` = full hydrate; `Names` = only these imports (may be empty).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum DesignSystemImportSelection {
     All,
-    Names { names: Vec<String> },
+    Names { imports: Vec<DesignSystemImport> },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+pub struct DesignSystemImport {
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub from: Option<String>,
+}
+
+impl DesignSystemImport {
+    #[must_use]
+    pub fn new(name: impl Into<String>, from: Option<&str>) -> Self {
+        Self {
+            name: name.into(),
+            from: from.map(str::to_owned),
+        }
+    }
 }
 
 impl DesignSystemImportSelection {
     /// `None` = omit `imports` (full hydrate); `Some` = pass to `load({ imports })`.
     #[must_use]
-    pub fn into_load_imports(self) -> Option<Vec<String>> {
+    pub fn into_load_imports(self) -> Option<Vec<DesignSystemImport>> {
         match self {
             Self::All => None,
-            Self::Names { names } => Some(names),
+            Self::Names { imports } => Some(imports),
         }
+    }
+
+    /// The flat form build info records: names plus subpaths.
+    #[must_use]
+    pub fn export_names(imports: &[DesignSystemImport]) -> Vec<String> {
+        let names: BTreeSet<&str> = imports
+            .iter()
+            .flat_map(|import| [Some(import.name.as_str()), import.from.as_deref()])
+            .flatten()
+            .collect();
+        names.into_iter().map(str::to_owned).collect()
     }
 }
 
@@ -69,7 +97,9 @@ where
     )
     .into_iter()
     .next()
-    .unwrap_or(DesignSystemImportSelection::Names { names: Vec::new() })
+    .unwrap_or(DesignSystemImportSelection::Names {
+        imports: Vec::new(),
+    })
 }
 
 /// Filter already-scanned records for one package.
@@ -81,7 +111,9 @@ pub fn selection_from_import_records(
 ) -> DesignSystemImportSelection {
     let roots = normalize_roots(package_roots);
     if roots.is_empty() {
-        return DesignSystemImportSelection::Names { names: Vec::new() };
+        return DesignSystemImportSelection::Names {
+            imports: Vec::new(),
+        };
     }
     let excluded: BTreeSet<&str> = exclude_modules.iter().copied().collect();
     selection_from_records(records, &roots, &excluded)
@@ -107,7 +139,7 @@ fn selection_from_records<'r>(
     roots: &[&str],
     excluded: &BTreeSet<&str>,
 ) -> DesignSystemImportSelection {
-    let mut names = BTreeSet::new();
+    let mut imports = BTreeSet::new();
 
     for record in records {
         if record.type_only || !is_design_system_module(&record.module, roots, excluded) {
@@ -116,11 +148,7 @@ fn selection_from_records<'r>(
         if matches!(record.kind, ImportKind::SideEffect | ImportKind::ExportAll) {
             return DesignSystemImportSelection::All;
         }
-        // Deep imports (`@acme/ds/button`) — keep the subpath stem so
-        // `modulesFor` can resolve module keys when barrel `exports` miss.
-        if let Some(stem) = package_subpath(&record.module, roots) {
-            names.insert(stem.to_owned());
-        }
+        let from = package_subpath(&record.module, roots);
         for specifier in &record.specifiers {
             if specifier.type_only {
                 continue;
@@ -128,12 +156,12 @@ fn selection_from_records<'r>(
             if specifier.kind == ImportSpecifierKind::Namespace || specifier.imported == "*" {
                 return DesignSystemImportSelection::All;
             }
-            names.insert(specifier.imported.clone());
+            imports.insert(DesignSystemImport::new(specifier.imported.clone(), from));
         }
     }
 
     DesignSystemImportSelection::Names {
-        names: names.into_iter().collect(),
+        imports: imports.into_iter().collect(),
     }
 }
 
@@ -206,6 +234,15 @@ fn is_design_system_module(module_id: &str, roots: &[&str], excluded: &BTreeSet<
 mod tests {
     use super::*;
 
+    fn named(names: &[&str]) -> DesignSystemImportSelection {
+        DesignSystemImportSelection::Names {
+            imports: names
+                .iter()
+                .map(|name| DesignSystemImport::new(*name, None))
+                .collect(),
+        }
+    }
+
     fn collect(source: &str, roots: &[&str], exclude: &[&str]) -> DesignSystemImportSelection {
         collect_design_system_imports([("fixture.tsx", source)], roots, exclude)
     }
@@ -218,9 +255,7 @@ mod tests {
                 &["@acme/ds"],
                 &[]
             ),
-            DesignSystemImportSelection::Names {
-                names: vec!["Button".into(), "Card".into(), "default".into()],
-            }
+            named(&["Button", "Card", "default"])
         );
     }
 
@@ -248,9 +283,7 @@ mod tests {
                 &["@acme/ds"],
                 &[]
             ),
-            DesignSystemImportSelection::Names {
-                names: vec!["Button".into()],
-            }
+            named(&["Button"])
         );
     }
 
@@ -285,9 +318,7 @@ mod tests {
                 export { Card } from '@acme/ds'
             "}),
             DesignSystemUsage {
-                referenced_exports: DesignSystemImportSelection::Names {
-                    names: vec!["Card".into()],
-                },
+                referenced_exports: named(&["Card"]),
                 star_reexport: true,
             }
         );
@@ -326,7 +357,7 @@ mod tests {
                 export * from '@acme/ds/css'
             "}),
             DesignSystemUsage {
-                referenced_exports: DesignSystemImportSelection::Names { names: vec![] },
+                referenced_exports: named(&[]),
                 star_reexport: false,
             }
         );
@@ -340,7 +371,7 @@ mod tests {
                 &["@acme/ds"],
                 &["@acme/ds/css"]
             ),
-            DesignSystemImportSelection::Names { names: vec![] }
+            named(&[])
         );
     }
 
@@ -360,17 +391,7 @@ mod tests {
                 },
             ],
         );
-        assert_eq!(
-            selections,
-            vec![
-                DesignSystemImportSelection::Names {
-                    names: vec!["Button".into()],
-                },
-                DesignSystemImportSelection::Names {
-                    names: vec!["Stack".into()],
-                },
-            ]
-        );
+        assert_eq!(selections, vec![named(&["Button"]), named(&["Stack"]),]);
     }
 
     #[test]
@@ -381,16 +402,13 @@ mod tests {
     #[test]
     fn names_selection_loads_only_those_names() {
         assert_eq!(
-            DesignSystemImportSelection::Names {
-                names: vec!["Button".into()]
-            }
-            .into_load_imports(),
-            Some(vec!["Button".into()])
+            named(&["Button"]).into_load_imports(),
+            Some(vec![DesignSystemImport::new("Button", None)])
         );
     }
 
     #[test]
-    fn subpath_imports_also_select_the_subpath_name() {
+    fn subpath_imports_keep_the_subpath_with_each_name() {
         assert_eq!(
             collect(
                 "import Badge from '@acme/ds/badge'\nimport { Panel } from '@acme/ds/panel'",
@@ -398,13 +416,22 @@ mod tests {
                 &[]
             ),
             DesignSystemImportSelection::Names {
-                names: vec![
-                    "Panel".into(),
-                    "badge".into(),
-                    "default".into(),
-                    "panel".into(),
+                imports: vec![
+                    DesignSystemImport::new("Panel", Some("panel")),
+                    DesignSystemImport::new("default", Some("badge")),
                 ],
             }
+        );
+    }
+
+    #[test]
+    fn build_info_records_subpath_imports_as_names_and_subpaths() {
+        assert_eq!(
+            DesignSystemImportSelection::export_names(&[
+                DesignSystemImport::new("Root", Some("alpha")),
+                DesignSystemImport::new("Root", Some("beta")),
+            ]),
+            vec!["Root".to_owned(), "alpha".to_owned(), "beta".to_owned()]
         );
     }
 
@@ -432,7 +459,7 @@ mod tests {
                 &["@acme/ds"],
                 &["@acme/ds/css", "@acme/ds/tokens"]
             ),
-            DesignSystemImportSelection::Names { names: vec![] }
+            named(&[])
         );
     }
 }

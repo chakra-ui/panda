@@ -125,6 +125,7 @@ native/wasm compiler). Export names go to `designSystem.load({ imports })` → `
 | ---------------------------------------------------------------- | --------------------------------------------- |
 | `{ Button } from '@acme/ds'`                                     | modules for `Button` only                     |
 | `@acme/ds/button` (subpath)                                      | stem / module key (`button`, `button.tsx`, …) |
+| `{ Root } from '@acme/ds/dialog'` (`Root` in several modules)    | the module `dialog` resolves to               |
 | `export { Button } from '@acme/ds'`                              | same as a named import                        |
 | `import *` / `export *` / side-effect / `import()` / `require()` | all modules                                   |
 | no DS imports                                                    | nothing                                       |
@@ -161,9 +162,18 @@ JSX (`<Button>`) attributes its recipe to its module like any call, so its expor
 module. Consumer lookup is O(1) via `modulesFor`. Covered today: locally-declared exports
 (`export function/const/class/enum`, destructured `export const { a, b } = …`, `export { local as Public }`), named
 re-exports (`export { X as Y } from './y'`), star re-exports (`export * from './y'`), and default re-exports
-(`export { default as Button } from './button'`). Namespace stars (`export * as DS from './ds'`) intentionally fall back
-to the namespace-import path for now; from a design-system dependency they map to the re-exporting module, whose `*`
-dependency import hydrates that whole dependency.
+(`export { default as Button } from './button'`).
+
+`exports` holds one module per name, so a name several modules export (Ark-style part names: `Root`, `Trigger`, default
+exports) also goes in `sharedExports`: name → exposing module → declaring module. The consumer handles a shared name the
+way a bundler handles an import: the scan resolves `@acme/ds/dialog` through the package `exports` map to the file it
+points at (`dist/dialog/index.js`), and `modulesFor` keeps the exposing modules whose path ends with the most segments
+of that file (`src/dialog/index.ts`), ignoring extensions and `index`. When the import doesn't resolve, the subpath
+(`dialog`) is matched instead. A root import, or a path that matches no exposing module, keeps every declaring module:
+over-include rather than drop styles. `dependencyImports` stays a flat list of names and subpaths, so a shared name a
+middle design system imports keeps every declaring module. Namespace stars (`export * as DS from './ds'`) intentionally
+fall back to the namespace-import path for now; from a design-system dependency they map to the re-exporting module,
+whose `*` dependency import hydrates that whole dependency.
 
 ## Recipes, slot recipes, patterns
 

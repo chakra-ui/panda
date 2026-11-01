@@ -64,6 +64,9 @@ pub struct BuildInfo {
     /// must hydrate. Omitted when empty.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub exports: BTreeMap<String, String>,
+    /// Names declared by more than one module: exposing module -> declaring module.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub shared_exports: BTreeMap<String, BTreeMap<String, String>>,
     /// Design-system dependencies re-exported with `export *`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub star_reexport_dependencies: Vec<String>,
@@ -734,7 +737,8 @@ impl super::Project {
         let imports = scan_module_imports(&self.files);
         record_module_imports(&imports, &module_keys, &mut modules);
         let usage = record_dependency_usage(&imports, dependencies, &mut modules);
-        let exports = ExportResolver::new(&self.files, &module_keys, usage.modules).resolve_all();
+        let (exports, shared_exports) =
+            ExportResolver::new(&self.files, &module_keys, usage.modules).resolve_all();
 
         BuildInfo {
             schema_version: SCHEMA_VERSION,
@@ -749,6 +753,7 @@ impl super::Project {
             keyframes: build_keyframes,
             modules,
             exports,
+            shared_exports,
             star_reexport_dependencies: usage.star_reexports.into_iter().collect(),
             design_system_dependencies: dependencies
                 .iter()
@@ -1026,8 +1031,10 @@ fn record_dependency_usage(
             }
             let names = match file_usage.referenced_exports {
                 DesignSystemImportSelection::All => vec!["*".to_owned()],
-                DesignSystemImportSelection::Names { names } if names.is_empty() => continue,
-                DesignSystemImportSelection::Names { names } => names,
+                DesignSystemImportSelection::Names { imports } if imports.is_empty() => continue,
+                DesignSystemImportSelection::Names { imports } => {
+                    DesignSystemImportSelection::export_names(&imports)
+                }
             };
             if let Some(module) = modules.get_mut(path) {
                 module
@@ -1103,6 +1110,8 @@ impl<'a> ModuleKeys<'a> {
     }
 }
 
+type SharedExports = BTreeMap<String, BTreeMap<String, String>>;
+
 /// Resolves export surfaces across already-parsed project files.
 struct ExportResolver<'a> {
     files: BTreeMap<String, ExportInfo>,
@@ -1135,15 +1144,25 @@ impl<'a> ExportResolver<'a> {
         }
     }
 
-    fn resolve_all(&mut self) -> BTreeMap<String, String> {
-        let mut out = BTreeMap::new();
+    fn resolve_all(&mut self) -> (BTreeMap<String, String>, SharedExports) {
+        let mut exports = BTreeMap::new();
+        let mut exposed: SharedExports = BTreeMap::new();
         let paths = self.files.keys().cloned().collect::<Vec<_>>();
         for path in paths {
             for (name, module) in self.resolve_surface(&path) {
-                out.insert(name, module);
+                exposed
+                    .entry(name.clone())
+                    .or_default()
+                    .insert(path.clone(), module.clone());
+                exports.insert(name, module);
             }
         }
-        out
+        exposed.retain(|_, by_module| {
+            let mut declaring = by_module.values();
+            let first = declaring.next();
+            declaring.any(|module| Some(module) != first)
+        });
+        (exports, exposed)
     }
 
     fn resolve_surface(&mut self, path: &str) -> BTreeMap<String, String> {

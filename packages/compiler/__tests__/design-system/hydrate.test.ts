@@ -1389,8 +1389,166 @@ describe('hydrateDesignSystem (consumer)', () => {
     })
   })
 
+  describe('treeshakeDesignSystem with part names several components export', () => {
+    const files = {
+      'src/dialog/index.ts': "export * from './root'",
+      'src/dialog/root.tsx': [
+        "import { css } from '@panda/css'",
+        "export const Root = () => <div className={css({ paddingTop: '4px' })} />",
+      ].join('\n'),
+      'src/select.tsx': [
+        "import { css } from '@panda/css'",
+        "export const Root = () => <div className={css({ marginBottom: '8px' })} />",
+      ].join('\n'),
+      'src/badge.tsx': [
+        "import { css } from '@panda/css'",
+        "export default function Badge() { return <span className={css({ color: 'teal' })} /> }",
+      ].join('\n'),
+      'src/chip.tsx': [
+        "import { css } from '@panda/css'",
+        "export default function Chip() { return <span className={css({ color: 'plum' })} /> }",
+      ].join('\n'),
+    }
+
+    const utilities = async (app: string, packageFiles: Record<string, string> = {}) => {
+      cwd = createFixture({ config: TREESHAKE_CONFIG, app, buildInfo: libBuildInfo(files) })
+      writeFileTree(cwd, packageFiles)
+      return styleLayers(await createNodeDriver({ cwd })).utilities
+    }
+
+    it('keeps only the dialog Root when the app imports Root from the dialog subpath', async () => {
+      await expect(utilities("import { Root } from '@acme/ds/dialog'")).resolves.toMatchInlineSnapshot(`
+        "@layer utilities {
+          .padding-top_4px {
+            padding-top: 4px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('keeps only the select Root when the app imports Root from the select subpath', async () => {
+      await expect(utilities("import { Root } from '@acme/ds/select'")).resolves.toMatchInlineSnapshot(`
+        "@layer utilities {
+          .margin-bottom_8px {
+            margin-bottom: 8px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('keeps both Roots when the app imports Root from each subpath', async () => {
+      await expect(
+        utilities(
+          ["import { Root } from '@acme/ds/dialog'", "import { Root as Select } from '@acme/ds/select'"].join('\n'),
+        ),
+      ).resolves.toMatchInlineSnapshot(`
+        "@layer utilities {
+          .margin-bottom_8px {
+            margin-bottom: 8px;
+          }
+          .padding-top_4px {
+            padding-top: 4px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('keeps every Root when the app imports Root from the package root', async () => {
+      await expect(utilities("import { Root } from '@acme/ds'")).resolves.toMatchInlineSnapshot(`
+        "@layer utilities {
+          .margin-bottom_8px {
+            margin-bottom: 8px;
+          }
+          .padding-top_4px {
+            padding-top: 4px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('keeps every Root when the subpath matches no module', async () => {
+      await expect(utilities("import { Root } from '@acme/ds/overlay'")).resolves.toMatchInlineSnapshot(`
+        "@layer utilities {
+          .margin-bottom_8px {
+            margin-bottom: 8px;
+          }
+          .padding-top_4px {
+            padding-top: 4px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('follows the package exports map to the module a renamed subpath points at', async () => {
+      await expect(
+        utilities("import { Root } from '@acme/ds/modal'", {
+          'node_modules/@acme/ds/package.json': json({
+            name: '@acme/ds',
+            version: '1.0.0',
+            exports: { './panda/*': './dist/panda/*', './modal': './dist/dialog/index.js' },
+          }),
+          'node_modules/@acme/ds/dist/dialog/index.js': "export * from './root.js'",
+        }),
+      ).resolves.toMatchInlineSnapshot(`
+        "@layer utilities {
+          .padding-top_4px {
+            padding-top: 4px;
+          }
+        }
+        "
+      `)
+    })
+
+    it('keeps only the badge styles when the app default-imports the badge subpath', async () => {
+      await expect(utilities("import Badge from '@acme/ds/badge'")).resolves.toMatchInlineSnapshot(`
+        "@layer utilities {
+          .color_teal {
+            color: teal;
+          }
+        }
+        "
+      `)
+    })
+  })
+
   describe('treeshakeDesignSystem with a stacked design system', () => {
     // App → @acme/ui → @acme/ds, where @acme/ds ships Button (color: red), Icon (width: 20px), Badge (color: blue).
+
+    it('keeps every @acme/ds Root when an @acme/ui component imports Root from a subpath', async () => {
+      cwd = createStackedFixture({
+        ds: {
+          'src/dialog.tsx': [
+            "import { css } from '@panda/css'",
+            "export const Root = () => <div className={css({ paddingTop: '4px' })} />",
+          ].join('\n'),
+          'src/select.tsx': [
+            "import { css } from '@panda/css'",
+            "export const Root = () => <div className={css({ marginBottom: '8px' })} />",
+          ].join('\n'),
+        },
+        ui: {
+          'confirm.tsx': ["import { Root } from '@acme/ds/dialog'", 'export const Confirm = () => <Root />'].join('\n'),
+        },
+        app: ["import { Confirm } from '@acme/ui'", 'export const App = () => <Confirm />'].join('\n'),
+      })
+
+      expect(styleLayers(await createNodeDriver({ cwd })).utilities).toMatchInlineSnapshot(`
+        "@layer utilities {
+          .margin-bottom_8px {
+            margin-bottom: 8px;
+          }
+          .padding-top_4px {
+            padding-top: 4px;
+          }
+        }
+        "
+      `)
+    })
 
     it('keeps @acme/ds Icon styles when the app uses an @acme/ui component that wraps Icon', async () => {
       cwd = createStackedFixture({
@@ -1721,6 +1879,8 @@ function libBuildInfo(files: Record<string, string>, { dependsOnAcmeDs = false }
 }
 
 interface StackedFixture {
+  /** `@acme/ds` source files; defaults to Button, Icon, and Badge. */
+  ds?: Record<string, string>
   /** `@acme/ui` source files; `@acme/ui` extends `@acme/ds`. */
   ui: Record<string, string>
   /** `false` simulates an `@acme/ui` build that did not record its `@acme/ds` usage. */
@@ -1757,7 +1917,7 @@ function createStackedFixture(options: StackedFixture): string {
       include: ['**/*.tsx'],
     }`,
     'App.tsx': options.app,
-    ...lib('@acme/ds', libBuildInfo(ACME_DS_FILES)),
+    ...lib('@acme/ds', libBuildInfo(options.ds ?? ACME_DS_FILES)),
     ...lib('@acme/ui', libBuildInfo(options.ui, { dependsOnAcmeDs: options.uiTracksDependencies ?? true }), '@acme/ds'),
   })
 

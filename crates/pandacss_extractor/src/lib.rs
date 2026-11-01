@@ -38,7 +38,7 @@ pub use calls::{
     extract_calls,
 };
 pub use design_system_imports::{
-    DesignSystemImportSelection, DesignSystemPackageQuery, DesignSystemUsage,
+    DesignSystemImport, DesignSystemImportSelection, DesignSystemPackageQuery, DesignSystemUsage,
     collect_design_system_imports, collect_design_system_imports_for_packages,
     design_system_usage_from_import_records, selection_from_import_records,
 };

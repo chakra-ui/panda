@@ -711,6 +711,47 @@ fn build_info_tracks_named_specifier_exports() {
     );
 }
 
+#[test]
+fn build_info_lists_every_module_that_exports_a_shared_part_name() {
+    let mut project = create_project(json!({ "jsxFramework": "react" }));
+    project.parse_file(
+        "src/dialog/dialog.tsx",
+        "import { css } from '@panda/css'; export const Root = () => <div className={css({ pt: '4' })} />;",
+    );
+    project.parse_file("src/dialog/index.ts", "export * from './dialog';");
+    project.parse_file(
+        "src/select.tsx",
+        "import { css } from '@panda/css'; export const Root = () => <div className={css({ mb: '8' })} />;",
+    );
+    project.parse_file(
+        "src/badge.tsx",
+        "import { css } from '@panda/css'; export const Badge = () => <span className={css({ color: 'red' })} />;",
+    );
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert_yaml_snapshot!(info.shared_exports, @"
+    Root:
+      src/dialog/dialog.tsx: src/dialog/dialog.tsx
+      src/dialog/index.ts: src/dialog/dialog.tsx
+      src/select.tsx: src/select.tsx
+    ");
+}
+
+#[test]
+fn build_info_does_not_list_a_name_re_exported_from_its_one_module() {
+    let mut project = create_project(json!({ "jsxFramework": "react" }));
+    project.parse_file(
+        "src/badge.tsx",
+        "import { css } from '@panda/css'; export const Badge = () => <span className={css({ color: 'red' })} />;",
+    );
+    project.parse_file("src/index.ts", "export { Badge } from './badge';");
+
+    let info = project.build_info("^2.0.0".into());
+
+    assert!(info.shared_exports.is_empty());
+}
+
 fn acme_ds_dependency() -> DesignSystemDependency {
     DesignSystemDependency {
         name: "@acme/ds".into(),

@@ -1,5 +1,6 @@
 import type { BuildInfo } from './build-info'
 import type {
+  DesignSystemImportInput,
   DesignSystemLoadOptions,
   DesignSystemLoadResult,
   DesignSystemManifest,
@@ -63,7 +64,7 @@ export class DesignSystem {
   /** Export names needed from `dependencyName` for `imports`; `undefined` = all of it. */
   dependencyImports(
     buildInfo: DesignSystemLoadOptions['buildInfo'],
-    imports: string[] | undefined,
+    imports: DesignSystemImportInput[] | undefined,
     dependencyName: string,
   ): string[] | undefined {
     const modules = resolveHydrateOnly(this.#buildInfo, buildInfo, imports)
@@ -84,7 +85,7 @@ export class DesignSystem {
 function resolveHydrateOnly(
   buildInfo: BuildInfo,
   artifact: DesignSystemLoadOptions['buildInfo'],
-  imports: string[] | undefined,
+  imports: DesignSystemImportInput[] | undefined,
 ): string[] | undefined {
   if (imports === undefined) return undefined
   if (imports.length === 0) return []
