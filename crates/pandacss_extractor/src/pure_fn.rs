@@ -191,8 +191,45 @@ pub(crate) fn lower_function(
     })
 }
 
+const MAX_BRANCH_CALLS: usize = 64;
+
 /// Apply a pure fn to already-folded call arguments.
 pub(crate) fn apply_pure_fn(func: &OwnedPureFn, args: &[Literal]) -> Option<Literal> {
+    apply_once(func, args).or_else(|| {
+        let calls = args.iter().try_fold(1usize, |calls, arg| {
+            let branches = arg.runtime_values().len();
+            calls
+                .checked_mul(branches)
+                .filter(|&calls| calls <= MAX_BRANCH_CALLS)
+        })?;
+        (calls > 1).then(|| apply_per_branch(func, args)).flatten()
+    })
+}
+
+/// A body that branches on a `Conditional` argument runs once per runtime value.
+fn apply_per_branch(func: &OwnedPureFn, args: &[Literal]) -> Option<Literal> {
+    let index = args
+        .iter()
+        .position(|arg| matches!(arg, Literal::Conditional(_)))?;
+    let mut results: Vec<Literal> = Vec::new();
+    for value in args[index].runtime_values() {
+        let mut branch_args = args.to_vec();
+        branch_args[index] = value.clone();
+        let result =
+            apply_once(func, &branch_args).or_else(|| apply_per_branch(func, &branch_args))?;
+        for value in result.runtime_values() {
+            if !results.contains(value) {
+                results.push(value.clone());
+            }
+        }
+    }
+    match results.len() {
+        0 | 1 => results.pop(),
+        _ => Some(Literal::Conditional(results)),
+    }
+}
+
+fn apply_once(func: &OwnedPureFn, args: &[Literal]) -> Option<Literal> {
     let mut bound = Vec::with_capacity(func.param_count);
     for i in 0..func.param_count {
         if let Some(arg) = args.get(i) {
@@ -653,28 +690,15 @@ fn eval_expr(expr: &OwnedPureExpr, args: &[Literal]) -> Option<Literal> {
         }
         OwnedPureExpr::Logical { op, left, right } => {
             let left_val = eval_expr(left, args)?;
-            match op {
-                PureLogicalOp::And => {
-                    if left_val.is_truthy() {
-                        eval_expr(right, args)
-                    } else {
-                        Some(left_val)
-                    }
-                }
-                PureLogicalOp::Or => {
-                    if left_val.is_truthy() {
-                        Some(left_val)
-                    } else {
-                        eval_expr(right, args)
-                    }
-                }
-                PureLogicalOp::Coalesce => {
-                    if matches!(left_val, Literal::Null) {
-                        eval_expr(right, args)
-                    } else {
-                        Some(left_val)
-                    }
-                }
+            let use_right = match op {
+                PureLogicalOp::And => left_val.truthiness()?,
+                PureLogicalOp::Or => !left_val.truthiness()?,
+                PureLogicalOp::Coalesce => left_val.nullishness()?,
+            };
+            if use_right {
+                eval_expr(right, args)
+            } else {
+                Some(left_val)
             }
         }
         OwnedPureExpr::Conditional {
@@ -682,7 +706,7 @@ fn eval_expr(expr: &OwnedPureExpr, args: &[Literal]) -> Option<Literal> {
             consequent,
             alternate,
         } => {
-            if eval_expr(test, args)?.is_truthy() {
+            if eval_expr(test, args)?.truthiness()? {
                 eval_expr(consequent, args)
             } else {
                 eval_expr(alternate, args)
@@ -760,7 +784,7 @@ fn eval_unary(op: PureUnaryOp, v: &Literal) -> Option<Literal> {
             Literal::Number(n) => Some(Literal::Number(-n)),
             _ => None,
         },
-        PureUnaryOp::Not => Some(Literal::Bool(!v.is_truthy())),
+        PureUnaryOp::Not => Some(Literal::Bool(!v.truthiness()?)),
     }
 }
 
@@ -799,8 +823,8 @@ fn eval_binary(op: PureBinaryOp, left: &Literal, right: &Literal) -> Option<Lite
             };
             Some(Literal::Number(n))
         }
-        PureBinaryOp::StrictEq => Some(Literal::Bool(strict_eq(left, right))),
-        PureBinaryOp::StrictNotEq => Some(Literal::Bool(!strict_eq(left, right))),
+        PureBinaryOp::StrictEq => Some(Literal::Bool(strict_eq(left, right)?)),
+        PureBinaryOp::StrictNotEq => Some(Literal::Bool(!strict_eq(left, right)?)),
         PureBinaryOp::EqEq => Some(Literal::Bool(loose_eq(left, right)?)),
         PureBinaryOp::NotEq => Some(Literal::Bool(!loose_eq(left, right)?)),
         PureBinaryOp::Lt => Some(Literal::Bool(less_than(left, right)?)),

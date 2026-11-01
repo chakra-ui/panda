@@ -13,7 +13,7 @@ use oxc_span::GetSpan;
 
 use pandacss_shared::Span;
 
-use crate::literal::{expression_to_literal, property_key_to_string};
+use crate::literal::{expression_to_literal, logical_uses_right, property_key_to_string};
 use crate::pure_fn::fold_accessor_expr;
 use crate::{Literal, Resolver, span_from_oxc};
 
@@ -384,8 +384,8 @@ pub(crate) fn expression_to_style_tree(
         }
 
         Expression::ConditionalExpression(c) => {
-            if let Some(test) = expression_to_literal(&c.test, resolver) {
-                return if test.is_truthy() {
+            if let Some(truthy) = decided_truthiness(&c.test, resolver) {
+                return if truthy {
                     expression_to_style_tree(&c.consequent, resolver)
                 } else {
                     expression_to_style_tree(&c.alternate, resolver)
@@ -410,29 +410,21 @@ pub(crate) fn expression_to_style_tree(
 
         Expression::LogicalExpression(l) => {
             if let Some(left) = expression_to_literal(&l.left, resolver) {
-                return match l.operator {
-                    LogicalOperator::And => {
-                        if left.is_truthy() {
-                            expression_to_style_tree(&l.right, resolver)
-                        } else {
-                            Some(literal_to_style_tree(left))
-                        }
+                match logical_uses_right(l.operator, &left) {
+                    Some(true) => return expression_to_style_tree(&l.right, resolver),
+                    Some(false) => return Some(literal_to_style_tree(left)),
+                    None if l.operator != LogicalOperator::And => {
+                        let mut branches = left
+                            .values_kept_by_default(l.operator == LogicalOperator::Coalesce)
+                            .into_iter()
+                            .cloned()
+                            .map(literal_to_style_tree)
+                            .collect::<Vec<_>>();
+                        branches.extend(expression_to_style_tree(&l.right, resolver));
+                        return Some(StyleTree::Branches(branches));
                     }
-                    LogicalOperator::Or => {
-                        if left.is_truthy() {
-                            Some(literal_to_style_tree(left))
-                        } else {
-                            expression_to_style_tree(&l.right, resolver)
-                        }
-                    }
-                    LogicalOperator::Coalesce => {
-                        if matches!(left, Literal::Null) {
-                            expression_to_style_tree(&l.right, resolver)
-                        } else {
-                            Some(literal_to_style_tree(left))
-                        }
-                    }
-                };
+                    None => {}
+                }
             }
             // Dynamic left: And keeps right for encode+transform; Or/?? →
             // OpenWithFallback(right) when the right folds (encode peels; transform bails).
@@ -639,12 +631,8 @@ fn push_style_spread(
     let argument = argument.get_inner_expression();
     match argument {
         Expression::ConditionalExpression(c) => {
-            if let Some(test) = expression_to_literal(&c.test, resolver) {
-                let branch = if test.is_truthy() {
-                    &c.consequent
-                } else {
-                    &c.alternate
-                };
+            if let Some(truthy) = decided_truthiness(&c.test, resolver) {
+                let branch = if truthy { &c.consequent } else { &c.alternate };
                 merge_static_spread_object(entries, spreads, branch, resolver);
                 return;
             }
@@ -660,27 +648,13 @@ fn push_style_spread(
             });
         }
         Expression::LogicalExpression(l) => {
-            if let Some(left) = expression_to_literal(&l.left, resolver) {
-                match l.operator {
-                    LogicalOperator::And => {
-                        if left.is_truthy() {
-                            merge_static_spread_object(entries, spreads, &l.right, resolver);
-                        }
-                    }
-                    LogicalOperator::Or => {
-                        if left.is_truthy() {
-                            merge_static_spread_object(entries, spreads, &l.left, resolver);
-                        } else {
-                            merge_static_spread_object(entries, spreads, &l.right, resolver);
-                        }
-                    }
-                    LogicalOperator::Coalesce => {
-                        if matches!(left, Literal::Null) {
-                            merge_static_spread_object(entries, spreads, &l.right, resolver);
-                        } else {
-                            merge_static_spread_object(entries, spreads, &l.left, resolver);
-                        }
-                    }
+            if let Some(use_right) = expression_to_literal(&l.left, resolver)
+                .and_then(|left| logical_uses_right(l.operator, &left))
+            {
+                if use_right {
+                    merge_static_spread_object(entries, spreads, &l.right, resolver);
+                } else if l.operator != LogicalOperator::And {
+                    merge_static_spread_object(entries, spreads, &l.left, resolver);
                 }
                 return;
             }
@@ -1190,6 +1164,10 @@ pub fn style_tree_object_entry<'a>(tree: &'a StyleTree, key: &str) -> Option<&'a
         .iter()
         .find(|(entry_key, _)| entry_key == key)
         .map(|(_, value)| value)
+}
+
+fn decided_truthiness(test: &Expression<'_>, resolver: Option<&Resolver<'_, '_>>) -> Option<bool> {
+    expression_to_literal(test, resolver)?.truthiness()
 }
 
 #[cfg(test)]

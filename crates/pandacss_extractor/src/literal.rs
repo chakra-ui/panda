@@ -265,7 +265,7 @@ fn eval_unary(u: &UnaryExpression<'_>, resolver: Option<&Resolver<'_, '_>>) -> O
     match (u.operator, inner) {
         (UnaryOperator::UnaryPlus, Literal::Number(n)) => Some(Literal::Number(n)),
         (UnaryOperator::UnaryNegation, Literal::Number(n)) => Some(Literal::Number(-n)),
-        (UnaryOperator::LogicalNot, value) => Some(Literal::Bool(!value.is_truthy())),
+        (UnaryOperator::LogicalNot, value) => Some(Literal::Bool(!value.truthiness()?)),
         #[allow(
             clippy::cast_possible_truncation,
             reason = "JS bitwise ops are defined on Int32 and truncate"
@@ -327,8 +327,8 @@ fn eval_binary(b: &BinaryExpression<'_>, resolver: Option<&Resolver<'_, '_>>) ->
             Some(Literal::Number(l.powf(r)))
         }
 
-        BinaryOperator::StrictEquality => Some(Literal::Bool(strict_eq(&left, &right))),
-        BinaryOperator::StrictInequality => Some(Literal::Bool(!strict_eq(&left, &right))),
+        BinaryOperator::StrictEquality => Some(Literal::Bool(strict_eq(&left, &right)?)),
+        BinaryOperator::StrictInequality => Some(Literal::Bool(!strict_eq(&left, &right)?)),
         BinaryOperator::Equality => Some(Literal::Bool(loose_eq(&left, &right)?)),
         BinaryOperator::Inequality => Some(Literal::Bool(!loose_eq(&left, &right)?)),
 
@@ -341,9 +341,13 @@ fn eval_binary(b: &BinaryExpression<'_>, resolver: Option<&Resolver<'_, '_>>) ->
     }
 }
 
-/// JS `===`. Objects/arrays compare unequal (reference identity); cross-type
-/// pairs are always `false`.
-pub(crate) fn strict_eq(a: &Literal, b: &Literal) -> bool {
+pub(crate) fn strict_eq(a: &Literal, b: &Literal) -> Option<bool> {
+    a.decide(&mut |a| b.decide(&mut |b| Some(strict_eq_value(a, b))))
+}
+
+/// Objects/arrays compare unequal (reference identity); cross-type pairs are always `false`.
+#[allow(clippy::float_cmp, reason = "JS equality compares numbers exactly")]
+fn strict_eq_value(a: &Literal, b: &Literal) -> bool {
     match (a, b) {
         (Literal::Null, Literal::Null) => true,
         (Literal::String(x), Literal::String(y)) => x == y,
@@ -357,9 +361,13 @@ pub(crate) fn strict_eq(a: &Literal, b: &Literal) -> bool {
     }
 }
 
-/// JS `==` for literals. Mixed object/array pairs return `None` — they'd
-/// need runtime `ToPrimitive`, which we don't model.
 pub(crate) fn loose_eq(a: &Literal, b: &Literal) -> Option<bool> {
+    a.decide(&mut |a| b.decide(&mut |b| loose_eq_value(a, b)))
+}
+
+/// Mixed object/array pairs return `None` — they'd need runtime `ToPrimitive`.
+#[allow(clippy::float_cmp, reason = "JS equality compares numbers exactly")]
+fn loose_eq_value(a: &Literal, b: &Literal) -> Option<bool> {
     if matches!(
         (a, b),
         (Literal::Null, Literal::Null)
@@ -370,7 +378,7 @@ pub(crate) fn loose_eq(a: &Literal, b: &Literal) -> Option<bool> {
             | (Literal::Number(_), Literal::Number(_))
             | (Literal::Bool(_), Literal::Bool(_))
     ) {
-        return Some(strict_eq(a, b));
+        return Some(strict_eq_value(a, b));
     }
     match (a, b) {
         // null == undefined; we model both as Null.
@@ -381,15 +389,18 @@ pub(crate) fn loose_eq(a: &Literal, b: &Literal) -> Option<bool> {
             .map(|sn| sn == *n),
         (Literal::Bool(b1), other) | (other, Literal::Bool(b1)) => {
             let coerced = Literal::Number(if *b1 { 1.0 } else { 0.0 });
-            loose_eq(&coerced, other)
+            loose_eq_value(&coerced, other)
         }
         _ => None,
     }
 }
 
-/// JS `<`: lexicographic for two strings, else `ToNumber`-coerced. `None`
-/// if coercion fails on either side.
 pub(crate) fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
+    a.decide(&mut |a| b.decide(&mut |b| less_than_value(a, b)))
+}
+
+/// Lexicographic for two strings, else `ToNumber`-coerced.
+fn less_than_value(a: &Literal, b: &Literal) -> Option<bool> {
     if a.is_string_like() && b.is_string_like() {
         return Some(a.to_loose_string()? < b.to_loose_string()?);
     }
@@ -400,49 +411,43 @@ pub(crate) fn less_than(a: &Literal, b: &Literal) -> Option<bool> {
 
 fn eval_logical(l: &LogicalExpression<'_>, resolver: Option<&Resolver<'_, '_>>) -> Option<Literal> {
     if let Some(left) = expression_to_literal(&l.left, resolver) {
-        return match l.operator {
-            LogicalOperator::And => {
-                if left.is_truthy() {
-                    expression_to_literal(&l.right, resolver)
-                } else {
-                    Some(left)
-                }
-            }
-            LogicalOperator::Or => {
-                if left.is_truthy() {
-                    Some(left)
-                } else {
-                    expression_to_literal(&l.right, resolver)
-                }
-            }
-            LogicalOperator::Coalesce => {
-                if matches!(left, Literal::Null) {
-                    expression_to_literal(&l.right, resolver)
-                } else {
-                    Some(left)
-                }
-            }
+        return if logical_uses_right(l.operator, &left)? {
+            expression_to_literal(&l.right, resolver)
+        } else {
+            Some(left)
         };
     }
     // A style fallback is extractable, but it cannot prove a runtime value constant.
     None
 }
 
+/// Whether a logical returns its right side, when that is the same on every runtime path.
+pub(crate) fn logical_uses_right(operator: LogicalOperator, left: &Literal) -> Option<bool> {
+    match operator {
+        LogicalOperator::And => left.truthiness(),
+        LogicalOperator::Or => left.truthiness().map(|truthy| !truthy),
+        LogicalOperator::Coalesce => left.nullishness(),
+    }
+}
+
 fn eval_conditional(
     c: &ConditionalExpression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
 ) -> Option<Literal> {
-    if let Some(test) = expression_to_literal(&c.test, resolver) {
-        return if test.is_truthy() {
+    if let Some(truthy) = expression_to_literal(&c.test, resolver)
+        .as_ref()
+        .and_then(Literal::truthiness)
+    {
+        return if truthy {
             expression_to_literal(&c.consequent, resolver)
         } else {
             expression_to_literal(&c.alternate, resolver)
         };
     }
-    pandacss_literal::merge_optional_branches(
-        expression_to_literal(&c.consequent, resolver),
-        expression_to_literal(&c.alternate, resolver),
-    )
+    // Either branch can run: a dynamic branch leaves the value unknown.
+    let consequent = expression_to_literal(&c.consequent, resolver)?;
+    let alternate = expression_to_literal(&c.alternate, resolver)?;
+    pandacss_literal::merge_optional_branches(Some(consequent), Some(alternate))
 }
 
 pub(crate) fn template_literal_to_literal(

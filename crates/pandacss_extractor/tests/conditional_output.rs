@@ -845,3 +845,418 @@ fn member_hop_projects_nested_conditional() {
         end: 122
     ");
 }
+
+// --- tests that read a value set by a dynamic ternary ---
+
+#[test]
+fn comparing_a_ternary_initialized_variable_keeps_both_branches() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const tone = loud ? 'loud' : 'quiet';
+        css({ bg: tone === 'quiet' ? 'blue.500' : 'orange.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - blue.500
+          - orange.500
+    ");
+}
+
+#[test]
+fn loosely_comparing_a_ternary_initialized_variable_keeps_both_branches() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const tone = loud ? 'loud' : 'quiet';
+        css({ bg: tone != 'quiet' ? 'orange.500' : 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - orange.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn ordering_a_ternary_initialized_number_keeps_both_branches() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const size = large ? 2 : 1;
+        css({ p: size > 1 ? '8' : '4' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @r#"
+    - p:
+        kind: conditional
+        branches:
+          - "8"
+          - "4"
+    "#);
+}
+
+#[test]
+fn a_boolean_set_by_a_ternary_keeps_both_branches() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const flag = active ? true : false;
+        css({ bg: flag ? 'red.500' : 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - red.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn negating_a_boolean_set_by_a_ternary_keeps_both_branches() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const flag = active ? true : false;
+        css({ bg: !flag ? 'red.500' : 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - red.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn a_boolean_with_one_dynamic_branch_keeps_both_branches() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const flag = a ? !b : false;
+        css({ bg: flag ? 'red.500' : 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - red.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn a_boolean_with_one_dynamic_branch_first_keeps_both_branches() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const flag = a ? false : !b;
+        css({ bg: flag ? 'red.500' : 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - red.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn a_jsx_ternary_on_a_ternary_initialized_variable_keeps_both_branches() {
+    let source = indoc! {r"
+        import { styled } from '@panda/jsx';
+
+        export const App = ({ loud }: { loud?: boolean }) => {
+          const tone = loud ? 'loud' : 'quiet';
+          return <styled.div bg={tone === 'quiet' ? 'blue.500' : 'orange.500'} />;
+        };
+    "};
+    assert_yaml_snapshot!(run_jsx(source).jsx[0].data, @"
+    bg:
+      kind: conditional
+      branches:
+        - blue.500
+        - orange.500
+    ");
+}
+
+#[test]
+fn a_test_every_branch_agrees_on_still_picks_one_branch() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const tone = loud ? 'loud' : 'quiet';
+        css({ bg: tone ? 'blue.500' : 'orange.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"- bg: blue.500");
+}
+
+#[test]
+fn a_style_value_with_one_dynamic_branch_still_extracts_the_static_one() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const color = active ? 'red.500' : props.color;
+        css({ color });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"- color: red.500");
+}
+
+#[test]
+fn nullish_default_on_a_value_that_may_be_null_keeps_both_values() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const color = active ? null : 'red.500';
+        css({ color: color ?? 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - color:
+        kind: conditional
+        branches:
+          - red.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn or_default_on_a_value_that_may_be_empty_keeps_both_values() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const size = compact ? '' : 'lg';
+        css({ fontSize: size || 'md' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - fontSize:
+        kind: conditional
+        branches:
+          - lg
+          - md
+    ");
+}
+
+#[test]
+fn and_guard_on_a_boolean_set_by_a_ternary_keeps_the_style() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const show = active ? true : false;
+        css({ color: show && 'red.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"- color: red.500");
+}
+
+#[test]
+fn double_negating_a_boolean_set_by_a_ternary_keeps_both_branches() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const flag = active ? 1 : 0;
+        css({ bg: !!flag ? 'red.500' : 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - red.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn loosely_comparing_a_ternary_boolean_to_true_keeps_both_branches() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const flag = active ? true : false;
+        css({ bg: flag == true ? 'red.500' : 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - red.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn a_nested_ternary_whose_branches_all_agree_still_picks_one_branch() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const level = a ? (b ? 1 : 2) : 3;
+        css({ bg: level > 0 ? 'red.500' : 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"- bg: red.500");
+}
+
+#[test]
+fn a_nested_ternary_whose_branches_disagree_keeps_both_branches() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const level = a ? (b ? 1 : 2) : 3;
+        css({ bg: level > 1 ? 'red.500' : 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - red.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn comparing_two_ternary_initialized_variables_keeps_both_branches() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const left = a ? 'x' : 'y';
+        const right = b ? 'x' : 'z';
+        css({ bg: left === right ? 'red.500' : 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - red.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn a_chain_of_comparisons_on_a_ternary_initialized_variable_keeps_every_branch() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const tone = loud ? 'loud' : 'quiet';
+        css({ bg: tone === 'loud' ? 'red.500' : tone === 'quiet' ? 'blue.500' : 'gray.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg:
+        kind: conditional
+        branches:
+          - red.500
+          - kind: conditional
+            branches:
+              - blue.500
+              - gray.500
+    ");
+}
+
+#[test]
+fn an_and_spread_guarded_by_a_ternary_boolean_keeps_the_spread() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const flag = active ? true : false;
+        css({ bg: 'gray.500', ...(flag && { color: 'red.500' }) });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - bg: gray.500
+      color: red.500
+    ");
+}
+
+#[test]
+fn a_ternary_spread_tested_on_a_ternary_boolean_keeps_both_spreads() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const flag = active ? true : false;
+        css({ ...(flag ? { color: 'red.500' } : { color: 'blue.500' }) });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - color:
+        kind: conditional
+        branches:
+          - red.500
+          - blue.500
+    ");
+}
+
+#[test]
+fn a_helper_called_with_a_ternary_initialized_argument_keeps_both_results() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const pad = (size: string) => (size === 'lg' ? '8' : '4');
+        const size = big ? 'lg' : 'sm';
+        css({ p: pad(size) });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @r#"
+    - p:
+        kind: conditional
+        branches:
+          - "8"
+          - "4"
+    "#);
+}
+
+#[test]
+fn a_recipe_prop_tested_on_a_ternary_initialized_variable_keeps_both_variants() {
+    let source = indoc! {r"
+        import { button } from '@panda/recipes';
+
+        const tone = loud ? 'loud' : 'quiet';
+        button({ size: tone === 'quiet' ? 'sm' : 'lg' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"
+    - size:
+        kind: conditional
+        branches:
+          - sm
+          - lg
+    ");
+}
+
+#[test]
+fn nullish_default_on_a_value_null_on_every_path_picks_the_default() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const color = active ? null : undefined;
+        css({ color: color ?? 'blue.500' });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @"- color: blue.500");
+}
+
+#[test]
+fn a_helper_with_too_many_argument_combinations_is_left_unknown() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const pick = (a, b, c, d, e, f, g) => (a === 1 ? '8' : '4');
+        const v = x ? 1 : 2;
+        css({ p: pick(v, v, v, v, v, v, v) });
+    "};
+    assert_yaml_snapshot!(run(source).calls, @"[]");
+}
+
+#[test]
+fn a_helper_within_the_argument_combination_limit_keeps_every_result() {
+    let source = indoc! {r"
+        import { css } from '@panda/css';
+
+        const pick = (a, b) => (a === b ? '8' : '4');
+        const left = x ? 1 : 2;
+        const right = y ? 1 : 3;
+        css({ p: pick(left, right) });
+    "};
+    assert_yaml_snapshot!(run(source).calls[0].data, @r#"
+    - p:
+        kind: conditional
+        branches:
+          - "8"
+          - "4"
+    "#);
+}

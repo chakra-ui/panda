@@ -11,7 +11,7 @@ use oxc_ast::ast::{
 };
 use oxc_semantic::SymbolId;
 
-use crate::literal::property_key_to_string;
+use crate::literal::{logical_uses_right, property_key_to_string};
 use crate::pure_fn::{OwnedPureFn, apply_pure_fn};
 use crate::style_tree::{expression_to_style_tree, literal_to_style_tree, project_literal};
 use crate::{Literal, MatchCategory, Resolver, StyleObject, StyleTree};
@@ -271,13 +271,15 @@ pub(crate) fn lower(expr: &Expression<'_>, resolver: &Resolver<'_, '_>) -> Defer
         },
         Expression::ConditionalExpression(condition) => {
             let test = expression_to_style_tree(&condition.test, Some(resolver));
-            if let Some(test) = test
+            if let Some(truthy) = test
                 .filter(StyleTree::is_static)
                 .as_ref()
                 .and_then(project_literal)
+                .as_ref()
+                .and_then(Literal::truthiness)
             {
                 lower(
-                    if test.is_truthy() {
+                    if truthy {
                         &condition.consequent
                     } else {
                         &condition.alternate
@@ -298,15 +300,20 @@ pub(crate) fn lower(expr: &Expression<'_>, resolver: &Resolver<'_, '_>) -> Defer
                 .as_ref()
                 .and_then(project_literal)
             {
-                let use_right = match logical.operator {
-                    LogicalOperator::And => left.is_truthy(),
-                    LogicalOperator::Or => !left.is_truthy(),
-                    LogicalOperator::Coalesce => matches!(left, Literal::Null),
-                };
-                if use_right {
-                    lower(&logical.right, resolver)
-                } else {
-                    DeferredValue::Literal(left)
+                match logical_uses_right(logical.operator, &left) {
+                    Some(true) => lower(&logical.right, resolver),
+                    Some(false) => DeferredValue::Literal(left),
+                    None if logical.operator != LogicalOperator::And => {
+                        let mut alternatives = left
+                            .values_kept_by_default(logical.operator == LogicalOperator::Coalesce)
+                            .into_iter()
+                            .cloned()
+                            .map(DeferredValue::Literal)
+                            .collect::<Vec<_>>();
+                        alternatives.push(lower(&logical.right, resolver));
+                        DeferredValue::Alternatives(alternatives)
+                    }
+                    None => DeferredValue::Fallback(Box::new(lower(&logical.right, resolver))),
                 }
             } else {
                 DeferredValue::Fallback(Box::new(lower(&logical.right, resolver)))

@@ -36,6 +36,37 @@ fn emits_both_jsx_branches_after_a_dynamic_nullish_default() {
 }
 
 #[test]
+fn emits_both_branches_when_comparing_a_ternary_initialized_variable() {
+    let config = config(serde_json::json!({
+        "jsxFramework": "react",
+        "importMap": { "css": ["@panda/css"] },
+        "utilities": {
+            "backgroundColor": { "className": "bg", "shorthand": "bg" }
+        }
+    }));
+    let source = indoc::indoc! {r"
+        import { css } from '@panda/css';
+
+        export const App = ({ loud }: { loud?: boolean }) => {
+          const tone = loud ? 'loud' : 'quiet';
+          return <div className={css({ bg: tone === 'quiet' ? 'blue' : 'orange' })} />;
+        };
+    "};
+    let css = compile_tsx_layer_css(&config, source, &[StylesheetLayer::Utilities]);
+
+    assert_snapshot!(css, @"
+    @layer utilities {
+      .bg_blue {
+        background-color: blue;
+      }
+      .bg_orange {
+        background-color: orange;
+      }
+    }
+    ");
+}
+
+#[test]
 fn emits_dynamic_atomic_css() {
     let config = config(serde_json::json!({
         "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },

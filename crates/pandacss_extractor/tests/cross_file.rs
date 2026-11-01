@@ -2391,3 +2391,75 @@ fn a_type_only_re_export_does_not_forward_a_value() {
     );
     assert_yaml_snapshot!(shape(&run(&fs, &main)), @"calls: []");
 }
+
+#[test]
+fn comparing_an_imported_ternary_keeps_both_branches() {
+    let main = indoc::indoc! {r"
+        import { tone } from './tone';
+        import { css } from '@panda/css';
+        css({ bg: tone === 'quiet' ? 'blue.500' : 'orange.500' });
+    "};
+    let (fs, main_path) = project(
+        main,
+        &[("tone.ts", "export const tone = loud ? 'loud' : 'quiet';\n")],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main_path)), @"
+    calls:
+      - name: css
+        data:
+          - bg:
+              kind: conditional
+              branches:
+                - blue.500
+                - orange.500
+    ");
+}
+
+#[test]
+fn an_imported_boolean_with_one_dynamic_branch_keeps_both_branches() {
+    let main = indoc::indoc! {r"
+        import { flag } from './flag';
+        import { css } from '@panda/css';
+        css({ bg: flag ? 'red.500' : 'blue.500' });
+    "};
+    let (fs, main_path) = project(
+        main,
+        &[("flag.ts", "export const flag = a ? !b : false;\n")],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main_path)), @"
+    calls:
+      - name: css
+        data:
+          - bg:
+              kind: conditional
+              branches:
+                - red.500
+                - blue.500
+    ");
+}
+
+#[test]
+fn an_imported_or_default_on_a_value_that_may_be_empty_keeps_both_values() {
+    let main = indoc::indoc! {r"
+        import { size } from './size';
+        import { css } from '@panda/css';
+        css({ fontSize: size });
+    "};
+    let (fs, main_path) = project(
+        main,
+        &[(
+            "size.ts",
+            "const raw = compact ? '' : 'lg';\nexport const size = raw || 'md';\n",
+        )],
+    );
+    assert_yaml_snapshot!(shape(&run(&fs, &main_path)), @"
+    calls:
+      - name: css
+        data:
+          - fontSize:
+              kind: conditional
+              branches:
+                - lg
+                - md
+    ");
+}
