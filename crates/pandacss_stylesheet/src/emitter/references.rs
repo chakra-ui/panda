@@ -215,9 +215,9 @@ struct ReferenceCollector<'r, 'a> {
     owner: &'r StyleReferences<'a>,
     seen: FxHashSet<StyleReference>,
     references: Vec<StyleReference>,
-    /// Variable → the token path the style wrote for it. Aliases can share a variable,
-    /// so the variable alone can't say which one was written.
-    written: FxHashMap<String, String>,
+    /// Variable → every token path the style wrote for it. Aliases can share a
+    /// variable, so the variable alone can't say which ones were written.
+    written: FxHashMap<String, Vec<String>>,
 }
 
 impl ReferenceCollector<'_, '_> {
@@ -236,18 +236,21 @@ impl ReferenceCollector<'_, '_> {
         else {
             return;
         };
-        self.written.insert(var.to_owned(), path.to_owned());
+        let paths = self.written.entry(var.to_owned()).or_default();
+        if !paths.iter().any(|written| written == path) {
+            paths.push(path.to_owned());
+        }
     }
 
     fn write_paths_in(&mut self, value: &str) {
         visit_token_reference_paths(value, &mut |path| self.write_path(path));
     }
 
-    fn token_path(&self, var: &str) -> Option<String> {
-        self.written
-            .get(var)
-            .cloned()
-            .or_else(|| self.owner.token_path(var))
+    fn token_paths(&self, var: &str) -> Vec<String> {
+        match self.written.get(var) {
+            Some(paths) => paths.clone(),
+            None => self.owner.token_path(var).into_iter().collect(),
+        }
     }
 
     /// Drops a self-reference, so a token never depends on itself.
@@ -289,7 +292,7 @@ impl ReferenceSink for ReferenceCollector<'_, '_> {
 
         let mut paths = vars
             .iter()
-            .filter_map(|var| self.token_path(var))
+            .flat_map(|var| self.token_paths(var))
             .collect::<Vec<_>>();
         paths.sort_unstable();
 

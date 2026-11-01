@@ -112,6 +112,23 @@ ruleTester.run('no-deprecated', {
       code: ["import { css } from '@panda/css'", "css({ color: 'text.neutralMain' })"].join('\n'),
       errors: [{ message: 'Panda token "colors.text.neutralMain" is deprecated.' }],
     },
+    // Both aliases in one value: the deprecated one is still flagged.
+    {
+      filename: 'app.tsx',
+      code: [
+        "import { css } from '@panda/css'",
+        "css({ background: 'linear-gradient({colors.text.neutralMain}, {colors.text.neutral.main})' })",
+      ].join('\n'),
+      errors: [{ message: 'Panda token "colors.text.neutralMain" is deprecated.' }],
+    },
+    {
+      filename: 'app.tsx',
+      code: [
+        "import { css } from '@panda/css'",
+        "css({ background: 'linear-gradient({colors.text.neutral.main}, {colors.text.neutralMain})' })",
+      ].join('\n'),
+      errors: [{ message: 'Panda token "colors.text.neutralMain" is deprecated.' }],
+    },
     // Token with an author message.
     {
       filename: 'app.tsx',

@@ -237,6 +237,7 @@ fn a_composition_depends_on_what_its_conditional_styles_use() {
 
 fn aliased_theme(tokens: &serde_json::Value) -> UserConfig {
     config(json!({
+        "conditions": { "hover": "&:hover" },
         "utilities": {
             "color": { "className": "c", "values": "colors" },
             "borderColor": { "className": "bc", "values": "colors" }
@@ -327,6 +328,132 @@ fn a_semantic_token_depends_on_the_path_it_was_defined_with_when_an_alias_shares
         assert_eq!(
             references.dependencies(&token("colors.fg")),
             [token("colors.semantic.text.neutral.main")]
+        );
+    });
+}
+
+#[test]
+fn both_aliases_written_in_one_value_are_both_reported() {
+    references_for(&canonical_first(), |references| {
+        let found = references.property(
+            "background",
+            &json!("linear-gradient({colors.semantic.text.neutralMain}, {colors.semantic.text.neutral.main})"),
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutralMain")),
+            "{found:?}"
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutral.main")),
+            "{found:?}"
+        );
+    });
+}
+
+#[test]
+fn both_aliases_written_in_one_value_in_reverse_order_are_both_reported() {
+    references_for(&canonical_first(), |references| {
+        let found = references.property(
+            "background",
+            &json!("linear-gradient({colors.semantic.text.neutral.main}, {colors.semantic.text.neutralMain})"),
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutralMain")),
+            "{found:?}"
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutral.main")),
+            "{found:?}"
+        );
+    });
+}
+
+#[test]
+fn both_aliases_written_under_conditions_of_one_property_are_both_reported() {
+    references_for(&canonical_first(), |references| {
+        let found = references.property(
+            "color",
+            &json!({ "base": "semantic.text.neutralMain", "_hover": "semantic.text.neutral.main" }),
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutralMain")),
+            "{found:?}"
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutral.main")),
+            "{found:?}"
+        );
+    });
+}
+
+#[test]
+fn both_aliases_written_under_conditions_of_one_property_in_reverse_order_are_both_reported() {
+    references_for(&canonical_first(), |references| {
+        let found = references.property(
+            "color",
+            &json!({ "base": "semantic.text.neutral.main", "_hover": "semantic.text.neutralMain" }),
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutralMain")),
+            "{found:?}"
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutral.main")),
+            "{found:?}"
+        );
+    });
+}
+
+fn conditional_alias_theme(base: &str, dark: &str) -> UserConfig {
+    config(json!({
+        "conditions": { "dark": "&.dark" },
+        "utilities": { "color": { "className": "c", "values": "colors" } },
+        "theme": {
+            "tokens": { "colors": { "semantic": { "text": {
+                "neutral": { "main": { "value": "#111" } },
+                "neutralMain": { "value": "#111", "deprecated": true }
+            } } } },
+            "semanticTokens": {
+                "colors": { "fg": { "value": { "base": base, "_dark": dark } } }
+            }
+        }
+    }))
+}
+
+#[test]
+fn a_conditional_semantic_token_depends_on_both_aliases_it_names() {
+    let config = conditional_alias_theme(
+        "{colors.semantic.text.neutralMain}",
+        "{colors.semantic.text.neutral.main}",
+    );
+    references_for(&config, |references| {
+        let found = references.dependencies(&token("colors.fg"));
+        assert!(
+            found.contains(&token("colors.semantic.text.neutralMain")),
+            "{found:?}"
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutral.main")),
+            "{found:?}"
+        );
+    });
+}
+
+#[test]
+fn a_conditional_semantic_token_depends_on_both_aliases_it_names_in_reverse_order() {
+    let config = conditional_alias_theme(
+        "{colors.semantic.text.neutral.main}",
+        "{colors.semantic.text.neutralMain}",
+    );
+    references_for(&config, |references| {
+        let found = references.dependencies(&token("colors.fg"));
+        assert!(
+            found.contains(&token("colors.semantic.text.neutralMain")),
+            "{found:?}"
+        );
+        assert!(
+            found.contains(&token("colors.semantic.text.neutral.main")),
+            "{found:?}"
         );
     });
 }
