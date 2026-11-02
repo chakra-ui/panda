@@ -191,6 +191,7 @@ pub fn extract_jsx(
         &resolver,
         true,
         None,
+        0,
     ));
     ExtractedJsxResult {
         jsx,

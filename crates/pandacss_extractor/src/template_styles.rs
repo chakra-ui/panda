@@ -6,6 +6,10 @@
 
 use crate::adapter::{AdaptedSource, SfcFormat};
 use crate::dynamic_values::{self, DynamicStyleValue, DynamicStyleValueKind};
+use crate::extract::VerboseFacts;
+use crate::source_refs::{
+    StyleSourceOwner, StyleSourceOwnerKind, StyleSourceRef, StyleSourceRefSafety, descend_value,
+};
 use crate::{
     ExtractedJsx, ExtractorConfig, ImportSpecifierKind, JsxTagAction, Literal, MatchCategory,
     MatchedImport, Span,
@@ -60,7 +64,8 @@ pub(crate) fn collect_template_styles(
     program: &Program<'_>,
     resolver: &crate::Resolver<'_, '_>,
     retain_transform_facts: bool,
-    dynamic_style_values: Option<&mut Vec<DynamicStyleValue>>,
+    verbose: Option<&mut VerboseFacts>,
+    jsx_offset: usize,
 ) -> Vec<ExtractedJsx> {
     if !config.has_jsx_framework {
         return Vec::new();
@@ -83,7 +88,8 @@ pub(crate) fn collect_template_styles(
         last_container: None,
         ranges: MarkupRanges::new(template_markup_ranges(source, adapted)),
         literals: FxHashMap::default(),
-        dynamic_containers: dynamic_style_values.is_some().then(FxHashMap::default),
+        dynamic_containers: verbose.is_some().then(FxHashMap::default),
+        source_ref_containers: verbose.is_some().then(FxHashMap::default),
     };
     literal_index.visit_program(program);
     let context = TemplateContext {
@@ -96,7 +102,10 @@ pub(crate) fn collect_template_styles(
         cross_file: resolver.cross_file_context(),
         literals: literal_index.literals,
         dynamic_containers: literal_index.dynamic_containers.unwrap_or_default(),
-        dynamic: dynamic_style_values.is_some().then(RefCell::default),
+        dynamic: verbose.is_some().then(RefCell::default),
+        source_ref_containers: literal_index.source_ref_containers.unwrap_or_default(),
+        source_refs: verbose.is_some().then(RefCell::default),
+        jsx_offset,
         retain_transform_facts,
     };
     let imports = if config.jsx.tag_rules_use_from() {
@@ -122,8 +131,17 @@ pub(crate) fn collect_template_styles(
             collect_markup_template_styles(source, &adapted.template_elements, &scan)
         }
     };
-    if let (Some(out), Some(collected)) = (dynamic_style_values, context.dynamic) {
-        out.append(&mut collected.into_inner());
+    if let Some(verbose) = verbose {
+        if let Some(collected) = context.dynamic {
+            verbose
+                .dynamic_style_values
+                .append(&mut collected.into_inner());
+        }
+        if let Some(collected) = context.source_refs {
+            verbose
+                .style_source_refs
+                .append(&mut collected.into_inner());
+        }
     }
     out
 }
@@ -147,10 +165,115 @@ struct TemplateContext<'a> {
     literals: FxHashMap<(u32, u32), Literal>,
     dynamic_containers: FxHashMap<(u32, u32), Vec<DynamicStyleValue>>,
     dynamic: Option<RefCell<Vec<DynamicStyleValue>>>,
+    source_ref_containers: FxHashMap<(u32, u32), Vec<StyleSourceRef>>,
+    source_refs: Option<RefCell<Vec<StyleSourceRef>>>,
+    jsx_offset: usize,
     retain_transform_facts: bool,
 }
 
+const PENDING_OWNER: StyleSourceOwner = StyleSourceOwner {
+    kind: StyleSourceOwnerKind::Jsx,
+    index: 0,
+    span: Span { start: 0, end: 0 },
+};
+
 impl TemplateContext<'_> {
+    fn source_refs_len(&self) -> usize {
+        self.source_refs
+            .as_ref()
+            .map_or(0, |refs| refs.borrow().len())
+    }
+
+    fn record_source_ref(
+        &self,
+        tag_name: &str,
+        raw_name: &str,
+        name: &str,
+        value: AttrValue<'_>,
+        is_expr: bool,
+    ) {
+        let Some(refs) = &self.source_refs else {
+            return;
+        };
+        if !self.config.jsx.should_extract_prop(tag_name, name) {
+            return;
+        }
+        let Some(key_span) = source_span(self.raw_source, name) else {
+            return;
+        };
+        let (value_span, safety) = match value {
+            AttrValue::Bool => (None, StyleSourceRefSafety::Shorthand),
+            AttrValue::Static(text) if !is_expr => (
+                source_span(self.raw_source, text).map(|span| quoted_span(self.raw_source, span)),
+                StyleSourceRefSafety::Safe,
+            ),
+            AttrValue::Static(text) | AttrValue::Expr(text) => (
+                source_span(self.raw_source, text),
+                StyleSourceRefSafety::Safe,
+            ),
+        };
+        if value_span.is_none() && !matches!(value, AttrValue::Bool) {
+            return;
+        }
+        let start =
+            source_span(self.raw_source, raw_name).map_or(key_span.start, |span| span.start);
+        let end = value_span.map_or(key_span.end, |span| delimited_end(self.raw_source, span));
+        let mut refs = refs.borrow_mut();
+        refs.push(StyleSourceRef {
+            owner: PENDING_OWNER,
+            path: vec![name.to_owned()],
+            name: name.to_owned(),
+            span: Span { start, end },
+            key_span,
+            value_span,
+            safety,
+        });
+        let Some(span) = value_span.filter(|_| is_expr) else {
+            return;
+        };
+        let members = match self.source_ref_containers.get(&(span.start, span.end)) {
+            Some(members) => Cow::Borrowed(members.as_slice()),
+            None => Cow::Owned(standalone_source_refs(self.raw_source, span)),
+        };
+        refs.extend(members.iter().map(|member| {
+            StyleSourceRef {
+                path: std::iter::once(name.to_owned())
+                    .chain(member.path.iter().cloned())
+                    .collect(),
+                ..member.clone()
+            }
+        }));
+    }
+
+    fn settle_source_refs(
+        &self,
+        before: usize,
+        owner: Option<StyleSourceOwner>,
+        resolved: &ResolvedTemplateTag<'_>,
+    ) {
+        let Some(refs) = &self.source_refs else {
+            return;
+        };
+        let mut refs = refs.borrow_mut();
+        let Some(owner) = owner else {
+            refs.truncate(before);
+            return;
+        };
+        let added = refs.split_off(before);
+        refs.extend(added.into_iter().filter_map(|mut source_ref| {
+            if let Some(props) = resolved.props
+                && !source_ref
+                    .path
+                    .first()
+                    .is_some_and(|key| props.contains(key))
+            {
+                return None;
+            }
+            source_ref.owner = owner;
+            Some(source_ref)
+        }));
+    }
+
     fn dynamic_len(&self) -> usize {
         self.dynamic
             .as_ref()
@@ -222,6 +345,7 @@ struct TemplateLiteralIndex<'resolver, 'ast, 'callback> {
     ranges: MarkupRanges,
     literals: FxHashMap<(u32, u32), Literal>,
     dynamic_containers: Option<FxHashMap<(u32, u32), Vec<DynamicStyleValue>>>,
+    source_ref_containers: Option<FxHashMap<(u32, u32), Vec<StyleSourceRef>>>,
     format: SfcFormat,
     source: &'resolver str,
     last_container: Option<usize>,
@@ -279,6 +403,7 @@ impl<'ast> Visit<'ast> for TemplateLiteralIndex<'_, 'ast, '_> {
                 );
                 if lexer.next_token(false).kind == pandacss_sfc::js::TokenKind::Eof {
                     self.record_dynamic_container(range, expression);
+                    self.record_source_ref_container(range, expression);
                     if let Some(literal) = expression_to_literal(expression, Some(self.resolver)) {
                         self.literals.insert(range, literal);
                     }
@@ -289,6 +414,7 @@ impl<'ast> Visit<'ast> for TemplateLiteralIndex<'_, 'ast, '_> {
         }
         if self.ranges.contains(span.start, span.end) {
             self.record_dynamic_container((span.start, span.end), expression);
+            self.record_source_ref_container((span.start, span.end), expression);
             if let Some(literal) = expression_to_literal(expression, Some(self.resolver)) {
                 self.literals.insert((span.start, span.end), literal);
             }
@@ -298,6 +424,27 @@ impl<'ast> Visit<'ast> for TemplateLiteralIndex<'_, 'ast, '_> {
 }
 
 impl TemplateLiteralIndex<'_, '_, '_> {
+    fn record_source_ref_container(&mut self, range: (u32, u32), expression: &Expression<'_>) {
+        let Some(containers) = self.source_ref_containers.as_mut() else {
+            return;
+        };
+        if !matches!(
+            expression.get_inner_expression(),
+            Expression::ObjectExpression(_) | Expression::ArrayExpression(_)
+        ) {
+            return;
+        }
+        let mut members = Vec::new();
+        descend_value(
+            expression,
+            Some(self.resolver),
+            PENDING_OWNER,
+            &mut Vec::new(),
+            &mut members,
+        );
+        containers.insert(range, members);
+    }
+
     fn record_dynamic_container(&mut self, range: (u32, u32), expression: &Expression<'_>) {
         let Some(containers) = self.dynamic_containers.as_mut() else {
             return;
@@ -389,6 +536,7 @@ fn collect_markup_template_styles(
             continue;
         };
         let dynamic_before = scan.context.dynamic_len();
+        let source_refs_before = scan.context.source_refs_len();
         let mut entries = Vec::new();
         for attribute in &element.attributes {
             let value = match &attribute.value {
@@ -453,6 +601,7 @@ fn collect_markup_template_styles(
                 start: element.opening.start,
                 end: element.opening.end,
             },
+            source_refs_before,
         );
     }
     out
@@ -539,6 +688,7 @@ fn collect_tag(
     };
 
     let dynamic_before = scan.context.dynamic_len();
+    let source_refs_before = scan.context.source_refs_len();
     let mut entries = Vec::new();
     collect_attrs(
         source,
@@ -563,6 +713,7 @@ fn collect_tag(
             start: u32::try_from(tag_start).unwrap_or(u32::MAX),
             end: u32::try_from(tag_end + 1).unwrap_or(u32::MAX),
         },
+        source_refs_before,
     );
 
     Tag::Collected(tag_end + 1)
@@ -575,14 +726,24 @@ fn push_template_jsx(
     resolved: ResolvedTemplateTag<'_>,
     entries: Vec<(String, Literal)>,
     tag_span: Span,
+    source_refs_before: usize,
 ) {
     let mut data = Literal::Object(entries);
     if !resolved.panda_owned && !resolved.emit_empty {
         scan.config.jsx.retain_style_values(&mut data);
     }
     if matches!(&data, Literal::Object(entries) if entries.is_empty()) && !resolved.emit_empty {
+        scan.context
+            .settle_source_refs(source_refs_before, None, &resolved);
         return;
     }
+    let owner = StyleSourceOwner {
+        kind: StyleSourceOwnerKind::Jsx,
+        index: u32::try_from(scan.context.jsx_offset + out.len()).unwrap_or(u32::MAX),
+        span: tag_span,
+    };
+    scan.context
+        .settle_source_refs(source_refs_before, Some(owner), &resolved);
     let kind = crate::jsx::jsx_kind(&scan.config.matchers, &resolved.name, &resolved.alias);
     let retain = scan.context.retain_transform_facts;
     let style = retain.then(|| crate::style_tree::literal_to_style_tree(data.clone()));
@@ -839,6 +1000,7 @@ fn merge_vue_attr(
     let Some(literal) = literal else {
         return;
     };
+    context.record_source_ref(tag_name, raw_name, name, value, is_expr);
     merge_style_prop(entries, &config.jsx, tag_name, name, literal);
 }
 
@@ -870,6 +1032,7 @@ fn merge_svelte_attr(
     let Some(literal) = literal else {
         return;
     };
+    context.record_source_ref(tag_name, raw_name, raw_name, value, is_expr);
     merge_style_prop(entries, &config.jsx, tag_name, raw_name, literal);
 }
 
@@ -1001,6 +1164,61 @@ fn template_markup_ranges(source: &str, adapted: &AdaptedSource<'_>) -> Vec<(u32
 fn push_range(ranges: &mut Vec<(u32, u32)>, start: usize, end: usize) {
     if let (Ok(start), Ok(end)) = (u32::try_from(start), u32::try_from(end)) {
         ranges.push((start, end));
+    }
+}
+
+fn standalone_source_refs(source: &str, span: Span) -> Vec<StyleSourceRef> {
+    let Some(text) = source.get(span.start as usize..span.end as usize) else {
+        return Vec::new();
+    };
+    if !text.trim_start().starts_with(['{', '[']) {
+        return Vec::new();
+    }
+    let wrapped = format!("({text})");
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, &wrapped, SourceType::ts()).parse();
+    let Some(Statement::ExpressionStatement(statement)) = parsed.program.body.first() else {
+        return Vec::new();
+    };
+    let mut members = Vec::new();
+    descend_value(
+        &statement.expression,
+        None,
+        PENDING_OWNER,
+        &mut Vec::new(),
+        &mut members,
+    );
+    let shift = |inner: Span| Span {
+        start: inner.start + span.start - 1,
+        end: inner.end + span.start - 1,
+    };
+    for member in &mut members {
+        member.span = shift(member.span);
+        member.key_span = shift(member.key_span);
+        member.value_span = member.value_span.map(shift);
+    }
+    members
+}
+
+fn quoted_span(source: &str, span: Span) -> Span {
+    let bytes = source.as_bytes();
+    let (start, end) = (span.start as usize, span.end as usize);
+    match (
+        start.checked_sub(1).map(|index| bytes[index]),
+        bytes.get(end),
+    ) {
+        (Some(open @ (b'"' | b'\'')), Some(&close)) if open == close => Span {
+            start: span.start - 1,
+            end: span.end + 1,
+        },
+        _ => span,
+    }
+}
+
+fn delimited_end(source: &str, span: Span) -> u32 {
+    match source.as_bytes().get(span.end as usize) {
+        Some(b'"' | b'\'' | b'}') => span.end + 1,
+        _ => span.end,
     }
 }
 

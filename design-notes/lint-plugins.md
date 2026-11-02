@@ -281,7 +281,7 @@ and do extra classification as long as lint adapters call it once per file and c
 The first implementation should derive as much as possible from the current extraction result. It can expose calls, JSX,
 token refs, diagnostics, component entries, recipe ownership, and style-entry classification without a second parse.
 `extract_verbose()` should collect local source refs during the same traversal, then `inspectFileSource()` can mark
-direct local keys as `fixable: "safe"` and keep generated or framework-template entries as `fixable: "report-only"`.
+direct local keys as `fixable: "safe"` and keep generated entries as `fixable: "report-only"`.
 
 Keep a clear split between source provenance and normalized extraction output. `sourceValue` describes the written
 expression for reports and safe fixes. `resolvedValue` mirrors Panda's folded output and may contain conservative unions
@@ -396,8 +396,9 @@ Non-style component props should be omitted from `styleEntries` by default, not 
 
 JSX is framework-agnostic. Source refs for JSX expressions also apply to masked Astro, Svelte, and Vue script
 expressions because adapter masks preserve original byte offsets. Framework template attributes use the template-style
-extractor and should stay report-only until that extractor emits its own key/value refs. Treat `css` and props ending in
-`Css` as nested style objects:
+extractor, which emits its own key/value refs: static values include their quotes, bound values are the expression, and
+inline objects get a ref per member. Vue's same-name shorthand (`:color`) and spreads stay report-only. Treat `css` and
+props ending in `Css` as nested style objects:
 
 ```tsx
 <Box inputCss={{ color: 'red.500' }} />
