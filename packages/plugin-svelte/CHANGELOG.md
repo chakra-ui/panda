@@ -1,5 +1,11 @@
 # @pandacss/plugin-svelte
 
+## 1.12.2
+
+### Patch Changes
+
+- @pandacss/types@1.12.2
+
 ## 1.12.1
 
 ### Patch Changes
