@@ -549,7 +549,7 @@ fn inspection_descends_array_css_prop() {
 }
 
 #[test]
-fn framework_template_style_entries_stay_report_only() {
+fn framework_template_style_entries_are_fixable() {
     let result = inspect_file_source(
         &system(),
         "a.vue",
@@ -564,10 +564,127 @@ fn framework_template_style_entries_stay_report_only() {
         "#},
     );
 
-    assert_snapshot!(style_summary(&result), @r"
-    Utility JsxProp ReportOnly color -> None path=color
-    Utility JsxStyleProp ReportOnly padding -> None path=css.padding
+    assert_snapshot!(style_summary(&result), @"
+    Utility JsxProp Safe color -> None path=color
+    Utility JsxStyleProp Safe padding -> None path=css.padding
     ");
+}
+
+fn template_source_summary(source: &str, result: &FileInspectionResult) -> String {
+    let entries = result.style_entries.iter().map(|entry| {
+        let leaves = entry
+            .value_spans
+            .iter()
+            .map(|leaf| span_text(source, Some(leaf.span)))
+            .collect::<Vec<_>>()
+            .join(" | ");
+        format!(
+            "{} {:?} key={} value={} leaves=[{}]",
+            entry.path.join("."),
+            entry.fixable,
+            span_text(source, entry.key_span),
+            span_text(source, entry.value_span),
+            leaves
+        )
+    });
+    let refs = result.token_refs.iter().map(|token_ref| {
+        format!(
+            "ref {} at {}",
+            token_ref.path,
+            span_text(source, Some(token_ref.span))
+        )
+    });
+    entries.chain(refs).collect::<Vec<_>>().join("\n")
+}
+
+#[test]
+fn vue_template_attributes_expose_key_and_value_spans() {
+    let source = indoc! {r#"
+        <script setup>
+        import { Box } from '@panda/jsx'
+        const color = 'red.500'
+        </script>
+
+        <template>
+          <Box color="{colors.red.500}" :p.prop="'4'" />
+          <Box :css="{ color: 'token(colors.red.500)', p: ['4'] }" />
+          <Box :color />
+          <Box v-bind="{ color: 'red.500' }" />
+        </template>
+    "#};
+    let result = inspect_file_source(&system(), "a.vue", source);
+
+    assert_snapshot!(template_source_summary(source, &result), @r#"
+    color Safe key=color value="{colors.red.500}" leaves=["{colors.red.500}"]
+    p Safe key=p value='4' leaves=['4']
+    css.color Safe key=color value='token(colors.red.500)' leaves=['token(colors.red.500)']
+    css.p Safe key=p value=['4'] leaves=['4']
+    color ReportOnly key=color value= leaves=[]
+    color ReportOnly key= value= leaves=[]
+    ref colors.red.500 at colors.red.500
+    ref colors.red.500 at colors.red.500
+    "#);
+}
+
+#[test]
+fn svelte_template_attributes_expose_key_and_value_spans() {
+    let source = indoc! {r#"
+        <script>
+        import { Box } from '@panda/jsx'
+        </script>
+
+        <Box color='{colors.red.500}' p={'4'} />
+        <Box css={{ color: 'token(colors.red.500)', p: ['4'] }} />
+        <Box {...{ color: 'red.500' }} />
+    "#};
+    let result = inspect_file_source(&system(), "a.svelte", source);
+
+    assert_snapshot!(template_source_summary(source, &result), @"
+    color Safe key=color value='{colors.red.500}' leaves=['{colors.red.500}']
+    p Safe key=p value='4' leaves=['4']
+    css.color Safe key=color value='token(colors.red.500)' leaves=['token(colors.red.500)']
+    css.p Safe key=p value=['4'] leaves=['4']
+    color ReportOnly key= value= leaves=[]
+    ref colors.red.500 at colors.red.500
+    ref colors.red.500 at colors.red.500
+    ");
+}
+
+#[test]
+fn astro_template_attributes_expose_key_and_value_spans() {
+    let source = indoc! {r#"
+        ---
+        import { Box } from '@panda/jsx'
+        ---
+
+        <Box color="{colors.red.500}" p={'4'} />
+        <Box css={{ color: 'token(colors.red.500)', p: ['4'] }} />
+    "#};
+    let result = inspect_file_source(&system(), "a.astro", source);
+
+    assert_snapshot!(template_source_summary(source, &result), @r#"
+    color Safe key=color value="{colors.red.500}" leaves=["{colors.red.500}"]
+    p Safe key=p value='4' leaves=['4']
+    css.color Safe key=color value='token(colors.red.500)' leaves=['token(colors.red.500)']
+    css.p Safe key=p value=['4'] leaves=['4']
+    ref colors.red.500 at colors.red.500
+    ref colors.red.500 at colors.red.500
+    "#);
+}
+
+#[test]
+fn mdx_entity_encoded_attribute_stays_report_only() {
+    let source = indoc! {r#"
+        import { Box } from '@panda/jsx'
+
+        <Box color="&#x72;ed" p="4" />
+    "#};
+    let result = inspect_file_source(&system(), "a.mdx", source);
+
+    assert_snapshot!(template_source_summary(source, &result), @r#"
+    color ReportOnly key= value= leaves=[]
+    p Safe key=p value="4" leaves=["4"]
+    "#);
 }
 
 #[test]
