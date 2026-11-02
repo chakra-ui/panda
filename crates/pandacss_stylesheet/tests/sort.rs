@@ -974,3 +974,120 @@ fn atomic_conditions_keep_their_deterministic_order_regardless_of_written_order(
     }
     ");
 }
+
+fn nested_order(body: &str) -> String {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"], "recipe": [], "pattern": [], "jsx": [], "tokens": [] },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    compile_layer_css(
+        &config,
+        &format!("import {{ css }} from '@panda/css'; css({body})"),
+        &[StylesheetLayer::Utilities],
+    )
+}
+
+#[test]
+fn a_selector_list_condition_ranks_as_its_strongest_state() {
+    assert_snapshot!(nested_order(
+        "{ '&:is(:hover, :focus-visible)': { color: 'blue' }, '&:is(:active, [data-active])': { color: 'black' } }"
+    ), @r"
+    @layer utilities {
+      .\[\&\:is\(\:hover\,_\:focus-visible\)\]\:c_blue:is(:hover, :focus-visible) {
+        color: blue;
+      }
+      .\[\&\:is\(\:active\,_\[data-active\]\)\]\:c_black:is(:active, [data-active]) {
+        color: black;
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_group_state_ranks_as_that_state() {
+    assert_snapshot!(nested_order(
+        "{ '&:focus': { color: 'blue' }, '.group:hover &': { color: 'red' }, '&[data-open]': { color: 'black' } }"
+    ), @r"
+    @layer utilities {
+      .\[\&\[data-open\]\]\:c_black[data-open] {
+        color: black;
+      }
+      .group:hover .\[\.group\:hover_\&\]\:c_red {
+        color: red;
+      }
+      .\[\&\:focus\]\:c_blue:focus {
+        color: blue;
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_host_state_ranks_as_that_state() {
+    assert_snapshot!(nested_order(
+        "{ ':host(:hover) &': { color: 'red' }, '&:hover': { color: 'blue' }, ':host-context(.dark) &': { color: 'black' } }"
+    ), @r"
+    @layer utilities {
+      :host-context(.dark) .\[\:host-context\(\.dark\)_\&\]\:c_black {
+        color: black;
+      }
+      .\[\&\:hover\]\:c_blue:hover {
+        color: blue;
+      }
+      :host(:hover) .\[\:host\(\:hover\)_\&\]\:c_red {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn shadow_pseudo_elements_sort_after_pseudo_classes() {
+    assert_snapshot!(nested_order(
+        "{ '&::slotted(span:hover)': { color: 'red' }, '&::part(label)': { color: 'blue' }, '&:active': { color: 'black' } }"
+    ), @r"
+    @layer utilities {
+      .\[\&\:active\]\:c_black:active {
+        color: black;
+      }
+      .\[\&\:\:part\(label\)\]\:c_blue::part(label) {
+        color: blue;
+      }
+      .\[\&\:\:slotted\(span\:hover\)\]\:c_red::slotted(span:hover) {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_legacy_single_colon_pseudo_element_sorts_with_pseudo_elements() {
+    assert_snapshot!(nested_order(
+        "{ '&:before': { color: 'red' }, '&:hover': { color: 'blue' } }"
+    ), @r"
+    @layer utilities {
+      .\[\&\:hover\]\:c_blue:hover {
+        color: blue;
+      }
+      .\[\&\:before\]\:c_red:before {
+        color: red;
+      }
+    }
+    ");
+}
+
+#[test]
+fn a_vendor_prefixed_state_ranks_like_the_standard_one() {
+    assert_snapshot!(nested_order(
+        "{ '&:-webkit-autofill': { color: 'red' }, '&:invalid': { color: 'blue' } }"
+    ), @r"
+    @layer utilities {
+      .\[\&\:invalid\]\:c_blue:invalid {
+        color: blue;
+      }
+      .\[\&\:-webkit-autofill\]\:c_red:-webkit-autofill {
+        color: red;
+      }
+    }
+    ");
+}

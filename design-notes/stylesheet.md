@@ -97,7 +97,15 @@ order so selectors match recipe runtime output. Rule conditions are sorted separ
 1. Rule bucket: base, selector-only, then at-rule/mixed variants.
 2. At-rule priority: supports, media, container, print, then other at-rules; size queries sort by resolved length and
    direction across every axis — `width`, `inline-size` (container queries), `height`, and `block-size`.
-3. Selector priority: pseudo selectors use the configured pseudo-class priority table.
+3. Selector priority: each condition selector ranks by the states it requires, using StyleX's pseudo-class priorities
+   (`selector_rank.rs`, built on `selector_parts`). A selector list ranks as its strongest alternative: top-level
+   commas, and the arguments of `:is()`, `:where()`, `:not()`, `:host()`, `:host-context()`, and `::slotted()`. The
+   parts of one selector add up, so `.group:hover &` and `:host(:hover) &` rank as hover. `:has()` and
+   `:nth-child(… of S)` count only their own priority, because their arguments describe other elements or filter the
+   count. Names ignore case and vendor prefixes. Pseudo-element selectors, including legacy `:before`, sort after
+   pseudo-class ones. Equal ranks sort by selector text: an atom is shared across files, so there's no single written
+   order. Editor inspection warns (`condition_order_by_text`) when that text order reverses the written order of two
+   conditions on one property in one style object at equal specificity; the browser decides every other case.
 4. Property priority: broad shorthands before shorthand groups before longhands.
 5. Ties: recipe and grouped-style entries keep authored order; atoms fall back to property name, atom value key, rule
    conditions, then class conditions.

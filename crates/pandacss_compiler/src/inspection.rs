@@ -188,7 +188,7 @@ pub struct TokenValueRef {
 
 /// Enclosing style owner (call or JSX element); `(owner, parent path)` groups
 /// sibling entries from one style block.
-#[derive(Debug, Clone, Copy, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StyleEntryOwner {
     pub kind: StyleSourceOwnerKind,

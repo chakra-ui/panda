@@ -692,3 +692,22 @@ fn nested_sibling_ampersands_under_child_parent_uses_is() {
 }
 "#);
 }
+
+#[test]
+fn has_argument_pseudos_do_not_reorder_rules() {
+    assert_snapshot!(compile_nested(
+        "{ '&:has(> input:checked)': { color: 'blue' }, '&:has(> input:disabled)': { color: 'gray' }, '&:has(> input[aria-invalid=true])': { color: 'red' } }"
+    ), @r"
+    @layer utilities {
+      .\[\&\:has\(\>_input\:checked\)\]\:c_blue:has(> input:checked) {
+        color: blue;
+      }
+      .\[\&\:has\(\>_input\:disabled\)\]\:c_gray:has(> input:disabled) {
+        color: gray;
+      }
+      .\[\&\:has\(\>_input\[aria-invalid\=true\]\)\]\:c_red:has(> input[aria-invalid=true]) {
+        color: red;
+      }
+    }
+    ");
+}

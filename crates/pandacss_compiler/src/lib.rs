@@ -7,6 +7,7 @@
 
 mod callbacks;
 mod codegen;
+mod condition_order;
 mod css;
 mod design_system;
 mod design_system_imports;

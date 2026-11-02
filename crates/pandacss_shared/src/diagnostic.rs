@@ -2,6 +2,7 @@ use serde::Serialize;
 
 pub mod codes {
     pub const COMPILE_PLACEHOLDER: &str = "compile_placeholder";
+    pub const CONDITION_ORDER_BY_TEXT: &str = "condition_order_by_text";
     pub const CONFIG_ARTIFACT_NAME_CONFLICT: &str = "config_artifact_name_conflict";
     pub const CONFIG_BREAKPOINT_UNITS_MIXED: &str = "config_breakpoint_units_mixed";
     pub const CONFIG_CONTAINER_CONDITION_CONFLICT: &str = "config_container_condition_conflict";

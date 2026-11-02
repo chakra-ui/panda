@@ -89,6 +89,14 @@ pub fn inspect_file_source(
         }
     }
 
+    result
+        .diagnostics
+        .extend(crate::condition_order::condition_order_diagnostics(
+            config,
+            &style_entries,
+            |key| is_nesting(key, &cx),
+        ));
+
     // `token()`/`token.var()` resolve to a value/var during extraction, so
     // the path only comes from the extractor's captured refs. The span is
     // the call itself — tighter than the enclosing style call.

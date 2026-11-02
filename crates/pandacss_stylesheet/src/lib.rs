@@ -10,6 +10,7 @@ mod polyfill;
 mod preflight;
 mod selector;
 mod selector_parts;
+mod selector_rank;
 mod sort;
 mod split_names;
 mod static_css;
@@ -22,7 +23,7 @@ pub use emitter::{StyleReference, StyleReferences, UtilityStyleOverrides};
 pub use layers::{has_layer_declaration, strip_layer_order_statements};
 pub use pandacss_shared::{InlineKeyframe, PositionTryStyle, ViewTransitionStyle};
 pub use selector::{PREFLIGHT_ROOT, ScopeMode, scope_selector, split_selector_list};
-pub use sort::order_properties;
+pub use sort::{order_decided_by_selector_text, order_properties};
 
 use std::{ops::Range, sync::Arc};
 
