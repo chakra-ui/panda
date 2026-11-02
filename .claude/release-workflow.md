@@ -103,34 +103,21 @@ git pull origin <branch>
 
 Skip this step and step 11 for v1 maintenance releases.
 
-Open a new discussion in the **Announcements** category with the release notes. Close it immediately after using the
-`closeDiscussion` GraphQL mutation (closed announcements still appear pinned in the Discussions tab).
+Add a markdown file under `.github/announcements/` with the release notes, open a PR to `v2`, and merge it. The first
+line is the discussion title; the rest is the body.
 
-```bash
-# Create
-gh api graphql -f query='
-mutation {
-  createDiscussion(input: {
-    repositoryId: "R_kgDOHuVHqA"
-    categoryId: "DIC_kwDOHuVHqM4CXQ3j"
-    title: "Panda v<version>"
-    body: "..."
-  }) {
-    discussion { id url }
-  }
-}'
+```markdown
+# Panda v<version>
 
-# Close (use the id returned above)
-gh api graphql -f query='
-mutation {
-  closeDiscussion(input: { discussionId: "<id>" }) {
-    discussion { id closed }
-  }
-}'
+## Added
+...
 ```
 
-Note: the GraphQL mutations need a personal `gh` login. Claude Code remote sessions can't run them; they will hand
-these commands back to you instead.
+On merge, the `Announce Release` workflow (`.github/workflows/announce.yml`) creates the discussion in the
+**Announcements** category and closes it right away (closed announcements still appear pinned in the Discussions tab).
+The run's summary links the created discussion. The workflow also supports `workflow_dispatch` with `title` and `body`
+inputs for manual use; note that Claude Code sessions can't dispatch workflows or call the GraphQL discussion
+mutations directly, so the announcement-file path is the one that works everywhere.
 
 ### 11. Post to Discord
 
