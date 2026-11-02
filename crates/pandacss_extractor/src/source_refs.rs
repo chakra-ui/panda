@@ -90,7 +90,7 @@ pub(crate) fn collect_object_source_refs(
 
 /// Recurse into object/array values so nested and responsive-array leaves get
 /// their own source refs (path segment = the array index).
-fn descend_value(
+pub(crate) fn descend_value(
     value: &Expression<'_>,
     resolver: Option<&Resolver<'_, '_>>,
     owner: StyleSourceOwner,

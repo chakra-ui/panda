@@ -20,14 +20,14 @@
     "@pandacss/vite": "workspace:*",
     "@sveltejs/adapter-auto": "8.0.0",
     "@sveltejs/kit": "3.1.0",
-    "@sveltejs/vite-plugin-svelte": "6.2.4",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
     "eslint-plugin-svelte3": "4.0.0",
     "prettier-plugin-svelte": "3.5.2",
     "svelte": "5.57.0",
     "svelte-check": "4.7.6",
     "tslib": "2.8.1",
     "typescript": "6.0.3",
-    "vite": "7.3.6"
+    "vite": "8.3.5"
   },
   "type": "module"
 }
