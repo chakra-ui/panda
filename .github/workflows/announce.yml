@@ -1,0 +1,63 @@
+name: Announce Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Discussion title, e.g. Panda v2.5.0'
+        required: true
+        type: string
+      body:
+        description: 'Discussion body (markdown)'
+        required: true
+        type: string
+
+permissions:
+  discussions: write
+
+jobs:
+  announce:
+    name: Create announcement discussion
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create and close the discussion
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TITLE: ${{ inputs.title }}
+          BODY: ${{ inputs.body }}
+        run: |
+          set -euo pipefail
+
+          repository_id=$(gh api "repos/$GITHUB_REPOSITORY" --jq .node_id)
+          # Announcements category
+          category_id="DIC_kwDOHuVHqM4CXQ3j"
+
+          result=$(gh api graphql \
+            -f repositoryId="$repository_id" \
+            -f categoryId="$category_id" \
+            -f title="$TITLE" \
+            -f body="$BODY" \
+            -f query='
+          mutation($repositoryId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
+            createDiscussion(input: {repositoryId: $repositoryId, categoryId: $categoryId, title: $title, body: $body}) {
+              discussion { id number url }
+            }
+          }')
+
+          id=$(echo "$result" | jq -er '.data.createDiscussion.discussion.id')
+          url=$(echo "$result" | jq -er '.data.createDiscussion.discussion.url')
+
+          # Closed announcements still show pinned in the Discussions tab.
+          gh api graphql -f discussionId="$id" -f query='
+          mutation($discussionId: ID!) {
+            closeDiscussion(input: {discussionId: $discussionId}) {
+              discussion { id closed }
+            }
+          }' > /dev/null
+
+          echo "discussion_url=$url" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Announcement"
+            echo "$url"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Created and closed: $url"
