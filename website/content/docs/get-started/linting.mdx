@@ -55,6 +55,7 @@ including the ones marked **default** below, oxlint won't turn them on for you:
     "@pandacss/no-invalid-token-paths": "error",
     "@pandacss/no-invalid-nesting": "error",
     "@pandacss/no-dynamic-styling": "warn",
+    "@pandacss/no-unsafe-token-fn-usage": "warn",
     "@pandacss/file-not-included": "error",
     "@pandacss/no-deprecated": "warn",
     "@pandacss/no-debug": "warn",
@@ -81,6 +82,7 @@ Alpha: needs `oxlint` and `@oxlint/plugins`, and binds one Panda project per run
 | `no-invalid-token-paths`    | default              | error    |
 | `no-invalid-nesting`        | default              | error    |
 | `no-dynamic-styling`        | default              | warn     |
+| `no-unsafe-token-fn-usage`  | default              | warn     |
 | `file-not-included`         | default              | error    |
 | `no-deprecated`             | default              | warn     |
 | `no-debug`                  | default              | warn     |
@@ -125,6 +127,30 @@ css({
   width: 'calc(token(sizes.4) + 2px)'
 })
 ```
+
+#### no-unsafe-token-fn-usage
+
+A style value that is only a token reference can use the token name. The rule checks the swap against your config and
+only reports it when the CSS stays the same, so `width: '{spacing.4}'` is left alone when `width` reads `sizes`.
+
+A `token()` call in a style value writes the raw value into the CSS, so theme changes and overrides don't reach it.
+
+```tsx
+import { token } from '../styled-system/tokens'
+
+// ❌
+css({ color: 'token(colors.red.500)', padding: '{spacing.4}' })
+css({ color: token('colors.red.500') })
+
+// ✅
+css({ color: 'red.500', padding: '4' })
+
+// ✅ part of a larger value
+css({ border: '1px solid {colors.red.500}' })
+```
+
+`--fix` rewrites references. `token()` calls get an editor suggestion instead, since the fix changes the CSS from the
+raw value to the variable.
 
 #### no-invalid-nesting
 

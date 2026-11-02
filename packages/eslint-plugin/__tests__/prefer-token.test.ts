@@ -3,7 +3,7 @@ import { createPandaRuleTester, withCss } from './panda-rule-tester'
 const ruleTester = await createPandaRuleTester(`export default {
   outdir: 'styled-system',
   jsxFramework: 'react',
-  importMap: { css: ['@panda/css'], jsx: ['@panda/jsx'] },
+  importMap: { css: ['@panda/css'], jsx: ['@panda/jsx'], tokens: ['@panda/tokens'] },
   theme: {
     tokens: {
       colors: { red: { 500: { value: '#f00' } } },
@@ -49,6 +49,10 @@ ruleTester.run('prefer-token', {
     { filename: 'app.tsx', code: withCss("css({ flex: '1' })"), options: [{ categories: ['borders'] }] },
 
     { filename: 'app.tsx', code: withCss("css({ color: 'red.500', padding: '4' })") },
+    {
+      filename: 'app.tsx',
+      code: withCss("import { token } from '@panda/tokens'", "css({ color: token('colors.red.500') })"),
+    },
     { filename: 'app.tsx', code: withCss("css({ margin: 'auto' })") },
     { filename: 'app.tsx', code: withCss("css({ color: 'red.500/40' })") },
     { filename: 'app.tsx', code: withCss("css({ margin: '-2' })"), options: [{ categories: ['spacing'] }] },
@@ -57,6 +61,11 @@ ruleTester.run('prefer-token', {
     { filename: 'app.tsx', code: withCss("css({ color: '#fff' })"), options: [{ categories: ['spacing'] }] },
   ],
   invalid: [
+    {
+      filename: 'app.tsx',
+      code: withCss("import { token } from '@panda/tokens'", "css({ color: [token('colors.red.500'), '#abc'] })"),
+      errors: [{ message: 'Use a colors token instead of the hardcoded value "#abc".', suggestions: [] }],
+    },
     {
       filename: 'app.tsx',
       code: withCss("css({ margin: '[calc(2px * -1)]' })"),

@@ -135,6 +135,10 @@ These rules are on in `recommended`:
 - `no-dynamic-styling` (warn) — a style value Panda can't read at build time, so it generates no CSS for it, e.g.
   `css({ color })` with `color` from state. Constants Panda resolves are fine. Recipe variants, spreads, and components
   Panda doesn't own aren't reported.
+- `no-unsafe-token-fn-usage` (warn) — a style value that is only a token reference, `'token(colors.red.500)'` or
+  `'{colors.red.500}'`, where the plain name `'red.500'` emits the same CSS. Also flags `token()` and `token.var()`
+  calls in style values: `token()` writes the raw value, so theme changes don't reach it. References are autofixed;
+  calls get a suggestion.
 - `no-deprecated` (warn) — use of a deprecated token, utility, recipe, or pattern. If you set
   `deprecated: 'use X instead'` in config, that message shows up in the lint error.
 - `prefer-token` (warn) — a raw value where a token exists, with the token to use. In `recommended` it's scoped to
