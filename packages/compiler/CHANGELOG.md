@@ -1,5 +1,42 @@
 # @pandacss/compiler
 
+## 2.5.0
+
+### Minor Changes
+
+- 88793a5: Add the `no-dynamic-styling` lint rule, on in `recommended`. It flags style values Panda can't read at build
+  time, like `css({ color })` with `color` from state, so you see the missing CSS in your editor.
+
+### Patch Changes
+
+- f1af4f6: Fix slow first builds with the PostCSS plugin in projects with many `include` entries (74s to 8s on 10k
+  sources).
+- 90f9425: Clarify the `design_system_option_mismatch` warning: components from a design system render unstyled when
+  your app sets a different `prefix`, `hash`, or `separator`. Leave them unset to inherit the design system's.
+- 83a2db2: Fix the order of rules whose selectors contain `:has()` or a list of states, so the right one wins.
+
+  - `&:has(> input:checked)` no longer overrides `&:has(> input[aria-invalid=true])` because of the `:checked` inside
+    it.
+  - `&:is(:hover, :focus-visible)` no longer overrides `_active`; a selector list ranks as its strongest state.
+  - The lint plugin warns when two conditions on one property can't keep the order you wrote them in.
+
+- f1af4f6: Fix design-system tree-shaking keeping old imports when `parseFiles()` picks up an edited file.
+- 8cc45b4: Lint rules now point at, and fix, style values in Vue, Svelte, and Astro template attributes like
+  `<Box color="{colors.red.500}" />`. Before, those values were reported against the whole tag with no fix.
+- 8cc4762: Fix `no-deprecated` and `panda analyze` reporting a deprecated token when the style used a different token
+  that compiles to the same CSS variable.
+- ce96574: Fix `treeshakeDesignSystem` loading the wrong component's styles when several components export the same
+  name, like `Root` in Ark UI–based design systems.
+- 6419305: Fix styles being dropped when a condition reads a variable set by a ternary, such as
+  `tone === 'quiet' ? 'blue.500' : 'orange.500'` after `const tone = loud ? 'loud' : 'quiet'`. Both branches are now
+  extracted, including through `??`/`||` defaults, helper functions, and imports.
+- Updated dependencies [f1af4f6]
+- Updated dependencies [88793a5]
+- Updated dependencies [ce96574]
+  - @pandacss/compiler-shared@2.5.0
+  - @pandacss/config@2.5.0
+  - @pandacss/types@2.5.0
+
 ## 2.4.0
 
 ### Minor Changes
