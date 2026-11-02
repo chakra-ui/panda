@@ -8,7 +8,7 @@
 use std::cmp::Ordering;
 
 use pandacss_config::UserConfig;
-use pandacss_shared::{Diagnostic, diagnostic_codes};
+use pandacss_shared::{Diagnostic, diagnostic_codes, is_important};
 use pandacss_stylesheet::order_decided_by_selector_text;
 use serde_json::Value;
 
@@ -17,9 +17,17 @@ use crate::inspection::{StyleEntryKind, StyleEntryRef};
 struct ConditionedEntry<'a> {
     entry: &'a StyleEntryRef,
     property: &'a str,
+    /// The style object it sits in: a `cva` option or `sva` slot has its own.
+    scope: Vec<&'a str>,
     conditions: Vec<&'a str>,
+    important: bool,
     /// Where it was written: the entry, then the leaf inside a conditional value.
     position: (u32, usize),
+}
+
+struct Leaf<'a> {
+    conditions: Vec<&'a str>,
+    important: bool,
 }
 
 pub(crate) fn condition_order_diagnostics(
@@ -32,12 +40,15 @@ pub(crate) fn condition_order_diagnostics(
         .iter()
         .filter(|entry| entry.kind == StyleEntryKind::Utility)
     {
-        let mut conditions: Vec<&str> = entry
+        let parents = entry
             .path
+            .split_last()
+            .map_or(&[][..], |(_, parents)| parents);
+        let (mut conditions, scope): (Vec<&str>, Vec<&str>) = parents
             .iter()
             .map(String::as_str)
-            .filter(|segment| is_condition(segment))
-            .collect();
+            .filter(|segment| *segment != "base")
+            .partition(|segment| is_condition(segment));
         let mut leaves = Vec::new();
         collect_leaves(
             &entry.source_value,
@@ -50,12 +61,14 @@ pub(crate) fn condition_order_diagnostics(
             leaves
                 .into_iter()
                 .enumerate()
-                .filter(|(_, conditions)| !conditions.is_empty())
-                .map(|(leaf, conditions)| ConditionedEntry {
+                .filter(|(_, leaf)| !leaf.conditions.is_empty())
+                .map(|(index, leaf)| ConditionedEntry {
                     entry,
                     property,
-                    conditions,
-                    position: (entry.span.start, leaf),
+                    scope: scope.clone(),
+                    conditions: leaf.conditions,
+                    important: leaf.important,
+                    position: (entry.span.start, index),
                 }),
         );
     }
@@ -65,7 +78,9 @@ pub(crate) fn condition_order_diagnostics(
     for (index, later) in conditioned.iter().enumerate() {
         let overridden_by = conditioned[..index].iter().find(|earlier| {
             earlier.entry.owner == later.entry.owner
+                && earlier.scope == later.scope
                 && earlier.property == later.property
+                && earlier.important == later.important
                 && order_decided_by_selector_text(config, &earlier.conditions, &later.conditions)
                     == Some(Ordering::Greater)
         });
@@ -81,10 +96,13 @@ fn collect_leaves<'a>(
     value: &'a Value,
     conditions: &mut Vec<&'a str>,
     is_condition: &impl Fn(&str) -> bool,
-    out: &mut Vec<Vec<&'a str>>,
+    out: &mut Vec<Leaf<'a>>,
 ) {
     let Value::Object(object) = value else {
-        out.push(conditions.clone());
+        out.push(Leaf {
+            conditions: conditions.clone(),
+            important: value.as_str().is_some_and(is_important),
+        });
         return;
     };
     for (key, value) in object {

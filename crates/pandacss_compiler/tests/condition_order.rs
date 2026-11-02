@@ -195,3 +195,75 @@ fn stays_quiet_for_a_base_value_and_one_condition() {
     "};
     assert_snapshot!(order_warnings(source), @"");
 }
+
+#[test]
+fn stays_quiet_across_cva_variant_options() {
+    let source = indoc! {r"
+        import { cva } from '@panda/css'
+        cva({
+          variants: {
+            size: {
+              sm: { '&[data-z]': { color: 'red' } },
+              lg: { '&[data-a]': { color: 'blue' } },
+            },
+          },
+        })
+    "};
+    assert_snapshot!(order_warnings(source), @"");
+}
+
+#[test]
+fn stays_quiet_across_sva_slots() {
+    let source = indoc! {r"
+        import { sva } from '@panda/css'
+        sva({
+          slots: ['root', 'label'],
+          base: {
+            root: { '&[data-z]': { color: 'red' } },
+            label: { '&[data-a]': { color: 'blue' } },
+          },
+        })
+    "};
+    assert_snapshot!(order_warnings(source), @"");
+}
+
+#[test]
+fn warns_inside_one_sva_slot() {
+    let source = indoc! {r"
+        import { sva } from '@panda/css'
+        sva({
+          slots: ['root'],
+          base: {
+            root: { '&[data-z]': { color: 'red' }, '&[data-a]': { color: 'blue' } },
+          },
+        })
+    "};
+    assert_snapshot!(order_warnings(source), @"
+    `&[data-a]` doesn't override `&[data-z]` for `color`. Both have the same specificity, so Panda orders them by selector text and `&[data-z]` comes last.
+      at: color: 'blue'
+      help: To make `&[data-a]` win where both match, nest it inside `&[data-z]`.
+    ");
+}
+
+#[test]
+fn stays_quiet_when_the_later_value_is_important() {
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        css({ '&[data-z]': { color: 'red' }, '&[data-a]': { color: 'blue !important' } })
+        css({ '&[data-z]': { color: 'red' }, '&[data-a]': { color: 'blue!' } })
+    "};
+    assert_snapshot!(order_warnings(source), @"");
+}
+
+#[test]
+fn warns_when_both_values_are_important() {
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        css({ '&[data-z]': { color: 'red !important' }, '&[data-a]': { color: 'blue !important' } })
+    "};
+    assert_snapshot!(order_warnings(source), @"
+    `&[data-a]` doesn't override `&[data-z]` for `color`. Both have the same specificity, so Panda orders them by selector text and `&[data-z]` comes last.
+      at: color: 'blue !important'
+      help: To make `&[data-a]` win where both match, nest it inside `&[data-z]`.
+    ");
+}
