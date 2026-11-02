@@ -628,7 +628,7 @@ fn vue_template_attributes_expose_key_and_value_spans() {
 
 #[test]
 fn svelte_template_attributes_expose_key_and_value_spans() {
-    let source = indoc! {r#"
+    let source = indoc! {"
         <script>
         import { Box } from '@panda/jsx'
         </script>
@@ -636,7 +636,7 @@ fn svelte_template_attributes_expose_key_and_value_spans() {
         <Box color='{colors.red.500}' p={'4'} />
         <Box css={{ color: 'token(colors.red.500)', p: ['4'] }} />
         <Box {...{ color: 'red.500' }} />
-    "#};
+    "};
     let result = inspect_file_source(&system(), "a.svelte", source);
 
     assert_snapshot!(template_source_summary(source, &result), @"
