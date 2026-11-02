@@ -25,7 +25,7 @@
     "@pandacss/vite": "workspace:*",
     "@preact/preset-vite": "2.10.6",
     "@solidjs/testing-library": "0.8.10",
-    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/jest-dom": "7.0.1",
     "@testing-library/preact": "3.2.4",
     "@testing-library/react": "16.3.3",
     "@testing-library/vue": "8.1.0",
