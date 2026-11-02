@@ -439,6 +439,8 @@ css({
 // v2: [data-a] first, so [data-z] wins
 ```
 
+The `extraction-diagnostics` lint rule warns when this reverses the order you wrote two conditions in.
+
 If one condition has to win, nest it. The nested rule matches both attributes, so it's more specific and wins in any
 order:
 
