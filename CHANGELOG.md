@@ -5,6 +5,53 @@ Each package keeps its own changelog. Start with [`@pandacss/dev`](./packages/de
 
 For Panda 1.x and earlier, see the [v1 changelog](https://github.com/chakra-ui/panda/blob/v1/CHANGELOG.md).
 
+## [2.5.0](#2.5.0) - 2026-11-02
+
+### Added
+
+- Add the `no-dynamic-styling` lint rule, on in `recommended`. It flags style values Panda can't read at build time,
+  like `css({ color })` with `color` from state, so you see the missing CSS in your editor.
+- Add `codegen: false` to the bundler plugins (Vite, Rollup, webpack, Bun, PostCSS) so apps importing a shared
+  styled-system can skip generating a local copy while still generating CSS.
+
+### Changed
+
+- Lint rules now point at, and fix, style values in Vue, Svelte, and Astro template attributes like
+  `<Box color="{colors.red.500}" />`. Before, those values were reported against the whole tag with no fix.
+- Clarify the `design_system_option_mismatch` warning: components from a design system render unstyled when your app
+  sets a different `prefix`, `hash`, or `separator`. Leave them unset to inherit the design system's.
+
+### Performance
+
+- Fix slow first builds with the PostCSS plugin in projects with many `include` entries (74s to 8s on 10k sources). The
+  first build now parses every source file in one batch, the way `panda cssgen` does.
+
+### Fixed
+
+#### CSS output
+
+- Fix the order of rules whose selectors contain `:has()` or a list of states, so the right one wins.
+  `&:has(> input:checked)` no longer overrides `&:has(> input[aria-invalid=true])` because of the `:checked` inside it,
+  and `&:is(:hover, :focus-visible)` no longer overrides `_active`; a selector list ranks as its strongest state. The
+  lint plugin warns when two conditions on one property can't keep the order you wrote them in.
+
+#### Extraction
+
+- Fix styles being dropped when a condition reads a variable set by a ternary, such as
+  `tone === 'quiet' ? 'blue.500' : 'orange.500'` after `const tone = loud ? 'loud' : 'quiet'`. Both branches are now
+  extracted, including through `??`/`||` defaults, helper functions, and imports.
+
+#### Tree-shaking
+
+- Fix `treeshakeDesignSystem` loading the wrong component's styles when several components export the same name, like
+  `Root` in Ark UI based design systems.
+- Fix design-system tree-shaking keeping old imports when `parseFiles()` picks up an edited file.
+
+#### Tooling
+
+- Fix `no-deprecated` and `panda analyze` reporting a deprecated token when the style used a different token that
+  compiles to the same CSS variable.
+
 ## [2.4.0](#2.4.0) - 2026-10-22
 
 ### Added
