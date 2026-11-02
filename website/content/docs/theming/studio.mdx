@@ -1,46 +1,45 @@
 ---
 title: Studio
-description: See your design system in the browser. No install, no account.
+description: See your tokens, how much of them you use, and every hard-coded value, live in the browser.
 ---
 
-[Studio](https://studio.panda-css.com/) renders your design system: every token, theme and condition, laid out the way
-each category deserves. Run `panda codegen --spec` to write `styled-system/specs/design-system.json`, then drop that
-file in — or the whole `styled-system/` folder — and you're looking at it. Nothing leaves your browser.
+Studio shows your design system in the browser: every token, which ones your code uses, and every place a raw value was
+written instead of a token. Run it in your project:
 
-## View your tokens
+```bash
+pnpm panda studio
+```
 
-Every category paints in a layout that fits it. Colors and gradients as swatches, spacing and sizes as a sorted scale,
-fonts as specimens, durations and easings as live chips, and everything else as a name/value table. Click any token to
-copy its name.
+It opens [studio.panda-css.com](https://studio.panda-css.com/) connected to a local server, and updates as you save.
+Nothing from your project is uploaded.
 
-Discovered themes and a light/dark switch let semantic tokens show their real values, so `colors.fg` reads as the color
-it resolves to rather than a reference you have to chase.
+## Tokens
 
-## Analyze token usage
+Every token category with a layout that fits it: color swatches, a type specimen, spacing and size scales. Colors with a
+`_dark` value show both side by side. Click a token to copy its name, or press `⌘K` to search everything.
 
-Drop your source files, or the whole repo folder, and Studio reports per category which tokens are used, unused, and
-hot. There are two tiers, and what you drop picks one:
+If you have more than one [theme](/docs/theming/multiple-themes), pick one from the **Theme** menu to see what it
+overrides.
 
-- **Include your `panda.config.ts`** and the real Panda compiler runs in your browser through `@pandacss/compiler-wasm`.
-  Counts are exact, down to bare-numeric tokens like `spacing.4`.
-- **Leave it out** and a name-match scan runs instead. Accurate for named tokens like `red.500`, approximate for numeric
-  ones.
+## Usage
 
-A badge on the report says which tier ran. Everything stays in the browser.
+**Project scan** shows how many tokens your code uses per category, which ones nothing uses, and every hard-coded value
+with the files it's in. Click a file to see its code next to its issues.
 
-## Share a link
+**Playground** checks a `css({ ... })` object as you type it and flags any value that isn't a token.
 
-The Share button saves the current system and gives you a read-only link at `/s/<slug>` that anyone can open. Share from
-Analyze and the usage report travels with it, at `/a/<slug>`.
+Usage is counted the same way as [`panda analyze`](/docs/design-systems/analyze).
 
-No account, no ownership: make a spec, get a link, send it. Sharing is the one action that stores anything, so treat the
-link as public.
+## Options
 
-## Build your own
+```bash
+pnpm panda studio --port 3001  # default 6420
+pnpm panda studio --no-open    # print the link instead of opening a browser
+```
 
-Studio reads the same file you can. To render tokens in your own docs site or Storybook, see
-[JSON Spec](/docs/theming/json-spec).
+See [`panda studio`](/docs/reference/cli#studio) for every flag.
 
-## Learn more
+## Without the CLI
 
-The [Studio announcement](/blog/see-your-design-system) walks through all three tracks.
+Run `panda codegen --spec`, then drop `styled-system/specs/design-system.json` on
+[studio.panda-css.com](https://studio.panda-css.com/), or paste a link to it.
