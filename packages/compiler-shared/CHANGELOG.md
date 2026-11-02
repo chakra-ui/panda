@@ -1,5 +1,20 @@
 # @pandacss/compiler-shared
 
+## 2.5.0
+
+### Minor Changes
+
+- 88793a5: Add the `no-dynamic-styling` lint rule, on in `recommended`. It flags style values Panda can't read at build
+  time, like `css({ color })` with `color` from state, so you see the missing CSS in your editor.
+
+### Patch Changes
+
+- f1af4f6: Fix slow first builds with the PostCSS plugin in projects with many `include` entries (74s to 8s on 10k
+  sources).
+- ce96574: Fix `treeshakeDesignSystem` loading the wrong component's styles when several components export the same
+  name, like `Root` in Ark UI–based design systems.
+- @pandacss/types@2.5.0
+
 ## 2.4.0
 
 ### Patch Changes
