@@ -20,7 +20,7 @@
     "@pandacss/vite": "workspace:*",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
-    "@vitejs/plugin-react": "5.2.0",
+    "@vitejs/plugin-react": "6.2.1",
     "typescript": "6.0.3",
     "vite": "7.3.6"
   }
