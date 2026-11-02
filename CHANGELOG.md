@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.12.2](#1.12.2) - 2026-11-02
+
+### Changed
+
+- Bump `browserslist` to 4.29.4 and `postcss` to 8.5.31 to pick up the fixes for CVE-2026-73088, CVE-2026-73089 and CVE-2026-73646. Apps no longer need `overrides`/`resolutions` to clear these from security scans. CSS output is unchanged.
+
+### Fixed
+
+- Fix `panda studio --build` producing an empty site (and a 404) when studio's dependencies can't be resolved from the output directory, which is common with pnpm. Build errors now also fail the command instead of being logged and ignored.
+
 ## [1.12.1](#1.12.1) - 2026-09-04
 
 ### Fixed
