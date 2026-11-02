@@ -424,6 +424,35 @@ cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEndWidth
 
 Padding, margin, and every other property group sort the same way. See [Border](/docs/reference/border).
 
+### Selector ties sort by text, not source order
+
+v2 sorts atomic rules deterministically, so the output doesn't depend on which file is read first. An atomic rule is
+shared by every file that uses it, so there's no single written order to keep. When two selector conditions have the
+same specificity, they sort by selector text:
+
+```tsx
+css({
+  '&[data-z]': { color: 'red' },
+  '&[data-a]': { color: 'blue' }
+})
+// v1: [data-z] first, so [data-a] wins
+// v2: [data-a] first, so [data-z] wins
+```
+
+If one condition has to win, nest it. The nested rule matches both attributes, so it's more specific and wins in any
+order:
+
+```tsx
+css({
+  '&[data-z]': {
+    color: 'red',
+    '&[data-a]': { color: 'blue' }
+  }
+})
+```
+
+Recipe variants keep written order. Only atomic `css()` sorts this way.
+
 ### scrollbarWidth takes keywords, not tokens
 
 v1 mapped `scrollbarWidth` to `sizes` tokens, so `scrollbarWidth: '4'` emitted `var(--sizes-4)` and browsers dropped it.
