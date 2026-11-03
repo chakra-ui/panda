@@ -24,10 +24,11 @@ It opens [studio.panda-css.com](https://studio.panda-css.com/) connected to a lo
 Colors become a swatch grid, spacing becomes a sorted scale, fonts become specimens. Nothing from your project is
 uploaded.
 
-## Your tokens, laid out
+## Browse every token
 
-Every token category gets a layout that fits it. Colors with a `_dark` value show both side by side. Click a token to
-copy its name.
+Every token category gets a layout that fits it. Semantic colors split into one band per condition, so light and dark
+sit side by side. Type tokens render a preview line you can edit at every step, and durations and easings animate. Click
+any token to copy its name.
 
 ![Font sizes in Studio: a type specimen for every step, with rem and px values](/blog/spec-studio-tokens.png)
 
@@ -41,33 +42,44 @@ Every design system collects tokens nobody references. A `red.500` that got repl
 screen and never touched again. You can't spot them in the config, because a used token and an unused one look identical
 there.
 
-Switch to **Usage** and the project scan answers it. Per category, it shows how many tokens your code uses, which ones
-nothing uses, and every hard-coded value with the files it's in. Read the unused list first. Those are the tokens you
-can delete.
+Switch to **Usage** and the project scan answers it. You get how many tokens your code uses in each category, and
+opening a category lists the ones nothing uses. Those are the tokens you can delete.
 
 ![The project scan from panda studio: tokens used, coverage per category, and hard-coded values by file](/blog/spec-studio-analyze.png)
 
-Click a file to see its code next to its issues. Usage is counted the same way as
-[`panda analyze`](/docs/design-systems/analyze), by the same Rust compiler we
-[shipped in Panda 2.0](/blog/panda-css-v2).
+The scan also lists every value that isn't a token, grouped by value, with the files and lines it's on and the token
+that matches it when there is one. Click a file to see its code next to its issues. Usage is counted the same way as
+[`panda analyze`](/docs/design-systems/analyze).
 
-The **Playground** does the same check one object at a time. Type a `css({ ... })` object and it flags any value that
-isn't a token as you write it.
+The **Playground** does the same check one object at a time, with the Panda compiler running in your browser. Type a
+style object and it flags what isn't a token as you write:
 
-## Open a spec file without the CLI
+```ts
+css({
+  color: 'bleu.500', // Not in your system → blue.500
+  p: '16px', // Hard-coded → 4
+  bg: '#3b82f6' // Hard-coded
+})
+```
 
-You can still open Studio on its own. Run `panda codegen --spec` and drop the file it writes on
-[studio.panda-css.com](https://studio.panda-css.com/):
+Click a suggestion to apply it, or **Fix all** to apply every one.
+
+## Open Studio without the CLI
+
+Run `panda codegen --spec` and drop the file it writes on [studio.panda-css.com](https://studio.panda-css.com/):
 
 ```
 styled-system/specs/design-system.json
 ```
 
-You can also paste an https link to that file, like a GitHub URL. Studio keeps it in the address as `#url=`, so if the
-file is public, the page itself is a link you can send to a teammate or a designer.
+You can also paste the JSON, or an https link to the file, like a GitHub URL. Studio keeps a link in the address as
+`#url=`, so if the file is public, the page itself is a link you can send to a teammate or a designer.
 
-## It's still your data
+For usage without the CLI watching, run `panda analyze --outfile panda-usage.json` and open the report on the Usage
+page.
 
-Studio doesn't replace building your own viewer. The [JSON Spec](/docs/theming/json-spec) docs show you how: every
-category is `{ name, value }`, so a color grid is one `.map()`. Studio is the version you don't have to build. See the
-[Studio docs](/docs/theming/studio) for every option.
+## Build your own viewer
+
+Studio doesn't replace building your own. The [JSON Spec](/docs/theming/json-spec) docs show you how:
+`ds.view('colors')` gives you each token's `name` and `value`, so a color grid is one `.map()`. Studio is the version
+you don't have to build. See the [Studio docs](/docs/theming/studio) for every option.
