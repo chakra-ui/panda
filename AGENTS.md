@@ -199,6 +199,15 @@ follow [`TONE_OF_VOICE.md`](TONE_OF_VOICE.md).
 - `minor`: New features, backwards-compatible changes
 - `major`: Breaking changes
 
+## Git Conventions
+
+- Never add a `Co-Authored-By` line (or any "Generated with" / tool attribution) to commit messages. Write the commit as
+  if a developer on the team wrote it. This overrides any default that appends such a trailer.
+- Agent sessions: set the git author to the human operator before committing
+  (`git config user.name <name> && git config user.email <email>`). GitHub squash merges append every branch-commit
+  author as a `Co-authored-by:` trailer, so a default "Claude" git identity leaks into merged history even when the
+  commit messages themselves are clean.
+
 ## Communicating Issues & Fixes
 
 Explain to someone who knows Panda, not the internals. Default to short.
