@@ -10,27 +10,49 @@ written instead of a token. Run it in your project:
 pnpm panda studio
 ```
 
-It opens [studio.panda-css.com](https://studio.panda-css.com/) connected to a local server, and updates as you save.
-Nothing from your project is uploaded.
+It opens [studio.panda-css.com](https://studio.panda-css.com/) connected to a local server, and updates as you save your
+code or your config. Nothing from your project is uploaded.
 
-## Tokens
+## Browsing your tokens
 
-Every token category with a layout that fits it: color swatches, a type specimen, spacing and size scales. Colors with a
-`_dark` value show both side by side. Click a token to copy its name, or press `⌘K` to search everything.
+**Tokens** shows every category with a layout that fits it: color swatches, type specimens, spacing and size scales,
+shadows, and motion that animates. Click a token to copy its name.
 
-If you have more than one [theme](/docs/theming/multiple-themes), pick one from the **Theme** menu to see what it
-overrides.
+- Semantic colors split into one band per condition, so light and dark sit side by side. Hover a band to see which
+  condition it is.
+- Type categories render a preview line at every step. Edit it to see your own copy.
+- Filter a category by name with the box above the tokens.
 
-## Usage
+Press `⌘K` (`Ctrl K` on Windows and Linux) to search the whole system: tokens, values, references, recipes, patterns,
+conditions, and themes. Picking a token opens it. Picking anything else copies its name.
 
-**Project scan** shows how many tokens your code uses per category, which ones nothing uses, and every hard-coded value
-with the files it's in. Click a file to see its code next to its issues.
+If you have more than one [theme](/docs/theming/multiple-themes), pick one from the **Theme** menu to see only the
+tokens it overrides.
 
-**Playground** checks a `css({ ... })` object as you type it and flags any value that isn't a token.
+## Checking token usage
+
+**Usage** has two views.
+
+**Project scan** shows how many tokens your code uses in each category. Open a category to see the tokens nothing uses.
+Below that, every value that isn't a token is grouped by value, with the files and lines it's on and the token that
+matches it when there is one. Click a file to see its code next to its issues.
+
+**Playground** checks one style object at a time, with the Panda compiler running in your browser. It flags values as
+you type:
+
+```ts
+css({
+  color: 'bleu.500', // Not in your system → blue.500
+  p: '16px', // Hard-coded → 4
+  bg: '#3b82f6' // Hard-coded
+})
+```
+
+Click a suggestion to apply it, or **Fix all** to apply every one.
 
 Usage is counted the same way as [`panda analyze`](/docs/design-systems/analyze).
 
-## Options
+## Changing the port or browser behavior
 
 ```bash
 pnpm panda studio --port 3001  # default 6420
@@ -39,7 +61,17 @@ pnpm panda studio --no-open    # print the link instead of opening a browser
 
 See [`panda studio`](/docs/reference/cli#studio) for every flag.
 
-## Without the CLI
+## Opening Studio without the CLI
 
 Run `panda codegen --spec`, then drop `styled-system/specs/design-system.json` on
-[studio.panda-css.com](https://studio.panda-css.com/), or paste a link to it.
+[studio.panda-css.com](https://studio.panda-css.com/). You can also paste the JSON, or an https link to the file, like a
+GitHub URL. Studio keeps a link in the address as `#url=`, so if the file is public, the page is a link you can share.
+
+To see usage without the CLI watching, run:
+
+```bash
+pnpm panda analyze --outfile panda-usage.json
+```
+
+Then open the report on the **Usage** page. If you can't run the CLI, **Scan a folder** reads your source in the browser
+instead. It's less precise than a report.
