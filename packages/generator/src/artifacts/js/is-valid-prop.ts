@@ -20,16 +20,11 @@ export function generateIsValidProp(ctx: Context) {
       .exhaustive()}"`,
   )
 
-  // replace memo function declaration with an import from helpers
   content = content.replace(memoFnDeclarationRegex, 'var cssPropertySelectorRegex')
+  content = content.replace('/* @__PURE__ */ memo(', '/* @__PURE__ */ (')
 
-  // remove browser CSS props / memo function call when not needed
   if (ctx.jsx.styleProps === 'minimal' || ctx.jsx.styleProps === 'none') {
-    content = content.replace('/* @__PURE__ */ memo(', '/* @__PURE__ */ (')
     content = content.replace(cssPropRegex, 'var cssPropertiesStr = "";')
-  } else {
-    // we want memo if we're using style props
-    content = ctx.file.import('memo', '../helpers') + '\n' + content
   }
 
   content = ctx.file.import('splitProps', '../helpers') + '\n' + content
