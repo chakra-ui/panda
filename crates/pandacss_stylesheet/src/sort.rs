@@ -11,57 +11,7 @@ use std::cmp::Ordering;
 use pandacss_config::{ConditionQuery, UserConfig};
 use pandacss_encoder::{Atom, RecipeStyleEntry, atom_value_sort_key};
 
-const PSEUDO_PRIORITIES: &[(&str, u16)] = &[
-    (":is", 40),
-    (":where", 40),
-    (":not", 40),
-    (":has", 45),
-    (":dir", 50),
-    (":lang", 51),
-    (":first-child", 52),
-    (":first-of-type", 53),
-    (":last-child", 54),
-    (":last-of-type", 55),
-    (":only-child", 56),
-    (":only-of-type", 57),
-    (":nth-child", 60),
-    (":nth-last-child", 61),
-    (":nth-of-type", 62),
-    (":nth-last-of-type", 63),
-    (":empty", 70),
-    (":link", 80),
-    (":any-link", 81),
-    (":local-link", 82),
-    (":target-within", 83),
-    (":target", 84),
-    (":visited", 85),
-    (":enabled", 91),
-    (":disabled", 92),
-    (":required", 93),
-    (":optional", 94),
-    (":read-only", 95),
-    (":read-write", 96),
-    (":placeholder-shown", 97),
-    (":in-range", 98),
-    (":out-of-range", 99),
-    (":default", 100),
-    (":checked", 101),
-    (":indeterminate", 101),
-    (":blank", 102),
-    (":valid", 103),
-    (":invalid", 104),
-    (":user-valid", 105),
-    (":user-invalid", 106),
-    (":autofill", 110),
-    (":picture-in-picture", 120),
-    (":modal", 121),
-    (":fullscreen", 122),
-    (":focus-within", 130),
-    (":hover", 140),
-    (":focus", 150),
-    (":focus-visible", 160),
-    (":active", 170),
-];
+use crate::selector_rank::{Specificity, selector_rank};
 
 pub struct SortContext<'a> {
     config: &'a UserConfig,
@@ -171,13 +121,7 @@ struct CssRuleKey {
 
 impl CssRuleKey {
     fn new(config: &UserConfig, conditions: &[&str], prop: &str) -> Self {
-        let mut at_rules = Vec::new();
-        let mut selectors = Vec::new();
-        for condition in conditions {
-            collect_condition_parts(config, condition, &mut at_rules, &mut selectors);
-        }
-        at_rules.sort();
-        selectors.sort();
+        let (at_rules, selectors) = stack_parts(config, conditions);
         Self {
             bucket: RuleBucket::from_parts(&at_rules, &selectors),
             at_rules,
@@ -393,14 +337,17 @@ impl PartialOrd for OrderedLength {
 struct SelectorKey {
     pseudo_rank: u16,
     pseudo_element: bool,
+    specificity: Specificity,
     raw: String,
 }
 
 impl SelectorKey {
     fn new(raw: &str) -> Self {
+        let rank = selector_rank(raw);
         Self {
-            pseudo_rank: pseudo_rank(raw),
-            pseudo_element: is_pseudo_element(raw),
+            pseudo_rank: rank.rank,
+            pseudo_element: rank.pseudo_element,
+            specificity: rank.specificity,
             raw: raw.to_owned(),
         }
     }
@@ -499,16 +446,55 @@ fn compare_condition_names(config: &UserConfig, a: &str, b: &str) -> Ordering {
         .then_with(|| a.cmp(b))
 }
 
+/// The order selector text decides between two condition stacks on the same
+/// property. `None` when the cascade or Panda's ranking already decides it:
+/// different at-rules, stack depth, pseudo-element placement, pseudo-class
+/// rank, or specificity.
+#[must_use]
+pub fn order_decided_by_selector_text(
+    config: &UserConfig,
+    a: &[&str],
+    b: &[&str],
+) -> Option<Ordering> {
+    let (a_at_rules, a_selectors) = stack_parts(config, a);
+    let (b_at_rules, b_selectors) = stack_parts(config, b);
+    if a_selectors.is_empty()
+        || a_selectors.len() != b_selectors.len()
+        || a_at_rules.cmp(&b_at_rules) != Ordering::Equal
+    {
+        return None;
+    }
+    let same_rank = a_selectors
+        .iter()
+        .zip(&b_selectors)
+        .all(|(a, b)| a.pseudo_element == b.pseudo_element && a.pseudo_rank == b.pseudo_rank);
+    let specificity = |selectors: &[SelectorKey]| {
+        selectors
+            .iter()
+            .fold(Specificity::default(), |total, key| total + key.specificity)
+    };
+    if !same_rank || specificity(&a_selectors) != specificity(&b_selectors) {
+        return None;
+    }
+    Some(a_selectors.cmp(&b_selectors)).filter(|order| order.is_ne())
+}
+
+fn stack_parts(config: &UserConfig, conditions: &[&str]) -> (Vec<AtRuleKey>, Vec<SelectorKey>) {
+    let mut at_rules = Vec::new();
+    let mut selectors = Vec::new();
+    for condition in conditions {
+        collect_condition_parts(config, condition, &mut at_rules, &mut selectors);
+    }
+    at_rules.sort();
+    selectors.sort();
+    (at_rules, selectors)
+}
+
 fn sorted_condition_parts(
     config: &UserConfig,
     condition: &str,
 ) -> (Vec<AtRuleKey>, Vec<SelectorKey>) {
-    let mut at_rules = Vec::new();
-    let mut selectors = Vec::new();
-    collect_condition_parts(config, condition, &mut at_rules, &mut selectors);
-    at_rules.sort();
-    selectors.sort();
-    (at_rules, selectors)
+    stack_parts(config, &[condition])
 }
 
 /// Scan for a combinator at bracket/paren depth zero. ` `/`>`/`+`/`~` separating
@@ -725,72 +711,6 @@ fn parse_length_px(input: &str) -> Option<f64> {
         "px" | "" => number,
         _ => f64::INFINITY,
     })
-}
-
-fn pseudo_rank(selector: &str) -> u16 {
-    let mut rank = 0;
-    for pseudo in pseudo_classes(selector) {
-        rank += pseudo_priority(pseudo);
-    }
-    rank
-}
-
-fn pseudo_priority(pseudo: &str) -> u16 {
-    PSEUDO_PRIORITIES
-        .iter()
-        .find_map(|(name, priority)| (*name == pseudo).then_some(*priority))
-        .unwrap_or(40)
-}
-
-/// Iterate the pseudo-*classes* (`:hover`, `:focus`, …) in a selector,
-/// skipping pseudo-*elements* (`::before`) which don't affect class priority.
-fn pseudo_classes(selector: &str) -> PseudoClasses<'_> {
-    PseudoClasses {
-        selector,
-        position: 0,
-    }
-}
-
-struct PseudoClasses<'a> {
-    selector: &'a str,
-    position: usize,
-}
-
-impl<'a> Iterator for PseudoClasses<'a> {
-    type Item = &'a str;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let bytes = self.selector.as_bytes();
-        while self.position < bytes.len() {
-            let index = self.position;
-            self.position += 1;
-            if bytes[index] != b':' {
-                continue;
-            }
-            if bytes.get(index + 1) == Some(&b':') {
-                self.position += 1;
-                continue;
-            }
-            let start = index;
-            let mut end = index + 1;
-            while let Some(ch) = bytes.get(end).copied() {
-                if ch.is_ascii_alphabetic() || ch == b'-' {
-                    end += 1;
-                } else {
-                    break;
-                }
-            }
-            if end > start + 1 {
-                self.position = end;
-                return Some(&self.selector[start..end]);
-            }
-        }
-        None
-    }
-}
-
-fn is_pseudo_element(selector: &str) -> bool {
-    selector.contains("::")
 }
 
 /// Cascade rank of one CSS declaration (`border-color`): shorthands before the longhands they expand.

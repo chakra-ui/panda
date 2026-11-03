@@ -1,5 +1,21 @@
 # @pandacss/transformer
 
+## 2.5.0
+
+### Patch Changes
+
+- Updated dependencies [f1af4f6]
+- Updated dependencies [90f9425]
+- Updated dependencies [83a2db2]
+- Updated dependencies [88793a5]
+- Updated dependencies [f1af4f6]
+- Updated dependencies [8cc45b4]
+- Updated dependencies [8cc4762]
+- Updated dependencies [ce96574]
+- Updated dependencies [6419305]
+  - @pandacss/compiler@2.5.0
+  - @pandacss/compiler-shared@2.5.0
+
 ## 2.4.0
 
 ### Patch Changes

@@ -302,12 +302,12 @@ Check your package scripts as well as your config. The CLI no longer accepts sev
 
 #### Replace removed commands
 
-| v1 command                                           | v2 replacement                                                                                                       |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `panda spec`                                         | `panda codegen --spec`, or `--spec=./design-system.json` for a custom path                                           |
-| `panda ship`                                         | `panda lib` to publish a design system; `panda buildinfo --outfile ./dist/panda.buildinfo.json` for build info alone |
-| `panda emit-pkg`                                     | Removed. `panda lib` manages design-system package exports; review other runtime package exports yourself            |
-| `panda studio` (including `--build` and `--preview`) | Use the hosted [Studio](https://studio.panda-css.com/)                                                               |
+| v1 command                                       | v2 replacement                                                                                                       |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `panda spec`                                     | `panda codegen --spec`, or `--spec=./design-system.json` for a custom path                                           |
+| `panda ship`                                     | `panda lib` to publish a design system; `panda buildinfo --outfile ./dist/panda.buildinfo.json` for build info alone |
+| `panda emit-pkg`                                 | Removed. `panda lib` manages design-system package exports; review other runtime package exports yourself            |
+| `panda studio --build`, `panda studio --preview` | `panda studio` opens the hosted [Studio](/docs/theming/studio), connected to your project. There's nothing to build  |
 
 `--spec` also works on `panda build` and `panda lib`. It writes one design-system document instead of the v1 spec files.
 See [Codegen](/docs/reference/cli#codegen).
@@ -423,6 +423,37 @@ cx(css({ borderWidth: '1px', borderStyle: 'solid' }), css({ borderInlineEndWidth
 ```
 
 Padding, margin, and every other property group sort the same way. See [Border](/docs/reference/border).
+
+### Selector ties sort by text, not source order
+
+v2 sorts atomic rules deterministically, so the output doesn't depend on which file is read first. An atomic rule is
+shared by every file that uses it, so there's no single written order to keep. When two selector conditions have the
+same specificity, they sort by selector text:
+
+```tsx
+css({
+  '&[data-z]': { color: 'red' },
+  '&[data-a]': { color: 'blue' }
+})
+// v1: [data-z] first, so [data-a] wins
+// v2: [data-a] first, so [data-z] wins
+```
+
+The `extraction-diagnostics` lint rule warns when this reverses the order you wrote two conditions in.
+
+If one condition has to win, nest it. The nested rule matches both attributes, so it's more specific and wins in any
+order:
+
+```tsx
+css({
+  '&[data-z]': {
+    color: 'red',
+    '&[data-a]': { color: 'blue' }
+  }
+})
+```
+
+Recipe variants keep written order. Only atomic `css()` sorts this way.
 
 ### scrollbarWidth takes keywords, not tokens
 

@@ -1,0 +1,96 @@
+name: Announce Release
+
+on:
+  push:
+    branches:
+      - v2
+    paths:
+      - '.github/announcements/*.md'
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Discussion title, e.g. Panda v2.5.0'
+        required: true
+        type: string
+      body:
+        description: 'Discussion body (markdown)'
+        required: true
+        type: string
+
+permissions:
+  discussions: write
+
+jobs:
+  announce:
+    name: Create announcement discussion
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Create and close the discussion
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TITLE: ${{ inputs.title }}
+          BODY: ${{ inputs.body }}
+        run: |
+          set -euo pipefail
+
+          repository_id=$(gh api "repos/$GITHUB_REPOSITORY" --jq .node_id)
+          # Announcements category
+          category_id="DIC_kwDOHuVHqM4CXQ3j"
+
+          announce() {
+            local title="$1" body="$2"
+
+            local result
+            result=$(gh api graphql \
+              -f repositoryId="$repository_id" \
+              -f categoryId="$category_id" \
+              -f title="$title" \
+              -f body="$body" \
+              -f query='
+            mutation($repositoryId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
+              createDiscussion(input: {repositoryId: $repositoryId, categoryId: $categoryId, title: $title, body: $body}) {
+                discussion { id number url }
+              }
+            }')
+
+            local id url
+            id=$(echo "$result" | jq -er '.data.createDiscussion.discussion.id')
+            url=$(echo "$result" | jq -er '.data.createDiscussion.discussion.url')
+
+            # Closed announcements still show pinned in the Discussions tab.
+            gh api graphql -f discussionId="$id" -f query='
+            mutation($discussionId: ID!) {
+              closeDiscussion(input: {discussionId: $discussionId}) {
+                discussion { id closed }
+              }
+            }' > /dev/null
+
+            {
+              echo "## Announcement"
+              echo "$url"
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "Created and closed: $url"
+          }
+
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            announce "$TITLE" "$BODY"
+            exit 0
+          fi
+
+          # Push event: announce each announcement file this commit added.
+          # The title is the first line (leading "# " stripped), the body the rest.
+          files=$(git diff --name-only --diff-filter=A HEAD^ HEAD -- '.github/announcements/*.md')
+          if [ -z "$files" ]; then
+            echo "No new announcement files in this push."
+            exit 0
+          fi
+          while IFS= read -r f; do
+            title=$(head -n1 "$f" | sed 's/^#\+ *//')
+            body=$(tail -n +2 "$f" | sed '/./,$!d')
+            announce "$title" "$body"
+          done <<< "$files"

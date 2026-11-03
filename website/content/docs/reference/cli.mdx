@@ -18,6 +18,7 @@ The commands are:
 | `panda codegen`   | Generate the `styled-system` output only                     |
 | `panda cssgen`    | Generate CSS only                                            |
 | `panda analyze`   | Report token, recipe, and utility usage across your sources  |
+| `panda studio`    | Open Studio in your browser, live-connected to this project  |
 | `panda doctor`    | Validate your setup and print a project summary              |
 | `panda debug`     | Dump resolved config and per-file extraction for bug reports |
 | `panda lib`       | Publish a design system other apps can consume               |
@@ -43,8 +44,8 @@ Most commands accept these flags.
 | `--trace-output <fmt>` | Trace output: `fmt` or `chrome-json`                                             |                                      |
 | `--trace-file <file>`  | Trace output file for `chrome-json` tracing                                      |                                      |
 
-Commands that scan your source files (`dev`, `build`, `check`, `cssgen`, `analyze`, `debug`, `lib`, `buildinfo`) also
-take `--include`:
+Commands that scan your source files (`dev`, `build`, `check`, `cssgen`, `analyze`, `studio`, `debug`, `lib`,
+`buildinfo`) also take `--include`:
 
 | Flag               | Description                                                                       |
 | ------------------ | --------------------------------------------------------------------------------- |
@@ -317,6 +318,33 @@ pnpm panda analyze --outfile analyze.json
 | `--outfile <path>` | Write the report as JSON to this path                                                                          | -       |
 
 `panda analyze` also accepts the [shared flags](#shared-flags) and `--include`.
+
+---
+
+## studio
+
+Open [Studio](/docs/theming/studio) in your browser, connected to this project. It starts a local server, opens
+`studio.panda-css.com`, and keeps your tokens and usage in sync as you save. Press `Ctrl+C` to stop.
+
+```bash
+pnpm panda studio
+
+# Print the link instead of opening a browser
+pnpm panda studio --no-open
+
+# Use a fixed port
+pnpm panda studio --port 3001
+```
+
+| Flag                    | Description                                                                | Related             |
+| ----------------------- | -------------------------------------------------------------------------- | ------------------- |
+| `--port <number>`       | Port for the local server. Defaults to 6420 and tries the next 10 if taken | -                   |
+| `--no-open`             | Print the link instead of opening a browser. CI never opens one            | -                   |
+| `--watch-debounce <ms>` | Debounce updates after a change, in milliseconds                           | -                   |
+| `--include <glob>`      | Source globs to scan, replacing the config `include` list                  | [analyze](#analyze) |
+
+`panda studio` also accepts `--cwd`, `--config`, `--log-level`, `--logfile`, and `--no-color`. It runs until you stop
+it, so it doesn't take `--json`. For a machine-readable usage report, use `panda analyze --json`.
 
 ---
 

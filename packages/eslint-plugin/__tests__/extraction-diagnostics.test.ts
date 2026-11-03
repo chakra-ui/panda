@@ -57,5 +57,16 @@ ruleTester.run('extraction-diagnostics', {
       code: withCss("css({ _zzzzz: { color: 'red' } })"),
       errors: [{ message: 'unknown condition `_zzzzz`' }],
     },
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ '&[data-z]': { color: 'red' }, '&[data-a]': { color: 'blue' } })"),
+      errors: [
+        {
+          message:
+            "`&[data-a]` doesn't override `&[data-z]` for `color`. Both have the same specificity, so Panda orders them by selector text and `&[data-z]` comes last.",
+          line: 2,
+        },
+      ],
+    },
   ],
 })

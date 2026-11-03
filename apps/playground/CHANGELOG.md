@@ -1,5 +1,23 @@
 # playground
 
+## 0.1.9
+
+### Patch Changes
+
+- Updated dependencies [f1af4f6]
+- Updated dependencies [83a2db2]
+- Updated dependencies [88793a5]
+- Updated dependencies [8cc45b4]
+- Updated dependencies [8cc4762]
+- Updated dependencies [ce96574]
+- Updated dependencies [6419305]
+  - @pandacss/compiler-shared@2.5.0
+  - @pandacss/compiler-wasm@2.5.0
+  - @pandacss/config@2.5.0
+  - @pandacss/preset-base@2.5.0
+  - @pandacss/preset-panda@2.5.0
+  - @pandacss/preset-typography@2.5.0
+
 ## 0.1.8
 
 ### Patch Changes
