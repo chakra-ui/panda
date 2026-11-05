@@ -152,6 +152,31 @@ fn app_importing_brand_from(module: &str) -> String {
 }
 
 #[test]
+fn refresh_candidates_include_tracked_files_and_folded_dependencies() {
+    let app = app_importing_brand_from("./tokens");
+    let (_fs, mut project) = watch_project(&[
+        ("App.tsx", &app),
+        ("tokens.ts", "export const brand = 'red';\n"),
+    ]);
+    project.parse_file("/proj/App.tsx", &app);
+
+    assert!(project.is_refresh_candidate("/proj/App.tsx"));
+    assert!(project.is_refresh_candidate("/proj/tokens.ts"));
+    assert!(!project.is_refresh_candidate("/proj/.DS_Store"));
+    assert!(!project.is_refresh_candidate("/proj/unrelated.ts"));
+}
+
+#[test]
+fn refresh_candidates_include_missing_imports() {
+    let (_fs, mut project) = watch_project(&[]);
+    project.parse_file("/proj/App.tsx", &app_importing_brand_from("./missing"));
+
+    assert!(project.is_refresh_candidate("/proj/missing.ts"));
+    assert!(!project.is_refresh_candidate("/proj/.DS_Store"));
+    assert!(!project.is_refresh_candidate("/proj/unrelated.ts"));
+}
+
+#[test]
 fn cold_build_affects_nothing() {
     let (_fs, mut project) = watch_project(&[
         ("App.tsx", &app_importing_brand_from("./tokens")),

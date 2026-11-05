@@ -970,6 +970,26 @@ impl Project {
         }
     }
 
+    /// Whether refreshing `path` can update a tracked file or its folded imports.
+    /// Hosts can skip reading unrelated files before calling [`Self::refresh_file`].
+    #[must_use]
+    pub fn is_refresh_candidate(&self, path: &str) -> bool {
+        if self.files.contains_key(path)
+            || self
+                .dependency_key(path)
+                .is_some_and(|key| self.dependencies.contains_dependency(&key))
+        {
+            return true;
+        }
+        self.dependencies.has_unresolved()
+            && self
+                .system
+                .extractor_config()
+                .cross_file
+                .as_ref()
+                .is_some_and(|resolver| !self.requests_waiting_on(resolver, path).is_empty())
+    }
+
     /// Re-parses `path` only if it's already known. Watch-mode contract:
     /// filter file-change events through this and edits to untracked files
     /// are ignored automatically.
