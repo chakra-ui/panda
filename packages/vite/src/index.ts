@@ -39,7 +39,6 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
   let sourceTransformer: SourceTransformer | undefined
   let sourceTransformerCompiler: Driver['compiler'] | undefined
   const warnDiagnostics = createDiagnosticLog()
-  const watchedFiles = new Set<string>()
   const rootIds = new Set<string>()
 
   const resolveSourceTransformer = () => {
@@ -65,6 +64,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
   const addPandaWatchFiles = (addWatchFile: (file: string) => void, inputId: string) => {
     if (!driver) return
 
+    const watchedFiles = new Set<string>()
     const watch = (file: string) => {
       if (watchedFiles.has(file)) return
       watchedFiles.add(file)
@@ -202,10 +202,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
         const change = await sourceChangeFromHotUpdate(ctx, designSystemFile === 'source')
         const changed = await driver.syncDesignSystemFileChange(change)
         if (changed) {
-          if (designSystemFile === 'artifact') {
-            watchedFiles.clear()
-            codegen()
-          }
+          if (designSystemFile === 'artifact') codegen()
           warnDesignSystemDiagnostics((message) => ctx.server.config.logger.warn(message))
         }
         return withInvalidatedRoots(this.environment, ctx.modules)
@@ -215,7 +212,6 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
         const diff = await driver.reload()
         if (!diff.hasChanged) return
 
-        watchedFiles.clear()
         codegen()
         driver.parseFiles()
         warnDesignSystemDiagnostics((message) => ctx.server.config.logger.warn(message))
