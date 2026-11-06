@@ -703,6 +703,51 @@ describe('createNodeDriver', () => {
     expect(driver.cssgen().css).not.toContain('cyan')
   })
 
+  it('ignores unreadable non-source files without failing a watch batch', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    driver.parseFiles()
+    const metadata = join(dir, '.DS_Store')
+    const excluded = join(dir, 'generated', 'Binary.tsx')
+    const missing = join(dir, 'missing.bin')
+    const source = join(dir, 'WatchBatch.tsx')
+    mkdirSync(dirname(excluded), { recursive: true })
+    writeFileSync(metadata, Buffer.from([0xff, 0xfe]))
+    writeFileSync(excluded, Buffer.from([0xff, 0xfe]))
+    writeFileSync(source, "import { css } from '@panda/css'; css({ color: 'rebeccapurple' })")
+
+    try {
+      for (const kind of ['add', 'change'] as const) {
+        expect(
+          driver.applyChanges([
+            { path: metadata, kind },
+            { path: excluded, kind },
+            { path: missing, kind },
+            { path: source, kind },
+          ]),
+        ).toEqual([false, false, false, true])
+      }
+      expect(driver.compiler.getFile(metadata)).toBeNull()
+      expect(driver.compiler.getFile(excluded)).toBeNull()
+      expect(driver.cssgen().css).toContain('rebeccapurple')
+    } finally {
+      for (const path of [metadata, excluded, source]) rmSync(path, { force: true })
+    }
+  })
+
+  it('still reports read errors for source files', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    const source = join(dir, 'Unreadable.tsx')
+    try {
+      writeFileSync(source, Buffer.from([0xff, 0xfe]))
+      expect(() => driver.applyChange({ path: source, kind: 'add' })).toThrow('failed to read')
+
+      driver.compiler.parseFileSource(source, "import { css } from '@panda/css'; css({ color: 'red' })")
+      expect(() => driver.applyChange({ path: source, kind: 'change' })).toThrow('failed to read')
+    } finally {
+      rmSync(source, { force: true })
+    }
+  })
+
   it('keeps explicitly registered sources refreshable outside the configured source set', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     const injected = join(dir, 'Injected.ts')

@@ -164,6 +164,9 @@ impl WasmCompiler {
     /// re-parsed.
     #[wasm_bindgen(js_name = refreshFile)]
     pub fn refresh_file(&mut self, path: &str) -> Result<bool, JsValue> {
+        if !self.inner.is_refresh_candidate(path) {
+            return Ok(false);
+        }
         let source = self
             .fs
             .read_to_string(Path::new(path))

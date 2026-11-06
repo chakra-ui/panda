@@ -262,6 +262,9 @@ impl Compiler {
         reason = "NAPI requires owned arguments"
     )]
     pub fn refresh_file(&mut self, env: Env, path: String) -> napi::Result<bool> {
+        if !self.inner.is_refresh_candidate(&path) {
+            return Ok(false);
+        }
         let source = self
             .fs
             .read_to_string(std::path::Path::new(&path))

@@ -970,6 +970,32 @@ impl Project {
         }
     }
 
+    /// Whether [`Self::refresh_file`] can do anything for `path`. Hosts check
+    /// this before reading, so unrelated files (`.DS_Store`) are never read.
+    #[must_use]
+    pub fn is_refresh_candidate(&self, path: &str) -> bool {
+        self.files.contains_key(path)
+            || self.is_folded_dependency(path)
+            || self.has_requests_waiting_on(path)
+    }
+
+    /// Mirrors the importer lookup in [`Self::mark_affected`].
+    fn is_folded_dependency(&self, path: &str) -> bool {
+        self.dependency_key(path)
+            .is_some_and(|key| self.dependencies.contains_dependency(&key))
+    }
+
+    /// Mirrors the guard in [`Self::retry_requests_waiting_on`].
+    fn has_requests_waiting_on(&self, path: &str) -> bool {
+        self.dependencies.has_unresolved()
+            && self
+                .system
+                .extractor_config()
+                .cross_file
+                .as_ref()
+                .is_some_and(|resolver| !self.requests_waiting_on(resolver, path).is_empty())
+    }
+
     /// Re-parses `path` only if it's already known. Watch-mode contract:
     /// filter file-change events through this and edits to untracked files
     /// are ignored automatically.
