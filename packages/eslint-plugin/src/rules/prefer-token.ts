@@ -3,7 +3,8 @@ import {
   type Inspect,
   type RuleContextWithReport,
   type RuleModuleLike,
-  byteToIndex,
+  createSourceIndex,
+  findTokenCall,
   getSourceText,
   toEslintLoc,
 } from './shared'
@@ -56,7 +57,8 @@ export function reportTokenViolations(
   inspection: FileInspectionResult,
   config: ReportConfig,
 ): void {
-  const source = getSourceText(context)
+  const text = getSourceText(context)
+  const source = createSourceIndex(text)
 
   for (const entry of inspection.styleEntries) {
     if (entry.kind !== 'utility') continue
@@ -66,6 +68,11 @@ export function reportTokenViolations(
 
     const values: string[] = []
     collectStrings(entry.resolvedValue, values)
+    const tokenCalls = (entry.valueSpans ?? []).filter((leaf) => findTokenCall(source, leaf, inspection.tokenRefs))
+    for (const leaf of tokenCalls) {
+      const index = values.indexOf(leaf.value)
+      if (index >= 0) values.splice(index, 1)
+    }
     const hit = values.find((value) => !config.allow.has(value.trim()) && config.isHardcodedValue(entry.name, value))
     if (hit === undefined) continue
 
@@ -80,9 +87,9 @@ export function reportTokenViolations(
 
     // Offer quick-fixes when we know the offending leaf's exact span (flat
     // literals and values nested in conditions). Array elements have no span yet.
-    const leaf = entry.valueSpans?.find((v) => v.value === hit)
-    if (suggestions.length > 0 && leaf && source) {
-      const range: [number, number] = [byteToIndex(source, leaf.span.start), byteToIndex(source, leaf.span.end)]
+    const leaf = entry.valueSpans?.find((v) => v.value === hit && !tokenCalls.includes(v))
+    if (suggestions.length > 0 && leaf && text) {
+      const range: [number, number] = [source.index(leaf.span.start), source.index(leaf.span.end)]
       descriptor.suggest = suggestions.map((s) => ({
         desc: `Use the token "${s.token}"`,
         fix: (fixer) => fixer.replaceTextRange(range, `'${s.token}'`),

@@ -6,6 +6,7 @@ import {
   noDynamicStylingRuleName,
   noInvalidNestingRuleName,
   noInvalidTokenPathsRuleName,
+  noUnsafeTokenFnUsageRuleName,
   preferTokenRuleName,
 } from './rules'
 import type { RuleModuleLike } from './rules/shared'
@@ -34,6 +35,7 @@ const RECOMMENDED_RULES: Record<string, RuleEntry> = {
   [noDynamicStylingRuleName]: 'warn',
   [noDeprecatedRuleName]: 'warn',
   [noDebugRuleName]: 'warn',
+  [noUnsafeTokenFnUsageRuleName]: 'warn',
   // Default to flagging hardcoded colors only (the old `no-hardcoded-color`);
   // widen with `categories` to enforce other token categories.
   [preferTokenRuleName]: ['warn', { categories: ['colors'] }],

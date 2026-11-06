@@ -140,9 +140,9 @@ CSS property and utility registries. Variant ownership checks borrow the compile
 new set for each call or element. The factory argument indexes come from Oxc extraction, including member factories such
 as `styled.div`.
 
-Style paths borrow object keys and retain numeric array indexes in a small inline buffer. Owned path strings are
-created only for inspection; reference lookups create them after finding a token reference. Strings without `{` or
-`token(` skip reference scanning.
+Style paths borrow object keys and retain numeric array indexes in a small inline buffer. Owned path strings are created
+only for inspection; reference lookups create them after finding a token reference. Strings without `{` or `token(` skip
+reference scanning.
 
 Inspection joins those style paths to verbose extractor provenance. Embedded references become inspection records
 directly, rather than synthetic extractor `token()` calls. Reference offsets are precise when the decoded value occurs
@@ -640,7 +640,13 @@ they rely on the resolved compiler model rather than string matching.
   inspection result, so it reports exactly what encode dropped: unreadable values, the runtime side of `||`/`??`,
   computed keys, and whole `css()`/pattern arguments. Opaque spreads, recipe variants, and JSX tags Panda doesn't own
   are skipped. It owns `panda_call_unextractable`, which `extraction-diagnostics` filters out.
-- `no-property-renaming` 🟢 (D, v1) · `no-unsafe-token-fn-usage` 🟢 (D, v1).
+- `no-unsafe-token-fn-usage` ✅ (D, v1) — a style value that is exactly one token reference (`token(p)`, `{p}`, `[{p}]`)
+  or a `token()`/`token.var()` call. Each swap is checked with `resolveUtilityValue`: the plain name must emit the same
+  CSS as `{p}`, so a category the property doesn't read (`width: '{spacing.4}'`) is skipped instead of renamed to
+  another token. References autofix; calls suggest the name, or `{p}` when the name wouldn't resolve. Values not written
+  in place, composite values, and unresolved paths are skipped. `prefer-token` skips `token()` calls so a call is
+  reported once.
+- `no-property-renaming` 🟢 (D, v1).
 
 ### Deprecation
 
@@ -723,9 +729,9 @@ Port status of the v1 rules (recommended ones default-on, the rest opt-in):
   `prefer-token` colors preset), `no-invalid-token-paths`, `no-important`, `no-margin-properties`,
   `no-physical-properties`, `prefer-unified-property-style` (→ `no-shorthand-longhand-mix`),
   `prefer-shorthand-properties` + `prefer-longhand-properties` (→ `consistent-property-style`), `no-invalid-nesting`,
-  `no-dynamic-styling`.
-- High-value next (Tier 1, data exists): `no-unsafe-token-fn-usage` 🟢 (`tokenRefs[].needsCssVar`),
-  `no-property-renaming` 🟡, `no-config-function-in-source` 🟡 (needs `imports` on the inspection result).
+  `no-dynamic-styling`, `no-unsafe-token-fn-usage`.
+- High-value next (Tier 1, data exists): `no-property-renaming` 🟡, `no-config-function-in-source` 🟡 (needs `imports`
+  on the inspection result).
 - Consolidated / renamed: `no-escape-hatch` → `no-arbitrary-values`; ad-hoc restrictions → `restrict-styles`.
 - Stylistic (Tier 3, fixable): `prefer-atomic-properties`, `prefer-composite-properties`.
   `prefer-unified-property-style` shipped as `no-shorthand-longhand-mix`; `prefer-{shorthand,longhand}-properties`

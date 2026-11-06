@@ -3,8 +3,8 @@ title: Tokens
 description: Define design tokens, reference them from each other, and use them in your styles.
 ---
 
-A design token is a named value: `brand` instead of `#EA8433`, `body` instead of a font stack. You define them once
-in the config, and every style reads them by name. Panda's token format follows the
+A design token is a named value: `brand` instead of `#EA8433`, `body` instead of a font stack. You define them once in
+the config, and every style reads them by name. Panda's token format follows the
 [W3C Design Tokens](https://tr.designtokens.org/format/) spec.
 
 Each token is an object with a `value`, and optionally a `description`:
@@ -48,8 +48,8 @@ css({ color: 'red', fontFamily: 'body' })
 
 ## Reference a token
 
-A token value can point at another token with `{path.to.token}`. Panda resolves it to that token's CSS variable, so
-the two stay in sync:
+A token value can point at another token with `{path.to.token}`. Panda resolves it to that token's CSS variable, so the
+two stay in sync:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -70,13 +70,13 @@ export default defineConfig({
 })
 ```
 
-References work inside any token value, including composite ones like borders and shadows. Semantic tokens, next,
-are built entirely on them.
+References work inside any token value, including composite ones like borders and shadows. Semantic tokens, next, are
+built entirely on them.
 
 ## Semantic tokens
 
-A semantic token names a role, and its value references a core token. Components use the role, so a redesign changes
-one config line instead of every call site. They live under `theme.semanticTokens`:
+A semantic token names a role, and its value references a core token. Components use the role, so a redesign changes one
+config line instead of every call site. They live under `theme.semanticTokens`:
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -111,8 +111,8 @@ export default defineConfig({
 })
 ```
 
-Only at-rule and parent-selector [conditions](/docs/styling/conditional-styles#reference) can be used here. For
-whole alternative palettes, see [Multiple Themes](/docs/theming/multiple-themes).
+Only at-rule and parent-selector [conditions](/docs/styling/conditional-styles#reference) can be used here. For whole
+alternative palettes, see [Multiple Themes](/docs/theming/multiple-themes).
 
 ## Nesting
 
@@ -200,27 +200,29 @@ css({
 
 ### From JavaScript
 
-The generated helpers read tokens at runtime. `token()` returns the value and `token.var()` returns the CSS
-variable:
+The generated helpers read tokens at runtime. `token()` returns the value and `token.var()` returns the CSS variable:
 
 ```tsx /token('colors.danger')/ /token.var('colors.gray.200')/
 import { token } from '../styled-system/tokens'
 
-<div
-  style={{
-    background: token('colors.danger'),
-    borderColor: token.var('colors.gray.200')
-  }}
-/>
+export const Alert = () => (
+  <div
+    style={{
+      background: token('colors.danger'),
+      borderColor: token.var('colors.gray.200')
+    }}
+  />
+)
 ```
 
-Reach for these only when a style object can't express it, like an inline `style` or a third-party API that wants a
-raw value. The forms above are extracted at build time and cost nothing at runtime. See
-[`tokens/`](/docs/reference/tokens) for the helpers.
+Reach for these only when a style object can't express it, like an inline `style` or a third-party API that wants a raw
+value. The forms above are extracted at build time and cost nothing at runtime. The
+[`no-unsafe-token-fn-usage`](/docs/get-started/linting#no-unsafe-token-fn-usage) lint rule flags them in style values.
+See [`tokens/`](/docs/reference/tokens) for the helpers.
 
 ## See also
 
 - [Token Categories](/docs/theming/token-categories) for every category and its value shape.
-- [Config Functions](/docs/reference/config-functions#tokens) for typed `defineTokens` and
-  `defineSemanticTokens` helpers.
+- [Config Functions](/docs/reference/config-functions#tokens) for typed `defineTokens` and `defineSemanticTokens`
+  helpers.
 - [globalVars](/docs/styling/writing-styles#global-vars) for CSS variables that aren't tokens.

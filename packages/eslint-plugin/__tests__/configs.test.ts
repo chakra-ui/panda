@@ -36,6 +36,7 @@ describe('configs.recommended', () => {
       '@pandacss/no-dynamic-styling': 'warn',
       '@pandacss/no-deprecated': 'warn',
       '@pandacss/no-debug': 'warn',
+      '@pandacss/no-unsafe-token-fn-usage': 'warn',
       '@pandacss/prefer-token': ['warn', { categories: ['colors'] }],
     })
     expect(config.settings).toEqual({ panda: { configPath } })
@@ -54,6 +55,7 @@ describe('configs.recommended', () => {
       'no-debug',
       'prefer-token',
       'no-primitive-token',
+      'no-unsafe-token-fn-usage',
       'no-important',
       'no-descendant-selectors',
       'no-margin-properties',
