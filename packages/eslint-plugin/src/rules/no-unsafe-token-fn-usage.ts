@@ -1,4 +1,4 @@
-import type { FileInspectionResult, Span, StyleEntryRef, StyleValueSpanRef, TokenRefSite } from '@pandacss/compiler'
+import type { FileInspectionResult, StyleEntryRef, StyleValueSpanRef, TokenRefSite } from '@pandacss/compiler'
 import {
   type Inspect,
   type ReportDescriptor,
@@ -6,7 +6,10 @@ import {
   type RuleModuleLike,
   type SourceIndex,
   createSourceIndex,
+  findTokenCall,
   getSourceText,
+  unwrapExpressionContainer,
+  within,
 } from './shared'
 
 export const noUnsafeTokenFnUsageRuleName = 'no-unsafe-token-fn-usage'
@@ -17,14 +20,6 @@ export interface NoUnsafeTokenFnUsageRuleOptions {
 }
 
 const TOKEN_REFERENCE = /^(?:token\(\s*([^,()\s]+)\s*\)|\{\s*([^{}\s]+)\s*\})$/
-
-const CALL_EXPRESSION = /^[\w$.]+\s*\(/
-
-const within = (inner: Span, outer: Span) => inner.start >= outer.start && inner.end <= outer.end
-
-function unwrapExpressionContainer(text: string): string {
-  return text.startsWith('{') && text.endsWith('}') ? text.slice(1, -1).trim() : text
-}
 
 function stringLiteral(text: string): { quote: string; body: string } | undefined {
   const quote = text[0]
@@ -38,16 +33,6 @@ function referencePath(value: string): string | undefined {
   if (text.startsWith('[') && text.endsWith(']')) text = text.slice(1, -1).trim()
   const match = TOKEN_REFERENCE.exec(text)
   return match ? match[1] ?? match[2] : undefined
-}
-
-export function findTokenCall(
-  source: SourceIndex,
-  leaf: StyleValueSpanRef,
-  tokenRefs: readonly TokenRefSite[],
-): TokenRefSite | undefined {
-  const text = unwrapExpressionContainer(source.slice(leaf.span))
-  if (!CALL_EXPRESSION.test(text)) return
-  return tokenRefs.find((ref) => within(ref.span, leaf.span) && source.slice(ref.span) === text)
 }
 
 interface Finding {

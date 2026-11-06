@@ -4,10 +4,10 @@ import {
   type RuleContextWithReport,
   type RuleModuleLike,
   createSourceIndex,
+  findTokenCall,
   getSourceText,
   toEslintLoc,
 } from './shared'
-import { findTokenCall } from './no-unsafe-token-fn-usage'
 
 export const preferTokenRuleName = 'prefer-token'
 

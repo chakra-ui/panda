@@ -205,12 +205,14 @@ The generated helpers read tokens at runtime. `token()` returns the value and `t
 ```tsx /token('colors.danger')/ /token.var('colors.gray.200')/
 import { token } from '../styled-system/tokens'
 
-;<div
-  style={{
-    background: token('colors.danger'),
-    borderColor: token.var('colors.gray.200')
-  }}
-/>
+export const Alert = () => (
+  <div
+    style={{
+      background: token('colors.danger'),
+      borderColor: token.var('colors.gray.200')
+    }}
+  />
+)
 ```
 
 Reach for these only when a style object can't express it, like an inline `style` or a third-party API that wants a raw

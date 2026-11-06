@@ -1,4 +1,4 @@
-import type { FileInspectionResult, SourceRange, Span } from '@pandacss/compiler'
+import type { FileInspectionResult, SourceRange, Span, StyleValueSpanRef, TokenRefSite } from '@pandacss/compiler'
 import type { LintRuleContextLike } from '../core'
 
 export interface RuleTextEdit {
@@ -148,4 +148,22 @@ export function createSourceIndex(text: string): SourceIndex {
       return { line: line + 1, column: position - starts[line] }
     },
   }
+}
+
+const CALL_EXPRESSION = /^[\w$.]+\s*\(/
+
+export const within = (inner: Span, outer: Span) => inner.start >= outer.start && inner.end <= outer.end
+
+export function unwrapExpressionContainer(text: string): string {
+  return text.startsWith('{') && text.endsWith('}') ? text.slice(1, -1).trim() : text
+}
+
+export function findTokenCall(
+  source: SourceIndex,
+  leaf: StyleValueSpanRef,
+  tokenRefs: readonly TokenRefSite[],
+): TokenRefSite | undefined {
+  const text = unwrapExpressionContainer(source.slice(leaf.span))
+  if (!CALL_EXPRESSION.test(text)) return
+  return tokenRefs.find((ref) => within(ref.span, leaf.span) && source.slice(ref.span) === text)
 }
