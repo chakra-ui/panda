@@ -256,6 +256,25 @@ describe('@pandacss/vite', () => {
     ])
   })
 
+  it('keeps HMR for existing sources after a new source file is created', async () => {
+    dir = createFixture(`{ color: 'red' }`)
+    server = await startServer(dir)
+    await waitForCss(server, 'red')
+    const sent = recordHmr(server)
+
+    const extraFile = join(dir, 'Extra.tsx')
+    writeFileSync(extraFile, EXTRA(`{ letterSpacing: '0.33em' }`))
+    server.watcher.emit('add', extraFile)
+    await waitForCss(server, '0.33em')
+
+    const appFile = join(dir, 'App.tsx')
+    writeFileSync(appFile, APP(`{ color: 'blue' }`))
+    server.watcher.emit('change', appFile)
+    await waitForCss(server, 'blue')
+
+    expect(sent.map((payload) => payload.type)).toEqual(['update', 'update'])
+  })
+
   it('keeps styles over HMR when a source file is renamed', async () => {
     dir = createFixture(`{ color: 'red' }`)
     const before = join(dir, 'Before.tsx')

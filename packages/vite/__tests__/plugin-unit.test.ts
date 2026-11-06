@@ -83,7 +83,7 @@ describe('@pandacss/vite design-system HMR', () => {
     expect(driver.scan).toHaveBeenCalledOnce()
   })
 
-  it('registers newly parsed files on later CSS transforms without re-adding known files', async () => {
+  it('re-registers every watch file on each CSS root transform', async () => {
     const { driver, pandacss } = await setup()
     const plugin = pandacss() as unknown as TestPlugin
     const addWatchFile = vi.fn()
@@ -102,7 +102,16 @@ describe('@pandacss/vite design-system HMR', () => {
     })
     plugin.transform.handler.call(ctx, CSS_ROOT, '/project/src/index.css')
 
-    expect(addWatchFile.mock.calls.map(([file]) => file)).toEqual(['/project/src/new.tsx'])
+    expect(addWatchFile.mock.calls.map(([file]) => file)).toEqual([
+      '/project/src/app.tsx',
+      '/project/src/new.tsx',
+      '/project/src',
+      '/project/panda.config.ts',
+      '/project/node_modules/@acme/ds/panda/lib.json',
+      '/project/node_modules/@acme/ds/panda/buildinfo.json',
+      '/project/node_modules/@acme/ds/panda/preset.mjs',
+      '/project/node_modules/@acme/ds/src/button.css.ts',
+    ])
   })
 
   it('reloads design-system changes before returning component HMR modules', async () => {
