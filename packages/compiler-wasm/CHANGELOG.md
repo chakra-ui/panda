@@ -1,5 +1,13 @@
 # @pandacss/compiler-wasm
 
+## 2.6.0
+
+### Patch Changes
+
+- b6f8cd3: Fix watch rebuild failures caused by unrelated binary files such as `.DS_Store` in source directories.
+- @pandacss/compiler-shared@2.6.0
+  - @pandacss/types@2.6.0
+
 ## 2.5.0
 
 ### Minor Changes

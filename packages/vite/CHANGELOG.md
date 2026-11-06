@@ -1,5 +1,16 @@
 # @pandacss/vite
 
+## 2.6.0
+
+### Patch Changes
+
+- b714c5c: Fix edits to existing source files falling back to a full page reload after a new source file is created
+  while the dev server runs.
+- Updated dependencies [b6f8cd3]
+  - @pandacss/compiler@2.6.0
+  - @pandacss/transformer@2.6.0
+  - @pandacss/compiler-shared@2.6.0
+
 ## 2.5.0
 
 ### Minor Changes
