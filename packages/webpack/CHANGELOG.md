@@ -1,5 +1,14 @@
 # @pandacss/webpack
 
+## 2.6.0
+
+### Patch Changes
+
+- Updated dependencies [b6f8cd3]
+  - @pandacss/compiler@2.6.0
+  - @pandacss/transformer@2.6.0
+  - @pandacss/compiler-shared@2.6.0
+
 ## 2.5.0
 
 ### Minor Changes

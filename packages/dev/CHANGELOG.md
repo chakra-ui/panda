@@ -1,5 +1,16 @@
 # @pandacss/dev
 
+## 2.6.0
+
+### Patch Changes
+
+- Updated dependencies [b6f8cd3]
+  - @pandacss/compiler@2.6.0
+  - @pandacss/cli@2.6.0
+  - @pandacss/postcss@2.6.0
+  - @pandacss/config@2.6.0
+  - @pandacss/types@2.6.0
+
 ## 2.5.0
 
 ### Patch Changes

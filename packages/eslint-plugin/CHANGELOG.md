@@ -1,5 +1,20 @@
 # @pandacss/eslint-plugin
 
+## 2.6.0
+
+### Minor Changes
+
+- 2b90370: Add the `no-unsafe-token-fn-usage` lint rule, on in `recommended`. It flags style values like
+  `'{colors.red.500}'` or `token('colors.red.500')` where the token name `'red.500'` works, and only when the swap keeps
+  your CSS the same.
+
+### Patch Changes
+
+- Updated dependencies [b6f8cd3]
+  - @pandacss/compiler@2.6.0
+  - @pandacss/compiler-shared@2.6.0
+  - @pandacss/config@2.6.0
+
 ## 2.5.0
 
 ### Minor Changes
