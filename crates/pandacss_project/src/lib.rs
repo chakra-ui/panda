@@ -970,17 +970,23 @@ impl Project {
         }
     }
 
-    /// Whether refreshing `path` can update a tracked file or its folded imports.
-    /// Hosts can skip reading unrelated files before calling [`Self::refresh_file`].
+    /// Whether [`Self::refresh_file`] can do anything for `path`. Hosts check
+    /// this before reading, so unrelated files (`.DS_Store`) are never read.
     #[must_use]
     pub fn is_refresh_candidate(&self, path: &str) -> bool {
-        if self.files.contains_key(path)
-            || self
-                .dependency_key(path)
-                .is_some_and(|key| self.dependencies.contains_dependency(&key))
-        {
-            return true;
-        }
+        self.files.contains_key(path)
+            || self.is_folded_dependency(path)
+            || self.has_requests_waiting_on(path)
+    }
+
+    /// Mirrors the importer lookup in [`Self::mark_affected`].
+    fn is_folded_dependency(&self, path: &str) -> bool {
+        self.dependency_key(path)
+            .is_some_and(|key| self.dependencies.contains_dependency(&key))
+    }
+
+    /// Mirrors the guard in [`Self::retry_requests_waiting_on`].
+    fn has_requests_waiting_on(&self, path: &str) -> bool {
         self.dependencies.has_unresolved()
             && self
                 .system

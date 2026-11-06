@@ -160,7 +160,7 @@ export async function startProjectWatch(options: ProjectWatchOptions): Promise<(
           .filter((event) => !filter || filter(event))
         if (normalized.length > 0) debouncer.push(normalized)
       },
-      { ignore: ['**/node_modules/**', '**/.git/**', `${currentOutdir()}/**`] },
+      { ignore: ['**/node_modules/**', '**/.git/**', '**/.DS_Store', `${currentOutdir()}/**`] },
     )
     subscriptions.push(subscription)
   }
