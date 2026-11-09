@@ -9,6 +9,7 @@ import { applySpecSources, type ConfigSourcesInput, type DesignSystemSpec } from
 import { introspect } from './introspect'
 import type { Introspection } from './introspect'
 import { getResolvedConfigOutdir } from './defaults'
+import { isPathInside } from './paths'
 import type {
   CodegenArtifact,
   CodegenDependency,
@@ -413,18 +414,12 @@ export abstract class BaseDriver implements Driver {
   }
 
   isOutdirFile(file: string, outdir?: string): boolean {
-    const root = toPosix(this.getOutdir(outdir)).replace(/\/+$/, '')
-    const path = toPosix(file.split('?')[0] ?? file)
-    return path === root || path.startsWith(`${root}/`)
+    return isPathInside(file, this.getOutdir(outdir))
   }
 
   protected getConfiguredOutdir(outdir?: string): string {
     return outdir ?? getResolvedConfigOutdir(this.config)
   }
-}
-
-function toPosix(path: string): string {
-  return path.replaceAll('\\', '/')
 }
 
 /** Round-trips the engine's JSON; `JSON.stringify(_, null, 2)` reproduces it byte for byte. */
