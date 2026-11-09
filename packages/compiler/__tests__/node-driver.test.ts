@@ -595,6 +595,17 @@ describe('createNodeDriver', () => {
     })
   })
 
+  it('classifies files inside the outdir', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+
+    expect(driver.isOutdirFile(join(dir, 'styled-system', 'css', 'cva.js'))).toBe(true)
+    expect(driver.isOutdirFile(`${join(dir, 'styled-system', 'css', 'cva.js')}?v=1`)).toBe(true)
+    expect(driver.isOutdirFile(join(dir, 'styled-system-extra', 'a.js'))).toBe(false)
+    expect(driver.isOutdirFile(join(dir, 'src', 'app.tsx'))).toBe(false)
+    expect(driver.isOutdirFile(join(dir, 'system', 'css', 'cva.js'), 'system')).toBe(true)
+    expect(driver.isOutdirFile(join(dir, 'styled-system', 'css', 'cva.js'), 'system')).toBe(false)
+  })
+
   it('lists watch targets (parsed files, source patterns, base dirs, config deps)', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     driver.parseFiles()

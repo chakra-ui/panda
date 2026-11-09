@@ -155,6 +155,7 @@ export interface Driver {
   /** Whether a changed path is a project source file (matches the config
    *  `include`/`exclude`). The source-side companion to {@link isConfigFile}. */
   isSourceFile(file: string): boolean
+  isOutdirFile(file: string, outdir?: string): boolean
 }
 
 /** Full codegen set, or only the artifacts affected by a config diff. */
@@ -411,9 +412,19 @@ export abstract class BaseDriver implements Driver {
     return this.#compiler.isSourceFile(file)
   }
 
+  isOutdirFile(file: string, outdir?: string): boolean {
+    const root = toPosix(this.getOutdir(outdir)).replace(/\/+$/, '')
+    const path = toPosix(file.split('?')[0] ?? file)
+    return path === root || path.startsWith(`${root}/`)
+  }
+
   protected getConfiguredOutdir(outdir?: string): string {
     return outdir ?? getResolvedConfigOutdir(this.config)
   }
+}
+
+function toPosix(path: string): string {
+  return path.replaceAll('\\', '/')
 }
 
 /** Round-trips the engine's JSON; `JSON.stringify(_, null, 2)` reproduces it byte for byte. */
