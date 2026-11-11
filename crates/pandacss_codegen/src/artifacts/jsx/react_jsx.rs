@@ -10,7 +10,7 @@ pub(super) fn module(
     Module::new()
         .with_import(value_import(&["createElement", "forwardRef"], "react"))
         .with_import(ImportDecl::value(
-            ["cx", "cva"],
+            ["css", "cx", "cva"],
             &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
         ))
         .with_import(ImportDecl::value(
@@ -63,6 +63,7 @@ interface StyledOptions {
   forwardProps?: readonly string[]
   dataAttr?: boolean
   defaultProps?: Props
+  forwardCss?: boolean
 }
 
 type StyledBase = ElementType & StyledMarkers & { __base__?: ElementType }
@@ -87,8 +88,10 @@ function styledFn(BaseComponent: StyledBase, recipeOrConfig: RecipeInput = {}, o
   const dataProps: Props = options.dataAttr && recipeOrConfig.__name__ ? { 'data-recipe': recipeOrConfig.__name__ } : {}
   const defaultProps = Object.assign(dataProps, options.defaultProps)
   const hasDefaultProps = Object.keys(defaultProps).length > 0
+  const forwardCss = options.forwardCss || BaseComponent.__forwardCss__
 
-  const shouldForward = composeShouldForwardProps(BaseComponent, shouldForwardProp)
+  const composedShouldForward = composeShouldForwardProps(BaseComponent, shouldForwardProp)
+  const shouldForward = forwardCss ? (prop: string) => prop !== 'css' && composedShouldForward(prop) : composedShouldForward
   const DefaultElement: ElementType = BaseComponent.__base__ || BaseComponent
 
   const __COMPONENT__ = /* @__PURE__ */ forwardRef<unknown, StyledProps>(function __COMPONENT__(props, ref) {
@@ -108,7 +111,11 @@ function styledFn(BaseComponent: StyledBase, recipeOrConfig: RecipeInput = {}, o
     )
     const hasStyles = propStyles || cssStyles !== void 0
     let className
-    if (unstyled) {
+    let cssProp
+    if (forwardCss && typeof Element !== 'string' && !recipeOrConfig.__recipe__) {
+      className = combinedProps.className
+      cssProp = unstyled ? css.raw(propStyles, cssStyles) : css.raw(getRaw(variantProps), propStyles, cssStyles)
+    } else if (unstyled) {
       className = cx(hasStyles && serializeSplitStyles(propStyles, cssStyles), combinedProps.className)
     } else if (recipeOrConfig.__recipe__) {
       const compoundVariantClasses = composedRecipeFn.__getCompoundVariantClasses__?.(variantProps)
@@ -131,6 +138,7 @@ function styledFn(BaseComponent: StyledBase, recipeOrConfig: RecipeInput = {}, o
       ...elementProps,
       ...htmlProps,
       className,
+      ...(cssProp && { css: cssProp }),
     }, children ?? combinedProps.children)
   }) as StyledComponentFn
 
@@ -139,6 +147,7 @@ function styledFn(BaseComponent: StyledBase, recipeOrConfig: RecipeInput = {}, o
   __COMPONENT__.__cva__ = composedRecipeFn
   __COMPONENT__.__base__ = DefaultElement
   __COMPONENT__.__shouldForwardProps__ = shouldForwardProp
+  __COMPONENT__.__forwardCss__ = forwardCss
 
   return __COMPONENT__
 }

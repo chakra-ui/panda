@@ -55,6 +55,7 @@ export interface StyledMarkers {
   __cva__?: JsxRecipeFn
   __base__?: unknown
   __shouldForwardProps__?: ShouldForwardProp
+  __forwardCss__?: boolean
 }
 
 export const composeShouldForwardProps = (tag: StyledMarkers, shouldForwardProp: ShouldForwardProp): ShouldForwardProp => {

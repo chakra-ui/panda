@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { Box, Stack, styled } from '../../styled-system-vue/jsx'
 import { render } from '@testing-library/vue'
 import { buttonWithCompoundVariants } from '../../styled-system-vue/recipes'
+import { defineComponent, h } from 'vue'
 
 describe('styled factory with an inline recipe', () => {
   const Button = styled('button', {
@@ -508,5 +509,55 @@ describe('styled factory defaultProps', () => {
         Close
       </button>
     `)
+  })
+})
+
+describe('styled factory forwardCss', () => {
+  const Inner = styled('p', { base: { color: 'red' } })
+  const Text: any = defineComponent({
+    inheritAttrs: false,
+    setup(_, { attrs, slots }) {
+      return () => h(Inner, attrs as any, slots)
+    },
+  })
+
+  test('without it, inner and outer classes stack', () => {
+    const Outer = styled(Text, { base: { color: 'green' } })
+    const { container } = render(<Outer>x</Outer>)
+    expect((container.firstChild as Element).className).toBe('c_red c_green')
+  })
+
+  test('merges config, style props and css into one css prop', () => {
+    const Outer = styled(
+      Text,
+      { base: { color: 'green' }, variants: { size: { lg: { fontSize: 'lg' } } } },
+      { forwardCss: true },
+    )
+    const { container } = render(
+      <Outer size="lg" mt="4" class="ext" css={{ color: 'blue' }}>
+        x
+      </Outer>
+    )
+    expect((container.firstChild as Element).className).toBe('c_blue fs_lg mt_4 ext')
+  })
+
+  test('is ignored when the element is a string', () => {
+    const Leaf = styled('p', { base: { color: 'green' } }, { forwardCss: true })
+    const { container } = render(<Leaf>x</Leaf>)
+    expect((container.firstChild as Element).hasAttribute('css')).toBe(false)
+    expect((container.firstChild as Element).className).toBe('c_green')
+  })
+
+  test('carries through when another styled() wraps it', () => {
+    const Green = styled(Text, { base: { color: 'green' } }, { forwardCss: true })
+    const Spaced = styled(Green, { base: { mt: '4' } })
+    const { container } = render(<Spaced>x</Spaced>)
+    expect((container.firstChild as Element).className).toBe('c_green mt_4')
+  })
+
+  test('keeps the css prop when css is in forwardProps', () => {
+    const Outer = styled(Text, { base: { color: 'green' } }, { forwardCss: true, forwardProps: ['css'] })
+    const { container } = render(<Outer css={{ color: 'blue' }}>x</Outer>)
+    expect((container.firstChild as Element).className).toBe('c_blue')
   })
 })
