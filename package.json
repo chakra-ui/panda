@@ -48,7 +48,7 @@
     "@projectwallace/format-css": "^3.0.0",
     "concurrently": "9.2.4",
     "cross-env": "10.1.0",
-    "happy-dom": "20.14.0",
+    "happy-dom": "21.0.4",
     "husky": "9.1.7",
     "lint-staged": "16.2.7",
     "rimraf": "5.0.10",
