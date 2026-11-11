@@ -1746,3 +1746,42 @@ fn a_deprecated_alias_keeps_the_path_written_when_it_shares_a_variable() {
     Token colors.semantic.text.neutralMain
     ");
 }
+
+#[test]
+fn declared_pattern_props_are_not_utilities() {
+    let system = system_with(json!({
+        "jsxFramework": "react",
+        "conditions": {"hover": "&:hover"},
+        "utilities": {
+            "translateY": { "className": "ty", "shorthand": "y" },
+            "gap": { "className": "gap" }
+        },
+        "patterns": {"scrollFade": {"jsx": ["Fade"], "properties": {
+            "y": {"type": "number"},
+            "gap": {"type": "property", "value": "gap"}
+        }}}
+    }));
+    let result = inspect_file_source(
+        &system,
+        "a.tsx",
+        indoc! {r"
+            import {scrollFade} from '@panda/patterns'
+            import {ScrollFade, Fade} from '@panda/jsx'
+            import {css} from '@panda/css'
+            scrollFade({y: 32, gap: '2', _hover: {y: 4}})
+            const J = () => <ScrollFade y={32} gap='2' />
+            const K = () => <Fade y={8} />
+            css({y: 4})
+        "},
+    );
+    assert_snapshot!(style_summary(&result), @r#"
+    PatternProp PatternCall Safe y -> None path=y
+    Utility PatternCall Safe gap -> None path=gap
+    Condition PatternCall Safe _hover -> None path=_hover
+    Utility PatternCall Safe y -> Some("translateY") path=_hover.y
+    Utility CssCall Safe y -> Some("translateY") path=y
+    PatternProp JsxProp Safe y -> None path=y
+    Utility JsxProp Safe gap -> None path=gap
+    PatternProp JsxProp Safe y -> None path=y
+    "#);
+}

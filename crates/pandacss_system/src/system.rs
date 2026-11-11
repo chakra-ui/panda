@@ -9,7 +9,7 @@ use pandacss_tokens::TokenDictionary;
 
 use std::collections::BTreeMap;
 
-use rustc_hash::FxHashSet;
+use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
 use pandacss_config::OptimizeConfig;
@@ -277,6 +277,11 @@ impl System {
     #[must_use]
     pub fn recipe_variant_props(&self, recipe_name: &str) -> FxHashSet<&str> {
         self.recipes.variant_props_for(&[recipe_name])
+    }
+
+    #[must_use]
+    pub fn pattern_property_styles(&self, pattern_name: &str) -> Option<&FxHashMap<String, bool>> {
+        self.patterns.property_styles(pattern_name)
     }
 
     /// Prop names a pattern fills from its `defaultValues`.
