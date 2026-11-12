@@ -70,6 +70,7 @@ export function pandacss(options: PandaPluginOptions = {}): BunPlugin {
           args.path,
           {
             transform: options.transform === true,
+            outdir: options.outdir,
             sync: changed || created,
             // Bun has no way to re-run the CSS file when JS changes, so the hot-reloaded module carries the styles.
             devStyles: (changed || created) && !runtime,
@@ -156,7 +157,7 @@ async function injectStylesheet(
 async function loadSource(
   driver: Driver,
   path: string,
-  options: { transform: boolean; sync: boolean; devStyles: boolean },
+  options: { transform: boolean; outdir: string | undefined; sync: boolean; devStyles: boolean },
   warnDiagnostics: WarnDiagnostics,
 ): Promise<OnLoadResult | undefined> {
   const source = await readFile(path, 'utf8')
@@ -167,7 +168,7 @@ async function loadSource(
   }
 
   let code = source
-  if (options.transform) {
+  if (options.transform && !driver.isOutdirFile(path, options.outdir)) {
     const result = runSourceTransform({}, { compiler: driver.compiler }, source, path)
     if (result) {
       warnDiagnostics(result.diagnostics, 'while transforming source', { file: path, onlyNew: true })

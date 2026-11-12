@@ -9,6 +9,7 @@ import { applySpecSources, type ConfigSourcesInput, type DesignSystemSpec } from
 import { introspect } from './introspect'
 import type { Introspection } from './introspect'
 import { getResolvedConfigOutdir } from './defaults'
+import { isPathInside } from './paths'
 import type {
   CodegenArtifact,
   CodegenDependency,
@@ -155,6 +156,7 @@ export interface Driver {
   /** Whether a changed path is a project source file (matches the config
    *  `include`/`exclude`). The source-side companion to {@link isConfigFile}. */
   isSourceFile(file: string): boolean
+  isOutdirFile(file: string, outdir?: string): boolean
 }
 
 /** Full codegen set, or only the artifacts affected by a config diff. */
@@ -409,6 +411,10 @@ export abstract class BaseDriver implements Driver {
   // `isConfigFile` so watch hosts get one classification surface, not `.compiler`.
   isSourceFile(file: string): boolean {
     return this.#compiler.isSourceFile(file)
+  }
+
+  isOutdirFile(file: string, outdir?: string): boolean {
+    return isPathInside(file, this.getOutdir(outdir))
   }
 
   protected getConfiguredOutdir(outdir?: string): string {

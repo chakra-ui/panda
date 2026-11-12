@@ -1,8 +1,7 @@
+import { toPosixPath } from '@pandacss/compiler-shared'
 import { isAbsolute, relative } from 'node:path'
 
-export function toPosixPath(path: string): string {
-  return path.includes('\\') ? path.split('\\').join('/') : path
-}
+export { toPosixPath }
 
 export function toPosixRelative(from: string, to: string): string {
   const rel = toPosixPath(relative(from, to))

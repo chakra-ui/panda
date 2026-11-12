@@ -548,6 +548,7 @@ function createMockDriver() {
       file === '/project/node_modules/@acme/ds/src/button.css.ts' ? 'source' : false,
     ),
     isSourceFile: vi.fn((_file: string) => false),
+    isOutdirFile: vi.fn((file: string) => file.startsWith('/project/styled-system/')),
     parseFiles: vi.fn(),
     scan: vi.fn(() => ['/project/src/app.tsx']),
     reload: vi.fn(async () => ({ hasChanged: true, dependencies: [], recipes: [], patterns: [], changes: [] })),
