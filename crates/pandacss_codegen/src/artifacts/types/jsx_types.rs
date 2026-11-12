@@ -159,6 +159,7 @@ export interface JsxFactoryOptions<TProps extends AnyProps, F extends string = s
   defaultProps?: Partial<TProps> & DataAttrs
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
   forwardProps?: readonly F[]
+  forwardCss?: boolean
 }
 
 // Filters the few forwarded keys; a nested conditional here hits TS2590 on components with many props.
@@ -269,6 +270,7 @@ export interface JsxFactoryOptions<TProps extends AnyProps, F extends string = s
   defaultProps?: Partial<TProps> & DataAttrs
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
   forwardProps?: readonly F[]
+  forwardCss?: boolean
 }
 
 // Filters the few forwarded keys; a nested conditional here hits TS2590 on components with many props.
@@ -347,6 +349,7 @@ export interface JsxFactoryOptions<TProps extends AnyProps, F extends string = s
   defaultProps?: Partial<TProps> & DataAttrs
   shouldForwardProp?: (prop: string, variantKeys: string[]) => boolean
   forwardProps?: readonly F[]
+  forwardCss?: boolean
 }}
 
 // Filters the few forwarded keys; a nested conditional here hits TS2590 on components with many props.

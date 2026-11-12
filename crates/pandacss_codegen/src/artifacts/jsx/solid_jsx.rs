@@ -17,7 +17,7 @@ pub(super) fn module(
             "solid-js/web",
         ))
         .with_import(ImportDecl::value(
-            ["cx", "cva"],
+            ["css", "cx", "cva"],
             &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
         ))
         .with_import(ImportDecl::value(
@@ -57,6 +57,7 @@ interface StyledOptions {
   forwardProps?: readonly string[]
   dataAttr?: boolean
   defaultProps?: Props | (() => Props)
+  forwardCss?: boolean
 }
 
 type StyledBase = ValidComponent & StyledMarkers & { __base__?: ValidComponent }
@@ -84,7 +85,9 @@ function styledFn(element: StyledBase, configOrCva: RecipeInput = {}, options: S
     return Object.assign(dataProps, defaults)
   }
 
-  const __shouldForwardProps__ = composeShouldForwardProps(element, shouldForwardProp)
+  const forwardCss = options.forwardCss || element.__forwardCss__
+  const composedShouldForward = composeShouldForwardProps(element, shouldForwardProp)
+  const __shouldForwardProps__ = forwardCss ? (prop: string) => prop !== 'css' && composedShouldForward(prop) : composedShouldForward
   const __base__: ValidComponent = element.__base__ || element
 
   const __COMPONENT__ = (props: Props) => {
@@ -96,7 +99,15 @@ function styledFn(element: StyledBase, configOrCva: RecipeInput = {}, options: S
     const cssPropKeys = createMemo(() => Object.keys(bProps).filter((prop) => isCssProperty(prop)))
     const [styleProps, elementProps]: [Props, Props] = splitProps(bProps, cssPropKeys())
 
+    const forwardsCss = () => forwardCss && typeof localProps.as !== 'string' && !configOrCva.__recipe__
+    const cssProp = () => {
+      if (!forwardsCss()) return void 0
+      const [propStyles, cssStyles] = splitStyleProps(styleProps)
+      return localProps.unstyled ? css.raw(propStyles, cssStyles) : css.raw(getRaw(variantProps), propStyles, cssStyles)
+    }
+
     const classes = () => {
+      if (forwardsCss()) return cx(localProps.class as string, localProps.className as string)
       const [propStyles, cssStyles] = splitStyleProps(styleProps)
       const hasStyles = propStyles || cssStyles !== void 0
       if (localProps.unstyled) return cx(hasStyles && serializeSplitStyles(propStyles, cssStyles), localProps.class as string, localProps.className as string)
@@ -128,7 +139,11 @@ function styledFn(element: StyledBase, configOrCva: RecipeInput = {}, options: S
         get class() {
           return classes()
         },
-      }),
+      }, forwardCss ? {
+        get css() {
+          return cssProp()
+        },
+      } : {}),
     )
   }
 
@@ -137,6 +152,7 @@ function styledFn(element: StyledBase, configOrCva: RecipeInput = {}, options: S
   __COMPONENT__.__cva__ = __cvaFn__
   __COMPONENT__.__base__ = __base__
   __COMPONENT__.__shouldForwardProps__ = shouldForwardProp
+  __COMPONENT__.__forwardCss__ = forwardCss
 
   return __COMPONENT__
 }

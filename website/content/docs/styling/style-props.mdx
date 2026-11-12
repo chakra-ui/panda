@@ -144,6 +144,7 @@ interface FactoryOptions<TProps> {
   defaultProps?: TProps
   shouldForwardProp?(prop: string, variantKeys: string[]): boolean
   forwardProps?: string[]
+  forwardCss?: boolean
 }
 ```
 
@@ -153,6 +154,7 @@ interface FactoryOptions<TProps> {
 | `defaultProps` | Sit under incoming props, so a caller can still override them |
 | `shouldForwardProp` | Decides what reaches the DOM. By default, variants and CSS properties are not forwarded |
 | `forwardProps` | Allowlist on top of `shouldForwardProp`. A forwarded prop no longer feeds the recipe |
+| `forwardCss` | Passes the styles to the wrapped component as one `css` prop instead of a class name |
 
 ```tsx
 const Input = styled('input', {}, { forwardProps: ['size'] })
@@ -182,6 +184,31 @@ const StyledMotion = styled(
 ```
 
 Recipe defaults and `unstyled` are on [Styled factory](/docs/recipes/styled-factory).
+
+### forwardCss
+
+When you wrap your own component that renders a Panda element, use `forwardCss` so the outer styles win.
+
+```tsx
+const StyledText = styled('p', { base: { color: 'red' } })
+const Text = (props) => <StyledText {...props} />
+
+const GreenText = styled(Text, { base: { color: 'green' } }, { forwardCss: true })
+
+<GreenText>Hello</GreenText>
+// <p class="c_green">Hello</p>
+```
+
+Without it, `styled()` turns its styles into a class name. The inner element adds its own class, so you get
+`class="c_red c_green"`, and which one wins depends on the order of the rules in the stylesheet, not on which
+component wraps which.
+
+With `forwardCss`, `styled()` merges its base styles, variants, style props, and `css` prop into one object and passes
+it down as `css`. The inner element merges that into its own styles, so the outer value wins. The option carries over
+when another `styled()` wraps the component.
+
+The wrapped component has to pass `css` on to a Panda element. The option does nothing when the element is a string like
+`'p'` or `as="span"`, and when the second argument is a config recipe.
 
 ## Restricting style props
 

@@ -10,7 +10,7 @@ pub(super) fn module(
     Module::new()
         .with_import(value_import(&["computed", "defineComponent", "h"], "vue"))
         .with_import(ImportDecl::value(
-            ["cx", "cva"],
+            ["css", "cx", "cva"],
             &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
         ))
         .with_import(ImportDecl::value(
@@ -47,6 +47,7 @@ interface StyledOptions {
   forwardProps?: readonly string[]
   dataAttr?: boolean
   defaultProps?: Props
+  forwardCss?: boolean
 }
 
 type StyledBase = (string | Component) & StyledMarkers & { __base__?: string | Component }
@@ -71,7 +72,9 @@ function styledFn(Dynamic: StyledBase, configOrCva: RecipeInput = {}, options: S
     : (prop: string) => forwardFn(prop, variantKeys)
   const dataProps: Props = options.dataAttr && configOrCva.__name__ ? { 'data-recipe': configOrCva.__name__ } : {}
   const defaultProps = Object.assign(dataProps, options.defaultProps)
-  const __shouldForwardProps__ = composeShouldForwardProps(Dynamic, shouldForwardProp)
+  const forwardCss = options.forwardCss || Dynamic.__forwardCss__
+  const composedShouldForward = composeShouldForwardProps(Dynamic, shouldForwardProp)
+  const __shouldForwardProps__ = forwardCss ? (prop: string) => prop !== 'css' && composedShouldForward(prop) : composedShouldForward
   const __base__ = Dynamic.__base__ || Dynamic
   const name = getDisplayName(__base__ as Parameters<typeof getDisplayName>[0])
 
@@ -86,7 +89,14 @@ function styledFn(Dynamic: StyledBase, configOrCva: RecipeInput = {}, options: S
     setup(props: Props, { slots, attrs, emit }: SetupContext) {
       const combinedProps = computed((): Props => mergeDefaultProps(defaultProps, attrs))
       const splittedProps = computed(() => splitJsxProps(combinedProps.value, __shouldForwardProps__, variantSet, isCssProperty, true))
+      const forwardsCss = computed(() => forwardCss && typeof props.as !== 'string' && !configOrCva.__recipe__)
+      const cssProp = computed(() => {
+        if (!forwardsCss.value) return void 0
+        const [_htmlProps, _forwardedProps, variantProps, propStyles, cssStyles] = splittedProps.value
+        return props.unstyled ? css.raw(propStyles, cssStyles) : css.raw(getRaw(variantProps), propStyles, cssStyles)
+      })
       const classes = computed(() => {
+        if (forwardsCss.value) return cx(combinedProps.value.className as string, combinedProps.value.class as string)
         const [_htmlProps, _forwardedProps, variantProps, propStyles, cssStyles] = splittedProps.value
         const hasStyles = propStyles || cssStyles !== void 0
         if (props.unstyled) return cx(hasStyles && serializeSplitStyles(propStyles, cssStyles), combinedProps.value.className as string, combinedProps.value.class as string)
@@ -133,6 +143,7 @@ function styledFn(Dynamic: StyledBase, configOrCva: RecipeInput = {}, options: S
           ...htmlProps,
           ...vModelProps.value,
           class: classes.value,
+          ...(cssProp.value && { css: cssProp.value }),
         }, slots)
       }
     },
@@ -142,6 +153,7 @@ function styledFn(Dynamic: StyledBase, configOrCva: RecipeInput = {}, options: S
   __COMPONENT__.__cva__ = __cvaFn__
   __COMPONENT__.__base__ = __base__
   __COMPONENT__.__shouldForwardProps__ = shouldForwardProp
+  __COMPONENT__.__forwardCss__ = forwardCss
   return __COMPONENT__
 }
 

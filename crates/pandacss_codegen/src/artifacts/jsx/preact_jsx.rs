@@ -12,7 +12,7 @@ pub(super) fn module(
         .with_import(value_import(&["h"], "preact"))
         .with_import(value_import(&["forwardRef"], "preact/compat"))
         .with_import(ImportDecl::value(
-            ["cx", "cva"],
+            ["css", "cx", "cva"],
             &ctx.runtime_import(RuntimeImport::CssIndex, "../css/index"),
         ))
         .with_import(ImportDecl::value(
