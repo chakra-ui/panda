@@ -108,9 +108,22 @@ describe('cli studio', () => {
     dir = createFixture(CONFIG_WITH_TOKENS)
     studio = await runStudio({ cwd: dir, logLevel: 'silent' }, captureOutput().sink, { port: 0, token: TOKEN })
 
-    const page = await (await fetch(`http://127.0.0.1:${studio.port}/`)).text()
+    const response = await fetch(`http://127.0.0.1:${studio.port}/`)
+    expect(response.status).toBe(401)
+    const page = await response.text()
     expect(page).not.toContain('<iframe')
-    expect(page).toContain('Open the link that <code>panda studio</code> printed')
+    expect(page).toContain('Open Studio from your terminal')
+  })
+
+  it('says the link is from an earlier run when the token is stale', async () => {
+    dir = createFixture(CONFIG_WITH_TOKENS)
+    const { sink, lines } = captureOutput()
+    studio = await runStudio({ cwd: dir }, sink, { port: 0, token: TOKEN })
+
+    const response = await fetch(`http://127.0.0.1:${studio.port}/?token=stale-token`)
+    expect(response.status).toBe(401)
+    expect(await response.text()).toContain('This link is from an earlier run')
+    expect(lines.join('\n')).toContain('rejected a connection with an invalid token')
   })
 
   it('streams the design system, the sources and the usage report to a connected Studio', async () => {
