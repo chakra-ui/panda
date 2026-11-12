@@ -21,7 +21,7 @@ use crate::inspection::{
 };
 use pandacss_config::UserConfig;
 use pandacss_encoder::ConditionSet;
-use pandacss_extractor::{SourceRange, Span};
+use pandacss_extractor::{JsxKind, SourceRange, Span};
 use pandacss_stylesheet::{StyleReference, StyleReferences};
 use pandacss_system::{
     SourceStyleKind, SourceStylePathSegment, System, visit_call_style_objects,
@@ -71,6 +71,7 @@ pub fn inspect_file_source(
 
     {
         let call_ctx = CallStyleCtx {
+            system,
             cx: &cx,
             line_index: &line_index,
             source_refs: &source_refs,
@@ -197,6 +198,7 @@ fn source_ref_map(refs: &[StyleSourceRef]) -> FxHashMap<SourceRefKey, &StyleSour
 
 /// Shared lookup context for classifying one extracted call.
 struct CallStyleCtx<'a, 'source> {
+    system: &'a System,
     cx: &'a Cx<'a>,
     line_index: &'a LineIndex<'source>,
     source_refs: &'a FxHashMap<SourceRefKey, &'a StyleSourceRef>,
@@ -225,6 +227,9 @@ fn collect_call_styles(
         source_refs: ctx.source_refs,
         owner_kind: StyleSourceOwnerKind::Call,
         owner_index: u32::try_from(index).unwrap_or(u32::MAX),
+        pattern_properties: (call.category == MatchCategory::Pattern)
+            .then(|| ctx.system.pattern_property_styles(&call.name))
+            .flatten(),
     };
     match (call.category, call.name.as_str()) {
         (MatchCategory::Recipe, _) => accum
@@ -304,6 +309,9 @@ fn collect_jsx_styles(
         source_refs: ctx.source_refs,
         owner_kind: StyleSourceOwnerKind::Jsx,
         owner_index: u32::try_from(index).unwrap_or(u32::MAX),
+        pattern_properties: (jsx.kind == JsxKind::Pattern)
+            .then(|| ctx.system.pattern_property_styles(&jsx.name))
+            .flatten(),
     }
     .collect(
         entries,
@@ -321,6 +329,7 @@ struct StyleEntryCollector<'a, 'source> {
     source_refs: &'a FxHashMap<SourceRefKey, &'a StyleSourceRef>,
     owner_kind: StyleSourceOwnerKind,
     owner_index: u32,
+    pattern_properties: Option<&'a FxHashMap<String, bool>>,
 }
 
 impl StyleEntryCollector<'_, '_> {
@@ -393,21 +402,15 @@ impl StyleEntryCollector<'_, '_> {
                     self.collect(nested, syntax, path, out);
                 }
             } else {
+                let is_pattern_prop = path.len() == 1 && self.is_declared_pattern_prop(key);
                 let canonical = self
                     .cx
                     .utility
+                    .filter(|_| !is_pattern_prop)
                     .map(|utility| utility.resolve_shorthand(key))
                     .filter(|canonical| *canonical != key);
                 let is_known = self.cx.utility.is_some_and(|utility| utility.is_known(key));
-                let kind = if is_known {
-                    StyleEntryKind::Utility
-                } else {
-                    match syntax {
-                        StyleEntrySyntax::PatternCall => StyleEntryKind::PatternProp,
-                        StyleEntrySyntax::RecipeCall => StyleEntryKind::RecipeVariant,
-                        _ => StyleEntryKind::Unknown,
-                    }
-                };
+                let kind = entry_kind(is_pattern_prop, is_known, syntax);
                 let token_lookup = (kind == StyleEntryKind::Utility).then(|| ValueTokenLookup {
                     prop: key,
                     category: self
@@ -433,6 +436,12 @@ impl StyleEntryCollector<'_, '_> {
             }
             path.pop();
         }
+    }
+
+    fn is_declared_pattern_prop(&self, key: &str) -> bool {
+        self.pattern_properties
+            .and_then(|properties| properties.get(key))
+            == Some(&false)
     }
 
     fn source_ref(&self, path: &[String]) -> Option<&StyleSourceRef> {
@@ -685,6 +694,20 @@ fn style_value_token_refs(
         });
     }
     out
+}
+
+fn entry_kind(is_pattern_prop: bool, is_known: bool, syntax: StyleEntrySyntax) -> StyleEntryKind {
+    if is_pattern_prop {
+        return StyleEntryKind::PatternProp;
+    }
+    if is_known {
+        return StyleEntryKind::Utility;
+    }
+    match syntax {
+        StyleEntrySyntax::PatternCall => StyleEntryKind::PatternProp,
+        StyleEntrySyntax::RecipeCall => StyleEntryKind::RecipeVariant,
+        _ => StyleEntryKind::Unknown,
+    }
 }
 
 /// A key that nests a style object rather than naming a property: a
