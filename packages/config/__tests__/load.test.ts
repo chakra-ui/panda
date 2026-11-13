@@ -1188,6 +1188,84 @@ describe('loadConfig errors', () => {
     )
   })
 
+  test('rejects CommonJS preset exports imported from an ES module project', async () => {
+    const preset = `"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = { name: 'my-preset', theme: { extend: { tokens: { colors: { brand: { value: 'red' } } } } } };`
+    await expect(
+      loadConfigError({
+        'package.json': JSON.stringify({ type: 'module' }),
+        'node_modules/my-preset/package.json': JSON.stringify({ name: 'my-preset', main: 'index.js' }),
+        'node_modules/my-preset/index.js': preset,
+        'panda.config.ts': `import preset from 'my-preset'
+export default { outdir: 'styled-system', presets: [preset] }`,
+      }),
+    ).resolves.toMatchObject({
+      message: expect.stringMatching(/looks like a CommonJS module's exports/),
+      diagnostics: [{ code: 'preset_commonjs_exports', help: [expect.stringContaining('`.default`')] }],
+    })
+    await expectLoadError(
+      {
+        'package.json': JSON.stringify({ type: 'module' }),
+        'node_modules/my-preset/package.json': JSON.stringify({ name: 'my-preset', main: 'index.js' }),
+        'node_modules/my-preset/index.js': preset,
+        'panda.config.ts': `export default { outdir: 'styled-system', presets: ['my-preset'] }`,
+      },
+      /Preset "my-preset" looks like a CommonJS module's exports/,
+    )
+    await expectLoadError(
+      {
+        'package.json': JSON.stringify({ type: 'module' }),
+        'node_modules/my-preset/package.json': JSON.stringify({ name: 'my-preset', main: 'index.js' }),
+        'node_modules/my-preset/index.js': `"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.preset = { name: 'my-preset' };`,
+        'panda.config.ts': `import preset from 'my-preset'
+export default { outdir: 'styled-system', presets: [preset] }`,
+      },
+      /looks like a CommonJS module's exports/,
+    )
+    const result = await loadTempConfig({
+      'package.json': JSON.stringify({ type: 'module' }),
+      'node_modules/my-preset/package.json': JSON.stringify({ name: 'my-preset', main: 'index.js' }),
+      'node_modules/my-preset/index.js': preset,
+      'panda.config.ts': `import preset from 'my-preset'
+export default { outdir: 'styled-system', presets: [preset.default] }`,
+    })
+    expect((result.config.theme as any).tokens).toMatchObject({ colors: { brand: { value: 'red' } } })
+  })
+
+  test('explains calling a CommonJS default import in an ES module project', async () => {
+    const files = {
+      'package.json': JSON.stringify({ type: 'module' }),
+      'node_modules/my-preset/package.json': JSON.stringify({ name: 'my-preset', main: 'index.js' }),
+      'node_modules/my-preset/index.js': `"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = () => ({ name: 'my-preset' });`,
+      'panda.config.ts': `import createPreset from 'my-preset'
+export default { outdir: 'styled-system', presets: [createPreset()] }`,
+    }
+    await expectLoadError(files, /default import of a CommonJS package is its `module.exports`/)
+    await expect(loadConfigError(files)).resolves.toMatchObject({
+      diagnostics: [{ code: 'config_commonjs_default_import', help: [expect.stringContaining('`.default()`')] }],
+    })
+  })
+
+  test('rejects CommonJS exports returned from a preset:resolved hook', async () => {
+    await expect(
+      loadConfigError({
+        'panda.config.ts': `export default {
+          outdir: 'styled-system',
+          plugins: [{ name: 'swap', hooks: { 'preset:resolved': () => ({ __esModule: true, default: {} }) } }],
+          presets: [{ name: 'brand' }],
+        }`,
+      }),
+    ).resolves.toMatchObject({
+      message: expect.stringMatching(/Preset "brand" looks like a CommonJS module's exports/),
+      diagnostics: [{ code: 'preset_commonjs_exports', help: [expect.stringContaining('`preset:resolved` hook')] }],
+    })
+  })
+
   test('rejects async presets that resolve to non-objects', async () => {
     await expectLoadError(
       {

@@ -1,5 +1,5 @@
 import type { Config, Dict } from '@pandacss/types'
-import { PandaError } from './error'
+import { createConfigDiagnostic, createConfigError, PandaError } from './error'
 
 export type { Dict }
 export type Extendable<T> = T & { extend?: T }
@@ -37,7 +37,15 @@ export function clone<T>(value: T): T {
   return out as T
 }
 
-export function ensureConfigObject(config: unknown, name: string): ExtendableConfig {
+export function ensureConfigObject(
+  config: unknown,
+  name: string,
+  commonJsHint = 'Import it and pass the export that holds the preset, like `.default`, or publish the preset as ESM.',
+): ExtendableConfig {
+  if (isPlainObject(config) && config.__esModule === true) {
+    const message = `Preset ${JSON.stringify(name)} looks like a CommonJS module's exports, not the preset itself.`
+    throw createConfigError(message, [createConfigDiagnostic('preset_commonjs_exports', message, [commonJsHint])])
+  }
   if (isPlainObject(config)) return config as ExtendableConfig
   throw new PandaError('CONFIG_ERROR', `💥 Preset ${JSON.stringify(name)} must resolve to an object.`)
 }

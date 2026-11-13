@@ -452,6 +452,24 @@ describe('resolveAuthoredPresets / designSystem', () => {
     })
   })
 
+  test('rejects a preset module that holds CommonJS exports', async () => {
+    writeDesignSystemPackage({
+      cwd,
+      name: '@acme/cjs-preset',
+      preset: 'export default { __esModule: true, preset: { name: "acme" } }',
+    })
+
+    await expect(resolveAuthoredPresets({ designSystem: '@acme/cjs-preset' }, cwd)).rejects.toMatchObject({
+      message: expect.stringMatching(/Preset "@acme\/cjs-preset" looks like a CommonJS module's exports/),
+      diagnostics: [
+        {
+          code: 'preset_commonjs_exports',
+          help: [expect.stringContaining('Rebuild "@acme/cjs-preset" with `panda lib`')],
+        },
+      ],
+    })
+  })
+
   test('rejects an installed package that does not expose ./panda/*', async () => {
     writeDesignSystemPackage({
       cwd,

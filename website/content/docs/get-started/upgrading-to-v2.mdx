@@ -72,6 +72,24 @@ import { defineConfig } from '@pandacss/dev'
 Set `"type": "module"`, use `.mjs`, or run through an ESM-aware bundler. The `postcss.config.cjs` that
 `panda init --postcss` writes is CommonJS on purpose and still works.
 
+#### CommonJS presets
+
+Once your project has `"type": "module"`, a default import of a CommonJS preset follows Node's rules: you get
+`module.exports`, not `exports.default`. A preset compiled by `tsc` to CommonJS needs `.default`:
+
+```ts
+import myPreset from 'my-preset'
+
+// ❌ the module object, not your preset
+presets: [myPreset]
+
+// ✅
+presets: [myPreset.default]
+```
+
+The same goes for a preset factory: call `createPreset.default()`. If TypeScript flags `.default`, set
+`"moduleResolution": "nodenext"` so its types match what Node loads. The cleaner fix is to publish the preset as ESM.
+
 ### Hooks moved to plugins
 
 Hooks still exist, but they live on named plugins now, not a root `hooks` object:
