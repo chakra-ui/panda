@@ -1192,16 +1192,18 @@ describe('loadConfig errors', () => {
     const preset = `"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = { name: 'my-preset', theme: { extend: { tokens: { colors: { brand: { value: 'red' } } } } } };`
-    await expectLoadError(
-      {
+    await expect(
+      loadConfigError({
         'package.json': JSON.stringify({ type: 'module' }),
         'node_modules/my-preset/package.json': JSON.stringify({ name: 'my-preset', main: 'index.js' }),
         'node_modules/my-preset/index.js': preset,
         'panda.config.ts': `import preset from 'my-preset'
 export default { outdir: 'styled-system', presets: [preset] }`,
-      },
-      /looks like a CommonJS module's exports.*\.default/s,
-    )
+      }),
+    ).resolves.toMatchObject({
+      message: expect.stringMatching(/looks like a CommonJS module's exports/),
+      diagnostics: [{ code: 'preset_commonjs_exports', help: [expect.stringContaining('`.default`')] }],
+    })
     await expectLoadError(
       {
         'package.json': JSON.stringify({ type: 'module' }),
@@ -1210,6 +1212,18 @@ export default { outdir: 'styled-system', presets: [preset] }`,
         'panda.config.ts': `export default { outdir: 'styled-system', presets: ['my-preset'] }`,
       },
       /Preset "my-preset" looks like a CommonJS module's exports/,
+    )
+    await expectLoadError(
+      {
+        'package.json': JSON.stringify({ type: 'module' }),
+        'node_modules/my-preset/package.json': JSON.stringify({ name: 'my-preset', main: 'index.js' }),
+        'node_modules/my-preset/index.js': `"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.preset = { name: 'my-preset' };`,
+        'panda.config.ts': `import preset from 'my-preset'
+export default { outdir: 'styled-system', presets: [preset] }`,
+      },
+      /looks like a CommonJS module's exports/,
     )
     const result = await loadTempConfig({
       'package.json': JSON.stringify({ type: 'module' }),
@@ -1238,16 +1252,18 @@ export default { outdir: 'styled-system', presets: [createPreset()] }`,
   })
 
   test('rejects CommonJS exports returned from a preset:resolved hook', async () => {
-    await expectLoadError(
-      {
+    await expect(
+      loadConfigError({
         'panda.config.ts': `export default {
           outdir: 'styled-system',
           plugins: [{ name: 'swap', hooks: { 'preset:resolved': () => ({ __esModule: true, default: {} }) } }],
           presets: [{ name: 'brand' }],
         }`,
-      },
-      /Preset "brand" looks like a CommonJS module's exports.*from your `preset:resolved` hook/s,
-    )
+      }),
+    ).resolves.toMatchObject({
+      message: expect.stringMatching(/Preset "brand" looks like a CommonJS module's exports/),
+      diagnostics: [{ code: 'preset_commonjs_exports', help: [expect.stringContaining('`preset:resolved` hook')] }],
+    })
   })
 
   test('rejects async presets that resolve to non-objects', async () => {

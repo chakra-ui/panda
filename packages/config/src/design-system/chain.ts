@@ -300,7 +300,7 @@ async function loadManifestLevel(
     preset = ensureConfigObject(
       'default' in mod ? mod.default : mod,
       manifest.name ?? spec,
-      '`panda lib` writes it as ESM.',
+      `Rebuild ${JSON.stringify(spec)} with \`panda lib\`, which writes the preset as ESM.`,
     )
   } catch (error) {
     if (error instanceof PandaError && error.diagnostics?.length) throw error
