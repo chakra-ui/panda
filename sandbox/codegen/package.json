@@ -39,7 +39,7 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.4.26",
     "happy-dom": "20.14.0",
-    "jsdom": "27.2.0",
+    "jsdom": "31.0.1",
     "preact": "10.29.8",
     "solid-js": "1.9.15",
     "tsx": "4.20.6",
