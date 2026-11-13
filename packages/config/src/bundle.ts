@@ -7,7 +7,7 @@ import { basename, dirname, extname, isAbsolute, join, normalize, relative, sep 
 import { pathToFileURL } from 'node:url'
 import type { RolldownOutput } from 'rolldown'
 import { importMetaUrlPlugin, sideEffectImportsPlugin } from './bundle-plugins'
-import { PandaError } from './error'
+import { createConfigDiagnostic, createConfigError, PandaError } from './error'
 import { tryResolveFrom } from './resolve'
 
 const nodeBuiltins = new Set([...builtinModules, ...builtinModules.map((mod) => `node:${mod}`)])
@@ -50,7 +50,9 @@ export async function bundleConfig<T extends Config = Config>(
   }
 
   const dependencies = collectDependencies(chunks.output, filepath, cwd)
-  const mod = await loadBundledModule(filepath, output.code)
+  const mod = await loadBundledModule(filepath, output.code).catch((error: unknown) => {
+    throw isCommonJsDefaultCall(error) ? commonJsDefaultCallError(error) : error
+  })
 
   return { config: await configFromModule<T>(mod), dependencies }
 }
@@ -121,6 +123,19 @@ async function loadBundledModule(filepath: string, code: string): Promise<Record
   } catch (error) {
     throw evalError ?? error
   }
+}
+
+function isCommonJsDefaultCall(error: unknown): error is TypeError {
+  return error instanceof TypeError && /__toESM\(\.\.\.\)\.default\) is not a function/.test(error.message)
+}
+
+function commonJsDefaultCallError(error: TypeError): PandaError {
+  const message = `${error.message}. In a "type": "module" project, a default import of a CommonJS package is its \`module.exports\`, not \`exports.default\`.`
+  return createConfigError(message, [
+    createConfigDiagnostic('config_commonjs_default_import', message, [
+      "Call the import's `.default()` instead, or publish the package as ESM.",
+    ]),
+  ])
 }
 
 function isUnresolvedTempModule(error: unknown, target: string): boolean {
