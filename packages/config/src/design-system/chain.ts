@@ -297,7 +297,11 @@ async function loadManifestLevel(
   let preset: ExtendableConfig
   try {
     const mod = await import(presetImportUrl(presetPath))
-    preset = ensureConfigObject('default' in mod ? mod.default : mod, manifest.name ?? spec)
+    preset = ensureConfigObject(
+      'default' in mod ? mod.default : mod,
+      manifest.name ?? spec,
+      '`panda lib` writes it as ESM.',
+    )
   } catch (error) {
     if (error instanceof PandaError && error.diagnostics?.length) throw error
     const message = `Failed to load the preset for designSystem ${JSON.stringify(spec)} (${JSON.stringify(manifest.preset)}): ${errorMessage(error)}`

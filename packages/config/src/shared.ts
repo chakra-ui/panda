@@ -37,7 +37,17 @@ export function clone<T>(value: T): T {
   return out as T
 }
 
-export function ensureConfigObject(config: unknown, name: string): ExtendableConfig {
+export function ensureConfigObject(
+  config: unknown,
+  name: string,
+  commonJsHint = 'Import it and pass its `.default`, or publish the preset as ESM.',
+): ExtendableConfig {
+  if (isPlainObject(config) && config.__esModule === true && 'default' in config) {
+    throw new PandaError(
+      'CONFIG_ERROR',
+      `💥 Preset ${JSON.stringify(name)} looks like a CommonJS module's exports, not the preset itself. ${commonJsHint}`,
+    )
+  }
   if (isPlainObject(config)) return config as ExtendableConfig
   throw new PandaError('CONFIG_ERROR', `💥 Preset ${JSON.stringify(name)} must resolve to an object.`)
 }

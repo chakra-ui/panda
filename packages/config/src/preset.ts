@@ -279,7 +279,7 @@ async function runPresetResolvedHooks(
     const hook = normalizeHook(entry.value, 'preset:resolved')
     const next = await hook.handler({ preset: current as Config, name, utils: configResolvedUtils })
     if (next !== undefined) {
-      current = ensureConfigObject(next, name)
+      current = ensureConfigObject(next, name, 'Return its `.default` from your `preset:resolved` hook.')
     }
   }
 
