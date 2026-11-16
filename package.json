@@ -46,7 +46,7 @@
     "@changesets/changelog-github": "1.0.1",
     "@changesets/cli": "3.0.3",
     "@projectwallace/format-css": "^3.0.0",
-    "concurrently": "9.2.4",
+    "concurrently": "10.0.7",
     "cross-env": "10.1.0",
     "happy-dom": "20.14.0",
     "husky": "9.1.7",
