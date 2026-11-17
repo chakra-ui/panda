@@ -86,6 +86,25 @@ describe('overlay codegen — overlay input', () => {
     expect(overlay?.virtualizeCss).toBe(false)
   })
 
+  it('generates design system patterns, recipes and jsx against the local css when the app authors conditions', async () => {
+    cwd = createOverlayFixture({
+      dsPreset: {
+        patterns: { stack: { properties: { gap: { type: 'property', value: 'gap' } } } },
+        theme: { recipes: { button: recipe('button') } },
+      },
+      appConfig: { conditions: { darkTheme: '[data-theme=dark] &' } },
+    })
+    const driver = await createNodeDriver({ cwd })
+    const files = artifactFiles(driver)
+
+    for (const index of ['patterns/index', 'recipes/index', 'jsx/index']) {
+      expect(pick(files, index)).not.toContain('@acme/ds/')
+    }
+    expect(pick(files, 'patterns/stack')).toContain("from '../css/index'")
+    expect(pick(files, 'recipes/runtime')).toContain("from '../css/conditions'")
+    expect(pick(files, 'jsx/stack')).toContain("from '../patterns/stack'")
+  })
+
   it('virtualizes css for a pure consumer', async () => {
     cwd = createOverlayFixture()
     const driver = await createNodeDriver({ cwd })

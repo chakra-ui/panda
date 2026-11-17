@@ -109,8 +109,8 @@ export function buildCodegenOverlay(metadata: DesignSystemMetadata | undefined):
 
   return {
     ...overlayRoots(ds),
-    ownedRecipes: ds.recipeNames.filter((name) => !appRecipes.has(name)),
-    ownedPatterns: ds.patternNames.filter((name) => !appPatterns.has(name)),
+    ownedRecipes: runtimeDirty ? [] : ds.recipeNames.filter((name) => !appRecipes.has(name)),
+    ownedPatterns: runtimeDirty ? [] : ds.patternNames.filter((name) => !appPatterns.has(name)),
     virtualizeHelpers: true,
     virtualizeCss: !runtimeDirty,
   }
