@@ -133,7 +133,8 @@ Pass a string instead of `true` to use your own class name.
 
 Two custom properties on the root set the rhythm. `--prose-leading` is the line height, `1.625` by default, and
 `--prose-flow` is the gap between blocks, `1.25em` of the root font size. Headings and larger blocks are multiples of
-the flow, so changing it moves the whole article together:
+the flow, so changing it moves the whole article together. Blocks the recipe doesn't style, like a custom component, get
+the same gap, and their own styles override it:
 
 ```tsx
 <article className={cx(prose(), css({ '--prose-leading': '1.5', '--prose-flow': '1em' }))} />

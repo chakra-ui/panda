@@ -57,6 +57,7 @@ export function createScaleStyles(prefix: string): ProseStyleParts {
   return {
     root,
     elements: {
+      [FALLBACK_CHILD]: { marginBlockStart: flow.ref },
       p: { marginBlockStart: flow.ref },
       '.lead': {
         fontSize: '1.125em',
@@ -119,6 +120,7 @@ export function createScaleStyles(prefix: string): ProseStyleParts {
         fontSize: '0.875em',
         lineHeight: '1.5',
       },
+      '> :first-child': { marginBlockStart: '0' },
     },
   }
 }
@@ -263,9 +265,6 @@ export function createBaseStyles(prefix: string): ProseStyleParts {
         color: color(prefix, 'lead'),
         fontWeight: 'normal',
       },
-      ' > :first-child': {
-        marginBlockStart: '0',
-      },
     },
   }
 }
@@ -273,6 +272,8 @@ export function createBaseStyles(prefix: string): ProseStyleParts {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+const FALLBACK_CHILD = '> *'
 
 function color(prefix: string, role: string) {
   return `${prefix}.${role}`
@@ -287,12 +288,20 @@ function round(value: number): number {
   return Math.round(value * 10000) / 10000
 }
 
+// `second` wins on conflicts and its selectors come first: with `notProse`, every rule ties and source order decides.
 function mergeParts(first: ProseStyleParts, second: ProseStyleParts): ProseStyleParts {
-  const elements: Record<string, SystemStyleObject> = { ...first.elements }
+  const elements: Record<string, SystemStyleObject> = {}
   for (const [selector, styles] of Object.entries(second.elements)) {
-    elements[selector] = { ...elements[selector], ...styles } as SystemStyleObject
+    elements[selector] = { ...first.elements[selector], ...styles } as SystemStyleObject
+  }
+  for (const [selector, styles] of Object.entries(first.elements)) {
+    elements[selector] ??= styles
   }
   return { root: { ...first.root, ...second.root } as SystemStyleObject, elements }
+}
+
+function excludeNotProse(notProseClass: string): string {
+  return `:not(:where([class~="${notProseClass}"],[class~="${notProseClass}"] *))`
 }
 
 function nestSelector(selector: string, notProseClass?: string): string {
@@ -301,12 +310,20 @@ function nestSelector(selector: string, notProseClass?: string): string {
     .map((part) => part.trim())
     .filter(Boolean)
 
+  // The catch-all child rule has zero specificity so every element rule, and a component's own class, beats it.
+  if (selector === FALLBACK_CHILD) {
+    return `:where(& > *)${notProseClass ? excludeNotProse(notProseClass) : ''}`
+  }
+
   if (!notProseClass) {
     return parts.map((part) => `& ${part}`).join(', ')
   }
 
   return parts
-    .map((part) => `& :where(${part}):not(:where([class~="${notProseClass}"],[class~="${notProseClass}"] *))`)
+    .map((part) => {
+      const [combinator, target] = part.startsWith('>') ? ['> ', part.slice(1).trim()] : ['', part]
+      return `& ${combinator}:where(${target})${excludeNotProse(notProseClass)}`
+    })
     .join(', ')
 }
 

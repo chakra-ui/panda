@@ -96,6 +96,36 @@ describe('@pandacss/preset-typography', () => {
     expect(keys.some((key) => key.includes('skip-prose'))).toBe(true)
   })
 
+  test('a custom block after a paragraph gets the paragraph gap', () => {
+    const base = createProseRecipe().prose.base as Record<string, unknown>
+
+    expect(base[':where(& > *)']).toEqual({ marginBlockStart: 'var(--prose-flow)' })
+  })
+
+  test('notProse leaves opted-out blocks without the paragraph gap', () => {
+    const base = createProseRecipe({ notProse: true }).prose.base as Record<string, unknown>
+
+    expect(base[':where(& > *):not(:where([class~="not-prose"],[class~="not-prose"] *))']).toEqual({
+      marginBlockStart: 'var(--prose-flow)',
+    })
+  })
+
+  test('notProse still removes the top margin of the first block', () => {
+    const base = createProseRecipe({ notProse: true }).prose.base as Record<string, unknown>
+
+    expect(base['& > :where(:first-child):not(:where([class~="not-prose"],[class~="not-prose"] *))']).toEqual({
+      marginBlockStart: '0',
+    })
+  })
+
+  test('notProse keeps the lead and first-block margins after the paragraph margin', () => {
+    const keys = Object.keys(createProseRecipe({ notProse: true }).prose.base ?? {})
+    const indexOf = (target: string) => keys.findIndex((key) => key.startsWith(`& ${target}`))
+
+    expect(indexOf(':where(.lead)')).toBeGreaterThan(indexOf(':where(p)'))
+    expect(indexOf('> :where(:first-child)')).toBeGreaterThan(indexOf(':where(.lead)'))
+  })
+
   test('element styles become nested & selectors', () => {
     const styles = assembleStyles({
       root: { color: 'red' },
