@@ -205,6 +205,52 @@ describe('resolveAuthoredPresets / precedence', () => {
       }
     `)
   })
+  test('overriding one preset color role with a single value keeps the other roles', async () => {
+    const result = await resolve(
+      defineConfig({
+        presets: [
+          definePreset({
+            name: 'typography',
+            theme: {
+              extend: {
+                semanticTokens: {
+                  colors: {
+                    prose: {
+                      body: { value: { base: '{colors.neutral.700}', _dark: '{colors.neutral.300}' } },
+                      link: { value: { base: '{colors.neutral.900}', _dark: '{colors.neutral.100}' } },
+                    },
+                  },
+                },
+              },
+            },
+          }),
+        ],
+        theme: {
+          extend: {
+            semanticTokens: {
+              colors: {
+                prose: { body: { value: '{colors.gray.11}' } },
+              },
+            },
+          },
+        },
+      }),
+    )
+
+    expect(result.theme.semanticTokens.colors.prose).toMatchInlineSnapshot(`
+      {
+        "body": {
+          "value": "{colors.gray.11}",
+        },
+        "link": {
+          "value": {
+            "_dark": "{colors.neutral.100}",
+            "base": "{colors.neutral.900}",
+          },
+        },
+      }
+    `)
+  })
 })
 
 describe('resolveAuthoredPresets / section coverage', () => {

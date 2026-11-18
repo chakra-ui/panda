@@ -14,7 +14,7 @@ export type SemanticTokensOptions = {
    */
   prefix?: string
   /**
-   * 50–950 color palette used for the defaults.
+   * Color palette with `100`–`900` steps used for the defaults.
    * @default 'neutral'
    */
   colorPalette?: string

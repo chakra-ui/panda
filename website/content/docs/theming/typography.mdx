@@ -96,7 +96,11 @@ export default defineConfig({
 })
 ```
 
-The defaults come from one palette, `neutral` unless you say otherwise. To base them on another palette:
+Roles you don't override keep their defaults. If your palette already switches for dark mode, like a Radix-style
+`gray.1`–`gray.12`, give each role a single value.
+
+The defaults come from one palette, `neutral` unless you say otherwise. To base them on another palette with `100`–`900`
+steps:
 
 ```ts
 typographyPreset({ semanticTokens: { colorPalette: 'gray' } })
@@ -172,7 +176,7 @@ typographyPreset({
     enabled: true,
     // Token prefix. Defaults to the name.
     prefix: 'prose',
-    // Palette the defaults are built from.
+    // Palette with 100–900 steps the defaults are built from.
     colorPalette: 'neutral'
   }
 })
