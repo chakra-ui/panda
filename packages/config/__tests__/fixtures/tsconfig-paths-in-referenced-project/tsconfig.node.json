@@ -1,0 +1,4 @@
+{
+  "compilerOptions": { "module": "ESNext", "moduleResolution": "Bundler" },
+  "include": ["vite.config.ts", "panda.config.ts"]
+}

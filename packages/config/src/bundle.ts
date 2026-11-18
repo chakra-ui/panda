@@ -9,6 +9,7 @@ import type { RolldownOutput } from 'rolldown'
 import { importMetaUrlPlugin, sideEffectImportsPlugin } from './bundle-plugins'
 import { PandaError } from './error'
 import { tryResolveFrom } from './resolve'
+import { resolveConfigTsconfig } from './tsconfig'
 
 const nodeBuiltins = new Set([...builtinModules, ...builtinModules.map((mod) => `node:${mod}`)])
 
@@ -32,6 +33,7 @@ export async function bundleConfig<T extends Config = Config>(
     input: filepath,
     cwd,
     platform: 'node',
+    tsconfig: resolveConfigTsconfig(filepath, cwd) ?? true,
     external: (id) => nodeBuiltins.has(id),
     treeshake: true,
     plugins: [importMetaUrlPlugin(), sideEffectImportsPlugin()],

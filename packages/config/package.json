@@ -49,6 +49,7 @@
     "@pandacss/types": "workspace:*",
     "acorn": "^8.17.0",
     "acorn-walk": "^8.3.5",
+    "get-tsconfig": "^4.13.0",
     "javascript-stringify": "2.1.0",
     "magic-string": "^0.30.21",
     "microdiff": "1.5.0",
