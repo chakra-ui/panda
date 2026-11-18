@@ -557,13 +557,18 @@ pub fn split_css(input: &StylesheetInput<'_>, options: &StylesheetOptions) -> Sp
     if !index.is_empty() {
         index.push('\n');
     }
+    // Nested `@layer` blocks may not precede `@import`, so they get their own file.
     if !options.polyfill && layer_selected(StylesheetLayer::Recipes) {
-        for declaration in
-            cascade::CascadePlan::internal_declarations(&input.config.layers, options.minify)
-        {
-            index.push_str(&declaration);
-            index.push('\n');
-        }
+        let declarations =
+            cascade::CascadePlan::internal_declarations(&input.config.layers, options.minify);
+        files.insert(
+            0,
+            SplitCssFile {
+                path: "styles/layers.css".to_owned(),
+                code: format!("{}\n", declarations.join("\n")),
+            },
+        );
+        imports.insert(0, "@import './styles/layers.css';".to_owned());
     }
     if !imports.is_empty() {
         index.push_str(&imports.join("\n"));

@@ -137,11 +137,11 @@ fn split_entry_declares_the_recipe_sublayer_order_when_the_host_declares_layers(
             ..StylesheetOptions::default()
         },
     );
-    let entry = files
+    let layers = files
         .iter()
-        .find(|file| file.path == "styles.css")
-        .expect("styles.css entry");
-    assert_snapshot!(layer_statements(&entry.code), @"
+        .find(|file| file.path == "styles/layers.css")
+        .expect("styles/layers.css entry");
+    assert_snapshot!(layer_statements(&layers.code), @"
     @layer recipes { @layer base, slots, variants, compound_variants; }
     @layer recipes.slots { @layer base, variants, compound_variants; }
     ");

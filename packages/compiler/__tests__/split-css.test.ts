@@ -1,6 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { bundle } from 'lightningcss'
 import { describe, expect, it } from 'vitest'
 import { createProject } from './test-utils'
 
@@ -30,6 +31,7 @@ describe('compiler.getSplitCss()', () => {
     expect(compiler.getSplitCss().files.map((file) => file.path)).toMatchInlineSnapshot(`
       [
         "styles.css",
+        "styles/layers.css",
         "styles/global.css",
         "styles/tokens.css",
         "styles/utilities.css",
@@ -57,8 +59,7 @@ describe('compiler.getSplitCss()', () => {
       "@layer reset, base, tokens,
              recipes,
              utilities;
-      @layer recipes { @layer base, slots, variants, compound_variants; }
-      @layer recipes.slots { @layer base, variants, compound_variants; }
+      @import './styles/layers.css';
       @import './styles/global.css';
       @import './styles/tokens.css';
       @import './styles/utilities.css';
@@ -93,6 +94,55 @@ describe('compiler.getSplitCss()', () => {
           "root": true,
           "pathsAreContained": true,
         }
+      `)
+    } finally {
+      rmSync(cwd, { recursive: true, force: true })
+    }
+  })
+  it('bundles split styles.css with Lightning CSS and keeps the recipe sub-layer order', () => {
+    const cwd = mkdtempSync(join(tmpdir(), 'panda-split-bundle-'))
+    try {
+      const compiler = createProject({
+        cwd,
+        outdir: 'styled-system',
+        theme: {
+          recipes: {
+            button: {
+              className: 'button',
+              base: { color: 'red' },
+              variants: { tone: { blue: { color: 'blue' } } },
+            },
+          },
+          slotRecipes: {
+            card: {
+              className: 'card',
+              slots: ['root'],
+              base: { root: { color: 'green' } },
+            },
+          },
+        },
+        utilities: { color: { className: 'c' } },
+      })
+      compiler.parseFileSource(
+        'app.tsx',
+        ["import { button, card } from '@panda/recipes'", "button({ tone: 'blue' })", 'card()'].join('\n'),
+      )
+      const { root } = compiler.writeSplitCss({})
+      const { code } = bundle({ filename: join(root, 'styles.css'), minify: true })
+
+      expect(code.toString().replaceAll('@layer', '\n@layer').trim()).toMatchInlineSnapshot(`
+        "@layer reset;
+        @layer base{:root{--made-with-panda:"🐼"}}
+        @layer tokens;
+        @layer recipes{
+        @layer base{.button{color:red}}
+        @layer slots;
+        @layer variants{.button--tone_blue{color:#00f}}
+        @layer compound_variants;}
+        @layer utilities;
+        @layer recipes.slots{
+        @layer base{.card__root{color:green}}
+        @layer variants,compound_variants;}"
       `)
     } finally {
       rmSync(cwd, { recursive: true, force: true })

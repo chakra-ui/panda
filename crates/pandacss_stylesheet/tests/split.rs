@@ -42,12 +42,15 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
     @layer reset, base, tokens,
            recipes,
            utilities;
-    @layer recipes { @layer base, slots, variants, compound_variants; }
-    @layer recipes.slots { @layer base, variants, compound_variants; }
+    @import './styles/layers.css';
     @import './styles/global.css';
     @import './styles/tokens.css';
     @import './styles/utilities.css';
     @import './styles/recipes.css';
+
+    === styles/layers.css ===
+    @layer recipes { @layer base, slots, variants, compound_variants; }
+    @layer recipes.slots { @layer base, variants, compound_variants; }
 
     === styles/global.css ===
     @layer base {
@@ -90,7 +93,7 @@ fn splits_layers_and_recipes_into_files_with_indexes() {
 }
 
 #[test]
-fn split_css_declares_recipe_sublayers_before_imports() {
+fn split_css_imports_recipe_sublayer_order_before_recipe_files() {
     let config = config(serde_json::json!({
         "importMap": { "css": [], "recipe": ["@panda/recipes"], "pattern": [], "jsx": [], "tokens": [] },
         "theme": {
@@ -116,17 +119,22 @@ fn split_css_declares_recipe_sublayers_before_imports() {
         .iter()
         .find(|file| file.path == "styles.css")
         .expect("styles.css");
+    let layers = files
+        .iter()
+        .find(|file| file.path == "styles/layers.css")
+        .expect("styles/layers.css");
 
-    let recipes = index
-        .code
-        .find("@layer recipes { @layer base, slots, variants, compound_variants; }")
-        .expect("recipe sub-layer order");
-    let slots = index
-        .code
-        .find("@layer recipes.slots { @layer base, variants, compound_variants; }")
-        .expect("slot recipe sub-layer order");
-    let imports = index.code.find("@import").expect("imports");
-    assert!(recipes < slots && slots < imports);
+    assert!(
+        index
+            .code
+            .lines()
+            .find(|line| line.starts_with("@import"))
+            .is_some_and(|line| line == "@import './styles/layers.css';")
+    );
+    assert_snapshot!(layers.code, @"
+    @layer recipes { @layer base, slots, variants, compound_variants; }
+    @layer recipes.slots { @layer base, variants, compound_variants; }
+    ");
 }
 
 #[test]
