@@ -7,6 +7,7 @@ use crate::convert::convert_diagnostic;
 use napi::bindgen_prelude::Env;
 use napi_derive::napi;
 use pandacss_encoder::AtomValue;
+use pandacss_fs::PathSystem;
 use pandacss_transform::{
     HelperCxMode, TransformMode, TransformOptions, TransformTargets, transform_source,
     transform_source_with,
@@ -56,6 +57,9 @@ impl Compiler {
         env: Env,
         input: TransformSourceInput,
     ) -> TransformSourceResult {
+        if self.is_outdir_file(&input.path) {
+            return unchanged(input.source);
+        }
         crate::init_tracing();
         let options = into_transform_options(&input);
         let output = self.transform_inner(&env, &input.path, &input.source, &options);
@@ -77,6 +81,15 @@ impl Compiler {
                 needs_memo_recipe: output.helper.needs_memo_recipe,
             },
         }
+    }
+
+    /// Generated runtime under `outdir` is never app source, matching `UserConfig::scan_exclude`.
+    fn is_outdir_file(&self, path: &str) -> bool {
+        let file = path.split('?').next().unwrap_or(path);
+        let outdir = self
+            .paths
+            .resolve(&self.user_config.cwd, self.user_config.outdir());
+        std::path::Path::new(file).starts_with(outdir)
     }
 
     /// Shared transform path — wires the same pattern/source/utility callbacks as
@@ -153,6 +166,22 @@ fn into_transform_options(input: &TransformSourceInput) -> TransformOptions {
             recipes: input.targets_recipes.unwrap_or(false),
             tokens: input.targets_tokens.unwrap_or(false),
             jsx: input.targets_jsx.unwrap_or(false),
+        },
+    }
+}
+
+fn unchanged(code: String) -> TransformSourceResult {
+    TransformSourceResult {
+        code,
+        map: None,
+        changed: false,
+        bailed: false,
+        diagnostics: Vec::new(),
+        dependencies: Vec::new(),
+        helper: TransformSourceHelperFacts {
+            needs_cx: false,
+            needs_attach_recipe: false,
+            needs_memo_recipe: false,
         },
     }
 }

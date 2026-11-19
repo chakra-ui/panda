@@ -331,6 +331,20 @@ describe('@pandacss/vite', () => {
     expect(server.environments.ssr.moduleGraph.getModuleById(rootId)?.transformResult).toBeNull()
   })
 
+  it('leaves the generated styled-system runtime out of the source transform', async () => {
+    dir = createFixture(`{ color: 'red' }`, "export default { outdir: 'styled-system', include: ['**/*.tsx'] }\n")
+    server = await startServer(dir, { transform: true })
+    const warnings: string[] = []
+    server.config.logger.warn = (message) => {
+      warnings.push(String(message))
+    }
+
+    await server.transformRequest(join(dir, 'styled-system', 'css', 'cva.js'))
+    await server.transformRequest(join(dir, 'styled-system', 'css', 'sva.js'))
+
+    expect(warnings).toEqual([])
+  })
+
   it('keeps previous CSS and reports diagnostics when source syntax breaks', async () => {
     dir = createFixture(`{ color: 'red' }`)
     server = await startServer(dir)

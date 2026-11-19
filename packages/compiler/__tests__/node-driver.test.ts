@@ -595,6 +595,17 @@ describe('createNodeDriver', () => {
     })
   })
 
+  it('leaves files in the outdir alone when transforming source', async () => {
+    const driver = await createNodeDriver({ cwd: dir })
+    const source = ["import { css } from '@panda/css'", "export const a = css({ color: 'red' })"].join('\n')
+
+    const generated = driver.compiler.transformSource({ path: join(dir, 'styled-system', 'css', 'cva.js'), source })
+    const app = driver.compiler.transformSource({ path: join(dir, 'App.tsx'), source })
+
+    expect(generated).toMatchObject({ code: source, changed: false, diagnostics: [] })
+    expect(app.changed).toBe(true)
+  })
+
   it('lists watch targets (parsed files, source patterns, base dirs, config deps)', async () => {
     const driver = await createNodeDriver({ cwd: dir })
     driver.parseFiles()

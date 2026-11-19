@@ -225,6 +225,18 @@ describe('@pandacss/bun in Bun.build', () => {
     `)
   })
 
+  it('leaves the generated styled-system runtime out of the source transform', async () => {
+    const project = createProject()
+    dir = project.dir
+    const bun = await setupPlugin({ cwd: project.dir, transform: true })
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+    await bun.load(project.path('styled-system/css/cva.js'))
+    await bun.load(project.path('styled-system/css/sva.js'))
+
+    expect(warn).not.toHaveBeenCalled()
+  })
+
   it('serves the @pandacss-internal/css module that rewritten sources import', async () => {
     const project = createProject()
     dir = project.dir
