@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 See the [Changesets](./.changeset) for the latest changes.
 
+## [1.12.3](#1.12.3) - 2026-11-19
+
+### Changed
+
+- Bump `postcss-selector-parser` to 7.1.8 to pick up the fixes for GHSA-rj75-hqrm-r3gf and GHSA-w9m9-85wc-3x92 (#4092). CSS output is unchanged.
+- Bump Studio's `astro` to 6.4.8 and `vite` to 7.3.8 for the advisories fixed in those releases.
+- Speed up JSX style props by no longer serializing arguments on every `isCssProperty` check, and skip `JSON.stringify` in `memo` for single-string arguments (#3840).
+
 ## [1.12.2](#1.12.2) - 2026-11-02
 
 ### Changed
