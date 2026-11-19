@@ -1748,17 +1748,19 @@ fn a_deprecated_alias_keeps_the_path_written_when_it_shares_a_variable() {
 }
 
 #[test]
-fn declared_pattern_props_are_not_utilities() {
+fn declared_pattern_props_are_never_renamed_to_a_longhand() {
     let system = system_with(json!({
         "jsxFramework": "react",
         "conditions": {"hover": "&:hover"},
         "utilities": {
             "translateY": { "className": "ty", "shorthand": "y" },
+            "translateX": { "className": "tx", "shorthand": "x" },
             "gap": { "className": "gap" }
         },
         "patterns": {"scrollFade": {"jsx": ["Fade"], "properties": {
             "y": {"type": "number"},
-            "gap": {"type": "property", "value": "gap"}
+            "gap": {"type": "property", "value": "gap"},
+            "x": {"type": "property", "value": "translateX"}
         }}}
     }));
     let result = inspect_file_source(
@@ -1768,7 +1770,7 @@ fn declared_pattern_props_are_not_utilities() {
             import {scrollFade} from '@panda/patterns'
             import {ScrollFade, Fade} from '@panda/jsx'
             import {css} from '@panda/css'
-            scrollFade({y: 32, gap: '2', _hover: {y: 4}})
+            scrollFade({y: 32, gap: '2', x: '4', _hover: {y: 4}})
             const J = () => <ScrollFade y={32} gap='2' />
             const K = () => <Fade y={8} />
             css({y: 4})
@@ -1777,6 +1779,7 @@ fn declared_pattern_props_are_not_utilities() {
     assert_snapshot!(style_summary(&result), @r#"
     PatternProp PatternCall Safe y -> None path=y
     Utility PatternCall Safe gap -> None path=gap
+    Utility PatternCall Safe x -> None path=x
     Condition PatternCall Safe _hover -> None path=_hover
     Utility PatternCall Safe y -> Some("translateY") path=_hover.y
     Utility CssCall Safe y -> Some("translateY") path=y

@@ -10,10 +10,11 @@ const ruleTester = await createPandaRuleTester(`export default {
     margin: { className: 'm', shorthand: 'm' },
     marginLeft: { className: 'ml', shorthand: 'ml' },
     padding: { className: 'p', shorthand: 'p' },
+    translateX: { className: 'tx', shorthand: 'x' },
     translateY: { className: 'ty', shorthand: 'y' },
   },
   patterns: {
-    scrollFade: { properties: { y: { type: 'number' } }, transform: ({ y, ...rest }) => ({ ...rest, '--fade-size': y }) },
+    scrollFade: { properties: { y: { type: 'number' }, x: { type: 'property', value: 'translateX' } }, transform: ({ y, ...rest }) => ({ ...rest, '--fade-size': y }) },
   },
 }`)
 
@@ -32,6 +33,10 @@ ruleTester.run('consistent-property-style', {
     {
       filename: 'app.tsx',
       code: ["import { ScrollFade } from '@panda/jsx'", 'const A = () => <ScrollFade y={32} />'].join('\n'),
+    },
+    {
+      filename: 'app.tsx',
+      code: ["import { scrollFade } from '@panda/patterns'", "scrollFade({ x: '4' })"].join('\n'),
     },
   ],
   invalid: [

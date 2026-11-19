@@ -402,15 +402,16 @@ impl StyleEntryCollector<'_, '_> {
                     self.collect(nested, syntax, path, out);
                 }
             } else {
-                let is_pattern_prop = path.len() == 1 && self.is_declared_pattern_prop(key);
+                // `Some(is_style)` for a prop the pattern declares; its transform reads the key by name.
+                let declared = self.declared_pattern_prop(key).filter(|_| path.len() == 1);
                 let canonical = self
                     .cx
                     .utility
-                    .filter(|_| !is_pattern_prop)
+                    .filter(|_| declared.is_none())
                     .map(|utility| utility.resolve_shorthand(key))
                     .filter(|canonical| *canonical != key);
                 let is_known = self.cx.utility.is_some_and(|utility| utility.is_known(key));
-                let kind = entry_kind(is_pattern_prop, is_known, syntax);
+                let kind = entry_kind(declared == Some(false), is_known, syntax);
                 let token_lookup = (kind == StyleEntryKind::Utility).then(|| ValueTokenLookup {
                     prop: key,
                     category: self
@@ -438,10 +439,8 @@ impl StyleEntryCollector<'_, '_> {
         }
     }
 
-    fn is_declared_pattern_prop(&self, key: &str) -> bool {
-        self.pattern_properties
-            .and_then(|properties| properties.get(key))
-            == Some(&false)
+    fn declared_pattern_prop(&self, key: &str) -> Option<bool> {
+        self.pattern_properties?.get(key).copied()
     }
 
     fn source_ref(&self, path: &[String]) -> Option<&StyleSourceRef> {
