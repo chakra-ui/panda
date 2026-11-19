@@ -145,8 +145,7 @@ export function pandacss(options: PandaPluginOptions = {}): Plugin {
     transform: {
       order: 'pre',
       handler(code, id) {
-        const transformer =
-          transformEnabled && !driver?.isOutdirFile(id, outdir) ? resolveSourceTransformer() : undefined
+        const transformer = transformEnabled ? resolveSourceTransformer() : undefined
         if (transformer) {
           const sourceResult = runSourceTransform(
             this,

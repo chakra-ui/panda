@@ -1,8 +1,6 @@
 ---
-'@pandacss/vite': patch
-'@pandacss/bun': patch
-'@pandacss/compiler-shared': patch
+'@pandacss/compiler': patch
 ---
 
-With `transform: true`, the Vite and Bun plugins no longer transform files in your `outdir`. This removes the false
-`panda_call_unextractable` warnings on `styled-system/css/cva.js` and `sva.js`.
+Fixed false `panda_call_unextractable` warnings on the generated `cva.js` and `sva.js` with `transform: true`. The source
+transform now skips files in your `outdir`.
