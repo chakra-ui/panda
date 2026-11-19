@@ -40,6 +40,17 @@ async function expectLoadError(files: Record<string, string>, expected: RegExp) 
   expect((error as Error).message).toMatch(expected)
 }
 
+function tscCommonJsPreset(defaultExport: string): Record<string, string> {
+  return {
+    'node_modules/my-preset/package.json': JSON.stringify({ name: 'my-preset', main: 'index.js' }),
+    'node_modules/my-preset/index.js': [
+      '"use strict";',
+      'Object.defineProperty(exports, "__esModule", { value: true });',
+      `exports.default = ${defaultExport};`,
+    ].join('\n'),
+  }
+}
+
 async function loadConfigError(files: Record<string, string>) {
   try {
     await loadTempConfig(files)
@@ -1038,6 +1049,47 @@ describe('loadConfig module loading', () => {
     })
 
     expect((result.config.theme as any).tokens.colors.computed).toEqual({ value: '#0f0' })
+  })
+  test('loads a tsc-built CommonJS preset object in a "type": "module" project', async () => {
+    const result = await loadTempConfig({
+      'package.json': JSON.stringify({ type: 'module' }),
+      ...tscCommonJsPreset("{ name: 'my-preset', theme: { tokens: { colors: { brand: { value: 'red' } } } } }"),
+      'panda.config.ts': [
+        "import preset from 'my-preset'",
+        "export default { outdir: 'styled-system', presets: [preset] }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"red"`)
+  })
+
+  test('calls a tsc-built CommonJS preset factory in a "type": "module" project', async () => {
+    const result = await loadTempConfig({
+      'package.json': JSON.stringify({ type: 'module' }),
+      ...tscCommonJsPreset("() => ({ name: 'my-preset', theme: { tokens: { colors: { brand: { value: 'red' } } } } })"),
+      'panda.config.ts': [
+        "import createPreset from 'my-preset'",
+        "export default { outdir: 'styled-system', presets: [createPreset()] }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"red"`)
+  })
+
+  test('calls a tsc-built CommonJS preset factory from a file the config imports', async () => {
+    const result = await loadTempConfig({
+      'package.json': JSON.stringify({ type: 'module' }),
+      ...tscCommonJsPreset("() => ({ name: 'my-preset', theme: { tokens: { colors: { brand: { value: 'red' } } } } })"),
+      'theme/presets.ts': ["import createPreset from 'my-preset'", 'export const presets = [createPreset()]'].join(
+        '\n',
+      ),
+      'panda.config.ts': [
+        "import { presets } from './theme/presets'",
+        "export default { outdir: 'styled-system', presets }",
+      ].join('\n'),
+    })
+
+    expect((result.config.theme as any).tokens.colors.brand.value).toMatchInlineSnapshot(`"red"`)
   })
 })
 

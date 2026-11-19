@@ -45,3 +45,19 @@ export function sideEffectImportsPlugin(): Plugin {
     },
   }
 }
+
+/**
+ * Read `exports.default` from CommonJS packages in the user's own files, as v1 did, even under `"type": "module"`.
+ * Rolldown applies Node's stricter interop only to modules that carry a `packageJsonPath`.
+ */
+export function commonJsInteropPlugin(): Plugin {
+  return {
+    name: 'panda-commonjs-interop',
+    async resolveId(source, importer, options) {
+      const resolved = await this.resolve(source, importer, { ...options, skipSelf: true })
+      if (!resolved || resolved.external || nodeModulesRe.test(resolved.id)) return resolved
+      const { packageJsonPath: _, ...rest } = resolved
+      return rest
+    },
+  }
+}

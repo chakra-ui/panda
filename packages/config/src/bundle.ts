@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { basename, dirname, extname, isAbsolute, join, normalize, relative, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type { RolldownOutput } from 'rolldown'
-import { importMetaUrlPlugin, sideEffectImportsPlugin } from './bundle-plugins'
+import { commonJsInteropPlugin, importMetaUrlPlugin, sideEffectImportsPlugin } from './bundle-plugins'
 import { PandaError } from './error'
 import { tryResolveFrom } from './resolve'
 import { resolveConfigTsconfig } from './tsconfig'
@@ -36,7 +36,7 @@ export async function bundleConfig<T extends Config = Config>(
     tsconfig: resolveConfigTsconfig(filepath, cwd) ?? true,
     external: (id) => nodeBuiltins.has(id),
     treeshake: true,
-    plugins: [importMetaUrlPlugin(), sideEffectImportsPlugin()],
+    plugins: [importMetaUrlPlugin(), sideEffectImportsPlugin(), commonJsInteropPlugin()],
   })
 
   let chunks: Awaited<ReturnType<typeof build.generate>>
