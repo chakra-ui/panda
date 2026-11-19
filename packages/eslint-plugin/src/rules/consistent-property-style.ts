@@ -60,11 +60,11 @@ export function createConsistentPropertyStyleRule(options: ConsistentPropertySty
             const name = entry.name
             if (ignore.has(name)) continue
 
-            // longhand: an alias maps to its canonical. shorthand: a canonical
+            // longhand: the compiler's canonical, unset for a pattern's own props. shorthand: a canonical
             // that has an alias maps to it (skip names already in alias form).
             const target =
               style === 'longhand'
-                ? options.shorthands[name]
+                ? entry.canonicalName
                 : options.shorthands[name] === undefined
                   ? aliasOf[name]
                   : undefined
