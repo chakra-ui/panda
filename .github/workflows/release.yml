@@ -52,3 +52,19 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      # `--tag v1` keeps 2.x on `latest`, but packages with no 2.x release need `latest` moved to the new 1.x.
+      # Requires "Allow npm dist-tag" on each package's trusted publisher config.
+      - name: Move latest for packages without a 2.x release
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: |
+          echo "$PUBLISHED_PACKAGES" | jq -c '.[]' | while read -r pkg; do
+            name=$(jq -r .name <<< "$pkg")
+            version=$(jq -r .version <<< "$pkg")
+            latest=$(npm view "$name" dist-tags.latest)
+            if [[ "$latest" == 1.* ]]; then
+              npx -y npm@latest dist-tag add "$name@$version" latest
+            fi
+          done
