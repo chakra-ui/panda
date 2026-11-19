@@ -669,6 +669,60 @@ fn config_recipe_with_a_property_nested_under_a_non_condition_key_warns() {
 }
 
 #[test]
+fn config_recipe_with_an_unknown_condition_warns() {
+    let project = create_project(json!({
+        "conditions": { "hover": "&:hover" },
+        "utilities": { "color": { "className": "c" } },
+        "theme": {
+            "recipes": {
+                "button": {
+                    "className": "button",
+                    "base": { "_hover": { "color": "red" }, "_disabled": { "color": "gray" } },
+                    "variants": { "size": { "sm": { "_hovr": { "color": "blue" } } } },
+                    "compoundVariants": [{ "size": "sm", "css": { "_disabled": { "color": "gray" } } }]
+                }
+            },
+            "slotRecipes": {
+                "card": { "className": "card", "slots": ["root"], "base": { "root": { "_focus": { "color": "red" } } } }
+            }
+        }
+    }));
+    assert_snapshot!(summary(project.diagnostics()), @"
+    Warning unknown_condition theme.recipes.button: unknown condition `_disabled`
+    Warning unknown_condition theme.recipes.button: unknown condition `_hovr`, did you mean `_hover`?
+    Warning unknown_condition theme.slotRecipes.card: unknown condition `_focus`
+    ");
+}
+
+#[test]
+fn global_css_and_style_presets_with_an_unknown_condition_warn() {
+    let project = create_project(json!({
+        "conditions": { "hover": "&:hover", "dark": ".dark &" },
+        "utilities": { "color": { "className": "c" } },
+        "globalCss": {
+            "a": { "_hover": { "color": "red" }, "_focusVisible": { "color": "blue" } },
+            "_dark": { "body": { "color": "white" } },
+            "_osDark": { "body": { "color": "white" } }
+        },
+        "theme": {
+            "textStyles": {
+                "heading": { "value": { "_hover": { "color": "red" } } },
+                "body": { "sm": { "value": { "_print": { "color": "black" } } } }
+            },
+            "layerStyles": { "card": { "value": { "_drak": { "color": "white" } } } },
+            "animationStyles": { "fade": { "value": { "_motionReduce": { "color": "red" } } } }
+        }
+    }));
+    assert_snapshot!(summary(project.diagnostics()), @r#"
+    Warning unknown_condition globalCss["a"]: unknown condition `_focusVisible`
+    Warning unknown_condition globalCss["_osDark"]: unknown condition `_osDark`
+    Warning unknown_condition theme.textStyles.body: unknown condition `_print`
+    Warning unknown_condition theme.layerStyles.card: unknown condition `_drak`, did you mean `_dark`?
+    Warning unknown_condition theme.animationStyles.fade: unknown condition `_motionReduce`
+    "#);
+}
+
+#[test]
 fn nested_property_leaves_the_selector_argument_open_when_nothing_sits_between() {
     let mut project = create_project(json!({
         "conditions": { "hover": "&:hover" },

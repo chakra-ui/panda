@@ -1,8 +1,11 @@
-use pandacss_encoder::{ConditionMatcher, Encoder};
+use pandacss_encoder::Encoder;
 use pandacss_extractor::{ExtractedCall, ExtractedJsx, LineIndex, MatchCategory, Span};
 use pandacss_literal::Literal;
 use pandacss_shared::{Diagnostic, diagnostic_codes};
-use pandacss_system::{System, visit_call_style_strings, visit_jsx_style_strings};
+use pandacss_system::{
+    System, collect_unknown_conditions, unknown_condition_message, visit_call_style_strings,
+    visit_jsx_style_strings,
+};
 use pandacss_tokens::TokenDictionary;
 use pandacss_utility::{Utility, token_references};
 use rustc_hash::FxHashSet;
@@ -132,51 +135,15 @@ pub(super) fn push_unknown_condition_diagnostics(
     );
 }
 
-fn collect_unknown_conditions(
-    value: &Literal,
-    conditions: &ProjectConditionMatcher,
-    out: &mut Vec<String>,
-) {
-    match value {
-        Literal::Object(entries) => {
-            for (key, child) in entries {
-                if key.starts_with('_')
-                    && !conditions.is_condition(key)
-                    && !out.iter().any(|seen| seen == key)
-                {
-                    out.push(key.clone());
-                }
-                collect_unknown_conditions(child, conditions, out);
-            }
-        }
-        Literal::Array(items) | Literal::Conditional(items) => {
-            for item in items {
-                collect_unknown_conditions(item, conditions, out);
-            }
-        }
-        Literal::String(_)
-        | Literal::Token { .. }
-        | Literal::Number(_)
-        | Literal::Bool(_)
-        | Literal::Null => {}
-    }
-}
-
 fn unknown_condition_diagnostic(
     key: &str,
     conditions: &ProjectConditionMatcher,
     span: Span,
     line_index: &LineIndex<'_>,
 ) -> Diagnostic {
-    let suggestion = pandacss_shared::closest_match(
-        key,
-        conditions.names().filter(|name| name.starts_with('_')),
-    )
-    .map(|name| format!(", did you mean `{name}`?"))
-    .unwrap_or_default();
     located_warning(
         diagnostic_codes::UNKNOWN_CONDITION,
-        format!("unknown condition `{key}`{suggestion}"),
+        unknown_condition_message(key, conditions),
         span,
         line_index,
     )

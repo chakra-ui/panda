@@ -15,6 +15,7 @@ mod static_patterns;
 mod style_encoding;
 mod style_values;
 mod system;
+mod unknown_conditions;
 
 pub use callbacks::{ParseTransforms, PatternTransformFn, SourceTransformFn, UtilityTransformFn};
 pub use config::class_attribute_for_jsx_framework;
@@ -34,5 +35,6 @@ pub use style_values::{
     merge_style_entry, merge_style_props, resolved_atom_value, with_callback_target,
 };
 pub use system::{System, SystemInput, config_fingerprint};
+pub use unknown_conditions::{collect_unknown_conditions, unknown_condition_message};
 
 pub(crate) type ProjectConditionMatcher = pandacss_encoder::ConditionSet;

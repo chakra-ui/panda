@@ -23,6 +23,7 @@ use pandacss_utility::{Utility, UtilityOptions};
 use crate::patterns::PatternRegistry;
 use crate::recipes::{RecipeRegistry, StyleResolver};
 use crate::system::ConfigRecipe;
+use crate::unknown_conditions::config_unknown_condition_diagnostics;
 use crate::{ProjectConditionMatcher, Result, System, SystemError};
 
 /// Compiles a user config into a [`System`]: extractor matchers, utility
@@ -95,6 +96,16 @@ pub(crate) fn compile_system(
         )
     };
 
+    let config_recipes = config_recipes_from_definitions(&entries.recipes);
+    let config_slot_recipes = config_slot_recipes_from_definitions(&entries.slot_recipes);
+    let mut diagnostics = diagnostics;
+    diagnostics.extend(config_unknown_condition_diagnostics(
+        config,
+        &conditions,
+        &config_recipes,
+        &config_slot_recipes,
+    ));
+
     Ok(System {
         extractor_config,
         utility,
@@ -104,8 +115,8 @@ pub(crate) fn compile_system(
         breakpoints: entries.breakpoints,
         patterns,
         recipes,
-        config_recipes: config_recipes_from_definitions(&entries.recipes),
-        config_slot_recipes: config_slot_recipes_from_definitions(&entries.slot_recipes),
+        config_recipes,
+        config_slot_recipes,
         keyframes: config
             .theme
             .keyframes
