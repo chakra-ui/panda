@@ -105,14 +105,17 @@ export function buildCodegenOverlay(metadata: DesignSystemMetadata | undefined):
   const appRecipes = new Set(metadata?.userRecipeNames ?? [])
   const appPatterns = new Set(metadata?.userPatternNames ?? [])
   const authored = metadata?.overlayInput?.authored
-  const runtimeDirty = !!(authored?.conditions || authored?.breakpoints || authored?.utilities || authored?.tokens)
+  const cssLocal = !!(authored?.conditions || authored?.breakpoints || authored?.utilities || authored?.tokens)
+  // DS recipes and patterns import the DS `css`, so re-export them only while `css` is re-exported too.
+  const reexported = (names: string[], appNames: Set<string>) =>
+    cssLocal ? [] : names.filter((name) => !appNames.has(name))
 
   return {
     ...overlayRoots(ds),
-    ownedRecipes: runtimeDirty ? [] : ds.recipeNames.filter((name) => !appRecipes.has(name)),
-    ownedPatterns: runtimeDirty ? [] : ds.patternNames.filter((name) => !appPatterns.has(name)),
+    ownedRecipes: reexported(ds.recipeNames, appRecipes),
+    ownedPatterns: reexported(ds.patternNames, appPatterns),
     virtualizeHelpers: true,
-    virtualizeCss: !runtimeDirty,
+    virtualizeCss: !cssLocal,
   }
 }
 
