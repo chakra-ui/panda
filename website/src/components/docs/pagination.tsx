@@ -94,6 +94,7 @@ const PagationLink = (props: PagationLinkProps) => {
       href={item.url.startsWith('/') ? item.url : `/docs/${item.url}`}
       className={css({
         flex: '1',
+        minW: '0',
         display: 'flex',
         alignItems: 'center',
         gap: '3',
