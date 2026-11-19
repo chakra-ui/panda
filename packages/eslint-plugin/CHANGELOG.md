@@ -1,5 +1,31 @@
 # @pandacss/eslint-plugin
 
+## 2.6.0
+
+### Minor Changes
+
+- 2b90370: Add the `no-unsafe-token-fn-usage` lint rule, on in `recommended`. It flags style values like
+  `'{colors.red.500}'` or `token('colors.red.500')` where the token name `'red.500'` works, and only when the swap keeps
+  your CSS the same.
+
+### Patch Changes
+
+- cb2abf1: Fixed `consistent-property-style` rewriting a pattern's own property when it shares a name with a utility
+  shorthand, like `scrollFade({ y: 32 })` to `translateY`.
+- Updated dependencies [ac843d6]
+- Updated dependencies [8825a2c]
+- Updated dependencies [4f9a899]
+- Updated dependencies [cb2abf1]
+- Updated dependencies [d863086]
+- Updated dependencies [b6f8cd3]
+- Updated dependencies [ead8c89]
+- Updated dependencies [02eff44]
+- Updated dependencies [f9c0ecf]
+- Updated dependencies [104ab25]
+  - @pandacss/config@2.6.0
+  - @pandacss/compiler@2.6.0
+  - @pandacss/compiler-shared@2.6.0
+
 ## 2.5.0
 
 ### Minor Changes

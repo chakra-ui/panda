@@ -1,5 +1,21 @@
 # studio
 
+## 2.0.9
+
+### Patch Changes
+
+- Updated dependencies [ac843d6]
+- Updated dependencies [8825a2c]
+- Updated dependencies [4f9a899]
+- Updated dependencies [cb2abf1]
+- Updated dependencies [b6f8cd3]
+- Updated dependencies [02eff44]
+  - @pandacss/config@2.6.0
+  - @pandacss/compiler-wasm@2.6.0
+  - @pandacss/compiler-shared@2.6.0
+  - @pandacss/preset-base@2.6.0
+  - @pandacss/preset-panda@2.6.0
+
 ## 2.0.8
 
 ### Patch Changes

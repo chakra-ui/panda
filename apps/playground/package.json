@@ -1,6 +1,6 @@
 {
   "name": "playground",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "scripts": {
     "css:codegen": "pnpm panda codegen --log-level silent",

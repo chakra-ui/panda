@@ -1,5 +1,14 @@
 # website
 
+## 1.0.10
+
+### Patch Changes
+
+- Updated dependencies [e412d32]
+  - @pandacss/preset-typography@2.6.0
+  - @pandacss/preset-base@2.6.0
+  - @pandacss/preset-panda@2.6.0
+
 ## 1.0.9
 
 ### Patch Changes

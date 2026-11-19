@@ -1,5 +1,34 @@
 # @pandacss/compiler
 
+## 2.6.0
+
+### Minor Changes
+
+- ead8c89: Added `useClassNames` to `createSlotRecipeContext`. It returns each slot's class name, for parts that render
+  their own markup.
+
+  Also fixed Solid `withContext` parts not updating when the root's variant props change.
+
+### Patch Changes
+
+- cb2abf1: Fixed `consistent-property-style` rewriting a pattern's own property when it shares a name with a utility
+  shorthand, like `scrollFade({ y: 32 })` to `translateY`.
+- d863086: Warn about unknown conditions, like `_hover` without a preset that defines it, in recipes, slot recipes,
+  `globalCss`, `textStyles`, `layerStyles`, and `animationStyles`. Their styles were dropped or emitted as a selector
+  that never matches, with no warning.
+- b6f8cd3: Fix watch rebuild failures caused by unrelated binary files such as `.DS_Store` in source directories.
+- 02eff44: Fixed `panda cssgen --splitting` emitting an invalid `styles.css` that browsers partly ignore and Turbopack
+  fails to parse. The recipe layer order now lives in `styles/layers.css`.
+- f9c0ecf: Fixed missing token and property completions inside `variants` in `styled(Component, { variants })`.
+- 104ab25: Fixed false `panda_call_unextractable` warnings on the generated `cva.js` and `sva.js` with
+  `transform: true`. The source transform now skips files in your `outdir`.
+- Updated dependencies [ac843d6]
+- Updated dependencies [8825a2c]
+- Updated dependencies [4f9a899]
+  - @pandacss/config@2.6.0
+  - @pandacss/compiler-shared@2.6.0
+  - @pandacss/types@2.6.0
+
 ## 2.5.0
 
 ### Minor Changes

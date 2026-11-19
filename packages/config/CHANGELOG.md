@@ -1,5 +1,17 @@
 # @pandacss/config
 
+## 2.6.0
+
+### Patch Changes
+
+- ac843d6: Fixed CommonJS presets built with `tsc` failing to load, or being silently ignored, in a `"type": "module"`
+  project.
+- 8825a2c: Fixed `panda.config.ts` failing to load tsconfig path aliases when the tsconfig doesn't include the config
+  file.
+- 4f9a899: Fixed design system patterns and recipes ignoring your app's conditions, breakpoints, utilities, or tokens.
+- @pandacss/compiler-shared@2.6.0
+  - @pandacss/types@2.6.0
+
 ## 2.5.0
 
 ### Patch Changes
