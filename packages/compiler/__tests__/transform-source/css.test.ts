@@ -45,6 +45,16 @@ describe('compiler.transformSource: css', () => {
     `)
   })
 
+  test('leaves generated files in the outdir untouched', () => {
+    const source = lines("import { css } from '@panda/css'", "export const a = css({ color: 'red' })")
+
+    const generated = compiler.transformSource({ path: '/virtual/styled-system/css/cva.js', source })
+    const app = compiler.transformSource({ path: '/virtual/src/App.tsx', source })
+
+    expect(generated).toMatchObject({ code: source, changed: false, diagnostics: [] })
+    expect(app.changed).toBe(true)
+  })
+
   describe('conditional argument merging', () => {
     test('keeps static styles after a conditional first argument', () => {
       const source = lines(
