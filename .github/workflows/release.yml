@@ -55,12 +55,15 @@ jobs:
 
       # `--tag v1` keeps 2.x on `latest`, but packages with no 2.x release need `latest` moved to the new 1.x.
       - name: Move latest for packages without a 2.x release
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.changesets.outputs.published == 'true' || github.event_name == 'workflow_dispatch'
         env:
           PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          if [[ -z "$PUBLISHED_PACKAGES" || "$PUBLISHED_PACKAGES" == "[]" ]]; then
+            PUBLISHED_PACKAGES=$(pnpm -r ls --depth -1 --json | jq -c '[.[] | select(.private != true and (.name | startswith("@pandacss/"))) | {name, version}]')
+          fi
           echo "$PUBLISHED_PACKAGES" | jq -c '.[]' | while read -r pkg; do
             name=$(jq -r .name <<< "$pkg")
             version=$(jq -r .version <<< "$pkg")
