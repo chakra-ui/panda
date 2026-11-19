@@ -1,5 +1,24 @@
 # @pandacss/node
 
+## 1.12.3
+
+### Patch Changes
+
+- Updated dependencies [b307431]
+- Updated dependencies [df5be7b]
+  - @pandacss/core@1.12.3
+  - @pandacss/shared@1.12.3
+  - @pandacss/generator@1.12.3
+  - @pandacss/reporter@1.12.3
+  - @pandacss/config@1.12.3
+  - @pandacss/parser@1.12.3
+  - @pandacss/token-dictionary@1.12.3
+  - @pandacss/types@1.12.3
+  - @pandacss/logger@1.12.3
+  - @pandacss/plugin-lightningcss@1.12.3
+  - @pandacss/plugin-svelte@1.12.3
+  - @pandacss/plugin-vue@1.12.3
+
 ## 1.12.2
 
 ### Patch Changes

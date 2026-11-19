@@ -1,5 +1,14 @@
 # @pandacss/mcp
 
+## 1.12.3
+
+### Patch Changes
+
+- @pandacss/node@1.12.3
+- @pandacss/token-dictionary@1.12.3
+- @pandacss/types@1.12.3
+- @pandacss/logger@1.12.3
+
 ## 1.12.2
 
 ### Patch Changes

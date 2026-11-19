@@ -1,5 +1,22 @@
 # @pandacss/studio
 
+## 1.12.3
+
+### Patch Changes
+
+- b307431: Fix security advisories reported by `npm audit` in v1 installs.
+
+  - Bump `postcss-selector-parser` to 7.1.8 (GHSA-rj75-hqrm-r3gf, GHSA-w9m9-85wc-3x92)
+  - Bump Studio's `vite` to 7.3.8 and `astro` to 6.4.8
+
+- Updated dependencies [df5be7b]
+  - @pandacss/shared@1.12.3
+  - @pandacss/astro-plugin-studio@1.12.3
+  - @pandacss/config@1.12.3
+  - @pandacss/token-dictionary@1.12.3
+  - @pandacss/types@1.12.3
+  - @pandacss/logger@1.12.3
+
 ## 1.12.2
 
 ### Patch Changes

@@ -1,5 +1,21 @@
 # @pandacss/generator
 
+## 1.12.3
+
+### Patch Changes
+
+- df5be7b: Improve runtime performance of JSX style props. Checking whether a prop is a style prop no longer goes
+  through a cache that serialized its arguments on every call, so rendering styled components is faster. `memo` also
+  skips `JSON.stringify` for single-string arguments.
+- Updated dependencies [b307431]
+- Updated dependencies [df5be7b]
+  - @pandacss/core@1.12.3
+  - @pandacss/shared@1.12.3
+  - @pandacss/token-dictionary@1.12.3
+  - @pandacss/types@1.12.3
+  - @pandacss/is-valid-prop@1.12.3
+  - @pandacss/logger@1.12.3
+
 ## 1.12.2
 
 ### Patch Changes
