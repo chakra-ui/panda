@@ -172,3 +172,43 @@ describe('style context PropsProvider', () => {
     `)
   })
 })
+
+describe('style context useClassNames', () => {
+  test('a custom part reads its slot class from the root variant', () => {
+    const { withProvider, useClassNames } = createSlotRecipeContext(slotButton)
+    const ButtonRoot = withProvider('div', 'root')
+    const ButtonIcon = () => <svg className={useClassNames().icon} />
+
+    const { container } = render(
+      <ButtonRoot visual="solid">
+        <ButtonIcon />
+      </ButtonRoot>,
+    )
+
+    expect(container.querySelector('svg')?.getAttribute('class')).toBe(
+      'slot-button__icon slot-button__icon--visual_solid',
+    )
+  })
+
+  test('a custom part in an sva recipe gets the same class as withContext', () => {
+    const card = sva({
+      className: 'card',
+      slots: ['root', 'title'],
+      variants: { size: { sm: { title: { fontSize: 'sm' } }, lg: { title: { fontSize: 'lg' } } } },
+    })
+    const { withProvider, withContext, useClassNames } = createSlotRecipeContext(card)
+    const CardRoot = withProvider('div', 'root')
+    const CardTitle = withContext('h2', 'title')
+    const CustomTitle = () => <h3 className={useClassNames().title} />
+
+    const { container } = render(
+      <CardRoot size="lg">
+        <CardTitle />
+        <CustomTitle />
+      </CardRoot>,
+    )
+
+    expect(container.querySelector('h3')?.getAttribute('class')).toBe('fs_lg card__title')
+    expect(container.querySelector('h2')?.getAttribute('class')).toBe('fs_lg card__title')
+  })
+})

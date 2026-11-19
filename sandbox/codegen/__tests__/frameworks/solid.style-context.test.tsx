@@ -4,6 +4,7 @@ import { createSignal } from 'solid-js'
 import { describe, expect, test } from 'vitest'
 import { createSlotRecipeContext } from '../../styled-system-solid/jsx'
 import { slotButton } from '../../styled-system-solid/recipes'
+import { sva } from '../../styled-system-solid/css'
 
 const { withProvider, withContext } = createSlotRecipeContext(slotButton)
 
@@ -297,5 +298,78 @@ describe('style context PropsProvider', () => {
         </span>
       </div>
     `)
+  })
+})
+
+describe('style context useClassNames', () => {
+  test('a custom part updates when the root variant changes', () => {
+    const [visual, setVisual] = createSignal<'outline' | 'solid'>('solid')
+    const { withProvider, useClassNames } = createSlotRecipeContext(slotButton)
+    const ButtonRoot = withProvider('div', 'root')
+    const ButtonIcon = () => {
+      const classes = useClassNames()
+      return <svg class={classes().icon} />
+    }
+
+    const { container } = render(() => (
+      <ButtonRoot visual={visual()}>
+        <ButtonIcon />
+      </ButtonRoot>
+    ))
+    const icon = () => container.querySelector('svg')?.getAttribute('class')
+
+    expect(icon()).toBe('slot-button__icon slot-button__icon--visual_solid')
+
+    setVisual('outline')
+    expect(icon()).toBe('slot-button__icon slot-button__icon--visual_outline')
+  })
+
+  test('a custom part in an sva recipe gets the same class as withContext', () => {
+    const [size, setSize] = createSignal<'sm' | 'lg'>('sm')
+    const card = sva({
+      className: 'card',
+      slots: ['root', 'title'],
+      variants: { size: { sm: { title: { fontSize: 'sm' } }, lg: { title: { fontSize: 'lg' } } } },
+    })
+    const { withProvider, withContext, useClassNames } = createSlotRecipeContext(card)
+    const CardRoot = withProvider('div', 'root')
+    const CardTitle = withContext('h2', 'title')
+    const CustomTitle = () => {
+      const classes = useClassNames()
+      return <h3 class={classes().title} />
+    }
+
+    const { container } = render(() => (
+      <CardRoot size={size()}>
+        <CardTitle />
+        <CustomTitle />
+      </CardRoot>
+    ))
+    const classOf = (tag: string) => container.querySelector(tag)?.getAttribute('class')
+
+    expect(classOf('h3')).toBe('fs_sm card__title')
+    expect(classOf('h2')).toBe('fs_sm card__title')
+
+    setSize('lg')
+    expect(classOf('h3')).toBe('fs_lg card__title')
+    expect(classOf('h2')).toBe('fs_lg card__title')
+  })
+})
+
+describe('style context reactivity', () => {
+  test('a withContext part follows the root variant', () => {
+    const [visual, setVisual] = createSignal<'outline' | 'solid'>('solid')
+
+    const { container } = render(() => (
+      <Root visual={visual()}>
+        <Label>Click me</Label>
+      </Root>
+    ))
+    const label = () => container.querySelector('span')?.getAttribute('class')
+
+    expect(label()).toBe('slot-button__root slot-button__root--visual_solid')
+
+    setVisual('outline')
+    expect(label()).toBe('slot-button__root slot-button__root--visual_outline')
   })
 })

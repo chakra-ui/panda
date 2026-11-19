@@ -197,7 +197,7 @@ export function createRecipeContext<R extends RecipeContextRecipe>(recipeInput: 
 
 const CREATE_SLOT_RECIPE_CONTEXT_RUNTIME: &str = r#"type Props = Record<string, unknown>
 
-type SlotStyles = Record<string, unknown> & { _classNameMap?: Record<string, string> }
+type SlotStyles = Record<string, unknown> & { _classNameMap?: Record<string, string>; _variantProps?: Props }
 
 interface SlotRecipeShape {
   splitVariantProps?: unknown
@@ -268,9 +268,15 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
 
   const resolveSlots = (variantProps: Props) => {
     const styles = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
-    if (!isConfigRecipe) styles._classNameMap = slotRecipeFn.classNameMap
+    if (!isConfigRecipe) {
+      styles._classNameMap = slotRecipeFn.classNameMap
+      styles._variantProps = variantProps
+    }
     return styles
   }
+
+  const toClassNames = (resolvedSlots: SlotStyles) =>
+    (isConfigRecipe ? resolvedSlots : slotRecipeFn(resolvedSlots._variantProps)) as Record<string, string>
 
   const withRootProvider = (Component: ElementType, options?: SlotOptions) => {
     const WithRootProvider: Component & { displayName?: string } = defineComponent({
@@ -355,12 +361,18 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
     return WithContext
   }
 
+  const useClassNames = () => {
+    const resolvedSlots = useSlotStylesContext('', '')
+    return computed(() => toClassNames(resolvedSlots.value))
+  }
+
   return {
     withRootProvider,
     withProvider,
     withContext,
     PropsProvider,
     usePropsContext,
+    useClassNames,
   } as unknown as SlotRecipeContext<R>
 }"#;
 
@@ -453,6 +465,7 @@ export interface SlotRecipeContext<R extends SlotRecipeContextInput> {
   ) => SlotRecipeConsumerComponent<T, F>
   PropsProvider: FunctionalComponent<{ value: Partial<SlotRecipePropsOf<R>> & DataAttrs }>
   usePropsContext: () => ComputedRef<Partial<SlotRecipePropsOf<R>> & DataAttrs> | undefined
+  useClassNames: () => ComputedRef<Record<SlotNameOf<R>, string>>
 }";
 
 fn factory_name(ctx: CodegenContext<'_>) -> String {

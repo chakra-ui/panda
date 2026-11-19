@@ -249,6 +249,23 @@ The first card gets `size="lg"` from the group. The second overrides it. Each ro
 body through context. With a config slot recipe, add the group to the recipe's `jsx` list so its variants are
 extracted, as on [recipe context](/docs/recipes/recipe-context#config-recipe).
 
+## Reading slot classes
+
+`useClassNames` returns the class for each slot, resolved from the root's variants. Use it for a part that renders its
+own markup, like an icon picked from a prop:
+
+```tsx
+const { withProvider, useClassNames } = createSlotRecipeContext(alert)
+
+export function AlertIndicator({ status }) {
+  const classes = useClassNames()
+  return status === 'error' ? <ErrorIcon className={classes.indicator} /> : <InfoIcon className={classes.indicator} />
+}
+```
+
+In Solid it returns an accessor (`classes().indicator`), and in Vue a computed ref (`classes.value.indicator`). Like
+`withContext`, it throws outside its provider.
+
 ## Config recipe
 
 Panda sees `size` on `Card.Root`, not on Title or Body. A renamed export like `Panel` is the same miss. List every

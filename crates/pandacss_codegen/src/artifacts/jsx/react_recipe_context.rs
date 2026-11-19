@@ -280,12 +280,13 @@ export interface SlotRecipeContext<R extends SlotRecipeContextInput> {
   ) => SlotRecipeConsumerComponent<T, F>
   PropsProvider: Provider<Partial<SlotRecipePropsOf<R>> & DataAttrs>
   usePropsContext: () => SlotRecipePropsOf<R> | undefined
+  useClassNames: () => Record<SlotNameOf<R>, string>
 }";
 
 /// Typed runtime, shared with Preact.
 pub(super) const CREATE_SLOT_RECIPE_CONTEXT_RUNTIME: &str = r#"type Props = Record<string, unknown>
 
-type SlotStyles = Record<string, unknown> & { _classNameMap?: Record<string, string> }
+type SlotStyles = Record<string, unknown> & { _classNameMap?: Record<string, string>; _variantProps?: Props }
 
 interface SlotRecipeShape {
   splitVariantProps?: unknown
@@ -350,9 +351,15 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
 
   const resolveSlots = (variantProps: Props) => {
     const styles = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
-    if (!isConfigRecipe) styles._classNameMap = slotRecipeFn.classNameMap
+    if (!isConfigRecipe) {
+      styles._classNameMap = slotRecipeFn.classNameMap
+      styles._variantProps = variantProps
+    }
     return styles
   }
+
+  const toClassNames = (resolvedSlots: SlotStyles) =>
+    (isConfigRecipe ? resolvedSlots : slotRecipeFn(resolvedSlots._variantProps)) as Record<string, string>
 
   const withRootProvider = (Component: ElementType, options?: SlotOptions) => {
     const WithRootProvider = (inProps: Props) => {
@@ -416,11 +423,14 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
     return WithContext
   }
 
+  const useClassNames = () => toClassNames(useSlotStylesContext('', ''))
+
   return {
     withRootProvider,
     withProvider,
     withContext,
     PropsProvider: PropsContext.Provider,
     usePropsContext,
+    useClassNames,
   } as unknown as SlotRecipeContext<R>
 }"#;

@@ -1,5 +1,6 @@
 /** @jsxImportSource vue */
 import { describe, expect, test } from 'vitest'
+import { defineComponent, nextTick, ref } from 'vue'
 import { render } from '@testing-library/vue'
 import { createRecipeContext, createSlotRecipeContext } from '../../styled-system-vue/jsx'
 import { buttonWithCompoundVariants, slotButton } from '../../styled-system-vue/recipes'
@@ -235,5 +236,59 @@ describe('style context PropsProvider', () => {
         </span>
       </div>
     `)
+  })
+})
+
+describe('style context useClassNames', () => {
+  test('a custom part updates when the root variant changes', async () => {
+    const visual = ref<'outline' | 'solid'>('solid')
+    const { withProvider, useClassNames } = createSlotRecipeContext(slotButton)
+    const ButtonRoot = withProvider('div', 'root')
+    const ButtonIcon = defineComponent({
+      setup() {
+        const classes = useClassNames()
+        return () => <svg class={classes.value.icon} />
+      },
+    })
+
+    const { container } = render(() => (
+      <ButtonRoot visual={visual.value}>
+        <ButtonIcon />
+      </ButtonRoot>
+    ))
+    const icon = () => container.querySelector('svg')?.getAttribute('class')
+
+    expect(icon()).toBe('slot-button__icon slot-button__icon--visual_solid')
+
+    visual.value = 'outline'
+    await nextTick()
+    expect(icon()).toBe('slot-button__icon slot-button__icon--visual_outline')
+  })
+
+  test('a custom part in an sva recipe gets the same class as withContext', () => {
+    const card = sva({
+      className: 'card',
+      slots: ['root', 'title'],
+      variants: { size: { sm: { title: { fontSize: 'sm' } }, lg: { title: { fontSize: 'lg' } } } },
+    })
+    const { withProvider, withContext, useClassNames } = createSlotRecipeContext(card)
+    const CardRoot = withProvider('div', 'root')
+    const CardTitle = withContext('h2', 'title')
+    const CustomTitle = defineComponent({
+      setup() {
+        const classes = useClassNames()
+        return () => <h3 class={classes.value.title} />
+      },
+    })
+
+    const { container } = render(
+      <CardRoot size="lg">
+        <CardTitle />
+        <CustomTitle />
+      </CardRoot>,
+    )
+
+    expect(container.querySelector('h3')?.getAttribute('class')).toBe('fs_lg card__title')
+    expect(container.querySelector('h2')?.getAttribute('class')).toBe('fs_lg card__title')
   })
 })

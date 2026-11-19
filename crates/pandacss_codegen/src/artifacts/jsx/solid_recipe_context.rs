@@ -176,7 +176,7 @@ export function createRecipeContext<R extends RecipeContextRecipe>(recipeInput: 
 
 const CREATE_SLOT_RECIPE_CONTEXT_RUNTIME: &str = r#"type Props = Record<string, unknown>
 
-type SlotStyles = Record<string, unknown> & { _classNameMap?: Record<string, string> }
+type SlotStyles = Record<string, unknown> & { _classNameMap?: Record<string, string>; _variantProps?: Props }
 
 interface SlotRecipeShape {
   splitVariantProps?: unknown
@@ -198,8 +198,8 @@ interface SlotOptions {
   forwardProps?: readonly string[]
 }
 
-function createSafeContext(contextName: string): [Context<SlotStyles | undefined>, (componentName: string, slot: string) => SlotStyles] {
-  const Context = createContext<SlotStyles | undefined>(undefined)
+function createSafeContext(contextName: string): [Context<Accessor<SlotStyles> | undefined>, (componentName: string, slot: string) => Accessor<SlotStyles>] {
+  const Context = createContext<Accessor<SlotStyles> | undefined>(undefined)
   const useStyleContext = (componentName: string, slot: string) => {
     const context = useContext(Context)
     if (context === undefined) {
@@ -248,9 +248,15 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
 
   const resolveSlots = (variantProps: Props) => {
     const styles = isConfigRecipe ? slotRecipeFn(variantProps) : slotRecipeFn.raw(variantProps)
-    if (!isConfigRecipe) styles._classNameMap = slotRecipeFn.classNameMap
+    if (!isConfigRecipe) {
+      styles._classNameMap = slotRecipeFn.classNameMap
+      styles._variantProps = variantProps
+    }
     return styles
   }
+
+  const toClassNames = (resolvedSlots: SlotStyles) =>
+    (isConfigRecipe ? resolvedSlots : slotRecipeFn(resolvedSlots._variantProps)) as Record<string, string>
 
   const withRootProvider = (Component: ElementType, options?: SlotOptions) => {
     const WithRootProvider = (inProps: Props) => {
@@ -270,9 +276,7 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
       })
 
       return createComponent(SlotStylesContext.Provider, {
-        get value() {
-          return resolvedSlots()
-        },
+        value: resolvedSlots,
         get children() {
           return createComponent(
             Component as Component<Props>,
@@ -320,9 +324,7 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
       })
 
       return createComponent(SlotStylesContext.Provider, {
-        get value() {
-          return resolvedSlots()
-        },
+        value: resolvedSlots,
         get children() {
           return createComponent(
             StyledComponent as Component<Props>,
@@ -351,8 +353,9 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
       const resolvedProps = createMemo(() => {
         const defaults = defaultProps()
         const propsWithClass = defaults ? mergeProps(defaults, propsWithoutChildren) : propsWithoutChildren
-        const resolved = resolveProps(propsWithClass, resolvedSlots[slot])
-        resolved.class = cx(resolved.class as string, resolvedSlots._classNameMap?.[slot])
+        const slots = resolvedSlots()
+        const resolved = resolveProps(propsWithClass, slots[slot])
+        resolved.class = cx(resolved.class as string, slots._classNameMap?.[slot])
         resolved['data-slot'] = slot
         return resolved
       })
@@ -370,12 +373,18 @@ export function createSlotRecipeContext<R extends SlotRecipeContextInput>(recipe
     return WithContext
   }
 
+  const useClassNames = () => {
+    const resolvedSlots = useSlotStylesContext('', '')
+    return createMemo(() => toClassNames(resolvedSlots()))
+  }
+
   return {
     withRootProvider,
     withProvider,
     withContext,
     PropsProvider: PropsContext.Provider,
     usePropsContext,
+    useClassNames,
   } as unknown as SlotRecipeContext<R>
 }"#;
 
@@ -473,6 +482,7 @@ export interface SlotRecipeContext<R extends SlotRecipeContextInput> {
   ) => SlotRecipeConsumerComponent<T, F>
   PropsProvider: ContextProviderComponent<Partial<SlotRecipePropsOf<R>> & DataAttrs>
   usePropsContext: () => SlotRecipePropsOf<R> | undefined
+  useClassNames: () => Accessor<Record<SlotNameOf<R>, string>>
 }";
 
 fn factory_name(ctx: CodegenContext<'_>) -> String {

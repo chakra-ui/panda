@@ -211,6 +211,7 @@ export interface SlotRecipeContext<R extends SlotRecipeContextInput> {
   ) => SlotRecipeConsumerComponent<T, F>
   PropsProvider: Provider<Partial<SlotRecipePropsOf<R>> & DataAttrs>
   usePropsContext: () => SlotRecipePropsOf<R> | undefined
+  useClassNames: () => Record<SlotNameOf<R>, string>
 }";
 
 fn factory_name(ctx: CodegenContext<'_>) -> String {

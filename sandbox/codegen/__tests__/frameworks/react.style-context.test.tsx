@@ -233,3 +233,76 @@ describe('style context PropsProvider', () => {
     `)
   })
 })
+
+describe('style context useClassNames', () => {
+  test('a custom part reads its slot class from the root variant', () => {
+    const { withProvider, useClassNames } = createSlotRecipeContext(slotButton)
+    const ButtonRoot = withProvider('div', 'root')
+    const ButtonIcon = () => <svg className={useClassNames().icon} />
+
+    const { container } = render(
+      <ButtonRoot visual="solid">
+        <ButtonIcon />
+      </ButtonRoot>,
+    )
+
+    expect(container.querySelector('svg')?.getAttribute('class')).toBe(
+      'slot-button__icon slot-button__icon--visual_solid',
+    )
+  })
+
+  test('a custom part in an sva recipe gets the same class as withContext', () => {
+    const card = sva({
+      className: 'card',
+      slots: ['root', 'title'],
+      base: { title: { fontWeight: 'bold' } },
+      variants: { size: { sm: { title: { fontSize: 'sm' } }, lg: { title: { fontSize: 'lg' } } } },
+    })
+    const { withProvider, withContext, useClassNames } = createSlotRecipeContext(card)
+    const CardRoot = withProvider('div', 'root')
+    const CardTitle = withContext('h2', 'title')
+    const CustomTitle = () => <h3 className={useClassNames().title} />
+
+    const { container } = render(
+      <CardRoot size="lg">
+        <CardTitle />
+        <CustomTitle />
+      </CardRoot>,
+    )
+
+    expect(container.querySelector('h3')?.getAttribute('class')).toBe(
+      container.querySelector('h2')?.getAttribute('class'),
+    )
+    expect(container.querySelector('h3')?.getAttribute('class')).toMatchInlineSnapshot(`"fw_bold fs_lg card__title"`)
+  })
+
+  test('a custom part updates when the root variant changes', () => {
+    const { withProvider, useClassNames } = createSlotRecipeContext(slotButton)
+    const ButtonRoot = withProvider('div', 'root')
+    const ButtonIcon = () => <svg className={useClassNames().icon} />
+
+    const { container, rerender } = render(
+      <ButtonRoot visual="solid">
+        <ButtonIcon />
+      </ButtonRoot>,
+    )
+    rerender(
+      <ButtonRoot visual="outline">
+        <ButtonIcon />
+      </ButtonRoot>,
+    )
+
+    expect(container.querySelector('svg')?.getAttribute('class')).toBe(
+      'slot-button__icon slot-button__icon--visual_outline',
+    )
+  })
+
+  test('useClassNames outside the root throws a missing provider error', () => {
+    const { useClassNames } = createSlotRecipeContext(slotButton)
+    const ButtonIcon = () => <svg className={useClassNames().icon} />
+
+    expect(() => render(<ButtonIcon />)).toThrowError(
+      `A component cannot access createSlotRecipeContext("slotButton") because it's missing its Provider.`,
+    )
+  })
+})

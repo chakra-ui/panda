@@ -92,7 +92,7 @@ fn emits_recipe_contexts_for_supported_non_react_frameworks() {
             "from 'solid-js/web';",
             "createComponent(StyledComponent, props)",
             "createMemo(() =>",
-            "import type { Component, ComponentProps, ContextProviderComponent } from 'solid-js'",
+            "import type { Accessor, Component, ComponentProps, ContextProviderComponent } from 'solid-js'",
         ),
         (
             "vue",
@@ -208,11 +208,10 @@ fn solid_slot_recipe_context_supports_function_default_props() {
     assert!(code.contains("const forwardedProps = {}"));
     assert!(code.contains("Object.defineProperty(forwardedProps, key, { get: () => variantProps[key], enumerable: true })"));
     assert!(code.contains("mergeProps(resolvedProps, forwardedProps, {"));
-    assert!(code.contains("if (!isConfigRecipe) styles._classNameMap = slotRecipeFn.classNameMap"));
+    assert!(code.contains("styles._classNameMap = slotRecipeFn.classNameMap"));
     assert!(code.contains("resolved.class = cx(resolved.class, slots._classNameMap?.[slot])"));
-    assert!(
-        code.contains("resolved.class = cx(resolved.class, resolvedSlots._classNameMap?.[slot])")
-    );
+    assert!(code.contains("value: resolvedSlots,"));
+    assert!(!code.contains("resolvedSlots._classNameMap"));
     assert!(!code.contains("options?.defaultProps?.class"));
 }
 
