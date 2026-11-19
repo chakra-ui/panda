@@ -57,3 +57,4 @@ storybook-static
 
 .env
 .env.local
+packages/dev/skills

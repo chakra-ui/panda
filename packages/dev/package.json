@@ -53,11 +53,13 @@
   "scripts": {
     "build": "tsup src/index.ts src/define.ts src/node.ts src/cli.ts src/postcss.ts --format=esm,cjs --platform=node --dts --splitting --cjsInterop",
     "build:fast": "tsup src/index.ts src/define.ts src/node.ts src/cli.ts src/postcss.ts --format=esm,cjs --platform=node --no-dts --splitting --cjsInterop",
-    "dev": "pnpm build:fast --watch src"
+    "dev": "pnpm build:fast --watch src",
+    "prepack": "node scripts/copy-skills.mjs"
   },
   "files": [
     "dist",
-    "bin.js"
+    "bin.js",
+    "skills"
   ],
   "dependencies": {
     "@pandacss/cli": "workspace:*",

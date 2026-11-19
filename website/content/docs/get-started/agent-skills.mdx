@@ -17,6 +17,17 @@ npx skills add chakra-ui/panda
 
 That installs all three. Each loads on its own triggers, so you never have to name one.
 
+### From `@pandacss/dev`
+
+The same skills ship inside `@pandacss/dev`, matching the version you installed. With pnpm 12.11 or later, approve them
+once:
+
+```bash
+pnpm approve @pandacss/dev
+```
+
+pnpm links them into your agent's skills folder and updates them with each Panda upgrade.
+
 Skills use the open [Agent Skills](https://skills.sh) format and work with any agent that supports it, including Claude
 Code, Cursor, and VS Code.
 
