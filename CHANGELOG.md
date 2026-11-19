@@ -5,6 +5,81 @@ Each package keeps its own changelog. Start with [`@pandacss/dev`](./packages/de
 
 For Panda 1.x and earlier, see the [v1 changelog](https://github.com/chakra-ui/panda/blob/v1/CHANGELOG.md).
 
+## [2.6.0](#2.6.0) - 2026-11-19
+
+### Added
+
+- Add `useClassNames` to `createSlotRecipeContext`, returning each slot's class name for parts that render their own
+  markup.
+
+  ```tsx
+  const { withProvider, useClassNames } = createSlotRecipeContext(alert)
+
+  export function AlertIndicator({ status }) {
+    const classes = useClassNames()
+    return status === 'error' ? <ErrorIcon className={classes.indicator} /> : <InfoIcon className={classes.indicator} />
+  }
+  ```
+
+- Add the `no-unsafe-token-fn-usage` lint rule, on in `recommended`. It flags `'{colors.red.500}'` or
+  `token('colors.red.500')` where `'red.500'` gives the same CSS.
+- `@pandacss/dev` re-exports preset authoring types like `UtilityConfig` and `RecipeConfig`.
+- `@pandacss/dev` ships Panda's agent skills. With pnpm 12.11+, link them once with `pnpm approve @pandacss/dev`.
+
+### Changed
+
+- Warn about unknown conditions in recipes, `globalCss`, and text, layer, and animation styles. Their styles were
+  dropped silently.
+
+  ```ts
+  defineRecipe({ base: { _hovr: { color: 'red' } } })
+  // unknown condition `_hovr`, did you mean `_hover`?
+  ```
+
+- A `panda studio` link from an earlier run now says it's out of date instead of asking for a token.
+
+### Fixed
+
+- Fix `panda cssgen --splitting` emitting a `styles.css` that browsers partly ignore and Turbopack can't parse. The
+  recipe layer order moved to `styles/layers.css`, so every `@import` stays at the top.
+
+  ```css
+  /* before: @import after @layer blocks is invalid */
+  @layer recipes {
+    @layer base, slots, variants, compound_variants;
+  }
+  @import './styles/global.css';
+
+  /* after */
+  @import './styles/layers.css';
+  @import './styles/global.css';
+  ```
+
+- Fix `prose` spacing for custom blocks like MDX components, and for the first block when `notProse` is on.
+- Fix tsconfig path aliases in `panda.config.ts` when the tsconfig doesn't include the config file.
+- Fix CommonJS presets built with `tsc` failing to load in a `"type": "module"` project.
+
+  ```ts
+  import preset from 'my-preset' // compiled by tsc to `exports.default = ...`
+
+  export default defineConfig({ presets: [preset] }) // was ignored or failed to load
+  ```
+
+- Fix design system patterns and recipes ignoring your app's conditions, breakpoints, utilities, or tokens.
+- Fix Vite falling back to full page reloads after a new source file is created.
+- Fix watch rebuilds failing on unrelated files like `.DS_Store`.
+- Fix false `panda_call_unextractable` warnings on the generated `cva.js` and `sva.js` with `transform: true`.
+- Fix Solid `withContext` parts not updating when the root's variant props change.
+- Fix `consistent-property-style` renaming a pattern's own prop to a utility longhand when the names collide.
+
+  ```ts
+  scrollFade({ y: 32 })
+  // before: autofixed to scrollFade({ translateY: 32 }), so the pattern never received `y`
+  // after: left alone
+  ```
+
+- Fix missing completions inside `variants` in `styled(Component, { variants })`.
+
 ## [2.5.0](#2.5.0) - 2026-11-02
 
 ### Added
