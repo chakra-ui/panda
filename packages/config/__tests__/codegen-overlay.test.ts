@@ -70,6 +70,16 @@ describe('buildCodegenOverlay', () => {
     expect(overlay?.virtualizeCss).toBe(false)
   })
 
+  test('emits design system recipes and patterns locally when css stays local', () => {
+    const overlay = buildCodegenOverlay({
+      designSystem: [ds({ name: '@acme/ds', specifier: '@acme/ds', recipeNames: ['button'], patternNames: ['stack'] })],
+      overlayInput: { authored: { ...NOTHING_AUTHORED, conditions: true }, compatible: true },
+    })
+    expect(overlay?.virtualizeCss).toBe(false)
+    expect(overlay?.ownedRecipes).toEqual([])
+    expect(overlay?.ownedPatterns).toEqual([])
+  })
+
   test('keeps the whole css/ dir local when app authors only utilities', () => {
     const overlay = buildCodegenOverlay(uiConsumer({ authored: { utilities: true } }))
     expect(overlay?.virtualizeHelpers).toBe(true)

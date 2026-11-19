@@ -406,6 +406,9 @@ Virtualization is coarse by design, not per-file:
 - The whole `css/` directory (`css`, `cx`, `cva`, `sva`, `conditions`, `index`) is one unit. Its files cross-import as
   siblings, so it virtualizes together or stays local together: `virtualizeCss = !authored.conditions &&
   !authored.breakpoints && !authored.utilities && !authored.tokens`.
+- When `css/` stays local, the design system's recipes, patterns, and jsx pattern components are emitted locally too
+  (`ownedRecipes` / `ownedPatterns` are empty). The design system's copies import its own `css/` by relative path, so
+  re-exporting them would resolve class names against the design system's config and ship a second `css` runtime.
 - "Redeclare" means the app **authors** that config field (config or non-DS preset), not merely inherits it through the
   merged design-system preset.
 
