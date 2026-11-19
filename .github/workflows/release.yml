@@ -54,17 +54,22 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       # `--tag v1` keeps 2.x on `latest`, but packages with no 2.x release need `latest` moved to the new 1.x.
-      # Requires "Allow npm dist-tag" on each package's trusted publisher config.
       - name: Move latest for packages without a 2.x release
         if: steps.changesets.outputs.published == 'true'
         env:
           PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
           echo "$PUBLISHED_PACKAGES" | jq -c '.[]' | while read -r pkg; do
             name=$(jq -r .name <<< "$pkg")
             version=$(jq -r .version <<< "$pkg")
-            latest=$(npm view "$name" dist-tags.latest)
-            if [[ "$latest" == 1.* ]]; then
-              npx -y npm@latest dist-tag add "$name@$version" latest
-            fi
+            latest=$(npm view "$name" dist-tags.latest 2>/dev/null || true)
+            [[ "$latest" == 1.* && "$version" != *-* ]] || continue
+            [[ "$(printf '%s\n' "$latest" "$version" | sort -V | tail -1)" == "$version" && "$latest" != "$version" ]] || continue
+            for attempt in 1 2 3; do
+              npm dist-tag add "$name@$version" latest && break
+              [[ $attempt == 3 ]] && exit 1
+              sleep 15
+            done
           done
