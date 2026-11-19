@@ -53,7 +53,7 @@
     "postcss-minify-selectors": "7.0.5",
     "postcss-nested": "7.0.2",
     "postcss-normalize-whitespace": "7.0.1",
-    "postcss-selector-parser": "7.1.1",
+    "postcss-selector-parser": "7.1.8",
     "ts-pattern": "5.9.0"
   },
   "devDependencies": {
