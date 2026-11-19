@@ -1,5 +1,27 @@
 # @pandacss/cli
 
+## 2.6.0
+
+### Patch Changes
+
+- b6f8cd3: Fix watch rebuild failures caused by unrelated binary files such as `.DS_Store` in source directories.
+- 104fa4e: Opening a `panda studio` link from an earlier run now tells you the link is out of date and lets you copy the
+  command to start again, instead of asking for a token the URL already has.
+- Updated dependencies [ac843d6]
+- Updated dependencies [8825a2c]
+- Updated dependencies [4f9a899]
+- Updated dependencies [cb2abf1]
+- Updated dependencies [d863086]
+- Updated dependencies [b6f8cd3]
+- Updated dependencies [ead8c89]
+- Updated dependencies [02eff44]
+- Updated dependencies [f9c0ecf]
+- Updated dependencies [104ab25]
+  - @pandacss/config@2.6.0
+  - @pandacss/compiler@2.6.0
+  - @pandacss/compiler-shared@2.6.0
+  - @pandacss/types@2.6.0
+
 ## 2.5.0
 
 ### Patch Changes

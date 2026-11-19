@@ -1,5 +1,30 @@
 # @pandacss/dev
 
+## 2.6.0
+
+### Patch Changes
+
+- 65e1402: Re-export preset authoring types like `UtilityConfig` and `RecipeConfig`, so presets no longer need
+  `@pandacss/types`.
+- 0e3996b: `@pandacss/dev` now ships Panda's agent skills under `skills/`, so pnpm 12.11+ can link them after
+  `pnpm approve`.
+- Updated dependencies [ac843d6]
+- Updated dependencies [8825a2c]
+- Updated dependencies [4f9a899]
+- Updated dependencies [cb2abf1]
+- Updated dependencies [d863086]
+- Updated dependencies [b6f8cd3]
+- Updated dependencies [ead8c89]
+- Updated dependencies [02eff44]
+- Updated dependencies [104fa4e]
+- Updated dependencies [f9c0ecf]
+- Updated dependencies [104ab25]
+  - @pandacss/config@2.6.0
+  - @pandacss/compiler@2.6.0
+  - @pandacss/cli@2.6.0
+  - @pandacss/postcss@2.6.0
+  - @pandacss/types@2.6.0
+
 ## 2.5.0
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @pandacss/compiler-wasm
 
+## 2.6.0
+
+### Patch Changes
+
+- cb2abf1: Fixed `consistent-property-style` rewriting a pattern's own property when it shares a name with a utility
+  shorthand, like `scrollFade({ y: 32 })` to `translateY`.
+- b6f8cd3: Fix watch rebuild failures caused by unrelated binary files such as `.DS_Store` in source directories.
+- 02eff44: Fixed `panda cssgen --splitting` emitting an invalid `styles.css` that browsers partly ignore and Turbopack
+  fails to parse. The recipe layer order now lives in `styles/layers.css`.
+- @pandacss/compiler-shared@2.6.0
+  - @pandacss/types@2.6.0
+
 ## 2.5.0
 
 ### Minor Changes

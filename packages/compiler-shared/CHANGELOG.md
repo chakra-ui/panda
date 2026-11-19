@@ -1,5 +1,11 @@
 # @pandacss/compiler-shared
 
+## 2.6.0
+
+### Patch Changes
+
+- @pandacss/types@2.6.0
+
 ## 2.5.0
 
 ### Minor Changes

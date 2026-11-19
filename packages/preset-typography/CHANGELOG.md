@@ -1,5 +1,13 @@
 # @pandacss/preset-typography
 
+## 2.6.0
+
+### Patch Changes
+
+- e412d32: Custom blocks inside `prose`, like MDX components, now get the same top gap as paragraphs. Also fixed the
+  wrong top margin on the first block and `.lead` paragraphs when `notProse` is on.
+- @pandacss/types@2.6.0
+
 ## 2.5.0
 
 ### Patch Changes
