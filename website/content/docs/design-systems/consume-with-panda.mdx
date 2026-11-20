@@ -3,9 +3,11 @@ title: Consume with Panda
 description: Point an app at a design system with one config field.
 ---
 
-To point an app at a design system with one config field: install the package, then set `designSystem`. Panda loads its
-theme, reuses the styles the package already extracted, and recognizes imports from both `@acme/ds` and your own local
-`styled-system`.
+If your app runs Panda too, it can build on top of a design system instead of just loading its CSS. You get the design
+system's tokens and recipes in your own `css()` calls, can extend its theme, and ship one stylesheet that covers both.
+(Not running Panda in the app? See [Consume without Panda](/docs/design-systems/consume-without-panda).)
+
+It takes one config field. Install the package and point `designSystem` at it:
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -14,13 +16,21 @@ export default defineConfig({
 })
 ```
 
-Do not add the preset, `importMap`, or `buildinfo.json` by hand. `designSystem` already resolves all three from the
-package. Do not list the package in `include` either. That errors with `design_system_in_include`, since `include` is
-for your own app source, not the design system that generated it.
+From there, Panda loads the design system's theme and reuses the styles it already extracted, so its source isn't
+scanned again. Imports from `@acme/ds` and from your local `styled-system` are both recognized.
+
+The preset, `importMap`, and build info all come from the package. You don't need to add them yourself:
+
+```ts filename="panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/ds',
+  presets: ['@acme/ds/preset'], // ❌ already loaded
+  importMap: '@acme/ds', // ❌ already resolved
+  include: ['src/**/*.{ts,tsx}', '@acme/ds'] // ❌ errors: design_system_in_include
+})
+```
 
 ## Add the dependency
-
-Install the design system like any other package, workspace or npm:
 
 ```json filename="package.json"
 {
@@ -34,19 +44,11 @@ Install the design system like any other package, workspace or npm:
 }
 ```
 
-Use the published version when the package is not in this repo:
-
-```json
-{
-  "dependencies": {
-    "@acme/ds": "^1.0.0"
-  }
-}
-```
+Outside the monorepo, use the published version (`"@acme/ds": "^1.0.0"`).
 
 ## Extend the theme
 
-Add to the design system's theme the same way you'd extend any preset:
+Extend it like any preset:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -67,12 +69,11 @@ export default defineConfig({
 })
 ```
 
-If both your app and `@acme/ds` define `spacing.6`, your value wins. Panda still reports `design_system_token_conflict`
-(info) so the collision doesn't pass silently.
+If `@acme/ds` also defines `spacing.6`, yours wins. Panda reports `design_system_token_conflict` (info).
 
 ### Your additions type-check in the design system
 
-The design system's types accept what you add, including through nested design systems. There's nothing to set up.
+The design system's types accept what you add, with nothing to set up:
 
 ```ts
 import type { SystemStyleObject } from '@acme/ds/types'
@@ -88,7 +89,7 @@ const styles: SystemStyleObject = css.raw({ padding: '6' }) // `spacing.6` is yo
 
 ## Wire up the bundler
 
-The bundler needs the Panda plugin to generate CSS for both your app and the design system's components:
+Add the Panda plugin. It generates CSS for your app and the design system's components:
 
 ```ts filename="vite.config.ts"
 import pandacss from '@pandacss/vite'
@@ -100,7 +101,7 @@ export default defineConfig({
 })
 ```
 
-Using PostCSS instead of the Vite plugin? Only the plugin changes. `designSystem` and the imports stay the same.
+Or with PostCSS:
 
 ```js filename="postcss.config.mjs"
 import pandacss from '@pandacss/postcss'
@@ -110,8 +111,7 @@ export default {
 }
 ```
 
-The plugin regenerates `styled-system` on every build, but the folder has to exist the first time the bundler resolves
-your imports:
+`styled-system` must exist before the bundler's first run:
 
 ```json filename="package.json"
 {
@@ -124,7 +124,7 @@ your imports:
 
 ## Add the entry CSS
 
-Panda still needs one file declaring the cascade layer order, the same as any Panda app:
+Declare the [layer order](/docs/styling/cascade-layers). The plugin injects the CSS itself:
 
 ```css filename="src/index.css"
 @layer reset, base, tokens, recipes, utilities;
@@ -138,12 +138,7 @@ import './index.css'
 createRoot(document.getElementById('root')!).render(<App />)
 ```
 
-The bundler plugin injects the generated CSS. This file only sets layer order. See
-[Cascade layers](/docs/styling/cascade-layers).
-
 ## Import components and css
-
-Use the package's components and your own `css()` side by side:
 
 ```tsx filename="src/app.tsx"
 import { Button } from '@acme/ds'
@@ -158,27 +153,28 @@ export function App() {
 }
 ```
 
-Import `css` from the local `styled-system` whenever the app extends tokens, utilities, conditions, or breakpoints. That
-keeps `css({ p: '6' })` typed against the merged theme, yours plus the design system's.
-
-Added nothing of your own yet? Import `css` from `@acme/ds/css` instead. Both paths extract the same way.
+Import `css` from your local `styled-system` when the app extends the theme, so it's typed against both. With no
+additions, `@acme/ds/css` works too.
 
 ## What the app generates
 
-Without this, the app and the design system would each ship their own copy of `css()`, `cva()`, and the JSX factory,
-doubling that runtime in the bundle for no reason. So your local `styled-system` only regenerates what you actually
-added, and re-exports everything else from `@acme/ds`:
+Your `styled-system` re-exports the design system's runtime instead of shipping a second copy:
 
-| You author in the app                                       | `css()`, `cva()`, `cx`    | Recipes and patterns the design system already owns |
-| ----------------------------------------------------------- | ------------------------- | --------------------------------------------------- |
-| Nothing                                                     | Re-export from `@acme/ds` | Re-export                                           |
-| Tokens, utilities, conditions, or breakpoints               | Generated locally         | Still re-exported                                   |
-| `jsxFramework`, `jsxStyleProps`, or `syntax`                | Full local tree           | Full local tree                                     |
-| A nested design system (the package itself extends another) | Full local tree           | Full local tree                                     |
+```ts filename="styled-system/css/index.js"
+export * from '@acme/ds/css/css'
+export * from '@acme/ds/css/cva'
+export * from '@acme/ds/css/cx'
+// …
+```
+
+It generates locally only what you change:
+
+- **Nothing added:** everything is re-exported.
+- **Tokens, utilities, conditions, or breakpoints:** `css()`, `cva()`, and `cx` are generated locally. Design system
+  recipes and patterns stay re-exported.
+- **`jsxFramework`, `jsxStyleProps`, `syntax`, or a nested design system:** the full tree is generated locally.
 
 ## Add your own recipes
-
-The app can define its own recipes alongside the ones the design system already ships:
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -198,25 +194,30 @@ export default defineConfig({
 
 ```tsx filename="src/app.tsx"
 import { Button } from '@acme/ds'
-import { button, panel } from '../styled-system/recipes'
+import { panel } from '../styled-system/recipes'
 
 export function App() {
   return (
     <div className={panel()}>
-      <button className={button()}>Welcome</button>
+      <Button>Welcome</Button>
     </div>
   )
 }
 ```
 
-Name a recipe the design system already ships and your version wins. Panda reports `design_system_artifact_conflict`
-(warning), and the design system's copy quietly drops out of the re-export.
+The generated recipes index mixes both:
+
+```ts filename="styled-system/recipes/index.js"
+export * from '@acme/ds/recipes/button'
+export * from './panel'
+```
+
+Name a recipe the design system already ships and yours wins. Panda warns with `design_system_artifact_conflict`.
 
 ## Isolate styles with a prefix
 
-Say two bundles built from different versions of the design system load on the same page, two micro-frontends, or an app
-plus a widget it embeds. By default both emit `.button` and `--colors-brand` with different rules, and the cascade only
-keeps one. Set `prefix` in the design system, keyed to its major version:
+An app and an embedded widget can ship different versions of the design system. Both emit `.button` and `--colors-brand`
+with different rules, and the cascade keeps one. Set `prefix` in the design system, keyed to its major version:
 
 ```ts filename="packages/ds/panda.config.ts"
 export default defineConfig({
@@ -224,16 +225,18 @@ export default defineConfig({
 })
 ```
 
-Apps inherit it through `designSystem`, so leave `prefix`, `hash`, and `separator` unset in the app. The design system's
-components are already built against its own `styled-system`. If the app overrides these options, its CSS uses class
-names those components never produce, and they render unstyled. Panda warns with `design_system_option_mismatch`.
+Apps inherit it through `designSystem`. Leave `prefix`, `hash`, and `separator` unset in the app: the design system's
+components are built with its prefix, so overriding it leaves them unstyled. Panda warns with
+`design_system_option_mismatch`.
 
-Deriving the prefix from `package.json`, scoping tokens, and the limits of `prefix`:
-[Style isolation](/docs/styling/style-isolation).
+This works for one Panda build per page. With Module Federation, each app needs its own prefix, so `designSystem`
+doesn't fit. See [Module Federation](/docs/styling/style-isolation#module-federation).
+
+More on prefixes: [Style isolation](/docs/styling/style-isolation).
 
 ## Nested design systems
 
-A design system can extend another. You still write one field, the leaf package:
+A design system can extend another. Point at the leaf package:
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -241,22 +244,25 @@ export default defineConfig({
 })
 ```
 
-Panda walks the parent chain, merges presets root-first, and hydrates each layer. The app emits a full local
-`styled-system` runtime instead of re-exporting one package's runtime.
+Panda merges the parent chain root-first. The app generates a full local `styled-system`.
 
-With `optimize.treeshakeDesignSystem`, Panda also follows selected components through the chain. If a selected leaf
-module depends on a parent component, Panda keeps the parent CSS it needs. Namespace and side-effect imports in a
-selected design-system module keep all modules from that parent.
+To ship CSS only for the components you import, turn on tree-shaking:
 
-You cannot point `designSystem` at two unrelated packages. Put the second package in `include` instead if it only
-consumes the first, not a design system in its own right.
+```ts filename="panda.config.ts"
+export default defineConfig({
+  designSystem: '@acme/marketing-ds',
+  optimize: { treeshakeDesignSystem: true }
+})
+```
+
+Parent components a selected component depends on are kept. Namespace and side-effect imports keep everything.
+
+You can't point `designSystem` at two unrelated packages. If the second only consumes the first, put it in `include`.
 
 Building the child package? See
 [Extend another design system](/docs/design-systems/build-a-design-system#extend-another-design-system).
 
 ## Troubleshooting
-
-The codes you're most likely to actually hit wiring this up, and what to do about each:
 
 | Code                                                                       | What to do                                                                                          |
 | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -271,13 +277,12 @@ More cases: [Troubleshooting](/docs/design-systems/troubleshooting).
 
 ## Example
 
-A Next.js app that installs a published system and sets `designSystem`:
-
 ```bash
 npx degit chakra-ui/panda-examples/examples/panda-app my-app
 ```
 
-[panda-app](https://github.com/chakra-ui/panda-examples/tree/main/examples/panda-app) in panda-examples.
+A Next.js app using a published design system
+([source](https://github.com/chakra-ui/panda-examples/tree/main/examples/panda-app)).
 
 ## See also
 

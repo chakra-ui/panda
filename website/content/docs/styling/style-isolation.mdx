@@ -3,21 +3,20 @@ title: Style isolation
 description: Load multiple Panda-built bundles on one page without class or token collisions.
 ---
 
-Two independently built Panda bundles on the same page can emit the same class name, or the same CSS variable, with
-different rules behind them. The cascade keeps one and silently drops the other. `prefix` and `cssVarRoot` stop that.
+Two Panda stylesheets built separately can break each other on one page, even when their rules are identical. `prefix`
+and `cssVarRoot` stop that.
 
 ## When you need this
 
-Any setup that loads two or more independently built Panda stylesheets into one document:
+When two or more separately built Panda stylesheets load into one document:
 
-- Webpack Module Federation, single-spa, qiankun, or other micro-frontend orchestrators
-- Widgets injected into pages you do not control (Intercom-style embeds, browser extensions)
-- Two versions of the same design system on one page, common mid-migration
+- Module Federation, single-spa, qiankun, or other micro-frontends
+- Widgets injected into pages you do not control
+- Two versions of a design system on one page, common mid-migration
 
-If the bundles never share a document (iframes, Next.js multi-zone routing), you do not need this page. The cascade
-cannot cross documents.
+Iframes and Next.js multi-zones don't need this. The cascade cannot cross documents.
 
-## Two kinds of collision
+## Collisions
 
 ### Override leakage
 
@@ -38,8 +37,8 @@ Two bundles load the same styles, and one adds a local override:
 }
 ```
 
-Load order decides whether `.local-override` wins. Fix it with a [cascade layer](/docs/styling/cascade-layers):
-unlayered styles always beat layered ones, so the override wins regardless of load order.
+Load order decides whether `.local-override` wins. Put the shared styles in a
+[cascade layer](/docs/styling/cascade-layers). Unlayered styles always beat layered ones.
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -52,8 +51,7 @@ export default defineConfig({
 
 ### Cross-version collision
 
-Bundle A ships `@acme/ds@1`, bundle B ships `@acme/ds@2`. Both emit `.button` and `--colors-brand`, with different
-values:
+Two bundles ship different versions of `@acme/ds`. Same selectors, different rules:
 
 ```css
 /* v1's bundle */
@@ -75,12 +73,28 @@ values:
 }
 ```
 
-Same selector, different rule. Layers do not help here: both versions emit into the same layer, and within a layer load
-order still decides. This is what `prefix` is for.
+Both land in the same layer, so load order picks the winner.
+
+### Same rules, different order
+
+Two apps share one design system version and one prefix. The remote loads after the host:
+
+```ts
+// host: a label, hidden on mobile
+css({ display: 'none', md: { display: 'inline' } })
+
+// remote: an unrelated element
+css({ display: 'none' })
+```
+
+Same-named layers merge across stylesheets. The remote's `.d_none` lands after the host's `md:d_inline`, and the label
+stays hidden on desktop. `padding` then `paddingTop`, and `_hover` then `_focus`, break the same way.
+
+All three are fixed by giving each bundle its own `prefix`.
 
 ## Set a prefix
 
-Panda prepends `prefix` to every emitted class name and CSS variable:
+Panda prepends `prefix` to every class name and CSS variable it emits:
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -98,13 +112,12 @@ export default defineConfig({
 }
 ```
 
-A second bundle with `prefix: 'acme-v2'` emits `.acme-v2-button` and `--acme-v2-colors-brand`. Both sit in the same
-`<head>` with nothing to fight over. Source code does not change: `css()`, `cva()`, and recipes read `prefix` from
-config and emit the namespaced names.
+Your source code stays the same. The rule: **one prefix per Panda build on the page**, even if two builds share a
+config.
 
 ## Derive the prefix
 
-A hardcoded prefix drifts the moment you forget to bump it. Key it to the package name and major version:
+Key it to the package name and major version, so it can't drift:
 
 ```ts filename="panda.config.ts"
 import { defineConfig } from '@pandacss/dev'
@@ -118,27 +131,129 @@ export default defineConfig({
 })
 ```
 
-A 2.x release rotates the prefix on its own. Patch and minor releases share one, which matches how you already reason
-about breaking changes.
+For micro-frontends, key it to the app instead (`checkout`, `account`).
 
 ## Who sets the prefix
 
-The design system does, keyed to its package and major version as above. Its components are built against its own
-`styled-system`, so their class names are fixed when you publish.
+- **One build per page:** the design system sets it. Apps inherit it through
+  [`designSystem`](/docs/design-systems/consume-with-panda) and leave `prefix`, `hash`, and `separator` unset.
+- **Several builds per page:** each app sets its own. See [Module Federation](#module-federation).
 
-- **The library ships a static CSS file** ([Consume without Panda](/docs/design-systems/consume-without-panda)): the
-  prefix is in the CSS the apps load.
-- **The apps run Panda** ([Consume with Panda](/docs/design-systems/consume-with-panda)): apps inherit the prefix
-  through `designSystem`. Leave `prefix`, `hash`, and `separator` unset in the app. If the app overrides them, its CSS
-  uses names the design system's components never produce, and those components render unstyled. Panda warns with
-  `design_system_option_mismatch`.
+## Module Federation
 
-Two apps pinning different major versions then emit `.acme-ds-v1-button` and `.acme-ds-v2-button`, with nothing to set
-in either app.
+The host and each remote ship their own CSS onto one page. Give each app its own prefix.
+
+**1. Compile the design system in each app.** Use its preset and scan its source. Don't use `designSystem`: it forces
+the design system's prefix on every app.
+
+```ts filename="apps/checkout/panda.config.ts"
+import { defineConfig } from '@pandacss/dev'
+import { acmePreset } from '@acme/ds/preset'
+
+export default defineConfig({
+  presets: [acmePreset],
+  prefix: 'checkout',
+  preflight: false,
+  importMap: '@acme/ds/styled-system',
+  include: ['src/**/*.{ts,tsx}', '../../packages/ds/src/**/*.{ts,tsx}'],
+  outdir: 'styled-system'
+})
+```
+
+**2. Alias `@acme/ds/styled-system` to the app's outdir.** The design system and the app both import from this path,
+never a relative `../styled-system`, so each app can swap in its own:
+
+```ts filename="apps/checkout/rspack.config.ts"
+import path from 'node:path'
+
+export default {
+  resolve: {
+    alias: {
+      '@acme/ds/styled-system': path.resolve(import.meta.dirname, 'styled-system')
+    }
+  }
+}
+```
+
+Mirror the alias in `tsconfig.json` so types come from the same place:
+
+```json filename="apps/checkout/tsconfig.json"
+{
+  "compilerOptions": {
+    "paths": {
+      "@acme/ds/styled-system/*": ["./styled-system/*"]
+    }
+  }
+}
+```
+
+The same component now gets each app's prefix:
+
+```tsx filename="packages/ds/src/button.tsx"
+import { button } from '@acme/ds/styled-system/recipes'
+
+export const Button = props => <button className={button()} {...props} />
+
+// in the host:     <button class="host-button">
+// in the checkout: <button class="checkout-button">
+```
+
+**3. Keep the design system out of `shared`.** A shared copy runs the host's prefix inside the remote, and the remote
+renders unstyled.
+
+```ts filename="apps/checkout/rspack.config.ts"
+import { rspack } from '@rspack/core'
+
+new rspack.container.ModuleFederationPlugin({
+  name: 'checkout',
+  exposes: { './Checkout': './src/checkout.tsx' },
+  shared: {
+    react: { singleton: true },
+    'react-dom': { singleton: true }
+    // no @acme/ds: each app bundles its own copy
+  }
+})
+```
+
+**4. Let the host own the reset.** Set `preflight: false` in every remote.
+
+The two sheets can no longer reorder each other:
+
+```css
+/* host.css */
+@layer utilities {
+  .host-d_none {
+    display: none;
+  }
+  @media (width >= 48rem) {
+    .md\:host-d_inline {
+      display: inline;
+    }
+  }
+}
+
+/* checkout.css */
+@layer utilities {
+  .checkout-d_none {
+    display: none;
+  }
+}
+```
+
+The cost: each app ships its own copy of the design system's CSS and runtime.
+
+If the host and remotes always deploy together, skip all this. Build one stylesheet in the host that includes every
+remote's source.
+
+### Shared packages
+
+- **Uses Panda, not the design system:** import from `@acme/ds/styled-system` and let each app's alias resolve it.
+- **Has its own config recipes:** export them as a preset and add it to each app's `presets`. Namespace the `className`
+  (`charts-legend`).
 
 ## Scope tokens with cssVarRoot
 
-`prefix` renames the variables. If they should also apply only inside your subtree, set `cssVarRoot`:
+To limit tokens to a subtree, set `cssVarRoot`:
 
 ```ts filename="panda.config.ts"
 export default defineConfig({
@@ -153,48 +268,29 @@ export default defineConfig({
 </div>
 ```
 
-Elements outside `.acme-v1-scope` cannot resolve the tokens. Optional: `prefix` alone covers most setups.
-
-## Tokens still collide
-
-Atomic classes from raw values never collide, because the value is in the name (`.bg_\#ea580c`). Token references are
-the trap:
-
-```tsx
-const button = cva({
-  base: { background: 'brand' }
-})
-// both versions emit .bg_brand { background: var(--colors-brand) }
-```
-
-The class names match across versions, so nothing clashes structurally. But each version declares `--colors-brand` with
-a different value, the cascade picks one, and the losing bundle renders with the wrong brand color. `prefix` fixes this
-too, by renaming the variable.
+Elements outside `.acme-v1-scope` can't resolve the tokens. Most setups only need `prefix`.
 
 ## Verify the output
-
-Grep the emitted CSS for the names that used to collide:
 
 ```bash
 grep -E "^\.button|--colors-brand:" styled-system/styles.css
 ```
 
-Every match should carry your prefix. If not, check that `prefix` sits at the top level of `defineConfig`, not inside
-`theme`, and regenerate.
+Every match should carry your prefix. If not, move `prefix` to the top level of `defineConfig` and regenerate.
 
 ## What prefix does not solve
 
-- **Same-prefix collisions.** Two bundles that both pick `prefix: 'design'` collide as if neither had one. Choose it
-  like a package name.
-- **Reset collisions.** Preflight targets raw element selectors, so two resets fight regardless of prefix. Set
-  `preflight: false` in bundles that ship into a host page, and let the host own the reset.
-- **Hand-written CSS.** `prefix` applies to what Panda emits, nothing else.
+- **Same prefix.** Two bundles with the same prefix collide as if neither had one.
+- **Theme keyframes.** `prefix` renames inline `keyframes()`, not `theme.keyframes`. Name app-defined ones with the
+  app's prefix (`checkout-pulse`).
+- **Resets.** Preflight targets element selectors. Only one bundle on the page should ship it.
+- **Hand-written CSS.** `prefix` only applies to what Panda emits.
 
-For total isolation against an untrusted host, use an iframe or Shadow DOM. Heavier, but bulletproof.
+For full isolation from an untrusted host, use an iframe or Shadow DOM.
 
 ## See also
 
-- [Cascade Layers](/docs/styling/cascade-layers) for single-version override leakage
-- [Hashing](/docs/styling/writing-styles#hashing) for short opaque class names instead of namespaces
+- [Cascade Layers](/docs/styling/cascade-layers)
+- [Hashing](/docs/styling/writing-styles#hashing)
 - [Consume with Panda](/docs/design-systems/consume-with-panda) and
-  [Consume without Panda](/docs/design-systems/consume-without-panda) for the design system setups above
+  [Consume without Panda](/docs/design-systems/consume-without-panda)
