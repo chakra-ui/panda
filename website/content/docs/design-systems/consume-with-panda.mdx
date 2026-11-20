@@ -167,11 +167,12 @@ export * from '@acme/ds/css/cx'
 // …
 ```
 
-It generates locally only what you change:
+What stays re-exported depends on what the app adds:
 
-- **Nothing added:** everything is re-exported.
-- **Tokens, utilities, conditions, or breakpoints:** `css()`, `cva()`, and `cx` are generated locally. Design system
-  recipes and patterns stay re-exported.
+- **Nothing, or only recipes and patterns:** the design system's runtime is re-exported. Your own recipes and patterns
+  are generated next to it.
+- **Tokens, utilities, conditions, or breakpoints:** the full tree is generated locally. The design system's recipes
+  call its `css()`, so they can't be re-exported once `css()` is local.
 - **`jsxFramework`, `jsxStyleProps`, `syntax`, or a nested design system:** the full tree is generated locally.
 
 ## Add your own recipes

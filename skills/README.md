@@ -27,7 +27,8 @@ Theming and architecture. Designing the theme and the component-style layer, whe
 
 Triggers on: setting up theming, adding brand colors, wiring dark mode, shipping more than one theme, naming tokens,
 deciding between `tokens`, `semanticTokens`, `textStyles`, and a recipe, designing a variant API, converting a recipe
-into a slot recipe, cleaning up a theme that's drifted.
+into a slot recipe, cleaning up a theme that's drifted, several Panda builds on one page (Module Federation,
+micro-frontends).
 
 ### `panda-css-migrate`
 

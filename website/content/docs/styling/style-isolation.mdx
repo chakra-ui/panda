@@ -175,6 +175,9 @@ export default {
 }
 ```
 
+If the package is `"type": "module"`, Rspack and webpack need file extensions in ESM imports. Set
+`forceImportExtension: true` in the Panda config so the generated files include them.
+
 Mirror the alias in `tsconfig.json` so types come from the same place:
 
 ```json filename="apps/checkout/tsconfig.json"
@@ -198,8 +201,8 @@ export const Button = props => <button className={button()} {...props} />
 // in the checkout: <button class="checkout-button">
 ```
 
-**3. Keep the design system out of `shared`.** A shared copy runs the host's prefix inside the remote, and the remote
-renders unstyled.
+**3. Keep the design system out of `shared`.** Module Federation loads one shared copy for every app, so one app's
+components render with the other app's class names. They look right only while that other app's CSS is on the page.
 
 ```ts filename="apps/checkout/rspack.config.ts"
 import { rspack } from '@rspack/core'

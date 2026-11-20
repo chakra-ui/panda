@@ -6,8 +6,9 @@ description: >-
   data-panda-theme or injectTheme, naming or restructuring design tokens, deciding what belongs in tokens vs
   semanticTokens vs textStyles vs a recipe, designing a component's variant API, or deciding whether something should be
   a css() call, a cva, a config recipe, or a slot recipe, including converting a recipe into a slot recipe. Also use
-  when tokens or recipes have grown messy and need a cleanup plan. Do not use for writing styles against a system that
-  already exists (use panda-css), or for upgrading v1 to v2 (use panda-css-migrate).
+  when tokens or recipes have grown messy and need a cleanup plan, or when several Panda builds share one page (Module
+  Federation, micro-frontends, embedded widgets) and need a prefix each. Do not use for writing styles against a system
+  that already exists (use panda-css), or for upgrading v1 to v2 (use panda-css-migrate).
 ---
 
 # Panda CSS theming and system design
@@ -355,6 +356,29 @@ export const button: RecipeRuntimeFn<{ visual?: 'solid' | 'outline' }> = cva({ â
 ```
 
 `SlotRecipeRuntimeFn` and `StyledComponent<Tag, Props>` do the same for `sva` and `styled`.
+
+## Several Panda builds on one page
+
+Module Federation hosts and remotes, micro-frontends, and embedded widgets each ship their own Panda CSS onto one page.
+Identical class names from two builds still break each other: same-named layers merge across stylesheets, so the later
+sheet re-inserts rules like `.d_none` after the earlier sheet's `md:d_inline` or `_focus` rules, and those overrides
+lose.
+
+- **One `prefix` per build that ships CSS.** Two builds with the same prefix collide even with identical configs.
+- **Don't use `designSystem` here.** It forces the design system's prefix onto every app. Load the design system as a
+  preset, add its source to `include`, and set the app's own prefix.
+- **Alias the design system's `styled-system` path to each app's outdir** (`resolve.alias`, plus `tsconfig` `paths`),
+  with `importMap` set to that path. The design system must import through the package path, never `../styled-system`,
+  or the alias can't swap it.
+- **Keep the design system out of Module Federation `shared`.** One shared copy serves every app, so one app's
+  components render with the other app's class names and look right only while that app's CSS is loaded.
+- **`preflight: false` in every remote.** The host owns the reset.
+- **`forceImportExtension: true`** when the package is `"type": "module"`, or Rspack/webpack can't resolve the generated
+  files.
+- **`theme.keyframes` names aren't prefixed.** Namespace keyframes an app defines on its own.
+
+Only skip this if the host and every remote always deploy together: then one stylesheet, built by the host over all
+sources, has one rule order. Full guide: https://panda-css.com/docs/styling/style-isolation#module-federation
 
 ## Anti-patterns
 
