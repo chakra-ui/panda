@@ -7,6 +7,8 @@ type Version = readonly [major: number, minor: number, patch: number]
 const OR_SEPARATOR = '||'
 const CLAUSE_SEPARATOR = /\s+/
 const CLAUSE_PATTERN = /^(\^|~|>=|<=|>|<|=)?(.*)$/
+// npm allows spaces between an operator and its version (`>= 2.0.0`)
+const OPERATOR_SPACE_PATTERN = /(\^|~|>=|<=|>|<|=)\s+/g
 const HYPHEN_RANGE_PATTERN = /^(\S+)\s+-\s+(\S+)$/
 const VERSION_PATTERN = /^v?(\d+)(?:\.(\d+|x|\*))?(?:\.(\d+|x|\*))?(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/i
 const NUMERIC_PATTERN = /^\d+$/
@@ -34,7 +36,10 @@ function satisfiesRangePart(version: Version, range: string): boolean {
     return exclusiveUpper !== undefined && compareVersions(version, exclusiveUpper) < 0
   }
 
-  return range.split(CLAUSE_SEPARATOR).every((clause) => satisfiesClause(version, clause))
+  return range
+    .replace(OPERATOR_SPACE_PATTERN, '$1')
+    .split(CLAUSE_SEPARATOR)
+    .every((clause) => satisfiesClause(version, clause))
 }
 
 function satisfiesClause(version: Version, clause: string): boolean {

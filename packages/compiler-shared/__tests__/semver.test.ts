@@ -70,6 +70,14 @@ describe('satisfiesVersionRange', () => {
     expect(satisfiesVersionRange('2.9.0', '>2')).toBe(false)
   })
 
+  it('accepts spaces between an operator and its version', () => {
+    expect(satisfiesVersionRange('2.5.0', '>= 2.0.0')).toBe(true)
+    expect(satisfiesVersionRange('2.5.0', '>= 2.0.0 < 3.0.0')).toBe(true)
+    expect(satisfiesVersionRange('3.0.0', '>= 2.0.0 < 3.0.0')).toBe(false)
+    expect(satisfiesVersionRange('2.0.5', '~ 2.0')).toBe(true)
+    expect(satisfiesVersionRange('3.1.0', '^ 2.0.0 || >= 3.0.0')).toBe(true)
+  })
+
   it('accepts a version matching the second alternative of a || range', () => {
     expect(satisfiesVersionRange('3.1.0', '<2.0.0 || >=3.0.0')).toBe(true)
   })
