@@ -70,6 +70,22 @@ describe('satisfiesVersionRange', () => {
     expect(satisfiesVersionRange('2.9.0', '>2')).toBe(false)
   })
 
+  it('accepts a peer range written with a space after >=', () => {
+    expect(satisfiesVersionRange('2.6.0', '>= 2.0.0')).toBe(true)
+  })
+
+  it('rejects the excluded upper bound of a spaced >= < range', () => {
+    expect(satisfiesVersionRange('3.0.0', '>= 2.0.0 < 3.0.0')).toBe(false)
+  })
+
+  it('accepts a spaced tilde range', () => {
+    expect(satisfiesVersionRange('2.0.5', '~ 2.0')).toBe(true)
+  })
+
+  it('accepts a spaced caret range on either side of ||', () => {
+    expect(satisfiesVersionRange('3.1.0', '^ 2.0.0 || >= 3.0.0')).toBe(true)
+  })
+
   it('accepts a version matching the second alternative of a || range', () => {
     expect(satisfiesVersionRange('3.1.0', '<2.0.0 || >=3.0.0')).toBe(true)
   })
