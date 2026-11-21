@@ -1,5 +1,11 @@
 # @pandacss/mcp
 
+## 2.6.1
+
+### Patch Changes
+
+- @pandacss/compiler@2.6.1
+
 ## 2.6.0
 
 ### Patch Changes

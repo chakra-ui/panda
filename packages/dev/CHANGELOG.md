@@ -1,5 +1,17 @@
 # @pandacss/dev
 
+## 2.6.1
+
+### Patch Changes
+
+- 61c449c: The `panda-css-theming` agent skill now covers several Panda builds on one page, such as Module Federation
+  hosts and remotes: one prefix per build, and the design system kept out of `shared`.
+- @pandacss/cli@2.6.1
+  - @pandacss/compiler@2.6.1
+  - @pandacss/config@2.6.1
+  - @pandacss/postcss@2.6.1
+  - @pandacss/types@2.6.1
+
 ## 2.6.0
 
 ### Patch Changes

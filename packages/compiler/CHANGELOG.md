@@ -1,5 +1,14 @@
 # @pandacss/compiler
 
+## 2.6.1
+
+### Patch Changes
+
+- Updated dependencies [af5cf02]
+  - @pandacss/compiler-shared@2.6.1
+  - @pandacss/config@2.6.1
+  - @pandacss/types@2.6.1
+
 ## 2.6.0
 
 ### Minor Changes

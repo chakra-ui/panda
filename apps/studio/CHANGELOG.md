@@ -1,5 +1,16 @@
 # studio
 
+## 2.0.10
+
+### Patch Changes
+
+- Updated dependencies [af5cf02]
+  - @pandacss/compiler-shared@2.6.1
+  - @pandacss/compiler-wasm@2.6.1
+  - @pandacss/config@2.6.1
+  - @pandacss/preset-base@2.6.1
+  - @pandacss/preset-panda@2.6.1
+
 ## 2.0.9
 
 ### Patch Changes
