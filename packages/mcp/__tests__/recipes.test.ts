@@ -109,3 +109,12 @@ test('returns the slot recipe description and default variants', async () => {
     `)
   }, driver)
 })
+
+test('rejects a name inherited from Object.prototype', async () => {
+  await withClient(async (client) => {
+    const result = await client.callTool({ name: 'get_recipes', arguments: { name: 'constructor' } })
+    expect((result.content as Array<{ text: string }>)[0].text).toBe(
+      'Unknown recipe "constructor". Available: badge, button, card',
+    )
+  }, driver)
+})

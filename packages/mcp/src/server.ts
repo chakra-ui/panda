@@ -90,12 +90,12 @@ export function createMcpServer(options: CreateMcpServerOptions) {
     async ({ name }) => {
       const { recipes, slotRecipes } = driver.introspect.spec
       if (!name) return json({ recipes, slotRecipes })
-      if (!(name in recipes) && !(name in slotRecipes)) {
+      if (!Object.hasOwn(recipes, name) && !Object.hasOwn(slotRecipes, name)) {
         return unknownName('recipe', name, driver.introspect.recipes())
       }
       return json({
-        recipes: name in recipes ? pickCategory(recipes, name) : {},
-        slotRecipes: name in slotRecipes ? pickCategory(slotRecipes, name) : {},
+        recipes: Object.hasOwn(recipes, name) ? pickCategory(recipes, name) : {},
+        slotRecipes: Object.hasOwn(slotRecipes, name) ? pickCategory(slotRecipes, name) : {},
       })
     },
   )
