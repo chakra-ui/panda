@@ -35,7 +35,7 @@ let dir: string
 let driver: Driver
 
 beforeAll(async () => {
-  dir = realpathSync(mkdtempSync(join(tmpdir(), 'panda-mcp-recipes-')))
+  dir = realpathSync(mkdtempSync(join(tmpdir(), 'panda-mcp-spec-tools-')))
   writeFileSync(join(dir, 'panda.config.ts'), config)
   driver = await createNodeDriver({ cwd: dir })
 })
