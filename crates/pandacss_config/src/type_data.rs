@@ -212,6 +212,10 @@ pub struct RecipeTypeDefinition {
     pub name: String,
     pub type_name: String,
     pub variants: VariantTypeMap,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub default_variants: BTreeMap<String, Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub deprecated: Option<Deprecated>,
 }
@@ -223,6 +227,10 @@ pub struct SlotRecipeTypeDefinition {
     pub type_name: String,
     pub slots: Vec<String>,
     pub variants: VariantTypeMap,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub default_variants: BTreeMap<String, Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub deprecated: Option<Deprecated>,
 }
@@ -306,6 +314,8 @@ impl RecipeConfig {
             name: name.to_owned(),
             type_name: pascal_case(name),
             variants: self.variant_type_data(),
+            default_variants: self.default_variant_values(),
+            description: self.description(),
             deprecated: Deprecated::normalize(self.deprecated.as_ref()),
         }
     }
@@ -317,8 +327,24 @@ impl RecipeConfig {
             type_name: pascal_case(name),
             slots: self.slots.clone(),
             variants: self.variant_type_data(),
+            default_variants: self.default_variant_values(),
+            description: self.description(),
             deprecated: Deprecated::normalize(self.deprecated.as_ref()),
         }
+    }
+
+    fn default_variant_values(&self) -> BTreeMap<String, Value> {
+        self.default_variants
+            .iter()
+            .filter_map(|(name, value)| Some((name.clone(), serde_json::to_value(value).ok()?)))
+            .collect()
+    }
+
+    fn description(&self) -> Option<String> {
+        self.extra
+            .get("description")
+            .and_then(Value::as_str)
+            .map(str::to_owned)
     }
 
     fn variant_type_data(&self) -> VariantTypeMap {

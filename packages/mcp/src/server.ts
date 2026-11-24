@@ -84,7 +84,7 @@ export function createMcpServer(options: CreateMcpServerOptions) {
   tool(
     'get_recipes',
     {
-      description: 'Get component recipes with their variants, default values, and usage examples',
+      description: 'Get component recipes with their description, variants, and default variants',
       inputSchema: { name: nameSchema('Filter by recipe name') },
     },
     async ({ name }) => {
@@ -94,8 +94,8 @@ export function createMcpServer(options: CreateMcpServerOptions) {
         return unknownName('recipe', name, driver.introspect.recipes())
       }
       return json({
-        recipes: pickCategory(recipes, name in recipes ? name : undefined),
-        slotRecipes: pickCategory(slotRecipes, name in slotRecipes ? name : undefined),
+        recipes: name in recipes ? pickCategory(recipes, name) : {},
+        slotRecipes: name in slotRecipes ? pickCategory(slotRecipes, name) : {},
       })
     },
   )
