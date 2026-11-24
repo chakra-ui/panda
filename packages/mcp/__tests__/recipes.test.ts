@@ -110,11 +110,13 @@ test('returns the slot recipe description and default variants', async () => {
   }, driver)
 })
 
-test('rejects a name inherited from Object.prototype', async () => {
+test.each([
+  ['get_recipes', 'name', 'Unknown recipe "constructor". Available: badge, button, card'],
+  ['get_patterns', 'name', 'Unknown pattern "constructor"'],
+  ['get_tokens', 'category', 'Unknown token category "constructor"'],
+])('%s rejects a name inherited from Object.prototype', async (tool, arg, message) => {
   await withClient(async (client) => {
-    const result = await client.callTool({ name: 'get_recipes', arguments: { name: 'constructor' } })
-    expect((result.content as Array<{ text: string }>)[0].text).toBe(
-      'Unknown recipe "constructor". Available: badge, button, card',
-    )
+    const result = await client.callTool({ name: tool, arguments: { [arg]: 'constructor' } })
+    expect((result.content as Array<{ text: string }>)[0].text).toContain(message)
   }, driver)
 })

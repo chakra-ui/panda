@@ -56,7 +56,7 @@ export function createMcpServer(options: CreateMcpServerOptions) {
     },
     async ({ category }) => {
       const { tokens } = driver.introspect.spec
-      if (category && !(category in tokens.categories)) {
+      if (category && !Object.hasOwn(tokens.categories, category)) {
         return unknownName('token category', category, Object.keys(tokens.categories))
       }
       const categories = category ? { [category]: tokens.categories[category] } : tokens.categories
@@ -108,7 +108,7 @@ export function createMcpServer(options: CreateMcpServerOptions) {
     },
     async ({ name }) => {
       const { patterns } = driver.introspect.spec
-      if (name && !(name in patterns)) return unknownName('pattern', name, driver.introspect.patterns())
+      if (name && !Object.hasOwn(patterns, name)) return unknownName('pattern', name, driver.introspect.patterns())
       return json(pickCategory(patterns, name))
     },
   )
