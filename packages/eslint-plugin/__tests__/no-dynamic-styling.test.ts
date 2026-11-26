@@ -84,3 +84,47 @@ noJsxTester.run('extraction-diagnostics', {
   valid: [{ filename: 'app.tsx', code: withCss('css(styles)') }],
   invalid: [],
 })
+
+const patternsTester = await createPandaRuleTester(`export default {
+  outdir: 'styled-system',
+  jsxFramework: 'react',
+  importMap: { css: ['@panda/css'], jsx: ['@panda/jsx'], patterns: ['@panda/patterns'] },
+  theme: { tokens: { colors: { red: { 500: { value: '#ef4444' } }, blue: { 500: { value: '#3b82f6' } } } } },
+  patterns: {
+    center: { transform: () => ({ display: 'flex', alignItems: 'center' }) },
+  },
+  staticCss: { css: [{ properties: { colorPalette: ['*'], display: ['block', 'none'] } }] },
+}`)
+
+const withPatterns = (...lines: string[]) =>
+  [
+    "import { css, cva } from '@panda/css'",
+    "import { styled } from '@panda/jsx'",
+    "import { center } from '@panda/patterns'",
+    ...lines,
+  ].join('\n')
+
+patternsTester.run('no-dynamic-styling', {
+  valid: [
+    { filename: 'app.tsx', code: withPatterns('css(center.raw())') },
+    { filename: 'app.tsx', code: withPatterns('cva({ base: center.raw() })') },
+    { filename: 'app.tsx', code: withPatterns("styled('a', { base: center.raw() })") },
+    {
+      filename: 'app.tsx',
+      code: withPatterns('const a = <styled.span colorPalette={palette} color="colorPalette.500" />'),
+    },
+  ],
+  invalid: [
+    { filename: 'app.tsx', code: withPatterns('css(getStyles())'), errors: [{ messageId: 'argument' }] },
+    {
+      filename: 'app.tsx',
+      code: withPatterns('const a = <styled.span display={shown} />'),
+      errors: [{ messageId: 'value' }],
+    },
+    {
+      filename: 'app.tsx',
+      code: withPatterns('css({ _hover: { colorPalette: palette } })'),
+      errors: [{ messageId: 'value' }],
+    },
+  ],
+})
