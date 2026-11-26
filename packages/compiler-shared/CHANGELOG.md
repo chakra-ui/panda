@@ -1,5 +1,13 @@
 # @pandacss/compiler-shared
 
+## 2.6.1
+
+### Patch Changes
+
+- af5cf02: Fix design systems whose Panda peer range has a space after the operator, such as `>= 2.0.0`, failing the
+  version check for every consumer.
+- @pandacss/types@2.6.1
+
 ## 2.6.0
 
 ### Patch Changes

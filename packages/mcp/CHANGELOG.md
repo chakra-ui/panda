@@ -1,5 +1,14 @@
 # @pandacss/mcp
 
+## 2.6.1
+
+### Patch Changes
+
+- ed0d9e8: `get_recipes` now returns each recipe's `description` and `defaultVariants`, and filtering by `name` returns
+  only that recipe.
+- Updated dependencies [ed0d9e8]
+  - @pandacss/compiler@2.6.1
+
 ## 2.6.0
 
 ### Patch Changes
