@@ -405,10 +405,14 @@ impl Extractor<'_, '_, '_> {
     fn collect_dynamic_values(
         &mut self,
         category: MatchCategory,
+        raw: bool,
         call: &CallExpression<'_>,
         style_args: &[Option<StyleTree>],
     ) {
         if let Some(verbose) = self.verbose.as_deref_mut() {
+            if raw {
+                verbose.raw_call_spans.push(span_from_oxc(call.span));
+            }
             dynamic_values::collect_call(
                 category,
                 &call.arguments,
@@ -465,7 +469,7 @@ impl<'a> Visit<'a> for Extractor<'_, '_, '_> {
                 .iter()
                 .map(|arg| argument_to_style_tree(arg, resolver))
                 .collect();
-            self.collect_dynamic_values(category, call, &style_args);
+            self.collect_dynamic_values(category, raw, call, &style_args);
             let retain = self.retain_transform_facts;
             let retention = if retain {
                 ProjectionRetention::Retain

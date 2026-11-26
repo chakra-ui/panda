@@ -165,6 +165,7 @@ pub struct ExtractVerboseResult {
 pub(crate) struct VerboseFacts {
     pub(crate) style_source_refs: Vec<StyleSourceRef>,
     pub(crate) dynamic_style_values: Vec<DynamicStyleValue>,
+    pub(crate) raw_call_spans: Vec<crate::Span>,
 }
 
 impl VerboseFacts {
@@ -172,6 +173,7 @@ impl VerboseFacts {
         self.style_source_refs.append(&mut other.style_source_refs);
         self.dynamic_style_values
             .append(&mut other.dynamic_style_values);
+        self.raw_call_spans.append(&mut other.raw_call_spans);
     }
 }
 
@@ -522,7 +524,10 @@ fn run_extract(
         }
         result.token_refs = dedupe_token_refs(std::mem::take(&mut result.token_refs));
     }
-    crate::dynamic_values::dedupe(&mut result.verbose.dynamic_style_values);
+    crate::dynamic_values::dedupe(
+        &mut result.verbose.dynamic_style_values,
+        &result.verbose.raw_call_spans,
+    );
     result
 }
 

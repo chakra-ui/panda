@@ -1707,6 +1707,54 @@ fn inspection_reports_dynamic_style_values_with_ranges() {
     ");
 }
 
+#[test]
+fn dynamic_values_skip_unconditioned_properties_a_static_css_wildcard_covers() {
+    let fixture = system_with(json!({
+        "jsxFramework": "react",
+        "theme": {
+            "tokens": {
+                "colors": { "red": { "500": { "value": "#e00" } } },
+                "spacing": { "4": { "value": "1rem" } }
+            }
+        },
+        "utilities": {
+            "color": { "className": "c", "shorthand": "fg", "values": "colors" },
+            "padding": { "className": "p", "shorthand": "p", "values": "spacing" }
+        },
+        "conditions": { "hover": "&:hover" },
+        "staticCss": {
+            "css": [{ "properties": { "color": "*", "padding": ["4"], "width": ["*"] } }]
+        }
+    }));
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        import { styled } from '@panda/jsx'
+        css({ color: tone, fg: tone, p: pad, _hover: { color: tone } })
+        css({ color: tone || 'red', width: size })
+        const a = <styled.div color={hue} padding={pad} />
+    "};
+    let result = inspect_file_source(&fixture, "a.tsx", source);
+    let sites = result
+        .dynamic_values
+        .iter()
+        .map(|site| {
+            format!(
+                "{:?} {} `{}`",
+                site.kind,
+                site.path.join("."),
+                span_text(source, Some(site.span))
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert_snapshot!(sites, @"
+    Value p `pad`
+    Value _hover.color `tone`
+    Value width `size`
+    Value padding `pad`
+    ");
+}
+
 fn aliased_tokens() -> Fixture {
     system_with(json!({
         "theme": {

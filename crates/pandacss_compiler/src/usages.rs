@@ -5,8 +5,8 @@
 
 use pandacss_encoder::ConditionMatcher;
 use pandacss_extractor::{
-    ExtractedCall, ExtractedJsx, LineIndex, MatchCategory, StyleSourceOwnerKind, StyleSourceRef,
-    extract_verbose,
+    DynamicStyleValue, DynamicStyleValueKind, ExtractedCall, ExtractedJsx, LineIndex,
+    MatchCategory, StyleSourceOwnerKind, StyleSourceRef, extract_verbose,
 };
 use pandacss_literal::Literal;
 use pandacss_shared::parse_first_that_works_value;
@@ -143,6 +143,7 @@ pub fn inspect_file_source(
         dynamic_values: result
             .dynamic_style_values
             .into_iter()
+            .filter(|value| !covered_by_static_css(value, config, system.utility()))
             .map(|value| DynamicValueSite {
                 kind: value.kind,
                 range: line_index.locate_range(value.span.start, value.span.end),
@@ -151,6 +152,35 @@ pub fn inspect_file_source(
             })
             .collect(),
     }
+}
+
+fn covered_by_static_css(
+    value: &DynamicStyleValue,
+    config: &UserConfig,
+    utility: Option<&Utility>,
+) -> bool {
+    let ([property], DynamicStyleValueKind::Value | DynamicStyleValueKind::Fallback) =
+        (value.path.as_slice(), value.kind)
+    else {
+        return false;
+    };
+    let canonical = |name| utility.map_or(name, |utility| utility.resolve_shorthand(name));
+    let property = canonical(property.as_str());
+    config
+        .static_css
+        .get("css")
+        .and_then(serde_json::Value::as_array)
+        .into_iter()
+        .flatten()
+        .flat_map(pandacss_config::static_css_rule_properties)
+        .any(|(name, values)| {
+            canonical(name.as_str()) == property
+                && (values == "*"
+                    || values
+                        .as_array()
+                        .is_some_and(|values| values.iter().any(|value| value == "*")))
+        })
+        && utility.is_some_and(|utility| !utility.property_keys(property).is_empty())
 }
 
 /// Tokens carrying `value` on `prop`, ranked with safe equivalents first.

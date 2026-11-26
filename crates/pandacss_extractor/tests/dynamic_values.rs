@@ -133,6 +133,41 @@ fn reports_whole_arguments_of_css_and_pattern_calls() {
 }
 
 #[test]
+fn skips_values_that_are_panda_raw_calls() {
+    let source = indoc! {r"
+        import { css, cva } from '@panda/css';
+        import { styled } from '@panda/jsx';
+        import { center, linkOverlay } from '@panda/patterns';
+        css(linkOverlay.raw());
+        cva({ base: center.raw() });
+        styled('a', { base: linkOverlay.raw() });
+        css(css.raw({ color: 'red' }), center.raw({ gap: gap }));
+        css(getStyles());
+    "};
+    assert_snapshot!(dynamic_values(source, "app.tsx", &panda_config()), @"
+    value gap `gap`
+    argument  `getStyles()`
+    ");
+
+    let source = indoc! {r"
+        import { styled, Box } from '@panda/jsx';
+        import { center, linkOverlay } from '@panda/patterns';
+        const Link = styled('a', { base: linkOverlay.raw() });
+        <Box css={center.raw()} color={tone} />;
+    "};
+    assert_snapshot!(dynamic_values(source, "app.tsx", &jsx_config()), @"value color `tone`");
+
+    let source = indoc! {r#"
+        <script setup lang="ts">
+        import { css } from '@panda/css';
+        import { center } from '@panda/patterns';
+        const a = css(center.raw());
+        </script>
+    "#};
+    assert_snapshot!(dynamic_values(source, "app.vue", &panda_config()), @"");
+}
+
+#[test]
 fn recipe_and_token_arguments_are_not_style_values() {
     let source = indoc! {r"
         import { button } from '@panda/recipes';

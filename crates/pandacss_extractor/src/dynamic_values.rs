@@ -139,7 +139,8 @@ fn collect_literal_member(
     }
 }
 
-pub(crate) fn dedupe(values: &mut Vec<DynamicStyleValue>) {
+pub(crate) fn dedupe(values: &mut Vec<DynamicStyleValue>, raw_call_spans: &[Span]) {
+    values.retain(|value| !raw_call_spans.contains(&value.span));
     values.sort_by_key(|value| (value.span.start, value.span.end));
     values.dedup_by_key(|value| value.span);
 }

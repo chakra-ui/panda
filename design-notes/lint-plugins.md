@@ -639,7 +639,9 @@ they rely on the resolved compiler model rather than string matching.
 - `no-dynamic-styling` ✅ (D, v1) — values the compiler can't statically extract. Reads `dynamicValues` from the
   inspection result, so it reports exactly what encode dropped: unreadable values, the runtime side of `||`/`??`,
   computed keys, and whole `css()`/pattern arguments. Opaque spreads, recipe variants, and JSX tags Panda doesn't own
-  are skipped. It owns `panda_call_unextractable`, which `extraction-diagnostics` filters out.
+  are skipped, as are values that are themselves a Panda `.raw()` call (extracted as their own call) and unconditioned
+  values whose property `staticCss.css` lists as `['*']`. It owns `panda_call_unextractable`, which
+  `extraction-diagnostics` filters out.
 - `no-unsafe-token-fn-usage` ✅ (D, v1) — a style value that is exactly one token reference (`token(p)`, `{p}`, `[{p}]`)
   or a `token()`/`token.var()` call. Each swap is checked with `resolveUtilityValue`: the plain name must emit the same
   CSS as `{p}`, so a category the property doesn't read (`width: '{spacing.4}'`) is skipped instead of renamed to
