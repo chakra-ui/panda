@@ -56,7 +56,7 @@ export function createMcpServer(options: CreateMcpServerOptions) {
     },
     async ({ category }) => {
       const { tokens } = driver.introspect.spec
-      if (category && !(category in tokens.categories)) {
+      if (category && !Object.hasOwn(tokens.categories, category)) {
         return unknownName('token category', category, Object.keys(tokens.categories))
       }
       const categories = category ? { [category]: tokens.categories[category] } : tokens.categories
@@ -84,18 +84,18 @@ export function createMcpServer(options: CreateMcpServerOptions) {
   tool(
     'get_recipes',
     {
-      description: 'Get component recipes with their variants, default values, and usage examples',
+      description: 'Get component recipes with their description, variants, and default variants',
       inputSchema: { name: nameSchema('Filter by recipe name') },
     },
     async ({ name }) => {
       const { recipes, slotRecipes } = driver.introspect.spec
       if (!name) return json({ recipes, slotRecipes })
-      if (!(name in recipes) && !(name in slotRecipes)) {
+      if (!Object.hasOwn(recipes, name) && !Object.hasOwn(slotRecipes, name)) {
         return unknownName('recipe', name, driver.introspect.recipes())
       }
       return json({
-        recipes: pickCategory(recipes, name in recipes ? name : undefined),
-        slotRecipes: pickCategory(slotRecipes, name in slotRecipes ? name : undefined),
+        recipes: Object.hasOwn(recipes, name) ? pickCategory(recipes, name) : {},
+        slotRecipes: Object.hasOwn(slotRecipes, name) ? pickCategory(slotRecipes, name) : {},
       })
     },
   )
@@ -108,7 +108,7 @@ export function createMcpServer(options: CreateMcpServerOptions) {
     },
     async ({ name }) => {
       const { patterns } = driver.introspect.spec
-      if (name && !(name in patterns)) return unknownName('pattern', name, driver.introspect.patterns())
+      if (name && !Object.hasOwn(patterns, name)) return unknownName('pattern', name, driver.introspect.patterns())
       return json(pickCategory(patterns, name))
     },
   )

@@ -150,7 +150,7 @@ fn recipe_table(ctx: CodegenContext<'_>) -> Option<Value> {
         insert_optional(
             &mut row,
             "defaultVariants",
-            config.and_then(default_variants),
+            (!definition.default_variants.is_empty()).then(|| json!(definition.default_variants)),
         );
         insert_optional(
             &mut row,
@@ -160,7 +160,7 @@ fn recipe_table(ctx: CodegenContext<'_>) -> Option<Value> {
         insert_optional(
             &mut row,
             "description",
-            config.and_then(|c| description_of(&c.extra)),
+            definition.description.as_deref().map(|d| json!(d)),
         );
         (name.clone(), Value::Object(row))
     });
@@ -187,7 +187,7 @@ fn slot_recipe_table(ctx: CodegenContext<'_>) -> Option<Value> {
         insert_optional(
             &mut row,
             "defaultVariants",
-            config.and_then(default_variants),
+            (!definition.default_variants.is_empty()).then(|| json!(definition.default_variants)),
         );
         insert_optional(
             &mut row,
@@ -197,7 +197,7 @@ fn slot_recipe_table(ctx: CodegenContext<'_>) -> Option<Value> {
         insert_optional(
             &mut row,
             "description",
-            config.and_then(|c| description_of(&c.extra)),
+            definition.description.as_deref().map(|d| json!(d)),
         );
         (name.clone(), Value::Object(row))
     });
@@ -212,13 +212,6 @@ fn variant_table(variants: &VariantTypeMap) -> Value {
         )
     });
     Value::Object(rows.collect())
-}
-
-fn default_variants(config: &pandacss_config::RecipeConfig) -> Option<Value> {
-    if config.default_variants.is_empty() {
-        return None;
-    }
-    serde_json::to_value(&config.default_variants).ok()
 }
 
 fn pattern_table(ctx: CodegenContext<'_>) -> Option<Value> {

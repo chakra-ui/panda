@@ -226,6 +226,8 @@ export interface SpecRecipe {
   name: string
   typeName: string
   variants: Record<string, SpecVariant>
+  defaultVariants?: Record<string, unknown>
+  description?: string
   deprecated?: Deprecation
 }
 
