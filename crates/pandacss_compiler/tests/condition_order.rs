@@ -16,7 +16,9 @@ fn order_warnings(source: &str) -> String {
         },
         "conditions": {
             "hover": "&:is(:hover, [data-hover])",
-            "active": "&:is(:active, [data-active])"
+            "active": "&:is(:active, [data-active])",
+            "scrollbarTrack": "&::-webkit-scrollbar-track",
+            "scrollbarThumb": "&::-webkit-scrollbar-thumb"
         },
         "theme": { "breakpoints": { "md": "768px", "lg": "1024px" } }
     }));
@@ -266,4 +268,57 @@ fn warns_when_both_values_are_important() {
       at: color: 'blue !important'
       help: To make `&[data-a]` win where both match, nest it inside `&[data-z]`.
     ");
+}
+
+#[test]
+fn stays_quiet_for_conditions_on_different_pseudo_elements() {
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        css({
+          _scrollbarTrack: { background: 'red' },
+          _scrollbarThumb: { background: 'blue' },
+          '&:has(> input:checked)::before': { color: 'red' },
+          '&:has(> input[aria-invalid=true])::after': { color: 'blue' },
+          '&:has(> input[aria-invalid=true])::-webkit-scrollbar-track:hover': { background: 'blue' },
+          '&:has(> input:checked)::-webkit-scrollbar-thumb:hover': { background: 'red' },
+          '&:has(> input:checked):before': { color: 'red' },
+          '&:has(> input[aria-invalid=true]):after': { color: 'blue' },
+        })
+    "};
+    assert_snapshot!(order_warnings(source), @"");
+}
+
+#[test]
+fn warns_for_conditions_on_the_same_pseudo_element() {
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        css({
+          '&:has(> input[aria-invalid=true])::before': { color: 'red' },
+          '&:has(> input:checked)::before': { color: 'blue' },
+        })
+    "};
+    assert_snapshot!(order_warnings(source), @"
+    `&:has(> input:checked)::before` doesn't override `&:has(> input[aria-invalid=true])::before` for `color`. Both have the same specificity, so Panda orders them by selector text and `&:has(> input[aria-invalid=true])::before` comes last.
+      at: color: 'blue'
+      help: To make `&:has(> input:checked)::before` win where both match, drop its pseudo-element and nest it inside `&:has(> input[aria-invalid=true])::before`.
+    ");
+}
+
+#[test]
+fn warns_when_pseudo_elements_may_overlap() {
+    let source = indoc! {r"
+        import { css } from '@panda/css'
+        css({
+          '&:has(> input[aria-invalid=true])::BEFORE': { color: 'red' },
+          '&:has(> input:checked)::before': { color: 'blue' },
+        })
+        css({
+          '&:has(> input[aria-invalid=true])::part(a)': { color: 'red' },
+          '&:has(> input:checked)::part(b)': { color: 'blue' },
+        })
+    "};
+    assert_eq!(
+        order_warnings(source).matches("doesn't override").count(),
+        2
+    );
 }

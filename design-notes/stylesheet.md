@@ -105,7 +105,8 @@ order so selectors match recipe runtime output. Rule conditions are sorted separ
    count. Names ignore case and vendor prefixes. Pseudo-element selectors, including legacy `:before`, sort after
    pseudo-class ones. Equal ranks sort by selector text: an atom is shared across files, so there's no single written
    order. Editor inspection warns (`condition_order_by_text`) when that text order reverses the written order of two
-   conditions on one property in one style object at equal specificity; the browser decides every other case.
+   conditions on one property in one style object at equal specificity, unless they end in different pseudo-elements and
+   so never match the same element; the browser decides every other case.
 4. Property priority: broad shorthands before shorthand groups before longhands.
 5. Ties: recipe and grouped-style entries keep authored order; atoms fall back to property name, atom value key, rule
    conditions, then class conditions.

@@ -11,6 +11,7 @@ use std::cmp::Ordering;
 use pandacss_config::{ConditionQuery, UserConfig};
 use pandacss_encoder::{Atom, RecipeStyleEntry, atom_value_sort_key};
 
+use crate::selector_parts::{PartKind, selector_parts};
 use crate::selector_rank::{Specificity, selector_rank};
 
 pub struct SortContext<'a> {
@@ -449,7 +450,7 @@ fn compare_condition_names(config: &UserConfig, a: &str, b: &str) -> Ordering {
 /// The order selector text decides between two condition stacks on the same
 /// property. `None` when the cascade or Panda's ranking already decides it:
 /// different at-rules, stack depth, pseudo-element placement, pseudo-class
-/// rank, or specificity.
+/// rank, or specificity, or when the stacks end in different pseudo-elements.
 #[must_use]
 pub fn order_decided_by_selector_text(
     config: &UserConfig,
@@ -473,10 +474,47 @@ pub fn order_decided_by_selector_text(
             .iter()
             .fold(Specificity::default(), |total, key| total + key.specificity)
     };
-    if !same_rank || specificity(&a_selectors) != specificity(&b_selectors) {
+    if !same_rank
+        || specificity(&a_selectors) != specificity(&b_selectors)
+        || matches!(
+            (pseudo_elements(&a_selectors), pseudo_elements(&b_selectors)),
+            (Some(a), Some(b)) if a != b
+        )
+    {
         return None;
     }
     Some(a_selectors.cmp(&b_selectors)).filter(|order| order.is_ne())
+}
+
+#[must_use]
+pub fn ends_in_pseudo_element(config: &UserConfig, conditions: &[&str]) -> bool {
+    stack_parts(config, conditions)
+        .1
+        .iter()
+        .any(|key| key.pseudo_element)
+}
+
+fn pseudo_elements(selectors: &[SelectorKey]) -> Option<Vec<String>> {
+    let mut names = Vec::new();
+    for key in selectors.iter().filter(|key| key.pseudo_element) {
+        for part in selector_parts(&key.raw) {
+            match part.kind {
+                PartKind::Comma
+                | PartKind::Pseudo {
+                    element: true,
+                    args: Some(_),
+                    ..
+                } => return None,
+                PartKind::Pseudo {
+                    element: true,
+                    name,
+                    args: None,
+                } => names.push(name.to_ascii_lowercase()),
+                _ => {}
+            }
+        }
+    }
+    Some(names)
 }
 
 fn stack_parts(config: &UserConfig, conditions: &[&str]) -> (Vec<AtRuleKey>, Vec<SelectorKey>) {

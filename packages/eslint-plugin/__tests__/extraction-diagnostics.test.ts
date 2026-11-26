@@ -4,7 +4,12 @@ const ruleTester = await createPandaRuleTester(`export default {
   outdir: 'styled-system',
   jsxFramework: 'react',
   importMap: { css: ['@panda/css'], jsx: ['@panda/jsx'] },
-  conditions: { hover: '&:hover', custom: '&[data-custom]' },
+  conditions: {
+    hover: '&:hover',
+    custom: '&[data-custom]',
+    scrollbarTrack: '&::-webkit-scrollbar-track',
+    scrollbarThumb: '&::-webkit-scrollbar-thumb',
+  },
   theme: { breakpoints: { md: '768px' } },
   utilities: { color: { className: 'c', values: 'colors' } },
 }`)
@@ -17,6 +22,14 @@ ruleTester.run('extraction-diagnostics', {
     },
     { filename: 'app.tsx', code: "const x = { _hver: { color: 'red' } }" },
     { filename: 'app.tsx', code: withCss("css({ color: '{colors.missing}' })") },
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ _scrollbarTrack: { color: 'red' }, _scrollbarThumb: { color: 'blue' } })"),
+    },
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ '&[data-z]::before': { color: 'red' }, '&[data-a]::after': { color: 'blue' } })"),
+    },
   ],
   invalid: [
     {
@@ -65,6 +78,16 @@ ruleTester.run('extraction-diagnostics', {
           message:
             "`&[data-a]` doesn't override `&[data-z]` for `color`. Both have the same specificity, so Panda orders them by selector text and `&[data-z]` comes last.",
           line: 2,
+        },
+      ],
+    },
+    {
+      filename: 'app.tsx',
+      code: withCss("css({ '&[data-z]::before': { color: 'red' }, '&[data-a]::before': { color: 'blue' } })"),
+      errors: [
+        {
+          message:
+            "`&[data-a]::before` doesn't override `&[data-z]::before` for `color`. Both have the same specificity, so Panda orders them by selector text and `&[data-z]::before` comes last.",
         },
       ],
     },

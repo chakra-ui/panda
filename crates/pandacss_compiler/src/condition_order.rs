@@ -9,7 +9,7 @@ use std::cmp::Ordering;
 
 use pandacss_config::UserConfig;
 use pandacss_shared::{Diagnostic, diagnostic_codes, is_important};
-use pandacss_stylesheet::order_decided_by_selector_text;
+use pandacss_stylesheet::{ends_in_pseudo_element, order_decided_by_selector_text};
 use serde_json::Value;
 
 use crate::inspection::{StyleEntryKind, StyleEntryRef};
@@ -85,7 +85,7 @@ pub(crate) fn condition_order_diagnostics(
                     == Some(Ordering::Greater)
         });
         if let Some(earlier) = overridden_by {
-            diagnostics.push(diagnostic(earlier, later));
+            diagnostics.push(diagnostic(config, earlier, later));
         }
     }
     diagnostics
@@ -116,7 +116,11 @@ fn collect_leaves<'a>(
     }
 }
 
-fn diagnostic(earlier: &ConditionedEntry<'_>, later: &ConditionedEntry<'_>) -> Diagnostic {
+fn diagnostic(
+    config: &UserConfig,
+    earlier: &ConditionedEntry<'_>,
+    later: &ConditionedEntry<'_>,
+) -> Diagnostic {
     let earlier_condition = earlier.conditions.join(" ");
     let later_condition = later.conditions.join(" ");
     let mut diagnostic = Diagnostic::warning(
@@ -126,9 +130,15 @@ fn diagnostic(earlier: &ConditionedEntry<'_>, later: &ConditionedEntry<'_>) -> D
             later.property
         ),
     )
-    .with_help(format!(
-        "To make `{later_condition}` win where both match, nest it inside `{earlier_condition}`."
-    ));
+    .with_help(if ends_in_pseudo_element(config, &later.conditions) {
+        format!(
+            "To make `{later_condition}` win where both match, drop its pseudo-element and nest it inside `{earlier_condition}`."
+        )
+    } else {
+        format!(
+            "To make `{later_condition}` win where both match, nest it inside `{earlier_condition}`."
+        )
+    });
     diagnostic.span = Some(later.entry.span);
     diagnostic.location = Some(later.entry.range);
     diagnostic
