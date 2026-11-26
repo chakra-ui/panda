@@ -4,5 +4,5 @@
 '@pandacss/eslint-plugin': patch
 ---
 
-Fix `condition_order_by_text` warning about conditions on different pseudo-elements, like `_scrollbarTrack` and
-`_scrollbarThumb`.
+Fix `condition_order_by_text` warning about conditions on different pseudo-elements, and its help suggesting a selector
+that matches nothing.

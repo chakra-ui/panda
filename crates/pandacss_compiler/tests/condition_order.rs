@@ -300,7 +300,7 @@ fn warns_for_conditions_on_the_same_pseudo_element() {
     assert_snapshot!(order_warnings(source), @"
     `&:has(> input:checked)::before` doesn't override `&:has(> input[aria-invalid=true])::before` for `color`. Both have the same specificity, so Panda orders them by selector text and `&:has(> input[aria-invalid=true])::before` comes last.
       at: color: 'blue'
-      help: To make `&:has(> input:checked)::before` win where both match, nest it inside `&:has(> input[aria-invalid=true])::before`.
+      help: To make `&:has(> input:checked)::before` win where both match, drop its pseudo-element and nest it inside `&:has(> input[aria-invalid=true])::before`.
     ");
 }
 

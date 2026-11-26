@@ -2150,3 +2150,26 @@ fn quoted_whitespace_stays_in_css_and_collapses_in_the_class() {
     }
     "#);
 }
+
+#[test]
+fn nests_a_condition_inside_one_that_ends_in_a_pseudo_element() {
+    let config = config(serde_json::json!({
+        "importMap": { "css": ["@panda/css"] },
+        "utilities": { "color": { "className": "c" } }
+    }));
+    let source = indoc::indoc! {r"
+        import { css } from '@panda/css';
+        css({ '&[data-z]::before': { color: 'red', '&[data-a]': { color: 'blue' } } });
+    "};
+    let css = compile_tsx_layer_css(&config, source, &[StylesheetLayer::Utilities]);
+    assert_snapshot!(css, @r"
+    @layer utilities {
+      .\[\&\[data-z\]\:\:before\]\:\[\&\[data-a\]\]\:c_blue[data-a][data-z]::before {
+        color: blue;
+      }
+      .\[\&\[data-z\]\:\:before\]\:c_red[data-z]::before {
+        color: red;
+      }
+    }
+    ");
+}

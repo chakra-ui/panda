@@ -486,6 +486,14 @@ pub fn order_decided_by_selector_text(
     Some(a_selectors.cmp(&b_selectors)).filter(|order| order.is_ne())
 }
 
+#[must_use]
+pub fn ends_in_pseudo_element(config: &UserConfig, conditions: &[&str]) -> bool {
+    stack_parts(config, conditions)
+        .1
+        .iter()
+        .any(|key| key.pseudo_element)
+}
+
 fn pseudo_elements(selectors: &[SelectorKey]) -> Option<Vec<String>> {
     let mut names = Vec::new();
     for key in selectors.iter().filter(|key| key.pseudo_element) {
